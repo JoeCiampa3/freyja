@@ -1,6 +1,6 @@
 import mujoco, numpy as np
-m = mujoco.MjModel.from_xml_path("models/thigh_check_right.xml")
-i = m.body("thigh_r").id
+m = mujoco.MjModel.from_xml_path("models/thigh_check.xml")
+i = m.body("thigh").id
 print(m.body_mass[i],m.body_ipos[i])
 print("mujoco principal:", m.body_inertia[i])
 

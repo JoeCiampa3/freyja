@@ -1,0 +1,61 @@
+<mujoco model="freyja">
+    <compiler angle="degree"/>
+    <worldbody>
+        <body name="pelvis" pos="0 0 0">
+            <inertial pos="-0.000963 -0.000214 -0.024824" mass="9.49" fullinertia="0.08997 0.06781 0.10865 0.00109 0.00001 -0.01256"/>
+            <geom type="box" pos="0 0 0" size="0.05 0.05 0.05" mass="0"/>
+            <joint type="free"/>
+
+            <body name="thigh_right" pos="0 -0.1 0">
+                <inertial pos="-0.017712 -0.014256 -0.185328" mass="7.995" fullinertia="0.12548 0.13429 0.03357 -0.00060 0.00713 0.00713"/>
+                <geom type="capsule" fromto="0 0 -0.05 0 0 -0.382" size="0.05" mass="0"/>
+                <joint name="hip_right" type="ball"/>
+
+                <body name="shank_right" pos="0 0 -0.422">
+                    <inertial pos="-0.019012 -0.012028 -0.156752" mass="2.925" fullinertia="0.03452 0.03452 0.00440 -0.00004 0.00018 0.00018"/>
+                    <geom type="capsule" size="0.04" fromto="0 0 -0.04 0 0 -0.348" mass="0"/>
+                    <joint name="knee_right" type="hinge" axis="0 1 0"/> 
+                </body> 
+            </body>
+
+            <body name="thigh_left" pos="0 0.1 0">
+                <inertial pos="-0.017712 0.014256 -0.185328" mass="7.995" fullinertia="0.12548 0.13429 0.03357 0.00060 0.00713 -0.00713"/>
+                <geom type ="capsule" fromto="0 0 -0.05 0 0 -0.382" size="0.05" mass="0"/>
+                <joint name="hip_left" type="ball"/>
+
+                <body name="shank_left" pos="0 0 -0.422">
+                    <inertial pos="-0.019012 -0.012028 -0.156752" mass="2.925" fullinertia="0.0342 0.0342 0.00440 -0.00004 0.00018 0.00018"/>
+                    <geom type="capsule" size="0.04" fromto="0 0 -0.04 0 0 -0.348" mass="0"/>
+                    <joint name="knee_left" type="hinge" axis="0 1 0"/>
+                </body>
+            </body>
+
+            <body name="abdomen">
+                <inertial pos="0.029524 -0.000605 -0.050215" mass="2.665" fullinertia="0.01752 0.01180 0.02313 0.00004 0.00010 0.00156"/>
+                <geom type="capsule" fromto="0 0 0.05 0 0 0.071" size="0.05" mass="0"/>
+                <joint name="lj" type="ball"/>
+
+
+                <body name="thorax" pos="0 0 0.121">
+                    <inertial pos="0.006573 -0.000313 -0.165264" mass="17.095" fullinertia="0.25473 0.20516 0.18238 0.00151 -0.00017 -0.0241"/>
+                    <geom type="capsule" fromto="0 0 0.1 0 0 0.213" size="0.1" mass="0"/>
+                    <joint name="tj" type="ball"/>
+
+                    <body name="upper_arm_right" pos="0 -0.16 0.313">
+                        <inertial pos="-17.739 6.804 -110.322" mass="1.43" fullinertia="0.00920 0.00920	0.00244	-0.00021 0.00014 -0.00008"/>
+                        <geom type="capsule" fromto="0 0 -0.03 0 0 -0.213" size="0.03" mass="0"/>
+                        <joint name="shoulder_right" type="ball"/>
+                    </body>
+
+                    <body name="head_and_neck" pos="0 0 0.378">
+                        <inertial pos="0.004048 -0.000253 0.145475" mass="4.355" fullinertia="0.02344 0.02509 0.01475 -0.00003 0.00000 -0.00045"/>
+                        <geom type="sphere" size="0.065" mass="0"/>
+                        <joint name="cjc" type="ball"/>
+                    </body>
+                </body>
+            </body>
+        </body>
+       
+        
+    </worldbody>
+</mujoco>
