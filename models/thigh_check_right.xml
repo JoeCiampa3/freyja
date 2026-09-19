@@ -1,4 +1,4 @@
-<mujoco model="freyja_thigh_check">
+<mujoco model="freyja_thigh_check_left">
     <compiler angle="degree"/>
     <worldbody>
         <body name="thigh_r">
