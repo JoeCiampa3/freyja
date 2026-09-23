@@ -9,17 +9,20 @@
             <body name="thigh_right" pos="0 -0.1 0">
                 <inertial pos="-0.017712 -0.014256 -0.185328" mass="7.995" fullinertia="0.12548 0.13429 0.03357 -0.00060 0.00731 0.00731"/>
                 <geom type="capsule" fromto="0 0 -0.05 0 0 -0.382" size="0.05" mass="0"/>
-                <joint name="hip_right" type="ball"/>
+                <joint name="hip_fe_right" type="hinge" axis="0 -1 0" limited="true" range="-18.1 133.8"/>
+                <joint name="hip_aa_right" type="hinge" axis="1 0 0" limited="true" range="-40.5 25.6"/>
+                <joint name="hip_ier_right" type="hinge" axis="0 0 1" limited="true" range="-44.2 44.4"/>
 
-                <body name="shank_right" pos="0 0 -0.422">
+                <body name="shank_right" pos="0 0 -0.432">
                     <inertial pos="-0.019012 -0.012028 -0.156752" mass="2.925" fullinertia="0.03452 0.03452 0.00440 -0.00004 0.00018 0.00018"/>
                     <geom type="capsule" size="0.04" fromto="0 0 -0.04 0 0 -0.348" mass="0"/>
-                    <joint name="knee_right" type="hinge" axis="0 1 0"/> 
+                    <joint name="knee_right" type="hinge" axis="0 -1 0" limited="true" range="-1.6 141.9"/> 
 
                     <body name="foot_right" pos="0 0 -0.388">
                         <inertial pos="0.044550 -0.006435 -0.035970" mass="0.65" fullinertia="0.00051 0.00217 0.00229 -0.00006 -0.00006 0.00003"/>
                         <geom type="box" pos="0.04125 0 -0.04" size="0.0825 0.080 0.04"/>
-                        <joint name="ankle_right" type="ball"/>
+                        <joint name="ankle_pdflex_right" type="hinge" axis="0 -1 0" limited="true" range="-62.1 13.8"/>
+                        <joint name="ankle_ie_right" type="hinge" axis="1 0 0" limited="true" range="-19.2 36.2"/>
                     </body>
                 </body> 
             </body>
@@ -27,52 +30,54 @@
             <body name="thigh_left" pos="0 0.1 0">
                 <inertial pos="-0.017712 0.014256 -0.185328" mass="7.995" fullinertia="0.12548 0.13429 0.03357 0.00060 0.00731 -0.00731"/>
                 <geom type ="capsule" fromto="0 0 -0.05 0 0 -0.382" size="0.05" mass="0"/>
-                <joint name="hip_left" type="ball"/>
+                <joint name="hip_fe_left" type="hinge" axis="0 -1 0" limited="true" range="-18.1 133.8"/>
+                <joint name="hip_aa_left" type="hinge" axis="-1 0 0" limited="true" range="-40.5 25.6"/>
+                <joint name="hip_ier_left" type="hinge" axis="0 0 -1" limited="true" range="-44.2 44.4"/>
 
-                <body name="shank_left" pos="0 0 -0.422">
+                <body name="shank_left" pos="0 0 -0.432">
                     <inertial pos="-0.019012 0.012028 -0.156752" mass="2.925" fullinertia="0.03452 0.03452 0.00440 0.00004 0.00018 -0.00018"/>
                     <geom type="capsule" size="0.04" fromto="0 0 -0.04 0 0 -0.348" mass="0"/>
-                    <joint name="knee_left" type="hinge" axis="0 1 0"/>
+                    <joint name="knee_left" type="hinge" axis="0 -1 0" limited="true" range="-1.6 141.9"/>
 
                     <body name="foot_left" pos="0 0 -0.388">
                         <inertial pos="0.044550 0.006435 -0.035970" mass="0.65" fullinertia="0.00051 0.00217 0.00229 0.00006 -0.00006 -0.00003"/>
                         <geom type="box" pos="0.04125 0 -0.04" size="0.0825 0.080 0.04"/>
-                        <joint name="ankle_left" type="ball"/>
+                        <joint name="ankle_pdflex_left" type="hinge" axis="0 -1 0" limited="true" range="-62.1 13.8"/>
+                        <joint name="ankle_ie_left" type="hinge" axis="-1 0 0" limited="true" range="-19.2 36.2"/>
                     </body>
                 </body>
             </body>
 
-            <body name="abdomen">
+            <body name="abdomen" pos="0 0 0.121">
                 <inertial pos="0.029524 -0.000605 -0.050215" mass="2.665" fullinertia="0.01752 0.01180 0.02313 0.00004 0.00156 0.00010"/>
-                <geom type="capsule" fromto="0 0 0.05 0 0 0.071" size="0.05" mass="0"/>
+                <geom type="capsule" fromto="0 0 -0.05 0 0 -0.071" size="0.05" mass="0"/>
                 <joint name="lj" type="ball"/>
 
 
-                <body name="thorax" pos="0 0 0.121">
+                <body name="thorax" pos="0 0 0.313">
                     <inertial pos="0.006573 -0.000313 -0.165264" mass="17.095" fullinertia="0.25473 0.20516 0.18238 0.00151 -0.02412 -0.00017"/>
-                    <geom type="capsule" fromto="0 0 0.1 0 0 0.213" size="0.1" mass="0"/>
+                    <geom type="capsule" fromto="0 0 -0.1 0 0 -0.213" size="0.1" mass="0"/>
                     <joint name="tj" type="ball"/>
 
-                    <body name="upper_arm_right" pos="0 -0.16 0.313">
+                    <body name="upper_arm_right" pos="0 -0.16 0">
                         <inertial pos="-0.017739 0.006804 -0.110322" mass="1.43" fullinertia="0.00920 0.00920 0.00244 0.00021 0.00008 0.00014"/>
                         <geom type="capsule" fromto="0 0 -0.03 0 0 -0.213" size="0.03" mass="0"/>
-                        <joint name="shoulder_right" type="ball"/>
+                        <joint name="shoulder_fe_right" type="hinge"/>
 
                         <body name="forearm_right" pos="0 0 -0.243">
                             <inertial pos="0.004607 0.007046 -0.122492" mass="0.845" fullinertia="0.00596 0.00635 0.00122 -0.00016 0.00022 -0.00002"/>
                             <geom type="capsule" fromto="0 0 -0.02 0 0 -0.251" size="0.02" mass="0"/>
-                            <joint name="elbow_right" type="hinge" axis="0 1 0"/>
+                            <joint name="elbow_right" type="hinge" axis="0 -1 0" limited="true" range="-4.7 150"/>
 
                                 <body name="hand_right" pos="0 0 -0.271">
                                     <inertial pos="0.002830 -0.003962 -0.118011" mass="0.845" fullinertia="0.00531 0.00493 0.00082 -0.00001 0.00006 0.00001"/>
                                     <geom type="ellipsoid" size="0.04 0.015 0.0835" mass="0"/>
-                                    <joint name="wrist_right" type="ball"/>
-                            
+                                    <joint name="wrist_right" type="hinge" axis="1 0 0" limited="true" range="-74 74.8"/>
                                 </body>
                         </body>
                     </body>
 
-                    <body name="upper_arm_left" pos="0 0.16 0.313">
+                    <body name="upper_arm_left" pos="0 0.16 0">
                         <inertial pos="-0.017739 -0.006804 -0.110322" mass="1.43" fullinertia="0.00920 0.00920 0.00244 -0.00021 0.00008 -0.00014"/>
                         <geom type="capsule" fromto="0 0 -0.03 0 0 -0.213" size="0.03" mass="0"/>
                         <joint name="shoulder_left" type="ball"/>
@@ -80,20 +85,20 @@
                         <body name="forearm_left" pos="0 0 -0.243">
                             <inertial pos="0.004607 -0.007046 -0.122492" mass="0.845" fullinertia="0.00596 0.00635 0.00122 0.00016 0.00022 0.00002"/>
                             <geom type="capsule" fromto="0 0 -0.02 0 0 -0.251" size="0.02" mass="0"/>
-                            <joint name="elbow_left" type="hinge" axis="0 1 0"/>
+                            <joint name="elbow_left" type="hinge" axis="0 -1 0" limited="true" range="-4.7 150"/>
 
                                 <body name="hand_left" pos="0 0 -0.271">
                                     <inertial pos="0.002830 0.003962 -0.118011" mass="0.845" fullinertia="0.00531 0.00493 0.00082 0.00001 0.00006 -0.00001"/>
                                     <geom type="ellipsoid" size="0.04 0.015 0.0835" mass="0"/>
-                                    <joint name="wrist_left" type="ball"/>
+                                    <joint name="wrist_left" type="hinge" axis="-1 0 0" limited="true" range="-74 74.8"/>
                             
                                 </body>
                         </body>
                     </body>
 
-                    <body name="head_and_neck" pos="0 0 0.378">
+                    <body name="head_and_neck" pos="0 0 0">
                         <inertial pos="0.004048 -0.000253 0.145475" mass="4.355" fullinertia="0.02344 0.02509 0.01475 -0.00003 -0.00045 0.00000"/>
-                        <geom type="sphere" size="0.065" mass="0"/>
+                        <geom type="sphere" pos="0 0 0.0325" size="0.065" mass="0"/>
                         <joint name="cjc" type="ball"/>
                     </body>
                 </body>

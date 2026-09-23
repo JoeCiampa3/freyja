@@ -1,4 +1,0 @@
-<mujoco model="freyja_shank_check_right">
-    <compiler angle="degree"/>
-    <worldbody>
-        <body_name="shank_r">
