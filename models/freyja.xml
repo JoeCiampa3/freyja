@@ -6,7 +6,7 @@
             <geom type="box" pos="0 0 0" size="0.05 0.05 0.05" mass="0"/>
             <joint type="free"/>
 
-            <body name="thigh_right" pos="0 -0.1 0">
+            <body name="thigh_right" pos="0.054 -0.088 -0.093">
                 <inertial pos="-0.017712 -0.014256 -0.185328" mass="7.995" fullinertia="0.12548 0.13429 0.03357 -0.00060 0.00731 0.00731"/>
                 <geom type="capsule" fromto="0 0 -0.05 0 0 -0.382" size="0.05" mass="0"/>
                 <joint name="hip_fe_right" type="hinge" axis="0 -1 0" limited="true" range="-18.1 133.8"/>
@@ -27,7 +27,7 @@
                 </body> 
             </body>
 
-            <body name="thigh_left" pos="0 0.1 0">
+            <body name="thigh_left" pos="0.054 0.088 -0.093">
                 <inertial pos="-0.017712 0.014256 -0.185328" mass="7.995" fullinertia="0.12548 0.13429 0.03357 0.00060 0.00731 -0.00731"/>
                 <geom type ="capsule" fromto="0 0 -0.05 0 0 -0.382" size="0.05" mass="0"/>
                 <joint name="hip_fe_left" type="hinge" axis="0 -1 0" limited="true" range="-18.1 133.8"/>
