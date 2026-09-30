@@ -1,6 +1,11 @@
 <mujoco model="freyja">
     <compiler angle="degree"/>
+    <option timestep="0.002" gravity="0 0 -9.81"/>
+
     <worldbody>
+        <geom name="floor" type="plane" size="10 10 0.1" rgba="0.8 0.8 0.8 1" pos="0 0 -0.975"/> 
+        <light pos="0 0 3" dir="0 0 -1"/> 
+
         <body name="pelvis" pos="0 0 0">
             <inertial pos="-0.000963 -0.000214 -0.024824" mass="9.49" fullinertia="0.08997 0.06781 0.10865 0.00109 -0.01256 0.00001"/>
             <geom type="box" pos="0 0 0" size="0.05 0.05 0.05" mass="0"/>
@@ -8,60 +13,65 @@
 
             <body name="thigh_right" pos="0.054 -0.088 -0.093">
                 <inertial pos="-0.017712 -0.014256 -0.185328" mass="7.995" fullinertia="0.12548 0.13429 0.03357 -0.00060 0.00731 0.00731"/>
-                <geom type="capsule" fromto="0 0 -0.05 0 0 -0.382" size="0.05" mass="0"/>
-                <joint name="hip_fe_right" type="hinge" axis="0 -1 0" limited="true" range="-18.1 133.8"/>
-                <joint name="hip_aa_right" type="hinge" axis="1 0 0" limited="true" range="-40.5 25.6"/>
-                <joint name="hip_ier_right" type="hinge" axis="0 0 1" limited="true" range="-44.2 44.4"/>
+                <geom type="capsule" fromto="0 0 -0.05 0 0 -0.3975" size="0.05" mass="0"/>
+                <joint name="hip_fe_right" type="hinge" axis="0 -1 0" limited="true" range="-18.1 133.8"/> <!--fe=flexion/extension-->
+                <joint name="hip_aa_right" type="hinge" axis="1 0 0" limited="true" range="-40.5 25.6"/> <!--aa=ab/adduction-->
+                <joint name="hip_ier_right" type="hinge" axis="0 0 1" limited="true" range="-44.2 44.4"/> <!--ier=internal/external rotation-->
 
                 <body name="shank_right" pos="0 0 -0.432">
                     <inertial pos="-0.019012 -0.012028 -0.156752" mass="2.925" fullinertia="0.03452 0.03452 0.00440 -0.00004 0.00018 0.00018"/>
                     <geom type="capsule" size="0.04" fromto="0 0 -0.04 0 0 -0.348" mass="0"/>
-                    <joint name="knee_right" type="hinge" axis="0 -1 0" limited="true" range="-1.6 141.9"/> 
+                    <joint name="knee_right" type="hinge" axis="0 1 0" limited="true" range="-1.6 141.9"/> 
 
                     <body name="foot_right" pos="0 0 -0.388">
                         <inertial pos="0.044550 -0.006435 -0.035970" mass="0.65" fullinertia="0.00051 0.00217 0.00229 -0.00006 -0.00006 0.00003"/>
-                        <geom type="box" pos="0.04125 0 -0.04" size="0.0825 0.080 0.04"/>
-                        <joint name="ankle_pdflex_right" type="hinge" axis="0 -1 0" limited="true" range="-62.1 13.8"/>
-                        <joint name="ankle_ie_right" type="hinge" axis="1 0 0" limited="true" range="-19.2 36.2"/>
+                        <geom type="box" pos="0.04125 0 -0.04" size="0.0825 0.080 0.04" friction="1.0 0.005 0.0001" condim="3"/> <!--extend to 4 for foot turning-->
+                        <joint name="ankle_pdflex_right" type="hinge" axis="0 -1 0" limited="true" range="-62.1 13.8"/> <!--pdflex=plantar/dorsiflexion-->
+                        <joint name="ankle_ie_right" type="hinge" axis="1 0 0" limited="true" range="-19.2 36.2"/> <!--ie=inversion/eversion-->
                     </body>
                 </body> 
             </body>
 
+            <!--mirroring in y. "0 1 0" axis stays unchanged "1 0 0" and "0 0 1" flip signs as do all com, position, and inertial elements involving y-->
             <body name="thigh_left" pos="0.054 0.088 -0.093">
                 <inertial pos="-0.017712 0.014256 -0.185328" mass="7.995" fullinertia="0.12548 0.13429 0.03357 0.00060 0.00731 -0.00731"/>
-                <geom type ="capsule" fromto="0 0 -0.05 0 0 -0.382" size="0.05" mass="0"/>
-                <joint name="hip_fe_left" type="hinge" axis="0 -1 0" limited="true" range="-18.1 133.8"/>
-                <joint name="hip_aa_left" type="hinge" axis="-1 0 0" limited="true" range="-40.5 25.6"/>
-                <joint name="hip_ier_left" type="hinge" axis="0 0 -1" limited="true" range="-44.2 44.4"/>
+                <geom type ="capsule" fromto="0 0 -0.05 0 0 -0.3975" size="0.05" mass="0"/>
+                <joint name="hip_fe_left" type="hinge" axis="0 -1 0" limited="true" range="-18.1 133.8"/> <!--fe=flexion/extension-->
+                <joint name="hip_aa_left" type="hinge" axis="-1 0 0" limited="true" range="-40.5 25.6"/> <!--aa=ab/adduction-->
+                <joint name="hip_ier_left" type="hinge" axis="0 0 -1" limited="true" range="-44.2 44.4"/> <!--ier=internal/external rotation-->
 
                 <body name="shank_left" pos="0 0 -0.432">
                     <inertial pos="-0.019012 0.012028 -0.156752" mass="2.925" fullinertia="0.03452 0.03452 0.00440 0.00004 0.00018 -0.00018"/>
                     <geom type="capsule" size="0.04" fromto="0 0 -0.04 0 0 -0.348" mass="0"/>
-                    <joint name="knee_left" type="hinge" axis="0 -1 0" limited="true" range="-1.6 141.9"/>
+                    <joint name="knee_left" type="hinge" axis="0 1 0" limited="true" range="-1.6 141.9"/>
 
                     <body name="foot_left" pos="0 0 -0.388">
                         <inertial pos="0.044550 0.006435 -0.035970" mass="0.65" fullinertia="0.00051 0.00217 0.00229 0.00006 -0.00006 -0.00003"/>
-                        <geom type="box" pos="0.04125 0 -0.04" size="0.0825 0.080 0.04"/>
-                        <joint name="ankle_pdflex_left" type="hinge" axis="0 -1 0" limited="true" range="-62.1 13.8"/>
-                        <joint name="ankle_ie_left" type="hinge" axis="-1 0 0" limited="true" range="-19.2 36.2"/>
+                        <geom type="box" pos="0.04125 0 -0.04" size="0.0825 0.080 0.04" friction="1.0 0.005 0.0001" condim="3"/> <!--extend to 4 for foot turning-->
+                        <joint name="ankle_pdflex_left" type="hinge" axis="0 -1 0" limited="true" range="-62.1 13.8"/> <!--pdflex=plantar/dorsiflexion-->
+                        <joint name="ankle_ie_left" type="hinge" axis="-1 0 0" limited="true" range="-19.2 36.2"/> <!--ie=inversion/eversion-->
                     </body>
                 </body>
             </body>
 
-            <body name="abdomen" pos="0 0 0.121">
+            <body name="abdomen" pos="0 0 0.1269">
                 <inertial pos="0.029524 -0.000605 -0.050215" mass="2.665" fullinertia="0.01752 0.01180 0.02313 0.00004 0.00156 0.00010"/>
                 <geom type="capsule" fromto="0 0 -0.05 0 0 -0.071" size="0.05" mass="0"/>
-                <joint name="lj" type="ball"/>
+                <joint name="lsj_fe" type="hinge" axis="0 -1 0" /> <!--lsj_fe= lumbrosacral joint flexion/extension. FIXME add rom when available-->
+                <joint name="lsj_lat" type="hinge" axis="1 0 0"/> <!--lsj_lat= lumbrosacral joint lateral bending FIXME add rom when available-->
+                <joint name="lsj_ax" type="hinge" axis="0 0 1"/> <!--lsj_ax= lumbrosacral joint axial bending FIXME add rom when available-->
 
 
-                <body name="thorax" pos="0 0 0.313">
+                <body name="thorax" pos="0 0 0.3283">
                     <inertial pos="0.006573 -0.000313 -0.165264" mass="17.095" fullinertia="0.25473 0.20516 0.18238 0.00151 -0.02412 -0.00017"/>
                     <geom type="capsule" fromto="0 0 -0.1 0 0 -0.213" size="0.1" mass="0"/>
-                    <joint name="tj" type="ball"/>
+                    <joint name="tj_fe" type="hinge" axis="0 -1 0" /> <!--tj_fe= thoracic joint flexion/extension. FIXME add rom when available-->
+                    <joint name="tj_lat" type="hinge" axis="1 0 0"/> <!--tj_lat= thoracic  joint lateral bending FIXME add rom when available-->
+                    <joint name="tfjax" type="hinge" axis="0 0 1"/> <!--tj_ax= thoracic  joint axial bending FIXME add rom when available-->
 
                     <body name="upper_arm_right" pos="0 -0.16 0">
                         <inertial pos="-0.017739 0.006804 -0.110322" mass="1.43" fullinertia="0.00920 0.00920 0.00244 0.00021 0.00008 0.00014"/>
-                        <geom type="capsule" fromto="0 0 -0.03 0 0 -0.213" size="0.03" mass="0"/>
+                        <geom type="capsule" fromto="0 0 -0.03 0 0 -0.243" size="0.03" mass="0"/>
                         <joint name="shoulder_fe_right" type="hinge"/>
 
                         <body name="forearm_right" pos="0 0 -0.243">
@@ -98,8 +108,10 @@
 
                     <body name="head_and_neck" pos="0 0 0">
                         <inertial pos="0.004048 -0.000253 0.145475" mass="4.355" fullinertia="0.02344 0.02509 0.01475 -0.00003 -0.00045 0.00000"/>
-                        <geom type="sphere" pos="0 0 0.0325" size="0.065" mass="0"/>
-                        <joint name="cjc" type="ball"/>
+                        <geom type="sphere" pos="0 0 0.02654" size="0.065" mass="0"/>
+                        <joint name="cj_fe" type="hinge" axis="0 -1 0" /> <!--cj_fe= thoracic joint flexion/extension. FIXME add rom when available-->
+                        <joint name="cj_lat" type="hinge" axis="1 0 0"/> <!--cj_lat= thoracic  joint lateral bending FIXME add rom when available-->
+                        <joint name="cj_ax" type="hinge" axis="0 0 1"/> <!--cj_ax= thoracic  joint axial bending FIXME add rom when available-->
                     </body>
                 </body>
             </body>
