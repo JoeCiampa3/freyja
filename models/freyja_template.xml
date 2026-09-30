@@ -7,12 +7,12 @@
         <light pos="0 0 3" dir="0 0 -1"/> 
 
         <body name="pelvis" pos="0 0 0">
-            <inertial pos="-0.00101007040359 -0.000224460089686 -0.0260373704036" mass="9.49" fullinertia="0.0989845173877 0.0745999725899 0.119532082342 1.19532082342e-05 -0.0138179087188 1.19532082342e-05"/>
+            <inertial pos="${pelvis_com_x} ${pelvis_com_y} ${pelvis_com_z}" mass="${pelvis_mass}" fullinertia="${pelvis_ixx} ${pelvis_iyy} ${pelvis_izz} ${pelvis_ixy} ${pelvis_ixz} ${pelvis_iyz}"/>
             <geom type="box" pos="0 0 0" size="0.05 0.05 0.05" mass="0"/>
             <joint type="free"/>
 
             <body name="thigh_right" pos="0.054 -0.088 -0.093">
-                <inertial pos="-0.017712 -0.014256 -0.185328" mass="9.49" fullinertia="0.12548 0.13429 0.03357 -0.00060 0.00731 0.00731"/>
+                <inertial pos="-0.017712 -0.014256 -0.185328" mass="${thigh_mass}" fullinertia="0.12548 0.13429 0.03357 -0.00060 0.00731 0.00731"/>
                 <geom type="capsule" fromto="0 0 -0.05 0 0 -0.3975" size="0.05" mass="0"/>
                 <joint name="hip_fe_right" type="hinge" axis="0 -1 0" limited="true" range="-18.1 133.8"/> <!--fe=flexion/extension-->
                 <joint name="hip_aa_right" type="hinge" axis="1 0 0" limited="true" range="-40.5 25.6"/> <!--aa=ab/adduction-->

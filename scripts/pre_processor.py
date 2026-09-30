@@ -1,37 +1,79 @@
 import gspread
 from google.oauth2.service_account import Credentials
-from string import Template 
+from string import Template
+from pathlib import Path
+import re
 
+HERE = Path(__file__).resolve().parent
+ROOT = HERE.parent
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 creds = Credentials.from_service_account_file(r"c:\Users\Joe\Desktop\Project Valkyrie\Misc\project-valkyrie-509701-0b68d6f5e84d.json", scopes=SCOPES)
 gc = gspread.authorize(creds)
 
-sheet = gc.open_by_key("16-XKTGIO4FvCfACWS000RBR2BNFJ0ho6tvMeRswaV2Y").worksheet("MuJoCo Reference")
+def load_params(sh):
+    resp = sh.values_get("bsip", params={"valueRenderOption" : "UNFORMATTED_VALUE"})
+    rows = resp["values"]
 
-Ixx = sheet.acell("F15").value
+    header = rows[0]
+    body = rows[1:]
+    seg_col = header.index("Segment")
 
-segments = ["head_and_neck", "thorax", "abdoment", "pelvis", "upper_arm", "forearm", "hand", "thigh", "shank", "foot"]
-bsips = ["mass", "length", "com_x", "com_y", "com_z", "ixx", "iyy", "izz", "ixz", "iyz"]
-segment_bsips = {}
+    def ident(name):
+        return re.sub(r"\W+", "_", str(name).strip().lower()).strip("_")
 
-bsip_index = 0
-seg_index = 0 #segment index, incremented after a dicitonary value is added to segments_bsip, never reset
-index = 0 #bsip index, reset every row because each segment needs its own complete dictionary of bsip data
-for i in range(15, 25):
-    row = sheet.row_values(i)
-    row_bsips = {}
-    subset = row[1 : 11]
-    for cell in subset:
-        row_bsips[bsips[bsip_index]] = float(cell)
-        if bsip_index == len(bsips) - 1:
-            break 
-        else:
-            bsip_index += 1
-    segment_bsips[segments[seg_index]] = row_bsips
-    if seg_index == len(segments) - 1:
-        break
-    else:
-        seg_index += 1
-    bsip_index = 0
+    segments = []
+    for row in body:
+        if len(row) <= seg_col:
+            continue
+        cell = ident(row[seg_col])
+        if cell == "":
+            continue
+        segments.append(cell)
 
-print(segment_bsips)
+    expected_segments = ["head_neck", "thorax", "abdomen", "pelvis", "upper_arm", "forearm", "hand", "thigh", "shank", "foot"]
+    expected_bsips = ["mass", "length", "com_x", "com_y", "com_z", "ixx", "iyy", "izz", "ixy", "ixz", "iyz"]
+
+    if len(segments) != len(set(segments)):
+        raise SystemExit(f"Duplicate segments: {segments}")
+    if set(segments) != set(expected_segments):
+        raise SystemExit(f"Sheet drift. Expected: {expected_segments} Received: {segments}. Check recent sheet edits vs code.")
+
+    params = {}
+    for row in body:
+        if len(row) <= seg_col or str(row[seg_col]).strip() == "":
+            continue
+        seg = ident(row[seg_col])
+        params[seg] = {}
+        for i, col_name in enumerate(header):
+            if col_name.lower() == "segment":
+                continue
+            if i < len(row) and row[i] != "":
+                params[seg][col_name.split(" ", 1)[0].lower()] = row[i]
+    return params
+
+def fmt(v):
+    x = float(v)
+    if x == 0.0:
+        x = 0.0
+    return f"{x:.12g}"
+
+def load_template(path):
+    return Template(path.read_text(encoding="utf-8"))
+
+def render(tmpl, params):
+    flat = {f"{seg}_{key}": fmt(val)
+            for seg, p in params.items()
+            for key, val in p.items()}
+    return tmpl.substitute(flat)
+
+
+def main():
+    sh = gc.open_by_key("16-XKTGIO4FvCfACWS000RBR2BNFJ0ho6tvMeRswaV2Y")
+    sheet = sh.worksheet("MuJoCo Reference")
+    params = load_params(sh)
+    tmpl = load_template(ROOT / "models" / "freyja_template.xml")
+    xml = render(tmpl, params)
+    (ROOT / "models" / "freyja.xml").write_text(xml, encoding="utf-8")
+
+if __name__ == "__main__":
+    main()
