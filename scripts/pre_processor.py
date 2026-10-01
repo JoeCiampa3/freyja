@@ -47,9 +47,9 @@ def load_params(sh):
             if i < len(row) and row[i] != "":
                 params[seg][col_name.split(" ", 1)[0].lower()] = row[i]
 
-    params = mirror(params)  #mirrors bilateral segments before returning params
+    params = mirror(params)  #mirrors bilateral segments before params is returned
 
-    return params
+    return params   #full 16 elements including bilateral
 
 def mirror(params):
     out = {}
@@ -61,7 +61,7 @@ def mirror(params):
             out[seg] = p
     return out
 
-def fmt(v):
+def fmt(v): #removes -0.0 ambiguity
     x = float(v)
     if x == 0.0:
         x = 0.0

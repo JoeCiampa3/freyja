@@ -72,7 +72,7 @@
                     <body name="upper_arm_right" pos="0 -0.16 0">
                         <inertial pos="${upper_arm_right_com_x} ${upper_arm_right_com_y} ${upper_arm_right_com_z}" mass="${upper_arm_right_mass}" fullinertia="${upper_arm_right_ixx} ${upper_arm_right_iyy} ${upper_arm_right_izz} ${upper_arm_right_ixy} ${upper_arm_right_ixz} ${upper_arm_right_iyz}"/>
                         <geom type="capsule" fromto="0 0 -0.03 0 0 -0.243" size="0.03" mass="0"/>
-                        <joint name="shoulder_fe_right" type="hinge"/>
+                        <joint name="shoulder_fe_right" type="hinge" axis="0 -1 0" limited="true"/>
 
                         <body name="forearm_right" pos="0 0 -0.243">
                             <inertial pos="${forearm_right_com_x} ${forearm_right_com_y} ${forearm_right_com_z}" mass="${forearm_right_mass}" fullinertia="${forearm_right_ixx} ${forearm_right_iyy} ${forearm_right_izz} ${forearm_right_ixy} ${forearm_right_ixz} ${forearm_right_iyz}"/>

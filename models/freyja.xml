@@ -72,7 +72,7 @@
                     <body name="upper_arm_right" pos="0 -0.16 0">
                         <inertial pos="-0.017739 0.006804 -0.110322" mass="1.43" fullinertia="0.009195523623 0.009195523623 0.002440318023 0.000211100175 7.5996063e-05 0.000135104112"/>
                         <geom type="capsule" fromto="0 0 -0.03 0 0 -0.243" size="0.03" mass="0"/>
-                        <joint name="shoulder_fe_right" type="hinge"/>
+                        <joint name="shoulder_fe_right" type="hinge" axis="0 -1 0" limited="true"/>
 
                         <body name="forearm_right" pos="0 0 -0.243">
                             <inertial pos="0.004199 0.006422 -0.111644" mass="0.845" fullinertia="0.0049542053405 0.005278986752 0.001010431058 -0.0001288815125 0.000185589378 -2.0621042e-05"/>
@@ -82,7 +82,7 @@
                                 <body name="hand_right" pos="0 0 -0.271">
                                     <inertial pos="0.005467 -0.003408 -0.054528" mass="0.325" fullinertia="0.0006502511925 0.00055113253 0.0003029262925 -8.66673925e-05 0.0001377831325 0.00012844468"/>
                                     <geom type="ellipsoid" size="0.04 0.015 0.0835" mass="0"/>
-                                    <joint name="wrist_right" type="hinge" axis="1 0 0" limited="true" range="-74 74.8"/>
+                                    <joint name="wrist_right" type="hinge" axis="0 -1 0" limited="true" range="-74 74.8"/>
                                 </body>
                         </body>
                     </body>
@@ -100,7 +100,7 @@
                                 <body name="hand_left" pos="0 0 -0.271">
                                     <inertial pos="0.005467 0.003408 -0.054528" mass="0.325" fullinertia="0.0006502511925 0.00055113253 0.0003029262925 8.66673925e-05 0.0001377831325 -0.00012844468"/>
                                     <geom type="ellipsoid" size="0.04 0.015 0.0835" mass="0"/>
-                                    <joint name="wrist_left" type="hinge" axis="-1 0 0" limited="true" range="-74 74.8"/>
+                                    <joint name="wrist_left" type="hinge" axis="0 -1 0" limited="true" range="-74 74.8"/>
                             
                                 </body>
                         </body>
