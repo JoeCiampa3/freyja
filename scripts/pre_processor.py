@@ -30,9 +30,6 @@ def load_params(sh):
             continue
         segments.append(cell)
 
-    expected_segments = ["head_neck", "thorax", "abdomen", "pelvis", "upper_arm", "forearm", "hand", "thigh", "shank", "foot"]
-    expected_bsips = ["mass", "length", "com_x", "com_y", "com_z", "ixx", "iyy", "izz", "ixy", "ixz", "iyz"]
-
     if len(segments) != len(set(segments)):
         raise SystemExit(f"Duplicate segments: {segments}")
     if set(segments) != set(expected_segments):
@@ -49,7 +46,20 @@ def load_params(sh):
                 continue
             if i < len(row) and row[i] != "":
                 params[seg][col_name.split(" ", 1)[0].lower()] = row[i]
+
+    params = mirror(params)  #mirrors bilateral segments before returning params
+
     return params
+
+def mirror(params):
+    out = {}
+    for seg, p in params.items():
+        if seg in BILATERAL:
+            out[f"{seg}_right"] = dict(p)
+            out[f"{seg}_left"]  = {k: (-v if k in FLIP_Y else v) for k, v in p.items()}
+        else:
+            out[seg] = p
+    return out
 
 def fmt(v):
     x = float(v)
@@ -66,6 +76,11 @@ def render(tmpl, params):
             for key, val in p.items()}
     return tmpl.substitute(flat)
 
+expected_segments = ["head_neck", "thorax", "abdomen", "pelvis", "upper_arm", "forearm", "hand", "thigh", "shank", "foot"]
+BILATERAL = ["upper_arm", "forearm", "hand", "thigh", "shank", "foot"]
+expected_bsips = ["mass", "length", "com_x", "com_y", "com_z", "ixx", "iyy", "izz", "ixy", "ixz", "iyz"]
+FLIP_Y = ["com_y", "ixy", "iyz"]
+
 
 def main():
     sh = gc.open_by_key("16-XKTGIO4FvCfACWS000RBR2BNFJ0ho6tvMeRswaV2Y")
@@ -74,6 +89,7 @@ def main():
     tmpl = load_template(ROOT / "models" / "freyja_template.xml")
     xml = render(tmpl, params)
     (ROOT / "models" / "freyja.xml").write_text(xml, encoding="utf-8")
+
 
 if __name__ == "__main__":
     main()
