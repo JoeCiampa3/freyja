@@ -633,7 +633,7 @@ def archive_values(values: dict, directory: Path) -> str:
     directory.mkdir(exist_ok=True)
     existing = sorted(directory.glob("freyja_params_*.csv"))
     if existing and existing[-1].read_text(encoding="utf-8") == text:
-        return f"archive unchanged since {existing[-1].name}"
+        return f"archive not updated: values identical to {existing[-1].name}"
     path = directory / f"freyja_params_{datetime.now():%Y%m%d_%H%M%S}.csv"
     path.write_text(text, encoding="utf-8")
     return f"archived values to {path.relative_to(ROOT)}"
@@ -712,7 +712,7 @@ def main(argv=None):
     else:
         old = args.output.read_text(encoding="utf-8") if args.output.exists() else None
         if old == xml:
-            notes.append(f"{args.output.name} unchanged")
+            notes.append(f"{args.output.name} already up to date (sheet and template give the same model, nothing to write)")
         else:
             args.output.write_text(xml, encoding="utf-8")
             notes.append(f"{args.output.name} {'created' if old is None else 'updated'}")
