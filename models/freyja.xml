@@ -7,7 +7,7 @@
         <light pos="0 0 3" dir="0 0 -1"/> 
 
         <body name="pelvis" pos="0 0 0">
-            <inertial pos="-0.00101007040359 -0.000224460089686 -0.0260373704036" mass="9.49" fullinertia="0.0989845173877 0.0745999725899 0.119532082342 1.19532082342e-05 -0.0138179087188 1.19532082342e-05"/>
+            <inertial pos="1 -0.000224460089686 -0.0260373704036" mass="9.49" fullinertia="0.0989845173877 0.0745999725899 0.119532082342 1.19532082342e-05 -0.0138179087188 1.19532082342e-05"/>
             <geom type="box" pos="0 0 0" size="0.05 0.05 0.05" mass="0"/>
             <joint type="free"/>
 
@@ -24,7 +24,7 @@
                     <joint name="knee_right" type="hinge" axis="0 1 0" limited="true" range="-1.6 141.9"/> 
 
                     <body name="foot_right" pos="0 0 -0.388">
-                        <inertial pos="0.04455 -0.006435 -0.03597" mass="0.65" fullinertia="0.000511421625 0.002167790625 0.002293434 -6.37065e-05 -6.37065e-05 2.8314e-05"/>
+                        <inertial pos="0.04455 -0.006435 -0.03597" mass="0.65" fullinertia="0.000511421625 0.002167790625 0.002293434 -6.37065e-05 -0.0001769625 2.8314e-05"/>
                         <geom type="box" pos="0.04125 0 -0.04" size="0.0825 0.080 0.04" friction="1.0 0.005 0.0001" condim="3"/> <!--extend to 4 for foot turning-->
                         <joint name="ankle_pdflex_right" type="hinge" axis="0 -1 0" limited="true" range="-62.1 13.8"/> <!--pdflex=plantar/dorsiflexion-->
                         <joint name="ankle_ie_right" type="hinge" axis="1 0 0" limited="true" range="-19.2 36.2"/> <!--ie=inversion/eversion-->
@@ -46,7 +46,7 @@
                     <joint name="knee_left" type="hinge" axis="0 1 0" limited="true" range="-1.6 141.9"/>
 
                     <body name="foot_left" pos="0 0 -0.388">
-                        <inertial pos="0.04455 0.006435 -0.03597" mass="0.65" fullinertia="0.000511421625 0.002167790625 0.002293434 6.37065e-05 -6.37065e-05 -2.8314e-05"/>
+                        <inertial pos="0.04455 0.006435 -0.03597" mass="0.65" fullinertia="0.000511421625 0.002167790625 0.002293434 6.37065e-05 -0.0001769625 -2.8314e-05"/>
                         <geom type="box" pos="0.04125 0 -0.04" size="0.0825 0.080 0.04" friction="1.0 0.005 0.0001" condim="3"/> <!--extend to 4 for foot turning-->
                         <joint name="ankle_pdflex_left" type="hinge" axis="0 -1 0" limited="true" range="-62.1 13.8"/> <!--pdflex=plantar/dorsiflexion-->
                         <joint name="ankle_ie_left" type="hinge" axis="-1 0 0" limited="true" range="-19.2 36.2"/> <!--ie=inversion/eversion-->
@@ -70,37 +70,37 @@
                     <joint name="tjax" type="hinge" axis="0 0 1"/> <!--tj_ax= thoracic  joint axial bending FIXME add rom when available-->
 
                     <body name="upper_arm_right" pos="0 -0.16 0">
-                        <inertial pos="-0.017739 0.006804 -0.110322" mass="1.43" fullinertia="0.009195523623 0.009195523623 0.002440318023 0.000211100175 7.5996063e-05 0.000135104112"/>
+                        <inertial pos="-0.017739 0.006804 -0.110322" mass="1.43" fullinertia="0.009195523623 0.009195523623 0.002440318023 0.000211100175 7.5996063e-05 -0.001655025372"/>
                         <geom type="capsule" fromto="0 0 -0.03 0 0 -0.243" size="0.03" mass="0"/>
                         <joint name="shoulder_fe_right" type="hinge" axis="0 -1 0" limited="true"/>
 
                         <body name="forearm_right" pos="0 0 -0.243">
-                            <inertial pos="0.004199 0.006422 -0.111644" mass="0.845" fullinertia="0.0049542053405 0.005278986752 0.001010431058 -0.0001288815125 0.000185589378 -2.0621042e-05"/>
+                            <inertial pos="0.005187 -0.004693 -0.101517" mass="0.845" fullinertia="0.003484956098 0.0032220378125 0.001010431058 -8.2484168e-05 0.00051552605 0.0008712390245"/>
                             <geom type="capsule" fromto="0 0 -0.02 0 0 -0.251" size="0.02" mass="0"/>
                             <joint name="elbow_right" type="hinge" axis="0 -1 0" limited="true" range="-4.7 150"/>
 
                                 <body name="hand_right" pos="0 0 -0.271">
                                     <inertial pos="0.005467 -0.003408 -0.054528" mass="0.325" fullinertia="0.0006502511925 0.00055113253 0.0003029262925 -8.66673925e-05 0.0001377831325 0.00012844468"/>
                                     <geom type="ellipsoid" size="0.04 0.015 0.0835" mass="0"/>
-                                    <joint name="wrist_right" type="hinge" axis="0 -1 0" limited="true" range="-74 74.8"/>
+                                    <joint name="wrist_right" type="hinge" axis="1 0 0" limited="true" range="-74 74.8"/>
                                 </body>
                         </body>
                     </body>
 
                     <body name="upper_arm_left" pos="0 0.16 0">
-                        <inertial pos="-0.017739 -0.006804 -0.110322" mass="1.43" fullinertia="0.009195523623 0.009195523623 0.002440318023 -0.000211100175 7.5996063e-05 -0.000135104112"/>
+                        <inertial pos="-0.017739 -0.006804 -0.110322" mass="1.43" fullinertia="0.009195523623 0.009195523623 0.002440318023 -0.000211100175 7.5996063e-05 0.001655025372"/>
                         <geom type="capsule" fromto="0 0 -0.03 0 0 -0.213" size="0.03" mass="0"/>
                         <joint name="shoulder_left" type="ball"/>
 
                         <body name="forearm_left" pos="0 0 -0.243">
-                            <inertial pos="0.004199 -0.006422 -0.111644" mass="0.845" fullinertia="0.0049542053405 0.005278986752 0.001010431058 0.0001288815125 0.000185589378 2.0621042e-05"/>
+                            <inertial pos="0.005187 0.004693 -0.101517" mass="0.845" fullinertia="0.003484956098 0.0032220378125 0.001010431058 8.2484168e-05 0.00051552605 -0.0008712390245"/>
                             <geom type="capsule" fromto="0 0 -0.02 0 0 -0.251" size="0.02" mass="0"/>
                             <joint name="elbow_left" type="hinge" axis="0 -1 0" limited="true" range="-4.7 150"/>
 
                                 <body name="hand_left" pos="0 0 -0.271">
                                     <inertial pos="0.005467 0.003408 -0.054528" mass="0.325" fullinertia="0.0006502511925 0.00055113253 0.0003029262925 8.66673925e-05 0.0001377831325 -0.00012844468"/>
                                     <geom type="ellipsoid" size="0.04 0.015 0.0835" mass="0"/>
-                                    <joint name="wrist_left" type="hinge" axis="0 -1 0" limited="true" range="-74 74.8"/>
+                                    <joint name="wrist_left" type="hinge" axis="-1 0 0" limited="true" range="-74 74.8"/>
                             
                                 </body>
                         </body>

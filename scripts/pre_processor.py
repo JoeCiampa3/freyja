@@ -10,6 +10,14 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 creds = Credentials.from_service_account_file(r"c:\Users\Joe\Desktop\Project Valkyrie\Misc\project-valkyrie-509701-0b68d6f5e84d.json", scopes=SCOPES)
 gc = gspread.authorize(creds)
 
+def read_table(sh, table_name, header_name):
+    resp = sh.values_get(table_name, params={"valueRenderOption" : "UNFORMATTED_VALUE"})
+    rows = resp["values"]
+
+    header = rows[0]
+    body = rows[1:]
+    seg_col = header.index(header_name)
+
 def load_params(sh):
     resp = sh.values_get("bsip", params={"valueRenderOption" : "UNFORMATTED_VALUE"})
     rows = resp["values"]
