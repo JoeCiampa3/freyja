@@ -72,7 +72,10 @@
                     <body name="upper_arm_right" pos="0 -0.16 0">
                         <inertial pos="${upper_arm_right_com_x} ${upper_arm_right_com_y} ${upper_arm_right_com_z}" mass="${upper_arm_right_mass}" fullinertia="${upper_arm_right_ixx} ${upper_arm_right_iyy} ${upper_arm_right_izz} ${upper_arm_right_ixy} ${upper_arm_right_ixz} ${upper_arm_right_iyz}"/>
                         <geom type="capsule" fromto="0 0 -0.03 0 0 -0.243" size="0.03" mass="0"/>
-                        <joint name="shoulder_fe_right" type="hinge" axis="0 -1 0" limited="true"/>
+                        <joint name="shoulder_fe_right" type="hinge" axis="0 -1 0" limited="true" range="!{} !{}"/>    <!--fe=flexion/extension-->
+                        <joint name="shoulder_aa_right" type="hinge" axis="1 0 0" limited="true" range="!{} !{}"/>    <!--aa=ab/adduction-->
+                        <joint name="shoulder_ier_right" type="hinge" axis="0 0 1" limited="true" range="!{} !{}"/>   <!--ier=int/external rotation-->
+
 
                         <body name="forearm_right" pos="0 0 -0.243">
                             <inertial pos="${forearm_right_com_x} ${forearm_right_com_y} ${forearm_right_com_z}" mass="${forearm_right_mass}" fullinertia="${forearm_right_ixx} ${forearm_right_iyy} ${forearm_right_izz} ${forearm_right_ixy} ${forearm_right_ixz} ${forearm_right_iyz}"/>
@@ -90,7 +93,9 @@
                     <body name="upper_arm_left" pos="0 0.16 0">
                         <inertial pos="${upper_arm_left_com_x} ${upper_arm_left_com_y} ${upper_arm_left_com_z}" mass="${upper_arm_left_mass}" fullinertia="${upper_arm_left_ixx} ${upper_arm_left_iyy} ${upper_arm_left_izz} ${upper_arm_left_ixy} ${upper_arm_left_ixz} ${upper_arm_left_iyz}"/>
                         <geom type="capsule" fromto="0 0 -0.03 0 0 -0.213" size="0.03" mass="0"/>
-                        <joint name="shoulder_left" type="ball"/>
+                        <joint name="shoulder_fe_left" type="hinge" axis="0 -1 0" limited="true" range="!{} !{}"/>    <!--fe=flexion/extension-->
+                        <joint name="shoulder_aa_left" type="hinge" axis="-1 0 0" limited="true" range="!{} !{}"/>    <!--aa=ab/adduction-->
+                        <joint name="shoulder_ier_left" type="hinge" axis="0 0 -1" limited="true" range="!{} !{}"/>   <!--ier=int/external rotation-->
 
                         <body name="forearm_left" pos="0 0 -0.243">
                             <inertial pos="${forearm_left_com_x} ${forearm_left_com_y} ${forearm_left_com_z}" mass="${forearm_left_mass}" fullinertia="${forearm_left_ixx} ${forearm_left_iyy} ${forearm_left_izz} ${forearm_left_ixy} ${forearm_left_ixz} ${forearm_left_iyz}"/>

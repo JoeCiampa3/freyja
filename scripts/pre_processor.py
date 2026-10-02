@@ -17,7 +17,7 @@ def read_table(sh, table_name, header_name):
     header = rows[0]
     body = rows[1:]
     seg_col = header.index(header_name)
-
+ 
 def load_params(sh):
     resp = sh.values_get("bsip", params={"valueRenderOption" : "UNFORMATTED_VALUE"})
     rows = resp["values"]
@@ -26,8 +26,6 @@ def load_params(sh):
     body = rows[1:]
     seg_col = header.index("Segment")
 
-    def ident(name):
-        return re.sub(r"\W+", "_", str(name).strip().lower()).strip("_")
 
     segments = []
     for row in body:
@@ -84,6 +82,10 @@ def render(tmpl, params):
             for key, val in p.items()}
     return tmpl.substitute(flat)
 
+def ident(name):
+    return re.sub(r"\W+", "_", str(name).strip().lower()).strip("_")
+
+
 expected_segments = ["head_neck", "thorax", "abdomen", "pelvis", "upper_arm", "forearm", "hand", "thigh", "shank", "foot"]
 BILATERAL = ["upper_arm", "forearm", "hand", "thigh", "shank", "foot"]
 expected_bsips = ["mass", "length", "com_x", "com_y", "com_z", "ixx", "iyy", "izz", "ixy", "ixz", "iyz"]
@@ -93,10 +95,11 @@ FLIP_Y = ["com_y", "ixy", "iyz"]
 def main():
     sh = gc.open_by_key("16-XKTGIO4FvCfACWS000RBR2BNFJ0ho6tvMeRswaV2Y")
     sheet = sh.worksheet("MuJoCo Reference")
-    params = load_params(sh)
+    bsip = load_bsip(sh)
     tmpl = load_template(ROOT / "models" / "freyja_template.xml")
-    xml = render(tmpl, params)
+    xml = render(tmpl, bsip)
     (ROOT / "models" / "freyja.xml").write_text(xml, encoding="utf-8")
+    print(read_table(sh, "bsip", "Segment"))
 
 
 if __name__ == "__main__":
