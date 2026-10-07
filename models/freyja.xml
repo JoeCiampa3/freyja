@@ -72,7 +72,7 @@
                     <geom type="capsule" fromto="0 0 -0.1 0 0 -0.213" size="0.1" mass="0" rgba="0.82 0.71 0.55 1.0"/>
                     <joint name="tj_fe" type="hinge" pos="0 0 -0.328299103139" axis="0 -1 0" /> <!--tj_fe= thoracic joint flexion/extension. FIXME add rom when available-->
                     <joint name="tj_lat" type="hinge" pos="0 0 -0.328299103139" axis="1 0 0"/> <!--tj_lat= thoracic  joint lateral bending FIXME add rom when available-->
-                    <joint name="tjax" type="hinge" pos="0 0 -0.328299103139" axis="0 0 1"/> <!--tj_ax= thoracic  joint axial bending FIXME add rom when available-->
+                    <joint name="tj_ax" type="hinge" pos="0 0 -0.328299103139" axis="0 0 1"/> <!--tj_ax= thoracic  joint axial bending FIXME add rom when available-->
 
                     <body name="upper_arm_right" pos="0.013794347058 -0.192059755192 -0.0774605642489">
                         <inertial pos="-0.017739 0.006804 -0.110322" mass="1.43" fullinertia="0.009195523623 0.009195523623 0.002440318023 0.000211100175 7.5996063e-05 -0.001655025372"/>
