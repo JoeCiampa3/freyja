@@ -9,13 +9,14 @@
 
         <body name="pelvis" pos="0 0 0.964735874439">
             <inertial pos="-0.00101007040359 -0.000224460089686 -0.0260373704036" mass="9.49" fullinertia="0.0989845173877 0.0745999725899 0.119532082342 1.19532082342e-05 -0.0138179087188 1.19532082342e-05"/>
-            <geom type="capsule" fromto="0 0 0.01 0 0 -0.07" size="0.07" mass="0" rgba="0.82 0.71 0.55 1.0"/>
+            <geom type="box" pos="0 0 0" size="0.05 0.05 0.05" mass="0" rgba="0.82 0.71 0.55 1.0"/>
             <geom type="capsule" fromto="0.0566394618834 -0.1 -0.0975457399103 0.0566394618834 0.1 -0.0975457399103" size="0.05" rgba="0.82 0.71 0.55 1.0"/>
             <joint type="free"/>
 
             <body name="thigh_right" pos="0.0566394618834 -0.0923013452915 -0.0975457399103">
                 <inertial pos="-0.0306094336323 -0.00357772600897 -0.149866967265" mass="9.49" fullinertia="0.144118169569 0.153566082871 0.0541380428871 0.000599867511214 0.00734837701238 0.00734837701238"/>
                 <geom type="capsule" fromto="0 0 -0.05 0 0 -0.3975" size="0.05" mass="0" rgba="0.82 0.71 0.55 1.0"/>
+                <geom type="sphere" pos="0 0 -0.4475" size="0.05" mass="0" rgba="0.82 0.71 0.55 1.0"/>
                 <joint name="hip_fe_right" type="hinge" axis="0 -1 0" limited="true" range="-18.1 133.8"/> <!--fe=flexion/extension-->
                 <joint name="hip_aa_right" type="hinge" axis="1 0 0" limited="true" range="-40.5 25.6"/> <!--aa=ab/adduction-->
                 <joint name="hip_ier_right" type="hinge" axis="0 0 1" limited="true" range="-44.2 44.4"/> <!--ier=internal/external rotation-->
@@ -27,7 +28,7 @@
 
                     <body name="foot_right" pos="0 0 -0.406965022422">
                         <inertial pos="0.04455 -0.006435 -0.03597" mass="0.65" fullinertia="0.000511421625 0.002167790625 0.002293434 -6.37065e-05 -0.0001769625 2.8314e-05"/>
-                        <geom type="box" pos="0.04125 0 -0.02" size="0.0825 0.050 0.04" friction="1.0 0.005 0.0001" condim="3" rgba="0.82 0.71 0.55 1.0"/> <!--extend to 4 for foot turning-->
+                        <geom type="box" pos="0.04125 0 -0.04" size="0.0825 0.050 0.04" friction="1.0 0.005 0.0001" condim="3" rgba="0.82 0.71 0.55 1.0"/> <!--extend to 4 for foot turning-->
                         <joint name="ankle_pdflex_right" type="hinge" axis="0 -1 0" limited="true" range="-62.1 25"/> <!--pdflex=plantar/dorsiflexion-->
                         <joint name="ankle_ie_right" type="hinge" axis="1 0 0" limited="true" range="-19.2 36.2"/> <!--ie=inversion/eversion-->
                     </body>
@@ -37,7 +38,7 @@
             <!--mirroring in y. "0 1 0" axis stays unchanged "1 0 0" and "0 0 1" flip signs as do all com, position, and inertial elements involving y-->
             <body name="thigh_left" pos="0.0566394618834 0.0923013452915 -0.0975457399103">
                 <inertial pos="-0.0306094336323 0.00357772600897 -0.149866967265" mass="9.49" fullinertia="0.144118169569 0.153566082871 0.0541380428871 -0.000599867511214 0.00734837701238 -0.00734837701238"/>
-                <geom type="capsule" fromto="0 0 -0.05 0 0 -0.3975" size="0.05" mass="0" rgba="0.82 0.71 0.55 1.0"/>
+                <geom type ="capsule" fromto="0 0 -0.05 0 0 -0.3975" size="0.05" mass="0" rgba="0.82 0.71 0.55 1.0"/>
                 <geom type="sphere" pos="0 0 -0.4475" size="0.05" mass="0" rgba="0.82 0.71 0.55 1.0"/>
                 <joint name="hip_fe_left" type="hinge" axis="0 -1 0" limited="true" range="-18.1 133.8"/> <!--fe=flexion/extension-->
                 <joint name="hip_aa_left" type="hinge" axis="-1 0 0" limited="true" range="-40.5 25.6"/> <!--aa=ab/adduction-->
@@ -50,7 +51,7 @@
 
                     <body name="foot_left" pos="0 0 -0.406965022422">
                         <inertial pos="0.04455 0.006435 -0.03597" mass="0.65" fullinertia="0.000511421625 0.002167790625 0.002293434 6.37065e-05 -0.0001769625 -2.8314e-05"/>
-                        <geom type="box" pos="0.04125 0 -0.02" size="0.0825 0.050 0.04" friction="1.0 0.005 0.0001" condim="3" rgba="0.82 0.71 0.55 1.0"/> <!--extend to 4 for foot turning-->
+                        <geom type="box" pos="0.04125 0 -0.04" size="0.0825 0.050 0.04" friction="1.0 0.005 0.0001" condim="3" rgba="0.82 0.71 0.55 1.0"/> <!--extend to 4 for foot turning-->
                         <joint name="ankle_pdflex_left" type="hinge" axis="0 -1 0" limited="true" range="-62.1 25"/> <!--pdflex=plantar/dorsiflexion-->
                         <joint name="ankle_ie_left" type="hinge" axis="-1 0 0" limited="true" range="-19.2 36.2"/> <!--ie=inversion/eversion-->
                     </body>
@@ -60,7 +61,7 @@
             <!--spine joints: pos="0 0 jpos_z" puts the hinge at the joint centre (e.g. the lumbosacral joint, below the abdomen origin) instead of at the body origin-->
             <body name="abdomen" pos="0 0 0.126914349776">
                 <inertial pos="0.0309671013453 -0.000634571748879 -0.052669455157" mass="2.665" fullinertia="0.0192694037659 0.0129850626848 0.0254507228621 3.86332443514e-05 0.00171703308228 0.000107314567643"/>
-                <geom type="capsule" fromto="0 0 -0.05 0 0 -0.071" size="0.07" mass="0" rgba="0.82 0.71 0.55 1.0"/>
+                <geom type="capsule" fromto="0 0 -0.05 0 0 -0.071" size="0.05" mass="0" rgba="0.82 0.71 0.55 1.0"/>
                 <joint name="lsj_fe" type="hinge" pos="0 0 -0.126914349776" axis="0 -1 0"/> <!-- FIXME(pre_processor): no ROM in sheet for lumbosacral_extension, lumbosacral_flexion; joint left unlimited --> <!--lsj_fe= lumbrosacral joint flexion/extension. ROM fills in automatically once it is in the sheet-->
                 <joint name="lsj_lat" type="hinge" pos="0 0 -0.126914349776" axis="1 0 0"/> <!-- FIXME(pre_processor): no ROM in sheet for lumbosacral_lateral_bending; joint left unlimited --> <!--lsj_lat= lumbrosacral joint lateral bending. ROM fills in automatically once it is in the sheet-->
                 <joint name="lsj_ax" type="hinge" pos="0 0 -0.126914349776" axis="0 0 1"/> <!-- FIXME(pre_processor): no ROM in sheet for lumbosacral_axial_rotation; joint left unlimited --> <!--lsj_ax= lumbrosacral joint axial bending. ROM fills in automatically once it is in the sheet-->
