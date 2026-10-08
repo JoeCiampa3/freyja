@@ -27,7 +27,7 @@
 
                     <body name="foot_right" pos="!{foot_right_pos_x} !{foot_right_pos_y} !{foot_right_pos_z}">
                         <inertial pos="${foot_right_com_x} ${foot_right_com_y} ${foot_right_com_z}" mass="${foot_right_mass}" fullinertia="${foot_right_ixx} ${foot_right_iyy} ${foot_right_izz} ${foot_right_ixy} ${foot_right_ixz} ${foot_right_iyz}"/>
-                        <geom type="box" pos="0.04125 0 -0.04" size="0.0825 0.050 0.04" friction="1.0 0.005 0.0001" condim="3" rgba="0.82 0.71 0.55 1.0"/> <!--extend to 4 for foot turning-->
+                        <geom type="box" pos="0.04125 0 -0.04" size="0.0825 0.050 0.04" friction="1.0 0.005 0.0001" condim="3" rgba="0.82 0.71 0.55 1.0"/> <!--extend condim to 4 for foot turning-->
                         <joint name="ankle_pdflex_right" type="hinge" axis="0 -1 0" limited="true" range="!{-ankle_plantarflexion} !{ankle_dorsiflexion}"/> <!--pdflex=plantar/dorsiflexion-->
                         <joint name="ankle_ie_right" type="hinge" axis="1 0 0" limited="true" range="!{-ankle_eversion} !{ankle_inversion}"/> <!--ie=inversion/eversion-->
                     </body>
@@ -50,7 +50,7 @@
 
                     <body name="foot_left" pos="!{foot_left_pos_x} !{foot_left_pos_y} !{foot_left_pos_z}">
                         <inertial pos="${foot_left_com_x} ${foot_left_com_y} ${foot_left_com_z}" mass="${foot_left_mass}" fullinertia="${foot_left_ixx} ${foot_left_iyy} ${foot_left_izz} ${foot_left_ixy} ${foot_left_ixz} ${foot_left_iyz}"/>
-                        <geom type="box" pos="0.04125 0 -0.04" size="0.0825 0.050 0.04" friction="1.0 0.005 0.0001" condim="3" rgba="0.82 0.71 0.55 1.0"/> <!--extend to 4 for foot turning-->
+                        <geom type="box" pos="0.04125 0 -0.04" size="0.0825 0.050 0.04" friction="1.0 0.005 0.0001" condim="3" rgba="0.82 0.71 0.55 1.0"/> <!--extend condim to 4 for foot turning-->
                         <joint name="ankle_pdflex_left" type="hinge" axis="0 -1 0" limited="true" range="!{-ankle_plantarflexion} !{ankle_dorsiflexion}"/> <!--pdflex=plantar/dorsiflexion-->
                         <joint name="ankle_ie_left" type="hinge" axis="-1 0 0" limited="true" range="!{-ankle_eversion} !{ankle_inversion}"/> <!--ie=inversion/eversion-->
                     </body>
@@ -75,8 +75,8 @@
 
                     <body name="upper_arm_right" pos="!{upper_arm_right_pos_x} !{upper_arm_right_pos_y} !{upper_arm_right_pos_z}">
                         <inertial pos="${upper_arm_right_com_x} ${upper_arm_right_com_y} ${upper_arm_right_com_z}" mass="${upper_arm_right_mass}" fullinertia="${upper_arm_right_ixx} ${upper_arm_right_iyy} ${upper_arm_right_izz} ${upper_arm_right_ixy} ${upper_arm_right_ixz} ${upper_arm_right_iyz}"/>
-                        <geom type="capsule" fromto="0 0 -0.03 0 0 -0.243" size="0.03" mass="0" rgba="0.82 0.71 0.55 1.0"/>
-                        <joint name="shoulder_fe_right" type="hinge" axis="0 -1 0" limited="true" range="!{-shoulder_extension} !{shoulder_flexion}"/>    <!--fe=flexion/extension-->
+                        <geom type="capsule" fromto="0 0 -0.03 0 0 -0.213" size="0.03" mass="0" rgba="0.82 0.71 0.55 1.0"/>
+                        <joint name="shoulder_fe_right" type="hinge" axis="0 -1 0" limited="true" range="!{-shoulder_extension} !{shoulder_flexion}"/>    <!--fe=flexion/extension--> <!--placeholder shoulder architecture-->
                         <joint name="shoulder_aa_right" type="hinge" axis="1 0 0" limited="true" range="!{-shoulder_abduction} !{shoulder_adduction}"/>    <!--aa=ab/adduction-->
                         <joint name="shoulder_ier_right" type="hinge" axis="0 0 1" limited="true" range="!{-shoulder_external_rotation} !{shoulder_internal_rotation}"/>   <!--ier=int/external rotation-->
 
@@ -97,7 +97,7 @@
                     <body name="upper_arm_left" pos="!{upper_arm_left_pos_x} !{upper_arm_left_pos_y} !{upper_arm_left_pos_z}">
                         <inertial pos="${upper_arm_left_com_x} ${upper_arm_left_com_y} ${upper_arm_left_com_z}" mass="${upper_arm_left_mass}" fullinertia="${upper_arm_left_ixx} ${upper_arm_left_iyy} ${upper_arm_left_izz} ${upper_arm_left_ixy} ${upper_arm_left_ixz} ${upper_arm_left_iyz}"/>
                         <geom type="capsule" fromto="0 0 -0.03 0 0 -0.213" size="0.03" mass="0" rgba="0.82 0.71 0.55 1.0"/>
-                        <joint name="shoulder_fe_left" type="hinge" axis="0 -1 0" limited="true" range="!{-shoulder_extension} !{shoulder_flexion}"/>    <!--fe=flexion/extension-->
+                        <joint name="shoulder_fe_left" type="hinge" axis="0 -1 0" limited="true" range="!{-shoulder_extension} !{shoulder_flexion}"/>    <!--fe=flexion/extension--> <!--placeholder shoulder architecture-->
                         <joint name="shoulder_aa_left" type="hinge" axis="-1 0 0" limited="true" range="!{-shoulder_abduction} !{shoulder_adduction}"/>    <!--aa=ab/adduction-->
                         <joint name="shoulder_ier_left" type="hinge" axis="0 0 -1" limited="true" range="!{-shoulder_external_rotation} !{shoulder_internal_rotation}"/>   <!--ier=int/external rotation-->
 

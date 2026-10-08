@@ -28,7 +28,7 @@
 
                     <body name="foot_right" pos="0 0 -0.406965022422">
                         <inertial pos="0.04455 -0.006435 -0.03597" mass="0.65" fullinertia="0.000511421625 0.002167790625 0.002293434 -6.37065e-05 -0.0001769625 2.8314e-05"/>
-                        <geom type="box" pos="0.04125 0 -0.04" size="0.0825 0.050 0.04" friction="1.0 0.005 0.0001" condim="3" rgba="0.82 0.71 0.55 1.0"/> <!--extend to 4 for foot turning-->
+                        <geom type="box" pos="0.04125 0 -0.04" size="0.0825 0.050 0.04" friction="1.0 0.005 0.0001" condim="3" rgba="0.82 0.71 0.55 1.0"/> <!--extend condim to 4 for foot turning-->
                         <joint name="ankle_pdflex_right" type="hinge" axis="0 -1 0" limited="true" range="-62.1 25"/> <!--pdflex=plantar/dorsiflexion-->
                         <joint name="ankle_ie_right" type="hinge" axis="1 0 0" limited="true" range="-19.2 36.2"/> <!--ie=inversion/eversion-->
                     </body>
@@ -51,7 +51,7 @@
 
                     <body name="foot_left" pos="0 0 -0.406965022422">
                         <inertial pos="0.04455 0.006435 -0.03597" mass="0.65" fullinertia="0.000511421625 0.002167790625 0.002293434 6.37065e-05 -0.0001769625 -2.8314e-05"/>
-                        <geom type="box" pos="0.04125 0 -0.04" size="0.0825 0.050 0.04" friction="1.0 0.005 0.0001" condim="3" rgba="0.82 0.71 0.55 1.0"/> <!--extend to 4 for foot turning-->
+                        <geom type="box" pos="0.04125 0 -0.04" size="0.0825 0.050 0.04" friction="1.0 0.005 0.0001" condim="3" rgba="0.82 0.71 0.55 1.0"/> <!--extend condim to 4 for foot turning-->
                         <joint name="ankle_pdflex_left" type="hinge" axis="0 -1 0" limited="true" range="-62.1 25"/> <!--pdflex=plantar/dorsiflexion-->
                         <joint name="ankle_ie_left" type="hinge" axis="-1 0 0" limited="true" range="-19.2 36.2"/> <!--ie=inversion/eversion-->
                     </body>
@@ -72,12 +72,12 @@
                     <geom type="capsule" fromto="0 0 -0.1 0 0 -0.213" size="0.1" mass="0" rgba="0.82 0.71 0.55 1.0"/>
                     <joint name="tj_fe" type="hinge" pos="0 0 -0.328299103139" axis="0 -1 0" /> <!--tj_fe= thoracic joint flexion/extension. FIXME add rom when available-->
                     <joint name="tj_lat" type="hinge" pos="0 0 -0.328299103139" axis="1 0 0"/> <!--tj_lat= thoracic  joint lateral bending FIXME add rom when available-->
-                    <joint name="tj_ax" type="hinge" pos="0 0 -0.328299103139" axis="0 0 1"/> <!--tj_ax= thoracic  joint axial bending FIXME add rom when available-->
+                    <joint name="tjax" type="hinge" pos="0 0 -0.328299103139" axis="0 0 1"/> <!--tj_ax= thoracic  joint axial bending FIXME add rom when available-->
 
                     <body name="upper_arm_right" pos="0.013794347058 -0.192059755192 -0.0774605642489">
                         <inertial pos="-0.017739 0.006804 -0.110322" mass="1.43" fullinertia="0.009195523623 0.009195523623 0.002440318023 0.000211100175 7.5996063e-05 -0.001655025372"/>
-                        <geom type="capsule" fromto="0 0 -0.03 0 0 -0.243" size="0.03" mass="0" rgba="0.82 0.71 0.55 1.0"/>
-                        <joint name="shoulder_fe_right" type="hinge" axis="0 -1 0" limited="true" range="-57.3 172"/>    <!--fe=flexion/extension-->
+                        <geom type="capsule" fromto="0 0 -0.03 0 0 -0.213" size="0.03" mass="0" rgba="0.82 0.71 0.55 1.0"/>
+                        <joint name="shoulder_fe_right" type="hinge" axis="0 -1 0" limited="true" range="-57.3 172"/>    <!--fe=flexion/extension--> <!--placeholder shoulder architecture-->
                         <joint name="shoulder_aa_right" type="hinge" axis="1 0 0"/> <!-- FIXME(pre_processor): no ROM in sheet for shoulder_adduction; joint left unlimited -->    <!--aa=ab/adduction-->
                         <joint name="shoulder_ier_right" type="hinge" axis="0 0 1"/> <!-- FIXME(pre_processor): no ROM in sheet for shoulder_external_rotation, shoulder_internal_rotation; joint left unlimited -->   <!--ier=int/external rotation-->
 
@@ -98,7 +98,7 @@
                     <body name="upper_arm_left" pos="0.013794347058 0.192059755192 -0.0774605642489">
                         <inertial pos="-0.017739 -0.006804 -0.110322" mass="1.43" fullinertia="0.009195523623 0.009195523623 0.002440318023 -0.000211100175 7.5996063e-05 0.001655025372"/>
                         <geom type="capsule" fromto="0 0 -0.03 0 0 -0.213" size="0.03" mass="0" rgba="0.82 0.71 0.55 1.0"/>
-                        <joint name="shoulder_fe_left" type="hinge" axis="0 -1 0" limited="true" range="-57.3 172"/>    <!--fe=flexion/extension-->
+                        <joint name="shoulder_fe_left" type="hinge" axis="0 -1 0" limited="true" range="-57.3 172"/>    <!--fe=flexion/extension--> <!--placeholder shoulder architecture-->
                         <joint name="shoulder_aa_left" type="hinge" axis="-1 0 0"/> <!-- FIXME(pre_processor): no ROM in sheet for shoulder_adduction; joint left unlimited -->    <!--aa=ab/adduction-->
                         <joint name="shoulder_ier_left" type="hinge" axis="0 0 -1"/> <!-- FIXME(pre_processor): no ROM in sheet for shoulder_external_rotation, shoulder_internal_rotation; joint left unlimited -->   <!--ier=int/external rotation-->
 
