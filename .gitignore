@@ -16,3 +16,4 @@ models/freyja_FAILED.xml
 freyja.venv/
 __pycache__/
 *.pyc
+archive/
