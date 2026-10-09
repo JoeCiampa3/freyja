@@ -7,6 +7,13 @@ pulling numbers out of the Freyja Anthropometric Reference Google Sheet.
     ground-truth sheet  -->  this script  -->  freyja.xml
     (named ranges)           (check + fill)     (never edit by hand!)
 
+SETUP (once): put the sheet ID and the path to the service-account key in
+    local_config.json (copy local_config.example.json). That file is git-ignored.
+    Or set the environment variables FREYJA_SHEET_KEY and FREYJA_CREDENTIALS.
+
+TO REBUILD AUTOMATICALLY whenever the sheet changes, leave scripts\\watch.py running
+    (it imports build_model() from this file, so both always behave the same).
+
 HOW TO RUN (from the freyja-sim folder, using the project's virtual environment)
     freyja.venv\\Scripts\\python scripts\\pre_processor.py
     freyja.venv\\Scripts\\python scripts\\pre_processor.py --xlsx "C:\\path\\to\\sheet.xlsx"
@@ -56,10 +63,12 @@ import argparse
 import csv
 import difflib
 import io
+import json
 import math
 import os
 import re
 import sys
+import time
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import datetime
@@ -73,12 +82,13 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent  # the freyja-sim folder
 
-SHEET_KEY = "16-XKTGIO4FvCfACWS000RBR2BNFJ0ho6tvMeRswaV2Y"
-CREDENTIALS = Path(os.environ.get(  # set FREYJA_CREDENTIALS to use a different key file
-    "FREYJA_CREDENTIALS",
-    ROOT.parents[1] / "Misc" / "project-valkyrie-509701-0b68d6f5e84d.json"))
+# The sheet ID and the service-account key path are NOT stored in this file.
+# They come from (first match wins):
+#   1. environment variables  FREYJA_SHEET_KEY and FREYJA_CREDENTIALS
+#   2. local_config.json in the freyja-sim folder (git-ignored; copy
+#      local_config.example.json to start one)
+CONFIG_FILE = ROOT / "local_config.json"
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]  # read-only
-
 
 TEMPLATE = ROOT / "models" / "freyja_template.xml"
 OUTPUT = ROOT / "models" / "freyja.xml"
@@ -162,6 +172,31 @@ def col_letter(n: int) -> str:
     return s
 
 
+class BuildError(Exception):
+    """The model could not be built. Carries every problem found, so callers
+    (the command line, the watcher) decide how to show it. Never kills the process."""
+
+    def __init__(self, stage: str, errors: list, warnings: list, transient: bool = False):
+        super().__init__(f"{len(errors)} problem(s) found while {stage}")
+        self.stage, self.errors, self.warnings = stage, list(errors), list(warnings)
+        self.transient = transient  # True = the data was fine, the environment wasn't (e.g. file locked)
+
+    def format(self) -> str:
+        lines = [f"Stopped: {len(self.errors)} problem(s) found while {self.stage}"]
+        lines += [f"  ERROR   {e}" for e in self.errors]
+        lines += [f"  WARNING {w}" for w in self.warnings]
+        return "\n".join(lines)
+
+
+class SheetAccessError(Exception):
+    """Could not read the sheet (network, permissions, bad name ...). `fatal`
+    means retrying cannot help (e.g. no credentials configured)."""
+
+    def __init__(self, message: str, fatal: bool = False):
+        super().__init__(message)
+        self.fatal = fatal
+
+
 class Report:
     """Collects every problem so you see them all at once, not one per run."""
 
@@ -176,14 +211,8 @@ class Report:
         self.warnings.append(msg)
 
     def stop_if_errors(self, stage: str):
-        if not self.errors:
-            return
-        print(f"\nStopped: {len(self.errors)} problem(s) found while {stage}")
-        for e in self.errors:
-            print(f"  ERROR   {e}")
-        for w in self.warnings:
-            print(f"  WARNING {w}")
-        sys.exit(1)
+        if self.errors:
+            raise BuildError(stage, self.errors, self.warnings)
 
 
 # =============================================================================
@@ -216,51 +245,93 @@ class RawTable:
         return f"{sheet}!{col_letter(self.first_col + col_idx)}{self.first_row + row_idx}"
 
 
+def setting(env_name: str, config_key: str):
+    """Look a private setting up in the environment, then in local_config.json."""
+    value = os.environ.get(env_name)
+    if value:
+        return value
+    if CONFIG_FILE.exists():
+        try:
+            cfg = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as e:
+            raise SheetAccessError(f"{CONFIG_FILE.name} could not be read ({e}). "
+                                   "It must be valid JSON, see local_config.example.json.", fatal=True)
+        return cfg.get(config_key) or None
+    return None
+
+
+class GoogleSheetSource:
+    """Logs in once, then each fetch() is a single small request for the three
+    named ranges, so it is cheap enough to poll every few seconds."""
+    REQUEST_TIMEOUT_S = 30  # a hung connection must not freeze the watcher
+
+    def __init__(self):
+        self.sheet_key = setting("FREYJA_SHEET_KEY", "sheet_key")
+        cred_path = setting("FREYJA_CREDENTIALS", "credentials")
+        if not self.sheet_key or not cred_path:
+            raise SheetAccessError(
+                "The sheet ID and/or credentials path are not configured.\n"
+                f"  Copy local_config.example.json to {CONFIG_FILE.name} (in the freyja-sim folder) and fill it in,\n"
+                "  or set the environment variables FREYJA_SHEET_KEY and FREYJA_CREDENTIALS.", fatal=True)
+        if not Path(cred_path).exists():
+            raise SheetAccessError(f"Credentials file not found:\n  {cred_path}\n"
+                                   "Fix 'credentials' in local_config.json (or FREYJA_CREDENTIALS).", fatal=True)
+        import gspread  # imported here so --xlsx and the tests work without it
+        from google.oauth2.service_account import Credentials
+        from gspread.http_client import BackOffHTTPClient  # waits and retries on rate limits (429)
+        self._gspread = gspread
+        self._creds = Credentials.from_service_account_file(cred_path, scopes=SCOPES)
+        self._client = gspread.authorize(self._creds, http_client=BackOffHTTPClient)
+        self._client.set_timeout(self.REQUEST_TIMEOUT_S)
+        self._sheet = None
+
+    def fetch(self) -> dict:
+        gspread = self._gspread
+        email = self._creds.service_account_email
+        try:
+            if self._sheet is None:
+                self._sheet = self._client.open_by_key(self.sheet_key)
+            resp = self._sheet.values_batch_get([RANGE_BSIP, RANGE_POS, RANGE_ROM],
+                                                params={"valueRenderOption": "UNFORMATTED_VALUE"})
+        except gspread.exceptions.SpreadsheetNotFound:
+            raise SheetAccessError("Google says the sheet doesn't exist or isn't shared with this account. "
+                                   f"Share it (Viewer is enough) with: {email}")
+        except gspread.exceptions.APIError as e:
+            status = getattr(getattr(e, "response", None), "status_code", "?")
+            hint = {400: f"One of the named ranges ({RANGE_BSIP}, {RANGE_POS}, {RANGE_ROM}) "
+                         "was not found. Check Data > Named ranges in the sheet.",
+                    403: f"Not allowed. Share the sheet with: {email}",
+                    404: "Sheet not found. Check the sheet ID in local_config.json."}.get(status, "")
+            raise SheetAccessError(f"Google Sheets API error {status}. {hint} {e}".replace("  ", " "))
+        except Exception as e:  # network down, DNS, timeouts ...
+            raise SheetAccessError(f"Could not reach Google Sheets ({type(e).__name__}: {e})")
+
+        tables = {}
+        for name, vr in zip((RANGE_BSIP, RANGE_POS, RANGE_ROM), resp["valueRanges"]):
+            tables[name] = RawTable.from_range(name, vr["range"], vr.get("values", []))
+        return tables
+
+
 def fetch_google() -> dict:
-    import gspread  # imported here so --xlsx and the tests work without it
-    from google.oauth2.service_account import Credentials
-
-    if not CREDENTIALS.exists():
-        sys.exit(f"Credentials file not found:\n  {CREDENTIALS}\n"
-                 "Fix the path in the SETTINGS section, or set FREYJA_CREDENTIALS.")
-    creds = Credentials.from_service_account_file(str(CREDENTIALS), scopes=SCOPES)
-    try:
-        sh = gspread.authorize(creds).open_by_key(SHEET_KEY)
-        resp = sh.values_batch_get([RANGE_BSIP, RANGE_POS, RANGE_ROM],
-                                   params={"valueRenderOption": "UNFORMATTED_VALUE"})
-    except gspread.exceptions.SpreadsheetNotFound:
-        sys.exit("Google says the sheet doesn't exist or isn't shared with this account.\n"
-                 f"Share it (Viewer is enough) with: {creds.service_account_email}")
-    except gspread.exceptions.APIError as e:
-        status = getattr(getattr(e, "response", None), "status_code", "?")
-        hint = {400: f"One of the named ranges ({RANGE_BSIP}, {RANGE_POS}, {RANGE_ROM}) "
-                     "was not found. Check Data > Named ranges in the sheet.",
-                403: f"Not allowed. Share the sheet with: {creds.service_account_email}",
-                404: "Sheet not found. Check SHEET_KEY."}.get(status, "")
-        sys.exit(f"Google Sheets API error {status}. {hint}\n{e}")
-    except Exception as e:  # network down, DNS, timeouts ...
-        sys.exit(f"Could not reach Google Sheets ({type(e).__name__}: {e}).\n"
-                 "No internet? You can work offline with --xlsx <downloaded sheet>.")
-
-    tables = {}
-    for name, vr in zip((RANGE_BSIP, RANGE_POS, RANGE_ROM), resp["valueRanges"]):
-        tables[name] = RawTable.from_range(name, vr["range"], vr.get("values", []))
-    return tables
+    return GoogleSheetSource().fetch()
 
 
 def fetch_xlsx(path: str) -> dict:
     try:
         import openpyxl
     except ImportError:
-        sys.exit("Reading an .xlsx needs openpyxl:  freyja.venv\\Scripts\\pip install openpyxl")
+        raise SheetAccessError("Reading an .xlsx needs openpyxl:  freyja.venv\\Scripts\\pip install openpyxl", fatal=True)
     if not Path(path).exists():
-        sys.exit(f"Spreadsheet file not found: {path}")
-    wb = openpyxl.load_workbook(path, data_only=True)  # data_only = the computed values
+        raise SheetAccessError(f"Spreadsheet file not found: {path}", fatal=True)
+    try:
+        wb = openpyxl.load_workbook(path, data_only=True)  # data_only = the computed values
+    except Exception as e:  # e.g. Excel is in the middle of saving the file
+        raise SheetAccessError(f"could not read {path} ({type(e).__name__}: {e})")
     tables = {}
     for name in (RANGE_BSIP, RANGE_POS, RANGE_ROM):
         if name not in wb.defined_names:
-            sys.exit(f"Named range '{name}' not found in {path}. "
-                     f"Found: {list(wb.defined_names.keys())}")
+            raise SheetAccessError(f"Named range '{name}' not found in {path}. "
+                                   f"Found: {list(wb.defined_names.keys())}")
         dest = wb.defined_names[name].attr_text  # 'MuJoCo Reference'!$A$14:$L$24
         sheet, rng = dest.rsplit("!", 1)
         ws = wb[sheet.strip("'")]
@@ -528,7 +599,12 @@ def unlimit_joints(text: str, missing: set, report: Report) -> str:
 
 
 def render(text: str, values: dict, report: Report, strict: bool = False) -> str:
-    """Replace every placeholder. Unknown names are collected into the report."""
+    return render_counted(text, values, report, strict)[0]
+
+
+def render_counted(text: str, values: dict, report: Report, strict: bool = False):
+    """Replace every placeholder. Unknown names are collected into the report.
+    Returns (finished text, how many placeholders were filled in)."""
     phs = find_placeholders(text, report)
     missing = {p.key for p in phs if p.key not in values}
     if missing and not strict:
@@ -542,14 +618,14 @@ def render(text: str, values: dict, report: Report, strict: bool = False) -> str
             report.error(f"template line {p.line}: '{p.key}' is not in the sheet data"
                          + (f". Did you mean: {', '.join(hint)}?" if hint else ""))
     if report.errors:
-        return text
+        return text, 0
 
     def sub(m):
         ok = VALID_NAME.match(m.group(2))
         x = values[ok.group(2)]
         return fmt(-x if ok.group(1) == "-" else x)
 
-    return ANY_BRACES.sub(sub, text)
+    return ANY_BRACES.subn(sub, text)
 
 
 def warn_unused(text: str, values: dict, report: Report):
@@ -602,14 +678,18 @@ def check_xml(xml: str, report: Report):
             report.warn(f"joint '{j.get('name')}': range {lo:g}..{hi:g} excludes the zero pose")
 
 
-def compile_with_mujoco(xml: str, report: Report):
-    """The real test: can MuJoCo load it? Returns the model or None."""
+def compile_with_mujoco(xml, report: Report):
+    """The real test: can MuJoCo load it? `xml` is the text, or a Path to a file
+    (preferred: it tests the exact bytes that will be installed). Returns the
+    model or None."""
     try:
         import mujoco
     except ImportError:
         report.warn("mujoco is not installed here, so the compile check was skipped")
         return None
     try:
+        if isinstance(xml, Path):
+            return mujoco.MjModel.from_xml_path(str(xml))
         return mujoco.MjModel.from_xml_string(xml)
     except Exception as e:  # mujoco raises plain ValueError with its own message
         report.error(f"MuJoCo could not compile the model: {e}")
@@ -637,7 +717,8 @@ def archive_values(values: dict, directory: Path) -> str:
         return f"archive not updated: values identical to {existing[-1].name}"
     path = directory / f"freyja_params_{datetime.now():%Y%m%d_%H%M%S}.csv"
     path.write_text(text, encoding="utf-8")
-    return f"archived values to {path.relative_to(ROOT)}"
+    shown = path.relative_to(ROOT) if ROOT in path.parents else path
+    return f"archived values to {shown}"
 
 
 # =============================================================================
@@ -675,62 +756,132 @@ def build_values(tables: dict, report: Report):
     return values, rom_blank, ankle
 
 
-def main(argv=None):
-    sys.stdout.reconfigure(errors="replace")  # never crash on a odd character in the console
-    args = parse_args(argv)
+@dataclass
+class BuildResult:
+    status: str  # created | updated | unchanged | checked (dry run)
+    placeholders: int  # how many placeholders were filled in
+    warnings: list
+    model_line: str | None  # e.g. "16 bodies, 32 joints, total mass 64.935 kg"
+    ankle: float | None
+    notes: list
+
+
+def build_model(tables: dict, *, template: Path = TEMPLATE, output: Path = OUTPUT,
+                failed_output: Path = FAILED_OUTPUT, archive_dir: Path = ARCHIVE_DIR,
+                strict: bool = False, dry_run: bool = False, archive: bool = True,
+                progress=None) -> BuildResult:
+    """Sheet tables + template -> checked freyja.xml. This is the one function
+    both the command line and the watcher use.
+
+    The new model is built next to the real one as a temporary file, checked
+    (data, XML, MuJoCo compile), and only then swapped in with os.replace, so
+    `output` is never half-written and a bad build never replaces a good one.
+    Raises BuildError (with every problem found) instead of exiting."""
+    say = progress or (lambda msg: None)
     report = Report()
 
-    source = f"xlsx file {Path(args.xlsx).name}" if args.xlsx else "Google Sheet"
-    print(f"[1/4] Reading {source} ...")
-    tables = fetch_xlsx(args.xlsx) if args.xlsx else fetch_google()
     values, rom_blank, ankle = build_values(tables, report)
-    print(f"      {sum(k.endswith('_mass') for k in values)} segments (left/right counted separately), "
-          f"{len(values)} values, data checks passed")
+    say(f"      {sum(k.endswith('_mass') for k in values)} segments (left/right counted separately), "
+        f"{len(values)} values, data checks passed")
 
-    print(f"[2/4] Filling template {args.template.name} ...")
-    if not args.template.exists():
-        sys.exit(f"Template not found: {args.template}")
-    text = args.template.read_text(encoding="utf-8")
+    say(f"[2/4] Filling template {template.name} ...")
+    if not template.exists():
+        raise BuildError("reading the template", [f"Template not found: {template}"], report.warnings)
+    text = template.read_text(encoding="utf-8")
     plain = {k: p.value for k, p in values.items()}
-    xml = render(text, plain, report, strict=args.strict)
+    xml, filled = render_counted(text, plain, report, strict=strict)
     report.stop_if_errors("filling the template")
     warn_unused(text, values, report)
     xml = add_banner(xml)
 
-    print("[3/4] Checking the finished XML ...")
+    say("[3/4] Checking the finished XML ...")
     check_xml(xml, report)
-    model = compile_with_mujoco(xml, report) if not report.errors else None
-    if report.errors:
-        if not args.dry_run:
-            FAILED_OUTPUT.write_text(xml, encoding="utf-8")
-        report.stop_if_errors(f"checking the XML (the broken build is saved as "
-                              f"{FAILED_OUTPUT.name}; {args.output.name} was NOT touched)")
+    tmp = output.with_name(f".{output.name}.{os.getpid()}.tmp")
+    model = None
+    try:
+        if not report.errors:
+            if dry_run:
+                model = compile_with_mujoco(xml, report)
+            else:
+                tmp.write_text(xml, encoding="utf-8")
+                model = compile_with_mujoco(tmp, report)
+        if report.errors:
+            if not dry_run:
+                failed_output.write_text(xml, encoding="utf-8")
+            report.stop_if_errors(f"checking the XML (the broken build is saved as "
+                                  f"{failed_output.name}; {output.name} was NOT touched)")
 
-    print("[4/4] Writing ...")
-    notes = []
-    if args.dry_run:
-        notes.append("dry run: nothing written")
-    else:
-        old = args.output.read_text(encoding="utf-8") if args.output.exists() else None
-        if old == xml:
-            notes.append(f"{args.output.name} already up to date (sheet and template give the same model, nothing to write)")
+        say("[4/4] Writing ...")
+        notes = []
+        if dry_run:
+            status = "checked"
+            notes.append("dry run: nothing written")
         else:
-            args.output.write_text(xml, encoding="utf-8")
-            notes.append(f"{args.output.name} {'created' if old is None else 'updated'}")
-        if not args.no_archive:
-            notes.append(archive_values(values, ARCHIVE_DIR))
+            old = output.read_bytes() if output.exists() else None
+            if old == tmp.read_bytes():  # byte-identical: leave the file (and its timestamp) alone
+                status = "unchanged"
+                notes.append(f"{output.name} already up to date (sheet and template give the same model, nothing to write)")
+            else:
+                _replace_with_retry(tmp, output, report)
+                status = "created" if old is None else "updated"
+                notes.append(f"{output.name} {status}")
+            if archive:
+                try:
+                    notes.append(archive_values(values, archive_dir))
+                except OSError as e:  # a full disk must not make a good model look failed
+                    report.warn(f"could not write the CSV archive: {e}")
+    finally:
+        tmp.unlink(missing_ok=True)
+
+    model_line = None
+    if model is not None:
+        model_line = (f"{model.nbody - 1} bodies, {model.njnt} joints, "
+                      f"total mass {sum(model.body_mass):.3f} kg")
+    return BuildResult(status, filled, report.warnings, model_line, ankle, notes)
+
+
+def _replace_with_retry(tmp: Path, output: Path, report: Report, tries: int = 6):
+    """os.replace is atomic, but Windows refuses while another program has the
+    file open (an editor, a viewer). Retry briefly, then give up politely."""
+    for attempt in range(tries):
+        try:
+            os.replace(tmp, output)
+            return
+        except PermissionError:
+            if attempt < tries - 1:
+                time.sleep(0.4)
+    raise BuildError(f"installing {output.name}",
+                     [f"{output.name} is in use by another program, so it could not be replaced. "
+                      "The previous version was left untouched. Close whatever has it open."],
+                     report.warnings, transient=True)
+
+
+def main(argv=None):
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(errors="replace")  # never crash on an odd character in the console
+    args = parse_args(argv)
+    try:
+        source = f"xlsx file {Path(args.xlsx).name}" if args.xlsx else "Google Sheet"
+        print(f"[1/4] Reading {source} ...")
+        tables = fetch_xlsx(args.xlsx) if args.xlsx else fetch_google()
+        result = build_model(tables, template=args.template, output=args.output, strict=args.strict,
+                             dry_run=args.dry_run, archive=not args.no_archive, progress=print)
+    except SheetAccessError as e:
+        sys.exit(str(e))
+    except BuildError as e:
+        print("\n" + e.format())
+        sys.exit(1)
 
     print("\n" + "=" * 70)
-    if model is not None:
-        print(f"MuJoCo compiled OK: {model.nbody - 1} bodies, {model.njnt} joints, "
-              f"total mass {sum(model.body_mass):.3f} kg")
-    if ankle is not None:
-        print(f"Standing pose: ankle joint {ankle * 1000:.1f} mm above the floor")
-    for n in notes:
+    if result.model_line:
+        print(f"MuJoCo compiled OK: {result.model_line}")
+    if result.ankle is not None:
+        print(f"Standing pose: ankle joint {result.ankle * 1000:.1f} mm above the floor")
+    for n in result.notes:
         print(n)
-    if report.warnings:
-        print(f"\n{len(report.warnings)} warning(s):")
-        for w in report.warnings:
+    if result.warnings:
+        print(f"\n{len(result.warnings)} warning(s):")
+        for w in result.warnings:
             print(f"  WARNING {w}")
     print("=" * 70)
 
