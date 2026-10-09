@@ -2,6 +2,9 @@
 <mujoco model="freyja">
     <compiler angle="degree"/>
     <option timestep="0.002" gravity="0 0 -9.81"/>
+    <asset>
+        <texture type="skybox" builtin="gradient" rgb1="0.4 0.6 0.8" rgb2="0 0 0" width="512" height="3072"/>
+    </asset> 
 
     <worldbody>
         <geom name="floor" type="plane" size="10 10 0.1"  pos="0 0 0"/> <!--floor must be at z=0: the sheet's pelvis pos_z is the standing height above it-->

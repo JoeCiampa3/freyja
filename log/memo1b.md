@@ -154,10 +154,16 @@ The worksheet has been amended, the "mujoco" column (where the pre_processor pul
 Joint axes are hardcoded into the MJCF model as they are invariant. Axes use the MJC coordinate system. <geom> sizes are currently hardcoded. A future update will build out a table for them to live in within the sheet, linked to the pre_processor to make them parametric. As pure visual aids this is low priority but they should eventually be driven by segment lengths (e.g. the thigh capsule size depends on thigh length).
 
 
+FIXME: still need to execute: The product-of-inertia sign convention is resolved against the Dumas 2007 inertia-matrix equation and against MuJoCo's own off-diagonal convention; the memo states the convention adopted and the test that confirmed it.
 
-This sprint serves as an addendum to complete the goals from the last sprint. This memo will lay out the current build, validations, limitations, and assumptions made during the sprint.
+A world-frame quantity computed by MuJoCo (e.g. that segment's CoM position in a known pose) matches an independent calculation to within 1 mm.
 
-The main blocker last sprint was criterion 1, traceability. Several other criteria lie downstream so locking it in was the first focus of this sprint. 
+Test joint conventions using a script
 
-The main limitation of the pre_processor is fragility, if the sheet name/ID or cell names change it will break the connection to the Python program. It will fail loudly, but we can no longer start a new sheet after every edit Claude makes. To get around this we intend to make a new Python program that will take edits Claude makes to a local xlsx file and automatically push them to the sheet. 
+Static gravity check. With the pelvis held and all joint velocities and accelerations zero, the joint torques MuJoCo's inverse dynamics reports for at least two postures — neutral standing, and one with substantial hip and knee flexion — match an independent calculation that does not use MuJoCo, to within 1%.
 
+Add versions. 
+The repo at a specific commit. Give me a tag or hash in the memo, so I'm reviewing exactly what you tested and not whatever main looks like later.
+A README that works for a stranger. It covers environment setup, how to run the check script, and how to set up credentials if someone wants to regenerate the model. Following it should be all a cold reader needs.
+A reproduction record in the memo. It should have the commands you ran in a fresh directory, the Python and package versions, and the check output from that run, with a short note that the run needed no sheet or credentials. Paste real output, not a description of it.
+Commit history that tells the story. I'm reading the log, so this is not just the final state.
