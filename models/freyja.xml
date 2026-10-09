@@ -64,7 +64,7 @@
                 <geom type="capsule" fromto="0 0 -0.05 0 0 -0.071" size="0.05" mass="0" rgba="0.82 0.71 0.55 1.0"/>
                 <joint name="lsj_fe" type="hinge" pos="0 0 -0.126914349776" axis="0 -1 0"/> <!-- FIXME(pre_processor): no ROM in sheet for lumbosacral_extension, lumbosacral_flexion; joint left unlimited --> <!--lsj_fe= lumbrosacral joint flexion/extension. ROM fills in automatically once it is in the sheet-->
                 <joint name="lsj_lat" type="hinge" pos="0 0 -0.126914349776" axis="1 0 0"/> <!-- FIXME(pre_processor): no ROM in sheet for lumbosacral_lateral_bending; joint left unlimited --> <!--lsj_lat= lumbrosacral joint lateral bending. ROM fills in automatically once it is in the sheet-->
-                <joint name="lsj_ax" type="hinge" pos="0 0 -0.126914349776" axis="0 0 1"/> <!-- FIXME(pre_processor): no ROM in sheet for lumbosacral_axial_rotation; joint left unlimited --> <!--lsj_ax= lumbrosacral joint axial bending. ROM fills in automatically once it is in the sheet-->
+                <joint name="lsj_ax" type="hinge" pos="0 0 -0.126914349776" axis="0 0 1"/> <!-- FIXME(pre_processor): no ROM in sheet for lumbosacral_axial_rotation; joint left unlimited --> <!--lsj_ax= lumbosacral joint axial bending. ROM fills in automatically once it is in the sheet-->
 
 
                 <body name="thorax" pos="0 0 0.328299103139">
@@ -72,7 +72,7 @@
                     <geom type="capsule" fromto="0 0 -0.1 0 0 -0.213" size="0.1" mass="0" rgba="0.82 0.71 0.55 1.0"/>
                     <joint name="tj_fe" type="hinge" pos="0 0 -0.328299103139" axis="0 -1 0" /> <!--tj_fe= thoracic joint flexion/extension. FIXME add rom when available-->
                     <joint name="tj_lat" type="hinge" pos="0 0 -0.328299103139" axis="1 0 0"/> <!--tj_lat= thoracic  joint lateral bending FIXME add rom when available-->
-                    <joint name="tjax" type="hinge" pos="0 0 -0.328299103139" axis="0 0 1"/> <!--tj_ax= thoracic  joint axial bending FIXME add rom when available-->
+                    <joint name="tj_ax" type="hinge" pos="0 0 -0.328299103139" axis="0 0 1"/> <!--tj_ax= thoracic  joint axial bending FIXME add rom when available-->
 
                     <body name="upper_arm_right" pos="0.013794347058 -0.192059755192 -0.0774605642489">
                         <inertial pos="-0.017739 0.006804 -0.110322" mass="1.43" fullinertia="0.009195523623 0.009195523623 0.002440318023 0.000211100175 7.5996063e-05 -0.001655025372"/>
@@ -118,7 +118,7 @@
 
                     <body name="head_and_neck" pos="0 0 0">
                         <inertial pos="0.00424586188341 -0.000265366367713 0.152585661435" mass="4.355" fullinertia="0.0257914592689 0.0276008482069 0.0162231652238 -3.06676091188e-05 -0.000490681745901 0"/>
-                        <geom type="sphere" pos="0 0 0.02654" size="0.065" mass="0" rgba="0.82 0.71 0.55 1.0"/>
+                        <geom type="sphere" pos="0 0 0.07654" size="0.065" mass="0" rgba="0.82 0.71 0.55 1.0"/>
                         <joint name="cj_fe" type="hinge" axis="0 -1 0" /> <!--cj_fe= cervical joint flexion/extension. FIXME add rom when available-->
                         <joint name="cj_lat" type="hinge" axis="1 0 0"/> <!--cj_lat= cervical  joint lateral bending FIXME add rom when available-->
                         <joint name="cj_ax" type="hinge" axis="0 0 1"/> <!--cj_ax= cervical  joint axial bending FIXME add rom when available-->
