@@ -1,0 +1,4 @@
+{
+  "sheet_key": "the long ID in the sheet's URL: docs.google.com/spreadsheets/d/<THIS PART>/edit",
+  "credentials": "C:\\full\\path\\to\\your-service-account-key.json"
+}

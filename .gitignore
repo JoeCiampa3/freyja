@@ -1,0 +1,18 @@
+# Private settings and keys: never commit these
+local_config.json
+# Google service-account keys, in case one is ever copied into the repo
+project-valkyrie-*.json
+*service-account*.json
+*service_account*.json
+*credentials*.json
+*.pem
+
+# Build leftovers
+.*.tmp
+*.tmp
+models/freyja_FAILED.xml
+
+# Python / environment
+freyja.venv/
+__pycache__/
+*.pyc
