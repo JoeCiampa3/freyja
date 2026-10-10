@@ -55,6 +55,7 @@ EVERY RUN ALSO
     * checks the finished XML is well-formed and that MuJoCo can compile it
     * never replaces a good freyja.xml with a broken one
     * saves a CSV of every value used to archive/ (only when something changed)
+    * installs params/snapshot.csv and snapshot.meta.json together with the model
 """
 
 from __future__ import annotations
@@ -62,11 +63,13 @@ from __future__ import annotations
 import argparse
 import csv
 import difflib
+import hashlib
 import io
 import json
 import math
 import os
 import re
+import subprocess
 import sys
 import time
 import xml.etree.ElementTree as ET
@@ -94,9 +97,16 @@ TEMPLATE = ROOT / "models" / "freyja_template.xml"
 OUTPUT = ROOT / "models" / "freyja.xml"
 FAILED_OUTPUT = ROOT / "models" / "freyja_FAILED.xml"  # a broken build is parked here
 ARCHIVE_DIR = ROOT / "archive"
+PARAMS_DIR = ROOT.parent / "params"  # snapshot.csv + snapshot.meta.json (CONVENTIONS section 5)
+SNAPSHOT_SCHEMA = "params/snapshot/1"
 
 # Names of the named ranges in the Google Sheet
 RANGE_BSIP, RANGE_POS, RANGE_ROM = "bsip", "pos", "rom"
+# Optional: total mass and stature (label in column A, value in B, unit in the
+# label's brackets). Feeds the snapshot only; the template cannot use them.
+RANGE_TARGETS = "targets"
+TARGET_KEYS = {"mass": "target_mass", "stature": "target_stature"}  # label keyword -> snapshot key
+TARGET_UNIT_TO_SI = {"kg": 1.0, "g": 1e-3, "m": 1.0, "mm": 1e-3, "cm": 1e-2}  # the snapshot is SI
 
 # The sheet must contain exactly these segments (after ident()). If someone adds,
 # renames or deletes one in the sheet the script stops and says so ("sheet drift").
@@ -291,8 +301,13 @@ class GoogleSheetSource:
         try:
             if self._sheet is None:
                 self._sheet = self._client.open_by_key(self.sheet_key)
-            resp = self._sheet.values_batch_get([RANGE_BSIP, RANGE_POS, RANGE_ROM],
-                                                params={"valueRenderOption": "UNFORMATTED_VALUE"})
+            params = {"valueRenderOption": "UNFORMATTED_VALUE"}
+            names = [RANGE_BSIP, RANGE_POS, RANGE_ROM]
+            try:
+                resp = self._sheet.values_batch_get(names + [RANGE_TARGETS], params=params)
+                names.append(RANGE_TARGETS)
+            except gspread.exceptions.APIError:  # no 'targets' range yet: it is optional
+                resp = self._sheet.values_batch_get(names, params=params)
         except gspread.exceptions.SpreadsheetNotFound:
             raise SheetAccessError("Google says the sheet doesn't exist or isn't shared with this account. "
                                    f"Share it (Viewer is enough) with: {email}")
@@ -307,7 +322,7 @@ class GoogleSheetSource:
             raise SheetAccessError(f"Could not reach Google Sheets ({type(e).__name__}: {e})")
 
         tables = {}
-        for name, vr in zip((RANGE_BSIP, RANGE_POS, RANGE_ROM), resp["valueRanges"]):
+        for name, vr in zip(names, resp["valueRanges"]):
             tables[name] = RawTable.from_range(name, vr["range"], vr.get("values", []))
         return tables
 
@@ -338,6 +353,11 @@ def fetch_xlsx(path: str) -> dict:
         rows = [["" if c.value is None else c.value for c in row]
                 for row in ws[rng.replace("$", "")]]
         tables[name] = RawTable.from_range(name, f"{sheet}!{rng}", rows)
+    if RANGE_TARGETS in wb.defined_names:  # optional
+        sheet, rng = wb.defined_names[RANGE_TARGETS].attr_text.rsplit("!", 1)
+        ws = wb[sheet.strip("'")]
+        rows = [["" if c.value is None else c.value for c in row] for row in ws[rng.replace("$", "")]]
+        tables[RANGE_TARGETS] = RawTable.from_range(RANGE_TARGETS, f"{sheet}!{rng}", rows)
     return tables
 
 
@@ -459,6 +479,35 @@ def read_rom_table(raw: RawTable, report: Report):
                 report.warn(f"[{raw.name}] {key}: MuJoCo limit {x:g} deg is below the "
                             f"functional demand {demand:g} deg")
     return values, blank
+
+
+def read_targets(raw, report: Report) -> dict:
+    """targets table (label | value) -> {'target_mass': Param (kg), 'target_stature': Param (m)}.
+    Optional and advisory: a problem here is a warning and the target is left
+    out, so later checks that need it skip."""
+    out: dict[str, Param] = {}
+    if raw is None:
+        return out
+    for r, row in enumerate(raw.rows):
+        label = str(row[0]) if row else ""
+        key = next((k for word, k in TARGET_KEYS.items() if word in ident(label)), None)
+        if key is None:
+            if label.strip():
+                report.warn(f"[{raw.name}] {raw.ref(r, 0)}: label '{label}' is not a known target; ignored")
+            continue
+        ref = raw.ref(r, 1)
+        unit = re.search(r"\(\s*([A-Za-z]+)\s*\)", label)
+        scale = TARGET_UNIT_TO_SI.get(unit.group(1).lower()) if unit else None
+        try:
+            x = to_number(row[1] if len(row) > 1 else None)
+        except (ValueError, TypeError):
+            x = None
+        if scale is None or x is None or x <= 0:
+            report.warn(f"[{raw.name}] {ref} ({label}): needs a positive number and a unit in brackets "
+                        f"({', '.join(TARGET_UNIT_TO_SI)}); {key} left out of the snapshot")
+            continue
+        out[key] = Param(x * scale, ref, raw.name)
+    return out
 
 
 def check_bsip(bsip: dict, report: Report):
@@ -641,9 +690,12 @@ def warn_unused(text: str, values: dict, report: Report):
         report.warn(f"sheet value {k} = {fmt(p.value)} ({p.source}) is not used by the template")
 
 
-def add_banner(xml: str) -> str:
-    banner = (f"<!-- GENERATED by scripts/pre_processor.py from models/{TEMPLATE.name}. "
-              "Do not edit by hand: change the template or the Google Sheet and re-run. -->")
+def add_banner(xml: str, snapshot_sha256: str | None = None) -> str:
+    inputs = f"models/{TEMPLATE.name} and the Google Sheet"
+    if snapshot_sha256:  # CONVENTIONS section 4: the banner carries the snapshot hash
+        inputs += f" (snapshot sha256:{snapshot_sha256[:12]})"
+    banner = (f"<!-- GENERATED by scripts/pre_processor.py from {inputs}. "
+              "Do not edit; change the inputs and rebuild. -->")
     decl = re.match(r"\s*<\?xml[^>]*\?>\s*", xml)
     if decl:  # a comment may not come before the XML declaration
         return xml[:decl.end()] + banner + "\n" + xml[decl.end():]
@@ -701,15 +753,53 @@ def compile_with_mujoco(xml, report: Report):
 # =============================================================================
 
 
-def archive_values(values: dict, directory: Path) -> str:
-    """Write every value used to a timestamped CSV, but only if it differs from
-    the newest one, so the archive is a history of real changes."""
+def values_csv(values: dict) -> str:
+    """placeholder,value,sheet_source sorted by placeholder: the archive and snapshot format."""
     buf = io.StringIO()
     w = csv.writer(buf, lineterminator="\n")
     w.writerow(["placeholder", "value", "sheet_source"])
     for k in sorted(values):
         w.writerow([k, fmt(values[k].value), values[k].source])
-    text = buf.getvalue()
+    return buf.getvalue()
+
+
+def sha256_hex(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def sheet_fingerprint(tables: dict) -> str:
+    """A short hash of the cell contents of the named ranges."""
+    blob = json.dumps({name: t.rows for name, t in sorted(tables.items())}, default=str)
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:12]
+
+
+def pre_processor_commit() -> str:
+    """The commit that last changed this script ('unknown' outside git). Stable
+    across unrelated commits, so it does not churn the snapshot metadata."""
+    try:
+        out = subprocess.run(["git", "log", "-1", "--format=%H", "--", Path(__file__).name], cwd=HERE,
+                             capture_output=True, text=True, timeout=10, check=True).stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        return "unknown"
+    return out or "unknown"
+
+
+def snapshot_meta(snapshot_bytes: bytes, tables: dict, template_text: str, model_bytes: bytes,
+                  commit: str) -> str:
+    """snapshot.meta.json content. No sheet ID, credential or absolute path goes in here."""
+    meta = {"schema": SNAPSHOT_SCHEMA,
+            "snapshot_sha256": sha256_hex(snapshot_bytes),
+            "sheet_fingerprint": sheet_fingerprint(tables),
+            "template_sha256": sha256_hex(template_text.encode("utf-8")),  # text, so line endings can't matter
+            "model_sha256": sha256_hex(model_bytes),
+            "pre_processor_commit": commit}
+    return json.dumps(meta, indent=2, sort_keys=True) + "\n"
+
+
+def archive_values(values: dict, directory: Path) -> str:
+    """Write every value used to a timestamped CSV, but only if it differs from
+    the newest one, so the archive is a history of real changes."""
+    text = values_csv(values)
 
     directory.mkdir(exist_ok=True)
     existing = sorted(directory.glob("freyja_params_*.csv"))
@@ -768,14 +858,17 @@ class BuildResult:
 
 def build_model(tables: dict, *, template: Path = TEMPLATE, output: Path = OUTPUT,
                 failed_output: Path = FAILED_OUTPUT, archive_dir: Path = ARCHIVE_DIR,
-                strict: bool = False, dry_run: bool = False, archive: bool = True,
-                progress=None) -> BuildResult:
+                snapshot_dir: Path | None = None, strict: bool = False, dry_run: bool = False,
+                archive: bool = True, progress=None) -> BuildResult:
     """Sheet tables + template -> checked freyja.xml. This is the one function
     both the command line and the watcher use.
 
     The new model is built next to the real one as a temporary file, checked
     (data, XML, MuJoCo compile), and only then swapped in with os.replace, so
     `output` is never half-written and a bad build never replaces a good one.
+    With `snapshot_dir`, snapshot.csv and snapshot.meta.json are staged and
+    installed together with the model, or not at all. None = no snapshot (tests,
+    custom --output), so a scratch build never overwrites the tracked snapshot.
     Raises BuildError (with every problem found) instead of exiting."""
     say = progress or (lambda msg: None)
     report = Report()
@@ -792,18 +885,24 @@ def build_model(tables: dict, *, template: Path = TEMPLATE, output: Path = OUTPU
     xml, filled = render_counted(text, plain, report, strict=strict)
     report.stop_if_errors("filling the template")
     warn_unused(text, values, report)
-    xml = add_banner(xml)
+    snapshot_bytes = values_csv({**values, **read_targets(tables.get(RANGE_TARGETS), report)}).encode("utf-8")
+    xml = add_banner(xml, sha256_hex(snapshot_bytes))
 
     say("[3/4] Checking the finished XML ...")
     check_xml(xml, report)
     tmp = output.with_name(f".{output.name}.{os.getpid()}.tmp")
+    snap_dest = meta_dest = snap_tmp = meta_tmp = None
+    if snapshot_dir is not None:
+        snap_dest, meta_dest = snapshot_dir / "snapshot.csv", snapshot_dir / "snapshot.meta.json"
+        snap_tmp = snap_dest.with_name(f".{snap_dest.name}.{os.getpid()}.tmp")
+        meta_tmp = meta_dest.with_name(f".{meta_dest.name}.{os.getpid()}.tmp")
     model = None
     try:
         if not report.errors:
             if dry_run:
                 model = compile_with_mujoco(xml, report)
             else:
-                tmp.write_text(xml, encoding="utf-8")
+                tmp.write_bytes(xml.encode("utf-8"))  # bytes: LF on every OS
                 model = compile_with_mujoco(tmp, report)
         if report.errors:
             if not dry_run:
@@ -817,27 +916,61 @@ def build_model(tables: dict, *, template: Path = TEMPLATE, output: Path = OUTPU
             status = "checked"
             notes.append("dry run: nothing written")
         else:
+            staged = [(tmp, output)]
+            if snapshot_dir is not None:
+                try:
+                    snapshot_dir.mkdir(parents=True, exist_ok=True)
+                    snap_tmp.write_bytes(snapshot_bytes)
+                    meta_tmp.write_bytes(snapshot_meta(snapshot_bytes, tables, text, tmp.read_bytes(),
+                                                       pre_processor_commit()).encode("utf-8"))
+                except OSError as e:
+                    raise BuildError("staging the snapshot", [f"could not write the snapshot ({e}); "
+                                     "nothing was installed"], report.warnings, transient=True)
+                staged += [(snap_tmp, snap_dest), (meta_tmp, meta_dest)]
             old = output.read_bytes() if output.exists() else None
-            if old == tmp.read_bytes():  # byte-identical: leave the file (and its timestamp) alone
+            changed = [(t, d) for t, d in staged if not d.exists() or d.read_bytes() != t.read_bytes()]
+            if not changed:  # byte-identical: leave the files (and their timestamps) alone
                 status = "unchanged"
                 notes.append(f"{output.name} already up to date (sheet and template give the same model, nothing to write)")
             else:
-                _replace_with_retry(tmp, output, report)
+                _install_together(changed, report)
                 status = "created" if old is None else "updated"
-                notes.append(f"{output.name} {status}")
+                notes.append(f"{output.name} {status}" if (tmp, output) in changed
+                             else f"{output.name} unchanged; snapshot metadata {status}")
             if archive:
                 try:
                     notes.append(archive_values(values, archive_dir))
                 except OSError as e:  # a full disk must not make a good model look failed
                     report.warn(f"could not write the CSV archive: {e}")
     finally:
-        tmp.unlink(missing_ok=True)
+        for leftover in (tmp, snap_tmp, meta_tmp):
+            if leftover is not None:
+                leftover.unlink(missing_ok=True)
 
     model_line = None
     if model is not None:
         model_line = (f"{model.nbody - 1} bodies, {model.njnt} joints, "
                       f"total mass {sum(model.body_mass):.3f} kg")
     return BuildResult(status, filled, report.warnings, model_line, ankle, notes)
+
+
+def _install_together(changed: list, report: Report):
+    """Install staged files (tmp, destination) as one unit: if any replace fails,
+    the ones already installed are put back and the error is raised. The model
+    goes first because it is the file Windows is most likely to have locked."""
+    done = []  # (destination, previous bytes or None)
+    try:
+        for t, d in changed:
+            before = d.read_bytes() if d.exists() else None
+            _replace_with_retry(t, d, report)
+            done.append((d, before))
+    except BuildError:
+        for d, before in reversed(done):
+            if before is None:
+                d.unlink(missing_ok=True)
+            else:
+                d.write_bytes(before)
+        raise
 
 
 def _replace_with_retry(tmp: Path, output: Path, report: Report, tries: int = 6):
@@ -865,7 +998,8 @@ def main(argv=None):
         print(f"[1/4] Reading {source} ...")
         tables = fetch_xlsx(args.xlsx) if args.xlsx else fetch_google()
         result = build_model(tables, template=args.template, output=args.output, strict=args.strict,
-                             dry_run=args.dry_run, archive=not args.no_archive, progress=print)
+                             dry_run=args.dry_run, archive=not args.no_archive, progress=print,
+                             snapshot_dir=PARAMS_DIR if args.output == OUTPUT else None)
     except SheetAccessError as e:
         sys.exit(str(e))
     except BuildError as e:

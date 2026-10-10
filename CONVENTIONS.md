@@ -77,6 +77,8 @@ Use the file type's comment syntax. JSON has no comments, so it carries top-leve
 
 The banner in `sim/models/freyja.xml` carries the first 12 hex characters of `snapshot_sha256`.
 
+If the sheet has a `targets` named range (`'BSIP Reference'!A1:B2`: label in column A with its unit in brackets, value in column B), its rows enter the snapshot as `target_mass` (kg) and `target_stature` (m), converted to SI, with the cell as `sheet_source`. They feed checks only; templates cannot use them. Without the range the keys are absent. The snapshot, its metadata and the model are installed together or not at all, and are written with LF line endings. `build_model()` writes the snapshot only when given a `snapshot_dir`; the command line and the watcher pass `params/` when building the default output.
+
 ## 6. Run records (`run-summary/1`)
 
 Every sim run writes `sim/runs/<id minus "run.">/summary.json`. It is small and text-only, and is the thing Claude reads. Raw timeseries go in `raw.npz` beside it and stay gitignored.

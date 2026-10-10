@@ -33,7 +33,6 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import json
 import sys
 import time
 import traceback
@@ -59,10 +58,7 @@ def nap(seconds: float):
         time.sleep(min(0.5, left))
 
 
-def sheet_fingerprint(tables: dict) -> str:
-    """A short hash of the cell contents of the named ranges."""
-    blob = json.dumps({name: t.rows for name, t in sorted(tables.items())}, default=str)
-    return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:12]
+sheet_fingerprint = pp.sheet_fingerprint  # lives in pre_processor: the snapshot metadata uses it too
 
 
 def file_fingerprint(path: Path) -> str:
@@ -230,7 +226,8 @@ def main(argv=None):
 
     def build(tables):
         return pp.build_model(tables, template=args.template, output=args.output, strict=args.strict,
-                              archive=not args.no_archive)
+                              archive=not args.no_archive,
+                              snapshot_dir=pp.PARAMS_DIR if args.output == pp.OUTPUT else None)
 
     watcher = Watcher(source, build, args.template, args.interval, args.debounce)
     log(f"watching {'xlsx ' + args.xlsx if args.xlsx else 'the Google Sheet'} every {args.interval:g}s "

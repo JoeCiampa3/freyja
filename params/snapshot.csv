@@ -1,0 +1,262 @@
+placeholder,value,sheet_source
+abdomen_com_x,0.0309671013453,'MuJoCo Reference'!D17
+abdomen_com_y,-0.000634571748879,'MuJoCo Reference'!E17
+abdomen_com_z,-0.052669455157,'MuJoCo Reference'!F17
+abdomen_ixx,0.0192694037659,'MuJoCo Reference'!G17
+abdomen_ixy,3.86332443514e-05,'MuJoCo Reference'!J17
+abdomen_ixz,0.00171703308228,'MuJoCo Reference'!K17
+abdomen_iyy,0.0129850626848,'MuJoCo Reference'!H17
+abdomen_iyz,0.000107314567643,'MuJoCo Reference'!L17
+abdomen_izz,0.0254507228621,'MuJoCo Reference'!I17
+abdomen_jpos_z,-0.126914349776,'MuJoCo Positions '!E6
+abdomen_length,0.126914349776,'MuJoCo Reference'!C17
+abdomen_mass,2.665,'MuJoCo Reference'!B17
+abdomen_pos_x,0,'MuJoCo Positions '!B6
+abdomen_pos_y,0,'MuJoCo Positions '!C6
+abdomen_pos_z,0.126914349776,'MuJoCo Positions '!D6
+ankle_dorsiflexion,25,'MuJoCo Reference'!G79
+ankle_eversion,19.2,'MuJoCo Reference'!G82
+ankle_inversion,36.2,'MuJoCo Reference'!G81
+ankle_plantarflexion,62.1,'MuJoCo Reference'!G80
+elbow_extension,4.7,'MuJoCo Reference'!G91
+elbow_flexion,150,'MuJoCo Reference'!G90
+foot_left_com_x,0.04455,'MuJoCo Reference'!D24 (mirrored)
+foot_left_com_y,0.006435,'MuJoCo Reference'!E24 (mirrored)
+foot_left_com_z,-0.03597,'MuJoCo Reference'!F24 (mirrored)
+foot_left_ixx,0.000511421625,'MuJoCo Reference'!G24 (mirrored)
+foot_left_ixy,6.37065e-05,'MuJoCo Reference'!J24 (mirrored)
+foot_left_ixz,-0.0001769625,'MuJoCo Reference'!K24 (mirrored)
+foot_left_iyy,0.002167790625,'MuJoCo Reference'!H24 (mirrored)
+foot_left_iyz,-2.8314e-05,'MuJoCo Reference'!L24 (mirrored)
+foot_left_izz,0.002293434,'MuJoCo Reference'!I24 (mirrored)
+foot_left_jpos_z,0,'MuJoCo Positions '!E14 (mirrored)
+foot_left_length,0.165,'MuJoCo Reference'!C24 (mirrored)
+foot_left_mass,0.65,'MuJoCo Reference'!B24 (mirrored)
+foot_left_pos_x,0,'MuJoCo Positions '!B14 (mirrored)
+foot_left_pos_y,0,'MuJoCo Positions '!C14 (mirrored)
+foot_left_pos_z,-0.406965022422,'MuJoCo Positions '!D14 (mirrored)
+foot_right_com_x,0.04455,'MuJoCo Reference'!D24
+foot_right_com_y,-0.006435,'MuJoCo Reference'!E24
+foot_right_com_z,-0.03597,'MuJoCo Reference'!F24
+foot_right_ixx,0.000511421625,'MuJoCo Reference'!G24
+foot_right_ixy,-6.37065e-05,'MuJoCo Reference'!J24
+foot_right_ixz,-0.0001769625,'MuJoCo Reference'!K24
+foot_right_iyy,0.002167790625,'MuJoCo Reference'!H24
+foot_right_iyz,2.8314e-05,'MuJoCo Reference'!L24
+foot_right_izz,0.002293434,'MuJoCo Reference'!I24
+foot_right_jpos_z,0,'MuJoCo Positions '!E14
+foot_right_length,0.165,'MuJoCo Reference'!C24
+foot_right_mass,0.65,'MuJoCo Reference'!B24
+foot_right_pos_x,0,'MuJoCo Positions '!B14
+foot_right_pos_y,0,'MuJoCo Positions '!C14
+foot_right_pos_z,-0.406965022422,'MuJoCo Positions '!D14
+forearm_left_com_x,0.005187,'MuJoCo Reference'!D20 (mirrored)
+forearm_left_com_y,0.004693,'MuJoCo Reference'!E20 (mirrored)
+forearm_left_com_z,-0.101517,'MuJoCo Reference'!F20 (mirrored)
+forearm_left_ixx,0.003484956098,'MuJoCo Reference'!G20 (mirrored)
+forearm_left_ixy,8.2484168e-05,'MuJoCo Reference'!J20 (mirrored)
+forearm_left_ixz,0.00051552605,'MuJoCo Reference'!K20 (mirrored)
+forearm_left_iyy,0.0032220378125,'MuJoCo Reference'!H20 (mirrored)
+forearm_left_iyz,-0.0008712390245,'MuJoCo Reference'!L20 (mirrored)
+forearm_left_izz,0.001010431058,'MuJoCo Reference'!I20 (mirrored)
+forearm_left_jpos_z,0,'MuJoCo Positions '!E10 (mirrored)
+forearm_left_length,0.247,'MuJoCo Reference'!C20 (mirrored)
+forearm_left_mass,0.845,'MuJoCo Reference'!B20 (mirrored)
+forearm_left_pos_x,0,'MuJoCo Positions '!B10 (mirrored)
+forearm_left_pos_y,0,'MuJoCo Positions '!C10 (mirrored)
+forearm_left_pos_z,-0.243,'MuJoCo Positions '!D10 (mirrored)
+forearm_right_com_x,0.005187,'MuJoCo Reference'!D20
+forearm_right_com_y,-0.004693,'MuJoCo Reference'!E20
+forearm_right_com_z,-0.101517,'MuJoCo Reference'!F20
+forearm_right_ixx,0.003484956098,'MuJoCo Reference'!G20
+forearm_right_ixy,-8.2484168e-05,'MuJoCo Reference'!J20
+forearm_right_ixz,0.00051552605,'MuJoCo Reference'!K20
+forearm_right_iyy,0.0032220378125,'MuJoCo Reference'!H20
+forearm_right_iyz,0.0008712390245,'MuJoCo Reference'!L20
+forearm_right_izz,0.001010431058,'MuJoCo Reference'!I20
+forearm_right_jpos_z,0,'MuJoCo Positions '!E10
+forearm_right_length,0.247,'MuJoCo Reference'!C20
+forearm_right_mass,0.845,'MuJoCo Reference'!B20
+forearm_right_pos_x,0,'MuJoCo Positions '!B10
+forearm_right_pos_y,0,'MuJoCo Positions '!C10
+forearm_right_pos_z,-0.243,'MuJoCo Positions '!D10
+hand_left_com_x,0.005467,'MuJoCo Reference'!D21 (mirrored)
+hand_left_com_y,0.003408,'MuJoCo Reference'!E21 (mirrored)
+hand_left_com_z,-0.054528,'MuJoCo Reference'!F21 (mirrored)
+hand_left_ixx,0.0006502511925,'MuJoCo Reference'!G21 (mirrored)
+hand_left_ixy,8.66673925e-05,'MuJoCo Reference'!J21 (mirrored)
+hand_left_ixz,0.0001377831325,'MuJoCo Reference'!K21 (mirrored)
+hand_left_iyy,0.00055113253,'MuJoCo Reference'!H21 (mirrored)
+hand_left_iyz,-0.00012844468,'MuJoCo Reference'!L21 (mirrored)
+hand_left_izz,0.0003029262925,'MuJoCo Reference'!I21 (mirrored)
+hand_left_jpos_z,0,'MuJoCo Positions '!E11 (mirrored)
+hand_left_length,0.071,'MuJoCo Reference'!C21 (mirrored)
+hand_left_mass,0.325,'MuJoCo Reference'!B21 (mirrored)
+hand_left_pos_x,0,'MuJoCo Positions '!B11 (mirrored)
+hand_left_pos_y,0,'MuJoCo Positions '!C11 (mirrored)
+hand_left_pos_z,-0.247,'MuJoCo Positions '!D11 (mirrored)
+hand_right_com_x,0.005467,'MuJoCo Reference'!D21
+hand_right_com_y,-0.003408,'MuJoCo Reference'!E21
+hand_right_com_z,-0.054528,'MuJoCo Reference'!F21
+hand_right_ixx,0.0006502511925,'MuJoCo Reference'!G21
+hand_right_ixy,-8.66673925e-05,'MuJoCo Reference'!J21
+hand_right_ixz,0.0001377831325,'MuJoCo Reference'!K21
+hand_right_iyy,0.00055113253,'MuJoCo Reference'!H21
+hand_right_iyz,0.00012844468,'MuJoCo Reference'!L21
+hand_right_izz,0.0003029262925,'MuJoCo Reference'!I21
+hand_right_jpos_z,0,'MuJoCo Positions '!E11
+hand_right_length,0.071,'MuJoCo Reference'!C21
+hand_right_mass,0.325,'MuJoCo Reference'!B21
+hand_right_pos_x,0,'MuJoCo Positions '!B11
+hand_right_pos_y,0,'MuJoCo Positions '!C11
+hand_right_pos_z,-0.247,'MuJoCo Positions '!D11
+head_neck_com_x,0.00424586188341,'MuJoCo Reference'!D15
+head_neck_com_y,-0.000265366367713,'MuJoCo Reference'!E15
+head_neck_com_z,0.152585661435,'MuJoCo Reference'!F15
+head_neck_ixx,0.0257914592689,'MuJoCo Reference'!G15
+head_neck_ixy,-3.06676091188e-05,'MuJoCo Reference'!J15
+head_neck_ixz,-0.000490681745901,'MuJoCo Reference'!K15
+head_neck_iyy,0.0276008482069,'MuJoCo Reference'!H15
+head_neck_iyz,0,'MuJoCo Reference'!L15
+head_neck_izz,0.0162231652238,'MuJoCo Reference'!I15
+head_neck_jpos_z,0,'MuJoCo Positions '!E8
+head_neck_length,0.265366367713,'MuJoCo Reference'!C15
+head_neck_mass,4.355,'MuJoCo Reference'!B15
+head_neck_pos_x,0,'MuJoCo Positions '!B8
+head_neck_pos_y,0,'MuJoCo Positions '!C8
+head_neck_pos_z,0,'MuJoCo Positions '!D8
+hip_abduction,40.5,'MuJoCo Reference'!G73
+hip_adduction,25.6,'MuJoCo Reference'!G74
+hip_extension,18.1,'MuJoCo Reference'!G72
+hip_external_rotation,44.2,'MuJoCo Reference'!G76
+hip_flexion,133.8,'MuJoCo Reference'!G71
+hip_internal_rotation,44.4,'MuJoCo Reference'!G75
+knee_extension,1.6,'MuJoCo Reference'!G78
+knee_flexion,141.9,'MuJoCo Reference'!G77
+pelvis_com_x,-0.00101007040359,'MuJoCo Reference'!D18
+pelvis_com_y,-0.000224460089686,'MuJoCo Reference'!E18
+pelvis_com_z,-0.0260373704036,'MuJoCo Reference'!F18
+pelvis_ixx,0.0989845173877,'MuJoCo Reference'!G18
+pelvis_ixy,1.19532082342e-05,'MuJoCo Reference'!J18
+pelvis_ixz,-0.0138179087188,'MuJoCo Reference'!K18
+pelvis_iyy,0.0745999725899,'MuJoCo Reference'!H18
+pelvis_iyz,1.19532082342e-05,'MuJoCo Reference'!L18
+pelvis_izz,0.119532082342,'MuJoCo Reference'!I18
+pelvis_jpos_z,0,'MuJoCo Positions '!E5
+pelvis_length,0.112230044843,'MuJoCo Reference'!C18
+pelvis_mass,9.49,'MuJoCo Reference'!B18
+pelvis_pos_x,0,'MuJoCo Positions '!B5
+pelvis_pos_y,0,'MuJoCo Positions '!C5
+pelvis_pos_z,0.964735874439,'MuJoCo Positions '!D5
+shank_left_com_x,-0.0199412860987,'MuJoCo Reference'!D23 (mirrored)
+shank_left_com_y,0.0126159156951,'MuJoCo Reference'!E23 (mirrored)
+shank_left_com_z,-0.164413869058,'MuJoCo Reference'!F23 (mirrored)
+shank_left_ixx,0.0379800998191,'MuJoCo Reference'!G23 (mirrored)
+shank_left_ixy,4.84440048713e-05,'MuJoCo Reference'!J23 (mirrored)
+shank_left_ixz,0.000193776019485,'MuJoCo Reference'!K23 (mirrored)
+shank_left_iyy,0.0379800998191,'MuJoCo Reference'!H23 (mirrored)
+shank_left_iyz,0.00174398417537,'MuJoCo Reference'!L23 (mirrored)
+shank_left_izz,0.00484440048713,'MuJoCo Reference'!I23 (mirrored)
+shank_left_jpos_z,0,'MuJoCo Positions '!E13 (mirrored)
+shank_left_length,0.406965022422,'MuJoCo Reference'!C23 (mirrored)
+shank_left_mass,2.925,'MuJoCo Reference'!B23 (mirrored)
+shank_left_pos_x,0,'MuJoCo Positions '!B13 (mirrored)
+shank_left_pos_y,0,'MuJoCo Positions '!C13 (mirrored)
+shank_left_pos_z,-0.397525112108,'MuJoCo Positions '!D13 (mirrored)
+shank_right_com_x,-0.0199412860987,'MuJoCo Reference'!D23
+shank_right_com_y,-0.0126159156951,'MuJoCo Reference'!E23
+shank_right_com_z,-0.164413869058,'MuJoCo Reference'!F23
+shank_right_ixx,0.0379800998191,'MuJoCo Reference'!G23
+shank_right_ixy,-4.84440048713e-05,'MuJoCo Reference'!J23
+shank_right_ixz,0.000193776019485,'MuJoCo Reference'!K23
+shank_right_iyy,0.0379800998191,'MuJoCo Reference'!H23
+shank_right_iyz,-0.00174398417537,'MuJoCo Reference'!L23
+shank_right_izz,0.00484440048713,'MuJoCo Reference'!I23
+shank_right_jpos_z,0,'MuJoCo Positions '!E13
+shank_right_length,0.406965022422,'MuJoCo Reference'!C23
+shank_right_mass,2.925,'MuJoCo Reference'!B23
+shank_right_pos_x,0,'MuJoCo Positions '!B13
+shank_right_pos_y,0,'MuJoCo Positions '!C13
+shank_right_pos_z,-0.397525112108,'MuJoCo Positions '!D13
+shoulder_abduction,182.7,'MuJoCo Reference'!G89
+shoulder_extension,57.3,'MuJoCo Reference'!G88
+shoulder_flexion,172,'MuJoCo Reference'!G87
+target_mass,65,'BSIP Reference'!B1
+target_stature,1.7,'BSIP Reference'!B2
+thigh_left_com_x,-0.0306094336323,'MuJoCo Reference'!D22 (mirrored)
+thigh_left_com_y,0.00357772600897,'MuJoCo Reference'!E22 (mirrored)
+thigh_left_com_z,-0.149866967265,'MuJoCo Reference'!F22 (mirrored)
+thigh_left_ixx,0.144118169569,'MuJoCo Reference'!G22 (mirrored)
+thigh_left_ixy,-0.000599867511214,'MuJoCo Reference'!J22 (mirrored)
+thigh_left_ixz,0.00734837701238,'MuJoCo Reference'!K22 (mirrored)
+thigh_left_iyy,0.153566082871,'MuJoCo Reference'!H22 (mirrored)
+thigh_left_iyz,-0.00734837701238,'MuJoCo Reference'!L22 (mirrored)
+thigh_left_izz,0.0541380428871,'MuJoCo Reference'!I22 (mirrored)
+thigh_left_jpos_z,0,'MuJoCo Positions '!E12 (mirrored)
+thigh_left_length,0.397525112108,'MuJoCo Reference'!C22 (mirrored)
+thigh_left_mass,9.49,'MuJoCo Reference'!B22 (mirrored)
+thigh_left_pos_x,0.0566394618834,'MuJoCo Positions '!B12 (mirrored)
+thigh_left_pos_y,0.0923013452915,'MuJoCo Positions '!C12 (mirrored)
+thigh_left_pos_z,-0.0975457399103,'MuJoCo Positions '!D12 (mirrored)
+thigh_right_com_x,-0.0306094336323,'MuJoCo Reference'!D22
+thigh_right_com_y,-0.00357772600897,'MuJoCo Reference'!E22
+thigh_right_com_z,-0.149866967265,'MuJoCo Reference'!F22
+thigh_right_ixx,0.144118169569,'MuJoCo Reference'!G22
+thigh_right_ixy,0.000599867511214,'MuJoCo Reference'!J22
+thigh_right_ixz,0.00734837701238,'MuJoCo Reference'!K22
+thigh_right_iyy,0.153566082871,'MuJoCo Reference'!H22
+thigh_right_iyz,0.00734837701238,'MuJoCo Reference'!L22
+thigh_right_izz,0.0541380428871,'MuJoCo Reference'!I22
+thigh_right_jpos_z,0,'MuJoCo Positions '!E12
+thigh_right_length,0.397525112108,'MuJoCo Reference'!C22
+thigh_right_mass,9.49,'MuJoCo Reference'!B22
+thigh_right_pos_x,0.0566394618834,'MuJoCo Positions '!B12
+thigh_right_pos_y,-0.0923013452915,'MuJoCo Positions '!C12
+thigh_right_pos_z,-0.0975457399103,'MuJoCo Positions '!D12
+thorax_com_x,0.00689428116592,'MuJoCo Reference'!D16
+thorax_com_y,-0.000328299103139,'MuJoCo Reference'!E16
+thorax_com_z,-0.173341926457,'MuJoCo Reference'!F16
+thorax_ixx,0.280244896072,'MuJoCo Reference'!G16
+thorax_ixy,0.00165825382291,'MuJoCo Reference'!J16
+thorax_ixz,-0.0265320611666,'MuJoCo Reference'!K16
+thorax_iyy,0.225706770341,'MuJoCo Reference'!H16
+thorax_iyz,-0.000184250424768,'MuJoCo Reference'!L16
+thorax_izz,0.200648712572,'MuJoCo Reference'!I16
+thorax_jpos_z,-0.328299103139,'MuJoCo Positions '!E7
+thorax_length,0.328299103139,'MuJoCo Reference'!C16
+thorax_mass,17.095,'MuJoCo Reference'!B16
+thorax_pos_x,0,'MuJoCo Positions '!B7
+thorax_pos_y,0,'MuJoCo Positions '!C7
+thorax_pos_z,0.328299103139,'MuJoCo Positions '!D7
+upper_arm_left_com_x,-0.017739,'MuJoCo Reference'!D19 (mirrored)
+upper_arm_left_com_y,-0.006804,'MuJoCo Reference'!E19 (mirrored)
+upper_arm_left_com_z,-0.110322,'MuJoCo Reference'!F19 (mirrored)
+upper_arm_left_ixx,0.009195523623,'MuJoCo Reference'!G19 (mirrored)
+upper_arm_left_ixy,-0.000211100175,'MuJoCo Reference'!J19 (mirrored)
+upper_arm_left_ixz,7.5996063e-05,'MuJoCo Reference'!K19 (mirrored)
+upper_arm_left_iyy,0.009195523623,'MuJoCo Reference'!H19 (mirrored)
+upper_arm_left_iyz,0.001655025372,'MuJoCo Reference'!L19 (mirrored)
+upper_arm_left_izz,0.002440318023,'MuJoCo Reference'!I19 (mirrored)
+upper_arm_left_jpos_z,0,'MuJoCo Positions '!E9 (mirrored)
+upper_arm_left_length,0.243,'MuJoCo Reference'!C19 (mirrored)
+upper_arm_left_mass,1.43,'MuJoCo Reference'!B19 (mirrored)
+upper_arm_left_pos_x,0.013794347058,'MuJoCo Positions '!B9 (mirrored)
+upper_arm_left_pos_y,0.192059755192,'MuJoCo Positions '!C9 (mirrored)
+upper_arm_left_pos_z,-0.0774605642489,'MuJoCo Positions '!D9 (mirrored)
+upper_arm_right_com_x,-0.017739,'MuJoCo Reference'!D19
+upper_arm_right_com_y,0.006804,'MuJoCo Reference'!E19
+upper_arm_right_com_z,-0.110322,'MuJoCo Reference'!F19
+upper_arm_right_ixx,0.009195523623,'MuJoCo Reference'!G19
+upper_arm_right_ixy,0.000211100175,'MuJoCo Reference'!J19
+upper_arm_right_ixz,7.5996063e-05,'MuJoCo Reference'!K19
+upper_arm_right_iyy,0.009195523623,'MuJoCo Reference'!H19
+upper_arm_right_iyz,-0.001655025372,'MuJoCo Reference'!L19
+upper_arm_right_izz,0.002440318023,'MuJoCo Reference'!I19
+upper_arm_right_jpos_z,0,'MuJoCo Positions '!E9
+upper_arm_right_length,0.243,'MuJoCo Reference'!C19
+upper_arm_right_mass,1.43,'MuJoCo Reference'!B19
+upper_arm_right_pos_x,0.013794347058,'MuJoCo Positions '!B9
+upper_arm_right_pos_y,-0.192059755192,'MuJoCo Positions '!C9
+upper_arm_right_pos_z,-0.0774605642489,'MuJoCo Positions '!D9
+wrist_extension,74,'MuJoCo Reference'!G93
+wrist_flexion,74.8,'MuJoCo Reference'!G92
