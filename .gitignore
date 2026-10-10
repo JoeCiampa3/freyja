@@ -28,3 +28,6 @@ project-valkyrie-*.json
 # Build leftovers
 sim/models/freyja_FAILED.xml
 sim/archive/
+
+# Last advisory results written by the build gate
+checks/last_run.json

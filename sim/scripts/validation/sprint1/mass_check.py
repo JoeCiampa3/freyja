@@ -1,25 +1,28 @@
-#checks model mass without having to run the pre_processor
-import mujoco
+# Whole-body mass and CoM of models/freyja.xml, with the targets read from params/snapshot.csv.
+# The logic lives in checks/mjcf_checks.py (check.mjcf.mass_closure and check.mjcf.com); this
+# script only prints it. Run from anywhere:  python sim/scripts/validation/sprint1/mass_check.py
+import sys
+from pathlib import Path
 
-targ_stature = 1.7 #target height, m
-targ_mass = 65.0 #target mass, kg
+sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "checks"))
 
-model = mujoco.MjModel.from_xml_path("models/freyja.xml")
-data = mujoco.MjData(model)
-mujoco.mj_forward(model, data)
+import checklib as cl  # noqa: E402
+import mjcf_checks  # noqa: E402,F401  (registers the checks)
 
+ctx = cl.Context.from_files()
+r = mjcf_checks.com_report(ctx)
 
-mass =  sum(model.body_mass[1:])
-mass_error = abs((targ_mass - mass) / targ_mass) * 100
-print(f"Expected mass: {targ_mass:.4}kg")
-print(f"Model mass: {mass:.4}kg. Percent error: {mass_error:.4}%")
+if r["target_mass_kg"] is None:
+    print(f"Model mass: {r['mass_kg']:.4}kg (no target_mass in the snapshot)")
+else:
+    print(f"Expected mass: {r['target_mass_kg']:.4}kg")
+    print(f"Model mass: {r['mass_kg']:.4}kg. Percent error: {r['mass_error_pct']:.4}%")
 
-
-#whole body com
-whole_body_com = data.subtree_com[0]
-print(f"Whole body CoM anterior/posterior (x in MJC): {whole_body_com[0] * 1000:.4}mm")
-print(f"Whole body lateral (y) in MJC: {abs(whole_body_com[1]) * 1000:.4}mm")
-print(f"Whole body vertical CoM (z in MJC): {whole_body_com[2] * 1000:.4}mm")
-print(f"Whole body vertical CoM as a percentage of height: {whole_body_com[2] / targ_stature * 100:.4}%")
-
-
+x, y, z = r["com_m"]
+print(f"Whole body CoM anterior/posterior (x in MJC): {x * 1000:.4}mm")
+print(f"Whole body lateral (y) in MJC: {abs(y) * 1000:.4}mm")
+print(f"Whole body vertical CoM (z in MJC): {z * 1000:.4}mm")
+if r["pct_stature"] is None:
+    print("Whole body vertical CoM as a percentage of height: no target_stature in the snapshot")
+else:
+    print(f"Whole body vertical CoM as a percentage of height: {r['pct_stature']:.4}%")

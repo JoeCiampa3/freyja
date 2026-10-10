@@ -1,0 +1,88 @@
+# check.mjcf.joint_signs: the expected sign of every hinge, written independently of the template axes.
+#
+# status: DRAFT   <- Claude drafted this file. Until Joe changes it to `approved` the check reports
+#                    as advisory and cannot block a build. Review every row, especially the groups
+#                    marked PROPOSED, then edit the status line.
+#
+# How a row is used. At neutral the check sets ONE joint to +0.1 rad (all others at 0), runs forward
+# kinematics, and moves `probe` (a point in the frame of the joint's own body) with it. The world
+# displacement of that point along `axis` (x anterior, y left, z up in MuJoCo) must have the given
+# `sign` and move by at least 1 mm. "Positive" is the movement named by the UPPER limit of the joint's
+# range in the template (range="-extension flexion" means positive is flexion), because the sheet
+# stores magnitudes and the template decides the sign.
+#
+# Coordinates. MuJoCo here: +x anterior, +y subject's left, +z up. ISB (Wu 2002, 2005) is x anterior,
+# y up, z right, so ISB z (right) is MuJoCo -y. Clinical names are used, so a row is checked against
+# the anatomical movement and not against any axis arithmetic:
+#   flexion          the distal segment swings forward (hip, shoulder, elbow, spine, neck); the
+#                    knee is the exception, its flexion swings the heel backward
+#   adduction        distal segment moves toward the midline (right limb: +y, left limb: -y)
+#   internal rot.    the anterior surface turns toward the midline (right: +y, left: -y)
+#   inversion        the sole turns toward the midline (right: +y, left: -y)
+#
+# WRIST. The wrist rotates about the anteroposterior axis, not the mediolateral one, because the
+# neutral hand is mid-pronation (palms toward the thighs). Flexion therefore moves the hand toward
+# the palm side, i.e. toward the midline: right hand +y, left hand -y.
+#
+# Sources: Wu et al. 2002 (hip, knee, ankle), Wu et al. 2005 (shoulder, elbow, wrist), both ISB
+# recommendations; the sign comments already in freyja_template.xml. Wu 2002 is in data/literature;
+# Wu 2005 is not, so the upper-limb groups are cited but not re-read here.
+#
+# PROPOSED groups (no sheet ROM or no ISB definition decides them): spine and neck lateral bending
+# and axial rotation. The sheet gives symmetric limits there, so the sign is a convention. The rows
+# below use right-hand rotation about the ISB axes: lateral bending positive toward the RIGHT, axial
+# rotation positive toward the LEFT (counterclockwise seen from above). Change them if the controller
+# will use another convention.
+
+schema: joint-polarity/1
+status: DRAFT
+angle_rad: 0.1
+
+joints:
+  # ---- hip (thigh frame, origin at the hip joint centre) -------------------------------------
+  hip_fe_right:  {probe: [0, 0, -0.3], axis: x, sign: 1,  positive: flexion,           why: "flexion swings the knee forward"}
+  hip_fe_left:   {probe: [0, 0, -0.3], axis: x, sign: 1,  positive: flexion,           why: "flexion swings the knee forward"}
+  hip_aa_right:  {probe: [0, 0, -0.3], axis: y, sign: 1,  positive: adduction,         why: "right knee moves toward the midline, which is +y"}
+  hip_aa_left:   {probe: [0, 0, -0.3], axis: y, sign: -1, positive: adduction,         why: "left knee moves toward the midline, which is -y"}
+  hip_ier_right: {probe: [0.1, 0, 0],  axis: y, sign: 1,  positive: internal rotation, why: "the front of the right thigh turns toward the midline (+y)"}
+  hip_ier_left:  {probe: [0.1, 0, 0],  axis: y, sign: -1, positive: internal rotation, why: "the front of the left thigh turns toward the midline (-y)"}
+
+  # ---- knee (shank frame, origin at the knee) ------------------------------------------------
+  knee_right: {probe: [0, 0, -0.4], axis: x, sign: -1, positive: flexion, why: "knee flexion swings the heel backward"}
+  knee_left:  {probe: [0, 0, -0.4], axis: x, sign: -1, positive: flexion, why: "knee flexion swings the heel backward"}
+
+  # ---- ankle (foot frame, origin at the ankle joint centre) ----------------------------------
+  ankle_pdflex_right: {probe: [0.12, 0, -0.03], axis: z, sign: 1,  positive: dorsiflexion, why: "dorsiflexion lifts the toes"}
+  ankle_pdflex_left:  {probe: [0.12, 0, -0.03], axis: z, sign: 1,  positive: dorsiflexion, why: "dorsiflexion lifts the toes"}
+  ankle_ie_right:     {probe: [0, 0, -0.06],    axis: y, sign: 1,  positive: inversion,    why: "the right sole turns toward the midline (+y)"}
+  ankle_ie_left:      {probe: [0, 0, -0.06],    axis: y, sign: -1, positive: inversion,    why: "the left sole turns toward the midline (-y)"}
+
+  # ---- shoulder (upper-arm frame, origin at the shoulder joint centre) -----------------------
+  shoulder_fe_right:  {probe: [0, 0, -0.25], axis: x, sign: 1,  positive: flexion,           why: "flexion raises the arm forward"}
+  shoulder_fe_left:   {probe: [0, 0, -0.25], axis: x, sign: 1,  positive: flexion,           why: "flexion raises the arm forward"}
+  shoulder_aa_right:  {probe: [0, 0, -0.25], axis: y, sign: 1,  positive: adduction,         why: "right elbow moves toward the midline (+y)"}
+  shoulder_aa_left:   {probe: [0, 0, -0.25], axis: y, sign: -1, positive: adduction,         why: "left elbow moves toward the midline (-y)"}
+  shoulder_ier_right: {probe: [0.05, 0, 0],  axis: y, sign: 1,  positive: internal rotation, why: "the front of the right arm turns toward the midline (+y)"}
+  shoulder_ier_left:  {probe: [0.05, 0, 0],  axis: y, sign: -1, positive: internal rotation, why: "the front of the left arm turns toward the midline (-y)"}
+
+  # ---- elbow (forearm frame, origin at the elbow) --------------------------------------------
+  elbow_right: {probe: [0, 0, -0.25], axis: x, sign: 1, positive: flexion, why: "flexion brings the hand forward and up"}
+  elbow_left:  {probe: [0, 0, -0.25], axis: x, sign: 1, positive: flexion, why: "flexion brings the hand forward and up"}
+
+  # ---- wrist (hand frame, origin at the wrist). About the AP axis, see the note at the top ---
+  wrist_right: {probe: [0, 0, -0.07], axis: y, sign: 1,  positive: flexion, why: "mid-pronation: the palm faces the thigh, so flexion moves the hand toward +y"}
+  wrist_left:  {probe: [0, 0, -0.07], axis: y, sign: -1, positive: flexion, why: "mid-pronation: the palm faces the thigh, so flexion moves the hand toward -y"}
+
+  # ---- spine and neck. The body origin is at the DISTAL end (top) and the joint sits below or at it,
+  # ---- so the probe is a point ABOVE the joint and flexion moves it forward -------------------
+  lsj_fe:  {probe: [0, 0, 0],    axis: x, sign: 1,  positive: flexion, why: "lumbosacral flexion bends the trunk forward"}
+  tj_fe:   {probe: [0, 0, 0],    axis: x, sign: 1,  positive: flexion, why: "thoracic flexion bends the upper trunk forward"}
+  cj_fe:   {probe: [0, 0, 0.15], axis: x, sign: 1,  positive: flexion, why: "cervical flexion nods the head forward"}
+  # PROPOSED: lateral bending positive toward the right (right-hand rotation about the anterior axis)
+  lsj_lat: {probe: [0, 0, 0],    axis: y, sign: -1, positive: lateral bending to the right, why: "PROPOSED convention; the sheet range is symmetric"}
+  tj_lat:  {probe: [0, 0, 0],    axis: y, sign: -1, positive: lateral bending to the right, why: "PROPOSED convention; no ROM in the sheet yet"}
+  cj_lat:  {probe: [0, 0, 0.15], axis: y, sign: -1, positive: lateral bending to the right, why: "PROPOSED convention; no ROM in the sheet yet"}
+  # PROPOSED: axial rotation positive toward the left (right-hand rotation about the vertical axis)
+  lsj_ax:  {probe: [0.1, 0, 0],  axis: y, sign: 1,  positive: axial rotation to the left, why: "PROPOSED convention; the sheet range is symmetric"}
+  tj_ax:   {probe: [0.1, 0, 0],  axis: y, sign: 1,  positive: axial rotation to the left, why: "PROPOSED convention; no ROM in the sheet yet"}
+  cj_ax:   {probe: [0.1, 0, 0.1], axis: y, sign: 1, positive: axial rotation to the left, why: "PROPOSED convention; no ROM in the sheet yet"}

@@ -120,14 +120,17 @@ Checks live in `checks/`, run under pytest (which also collects the existing uni
 
 A **gate** check blocks installation of a new `freyja.xml`; the last good model stays in place. An **advisory** check reports and never blocks. Checks run offline, deterministically, and in seconds. Every tolerance is a named constant with its unit and its reason in a comment. Every check has a mutation test: a deliberately broken copy of the model on which the check must fail.
 
-Known deviations are recorded in `checks/waivers.yaml`. A waived check still runs and reports as WAIVED. A waiver on a check that now passes produces a warning.
+Known deviations are recorded in `checks/waivers.yaml`. A waived check still runs and reports as WAIVED. A waiver on a check that now passes produces a warning, as does one that names an unknown check or is past its `review_by` date. A waiver takes effect only with `confirmed: true`; Claude may propose one with `confirmed: false`, and Joe confirms it.
+
+The machinery is `checks/checklib.py` (registry, context, waivers, `run_checks`), shared by pytest, the build gate and `fy check`; the checks are in `checks/mjcf_checks.py`. A check returns one or more results, and a result may carry its own ID (`check.mjcf.mass_closure.target` is the advisory half of `check.mjcf.mass_closure`). A check whose ID is unknown to the registry cannot be waived. `checks/joint_polarity.yaml` carries `status: DRAFT` until Joe approves it; while it is DRAFT, `check.mjcf.joint_signs` reports as advisory.
 
 ```yaml
-- check: check.mjcf.com_pct_stature     # DRAFT example, confirm before committing
+- check: check.mjcf.com_pct_stature
   reason: Whole-body CoM at 55.26% of stature, ~0.1% below the Virmavirta & Isolehto band
   source: docs/memos/memo1b.md          # Validations section
   recorded: YYYY-MM-DD
   review_by: YYYY-MM-DD
+  confirmed: true                       # false = proposed, has no effect
 ```
 
 ## 8. Records
