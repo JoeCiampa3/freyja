@@ -14,7 +14,7 @@ SETUP (once): put the sheet ID and the path to the service-account key in
 TO REBUILD AUTOMATICALLY whenever the sheet changes, leave scripts\\watch.py running
     (it imports build_model() from this file, so both always behave the same).
 
-HOW TO RUN (from the freyja-sim folder, using the project's virtual environment)
+HOW TO RUN (from the sim/ folder, using the project's virtual environment)
     freyja.venv\\Scripts\\python scripts\\pre_processor.py
     freyja.venv\\Scripts\\python scripts\\pre_processor.py --xlsx "C:\\path\\to\\sheet.xlsx"
         works offline from a downloaded copy of the sheet (needs: pip install openpyxl)
@@ -80,12 +80,12 @@ import numpy as np
 # SETTINGS  (the only section you should normally need to touch)
 # =============================================================================
 HERE = Path(__file__).resolve().parent
-ROOT = HERE.parent  # the freyja-sim folder
+ROOT = HERE.parent  # the sim/ folder
 
 # The sheet ID and the service-account key path are NOT stored in this file.
 # They come from (first match wins):
 #   1. environment variables  FREYJA_SHEET_KEY and FREYJA_CREDENTIALS
-#   2. local_config.json in the freyja-sim folder (git-ignored; copy
+#   2. local_config.json in the sim/ folder (git-ignored; copy
 #      local_config.example.json to start one)
 CONFIG_FILE = ROOT / "local_config.json"
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]  # read-only
@@ -271,7 +271,7 @@ class GoogleSheetSource:
         if not self.sheet_key or not cred_path:
             raise SheetAccessError(
                 "The sheet ID and/or credentials path are not configured.\n"
-                f"  Copy local_config.example.json to {CONFIG_FILE.name} (in the freyja-sim folder) and fill it in,\n"
+                f"  Copy local_config.example.json to {CONFIG_FILE.name} (in the sim/ folder) and fill it in,\n"
                 "  or set the environment variables FREYJA_SHEET_KEY and FREYJA_CREDENTIALS.", fatal=True)
         if not Path(cred_path).exists():
             raise SheetAccessError(f"Credentials file not found:\n  {cred_path}\n"

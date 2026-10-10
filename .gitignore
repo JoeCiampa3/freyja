@@ -17,3 +17,14 @@ MUJOCO_LOG.TXT
 .DS_Store
 Thumbs.db
 .vscode/
+
+# Secrets (also covered in sim/.gitignore)
+project-valkyrie-*.json
+*service-account*.json
+*service_account*.json
+*credentials*.json
+*.pem
+
+# Build leftovers
+sim/models/freyja_FAILED.xml
+sim/archive/
