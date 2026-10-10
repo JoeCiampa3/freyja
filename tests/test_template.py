@@ -107,6 +107,8 @@ class DerivedKeys(unittest.TestCase):
         self.assertAlmostEqual(d["foot_right_box_half_z"], 0.025)  # ankle 0.05 above the floor
         self.assertAlmostEqual(d["foot_right_box_pos_z"], -0.025)
         self.assertNotIn("foot_left_box_half_z", d)  # left chain not supplied
+        self.assertAlmostEqual(d["foot_right_sole_z"], -0.05)  # site_sole: ankle minus the ankle height
+        self.assertNotIn("foot_left_sole_z", d)
 
     def test_head_top_is_the_vertex(self):
         d = pp.derive_keys({"head_neck_length": 0.27})
@@ -269,6 +271,17 @@ class NeutralPose(unittest.TestCase):
 
     def test_scaled_model_compiles(self):
         self.pose(1.05)
+
+    def test_sites_mark_the_vertex_and_the_soles(self):
+        for f in (1.0, 1.05):
+            v = scaled(snapshot_values(), f)
+            model, data = self.pose(f)
+            vertex = data.site_xpos[model.site("site_vertex").id]
+            cervical = data.xpos[model.body("head_and_neck").id]
+            self.assertAlmostEqual(vertex[2] - cervical[2], v["head_neck_length"], places=9)  # CJC + head_neck_length
+            for side in ("right", "left"):
+                sole = data.site_xpos[model.site(f"site_sole_{side}").id]
+                self.assertAlmostEqual(sole[2], 0.0, places=9)  # AJC minus the ankle height is the floor
 
 
 if __name__ == "__main__":

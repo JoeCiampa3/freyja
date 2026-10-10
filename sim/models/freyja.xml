@@ -32,6 +32,7 @@
                     <body name="foot_right" pos="0 0 -0.406965022422">
                         <inertial pos="0.04455 -0.006435 -0.03597" mass="0.65" fullinertia="0.000511421625 0.002167790625 0.002293434 -6.37065e-05 -0.0001769625 2.8314e-05"/>
                         <geom type="box" pos="0.04125 0 -0.03135" size="0.0825 0.050 0.03135" friction="1.0 0.005 0.0001" condim="3" rgba="0.82 0.71 0.55 1.0"/> <!--sole on the floor at neutral. extend condim to 4 for foot turning--> <!--design choice, no sheet source-->
+                        <site name="site_sole_right" pos="0 0 -0.0627"/> <!--ankle joint centre minus the ankle height: the floor at neutral-->
                         <joint name="ankle_pdflex_right" type="hinge" axis="0 -1 0" limited="true" range="-62.1 25"/> <!--pdflex=plantar/dorsiflexion-->
                         <joint name="ankle_ie_right" type="hinge" axis="1 0 0" limited="true" range="-19.2 36.2"/> <!--ie=inversion/eversion-->
                     </body>
@@ -55,6 +56,7 @@
                     <body name="foot_left" pos="0 0 -0.406965022422">
                         <inertial pos="0.04455 0.006435 -0.03597" mass="0.65" fullinertia="0.000511421625 0.002167790625 0.002293434 6.37065e-05 -0.0001769625 -2.8314e-05"/>
                         <geom type="box" pos="0.04125 0 -0.03135" size="0.0825 0.050 0.03135" friction="1.0 0.005 0.0001" condim="3" rgba="0.82 0.71 0.55 1.0"/> <!--sole on the floor at neutral. extend condim to 4 for foot turning--> <!--design choice, no sheet source-->
+                        <site name="site_sole_left" pos="0 0 -0.0627"/> <!--ankle joint centre minus the ankle height: the floor at neutral-->
                         <joint name="ankle_pdflex_left" type="hinge" axis="0 -1 0" limited="true" range="-62.1 25"/> <!--pdflex=plantar/dorsiflexion-->
                         <joint name="ankle_ie_left" type="hinge" axis="-1 0 0" limited="true" range="-19.2 36.2"/> <!--ie=inversion/eversion-->
                     </body>
@@ -127,6 +129,7 @@
                         <inertial pos="0.00424586188341 -0.000265366367713 0.152585661435" mass="4.355" fullinertia="0.0257914592689 0.0276008482069 0.0162231652238 -3.06676091188e-05 -0.000490681745901 0"/>
                         <geom type="ellipsoid" pos="0 0 0.170366367713" size="0.09 0.072 0.095" mass="0" rgba="0.82 0.71 0.55 1.0"/> <!--top of the head is the vertex--> <!--design choice, no sheet source-->
                         <geom type="capsule" fromto="0 0 0.045 0 0 0.170366367713" size="0.045" mass="0" rgba="0.82 0.71 0.55 1.0"/> <!--neck: tip at the cervical joint, ends in the head-->
+                        <site name="site_vertex" pos="0 0 0.265366367713"/> <!--vertex = cervical joint + head_neck_length; the stature check reads it-->
                         <joint name="cj_fe" type="hinge" axis="0 -1 0" /> <!--cj_fe= cervical joint flexion/extension. FIXME add rom when available-->
                         <joint name="cj_lat" type="hinge" axis="1 0 0"/> <!--cj_lat= cervical  joint lateral bending FIXME add rom when available-->
                         <joint name="cj_ax" type="hinge" axis="0 0 1"/> <!--cj_ax= cervical  joint axial bending FIXME add rom when available-->

@@ -1,8 +1,8 @@
 {
-  "model_sha256": "9150fd4dd25cabdcc6ca4a66cd8660e6523fcc4c93e4d28334ba1203d4fc71cc",
+  "model_sha256": "5ec4a96466bf81683a46e621bf724253ad1dbd186084a3abed6239e2ba395b1f",
   "pre_processor_commit": "c345d516e20691792fe6e7f7d90fb177d8b6e3c4",
   "schema": "params/snapshot/1",
   "sheet_fingerprint": "b07ec82748b6",
   "snapshot_sha256": "4db751576eb9162a684f9012a9ed12d535c63282bc86acb2ed3b15c40089a5d9",
-  "template_sha256": "584d09bdb1d8ef13806aaca1929408bc7e1a552252dd9516b20f77c80e0cdea9"
+  "template_sha256": "b01edcf06dad38a284dc0cf3e7b4f942c2f499b1b47a765497b6f1925d829850"
 }

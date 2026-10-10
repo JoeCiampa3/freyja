@@ -706,6 +706,7 @@ def derive_keys(values: dict) -> dict:
       shoulder_radius, trapezius_radius, trapezius_start_z   shoulder girdle and the slope to the neck
       foot_<s>_box_pos_x / _half_x               foot length / 4 and / 2 (the collision box)
       foot_<s>_box_pos_z / _half_z               sole on the floor: box from the ankle height down to z=0
+      foot_<s>_sole_z                            -(ankle height): the sole, for site_sole_<s>
       pelvis_radius                              hip girdle capsule
       head_neck_head_z / _head_half_z            head ellipsoid whose top is the vertex
       head_neck_neck_radius / _start_z           neck capsule from the cervical joint into the head"""
@@ -726,6 +727,7 @@ def derive_keys(values: dict) -> dict:
             ankle = sum(chain)  # ankle height above the floor in the neutral pose
             out[f"foot_{side}_box_pos_z"] = -ankle / 2
             out[f"foot_{side}_box_half_z"] = ankle / 2
+            out[f"foot_{side}_sole_z"] = -ankle  # site_sole, in the foot frame
     for seg, factor in HANG_HALF_FACTOR.items():
         if (L := values.get(f"{seg}_length")) is not None:
             out[f"{seg}_mid_z"] = -L / 2
