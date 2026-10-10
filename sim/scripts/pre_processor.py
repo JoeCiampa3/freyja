@@ -679,26 +679,56 @@ def render_counted(text: str, values: dict, report: Report, strict: bool = False
 
 # Derived keys: sheet values combined in the one way the template geometry needs.
 # The placeholder language stays closed; these are the only names that are not in the sheet.
-# Radii are design choices (they also appear in the template, marked as such).
-KNEE_SPHERE_OFFSET_M = 0.05  # design choice, no sheet source: the thigh capsule radius
-UPPER_ARM_CAP_RADIUS_M = 0.03  # design choice, no sheet source: the upper-arm capsule radius
+# A capsule's end spheres stick out by one radius, so the centres sit one radius inside the
+# joints; that is why geometry needs the radii here. All radii are design choices.
+CAPSULE_RADII_M = {"thigh": 0.05, "shank": 0.04, "upper_arm": 0.03, "forearm": 0.02}  # design choice, no sheet source
+KNEE_SPHERE_RADIUS_M = 0.045  # design choice, no sheet source: sphere centred on the knee
+PELVIS_RADIUS_M = 0.055  # design choice, no sheet source
+NECK_RADIUS_M = 0.05  # design choice, no sheet source
+HEAD_RADIUS_M = 0.085  # design choice, no sheet source
+HANGING = ["abdomen", "thorax", "hand_right", "hand_left"]  # body origin at the distal end, segment hangs below
 
 
 def derive_keys(values: dict) -> dict:
     """{name: float} -> {derived name: float}. A key is only produced when its inputs exist.
-      foot_<s>_box_pos_x       foot length / 4   (foot collision box centre, x)
-      foot_<s>_box_half_x      foot length / 2   (foot collision box half length)
-      thigh_<s>_knee_sphere_z  -(thigh length + radius)
-      upper_arm_<s>_capsule_end_z  -(upper-arm length - radius), so the cap ends at the elbow"""
+      <seg>_<s>_radius, _cap_top_z, _cap_bot_z   thigh/shank/upper_arm/forearm capsule: tip at the
+                                                 proximal joint (z=0), tip at the distal joint (z=-length)
+      knee_<s>_sphere_radius                     sphere centred on the knee (shank frame origin)
+      <abdomen|thorax|hand_<s>>_mid_z, _half_z   ellipsoid spanning the whole segment
+      foot_<s>_box_pos_x / _half_x               foot length / 4 and / 2 (the collision box)
+      foot_<s>_box_pos_z / _half_z               sole on the floor: box from the ankle height down to z=0
+      pelvis_radius, pelvis_cap_top_z            hip girdle capsule and the column up to the lumbosacral joint
+      head_neck_sphere_z / _radius               head sphere whose top is the vertex
+      head_neck_neck_radius / _start_z           neck capsule from the cervical joint into the head"""
     out = {}
     for side in ("right", "left"):
+        for seg, r in CAPSULE_RADII_M.items():
+            if (L := values.get(f"{seg}_{side}_length")) is not None:
+                out[f"{seg}_{side}_radius"] = r
+                out[f"{seg}_{side}_cap_top_z"] = -r
+                out[f"{seg}_{side}_cap_bot_z"] = -(L - r)
+        if f"shank_{side}_length" in values:
+            out[f"knee_{side}_sphere_radius"] = KNEE_SPHERE_RADIUS_M
         if (L := values.get(f"foot_{side}_length")) is not None:
             out[f"foot_{side}_box_pos_x"] = L / 4
             out[f"foot_{side}_box_half_x"] = L / 2
-        if (L := values.get(f"thigh_{side}_length")) is not None:
-            out[f"thigh_{side}_knee_sphere_z"] = -(L + KNEE_SPHERE_OFFSET_M)
-        if (L := values.get(f"upper_arm_{side}_length")) is not None:
-            out[f"upper_arm_{side}_capsule_end_z"] = -(L - UPPER_ARM_CAP_RADIUS_M)
+        chain = [values.get(k) for k in ("pelvis_pos_z", f"thigh_{side}_pos_z", f"shank_{side}_pos_z", f"foot_{side}_pos_z")]
+        if None not in chain:
+            ankle = sum(chain)  # ankle height above the floor in the neutral pose
+            out[f"foot_{side}_box_pos_z"] = -ankle / 2
+            out[f"foot_{side}_box_half_z"] = ankle / 2
+    for seg in HANGING:
+        if (L := values.get(f"{seg}_length")) is not None:
+            out[f"{seg}_mid_z"] = -L / 2
+            out[f"{seg}_half_z"] = L / 2
+    if "pelvis_length" in values:
+        out["pelvis_radius"] = PELVIS_RADIUS_M
+        out["pelvis_cap_top_z"] = -PELVIS_RADIUS_M
+    if (L := values.get("head_neck_length")) is not None:
+        out["head_neck_sphere_z"] = L - HEAD_RADIUS_M
+        out["head_neck_sphere_radius"] = HEAD_RADIUS_M
+        out["head_neck_neck_radius"] = NECK_RADIUS_M
+        out["head_neck_neck_start_z"] = NECK_RADIUS_M
     return out
 
 
