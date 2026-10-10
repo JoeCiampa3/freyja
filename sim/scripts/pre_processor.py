@@ -677,6 +677,31 @@ def render_counted(text: str, values: dict, report: Report, strict: bool = False
     return ANY_BRACES.subn(sub, text)
 
 
+# Derived keys: sheet values combined in the one way the template geometry needs.
+# The placeholder language stays closed; these are the only names that are not in the sheet.
+# Radii are design choices (they also appear in the template, marked as such).
+KNEE_SPHERE_OFFSET_M = 0.05  # design choice, no sheet source: the thigh capsule radius
+UPPER_ARM_CAP_RADIUS_M = 0.03  # design choice, no sheet source: the upper-arm capsule radius
+
+
+def derive_keys(values: dict) -> dict:
+    """{name: float} -> {derived name: float}. A key is only produced when its inputs exist.
+      foot_<s>_box_pos_x       foot length / 4   (foot collision box centre, x)
+      foot_<s>_box_half_x      foot length / 2   (foot collision box half length)
+      thigh_<s>_knee_sphere_z  -(thigh length + radius)
+      upper_arm_<s>_capsule_end_z  -(upper-arm length - radius), so the cap ends at the elbow"""
+    out = {}
+    for side in ("right", "left"):
+        if (L := values.get(f"foot_{side}_length")) is not None:
+            out[f"foot_{side}_box_pos_x"] = L / 4
+            out[f"foot_{side}_box_half_x"] = L / 2
+        if (L := values.get(f"thigh_{side}_length")) is not None:
+            out[f"thigh_{side}_knee_sphere_z"] = -(L + KNEE_SPHERE_OFFSET_M)
+        if (L := values.get(f"upper_arm_{side}_length")) is not None:
+            out[f"upper_arm_{side}_capsule_end_z"] = -(L - UPPER_ARM_CAP_RADIUS_M)
+    return out
+
+
 def warn_unused(text: str, values: dict, report: Report):
     """Flag sheet data the template ignores, so a new sheet value can't silently
     go nowhere. (Unused BSIP values like 'length' are normal; position and ROM
@@ -882,6 +907,7 @@ def build_model(tables: dict, *, template: Path = TEMPLATE, output: Path = OUTPU
         raise BuildError("reading the template", [f"Template not found: {template}"], report.warnings)
     text = template.read_text(encoding="utf-8")
     plain = {k: p.value for k, p in values.items()}
+    plain.update(derive_keys(plain))
     xml, filled = render_counted(text, plain, report, strict=strict)
     report.stop_if_errors("filling the template")
     warn_unused(text, values, report)
