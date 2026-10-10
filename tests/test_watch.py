@@ -2,9 +2,14 @@
 Tests for build_model() safety and for watch.py. No internet and no waiting:
 the watcher is driven with a fake clock and a scripted fake sheet.
 
-Run from the freyja-sim folder:
-    freyja.venv\\Scripts\\python -m unittest discover -s scripts -v
+Run from the repo root:
+    python -m unittest discover -s tests -v
 """
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "sim" / "scripts"))
+
 import copy
 import os
 import tempfile

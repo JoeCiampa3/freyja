@@ -1,9 +1,14 @@
 """
 Tests for pre_processor.py. They need no internet, no sheet and no MuJoCo.
 
-Run from the freyja-sim folder:
-    freyja.venv\\Scripts\\python -m unittest discover -s scripts -v
+Run from the repo root:
+    python -m unittest discover -s tests -v
 """
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "sim" / "scripts"))
+
 import unittest
 
 import pre_processor as pp

@@ -4,11 +4,11 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .ipynb_checkpoints/
-research/literature/books
 
 # Local / machine-specific
 local_config.json
 archive/
+data/literature/books
 
 # Simulation logs
 MUJOCO_LOG.TXT
