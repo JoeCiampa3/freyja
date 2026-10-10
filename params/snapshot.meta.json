@@ -1,6 +1,6 @@
 {
   "model_sha256": "5ec4a96466bf81683a46e621bf724253ad1dbd186084a3abed6239e2ba395b1f",
-  "pre_processor_commit": "c345d516e20691792fe6e7f7d90fb177d8b6e3c4",
+  "pre_processor_commit": "0293e27a2089f256b15c16c00c7067882da331df",
   "schema": "params/snapshot/1",
   "sheet_fingerprint": "b07ec82748b6",
   "snapshot_sha256": "4db751576eb9162a684f9012a9ed12d535c63282bc86acb2ed3b15c40089a5d9",
