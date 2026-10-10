@@ -65,7 +65,7 @@ Tests first, using a single-hinge pendulum fixture (point mass, negligible own i
 
 `hold_pose` (ground, forward dynamics): ideal-torque PD holds the neutral standing pose, with a settle window and a measurement window afterward. These are the static standing loads. In the summary and the commit message, report the measured settled penetration, the total normal force against body weight, and the support margin.
 
-Tests first for `hold_pose`: mean vertical contact force over the measurement window equals total weight within 0.5%; the mirror-image joints on left and right carry equal and opposite-sign (per the mirror rule) torques within 2%, or the asymmetry is reported as a finding with its cause.
+Tests first for `hold_pose`: mean vertical contact force over the measurement window equals total weight within 0.5%; the mirror-image joints on left and right carry the same scalar torque within 2% (the mirror rule's axis flips already encode the sign; only the world-frame torque vectors are mirror images), or the asymmetry is reported as a finding with its cause.
 
 If `hold_pose` falls, or the force closure fails, that is a result to report with numbers, not a bug to tune away.
 
