@@ -35,7 +35,7 @@
 # will use another convention.
 
 schema: joint-polarity/1
-status: DRAFT
+status: approved
 angle_rad: 0.1
 
 joints:
