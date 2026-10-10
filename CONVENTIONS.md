@@ -112,7 +112,7 @@ Every sim run writes `sim/runs/<id minus "run.">/summary.json`. It is small and 
 
 ## 7. Checks
 
-Checks live in `checks/`, run under pytest (which also collects the existing unittest suites in `sim/scripts/`), and tag themselves with their ID and tier:
+Checks live in `checks/`, run under pytest (`pytest.ini` collects `tests/` and `checks/`; the old unittest suites now live in `tests/`), and tag themselves with their ID and tier:
 
 ```python
 @pytest.mark.check("check.mjcf.mirror", tier="gate")
