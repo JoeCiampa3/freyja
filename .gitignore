@@ -31,3 +31,6 @@ sim/archive/
 
 # Last advisory results written by the build gate
 checks/last_run.json
+
+# Run records: raw timeseries stay out of git (CONVENTIONS section 6); summary.json is tracked
+sim/runs/*/raw.npz

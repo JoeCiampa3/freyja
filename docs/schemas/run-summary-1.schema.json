@@ -1,0 +1,360 @@
+{
+  "$id": "run-summary/1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One simulation run (CONVENTIONS section 6). Written to sim/runs/<run_id minus 'run.'>/summary.json: small, text-only, the thing Claude reads. The run_id encodes the start time and nothing else in the record is time-dependent; every metric is deterministic given the same inputs and seed. Units are SI except angles in degrees, named in the key suffix.",
+  "properties": {
+    "balance": {
+      "additionalProperties": false,
+      "description": "Balance metrics.",
+      "properties": {
+        "support_margin_min_m": {
+          "description": "Minimum over steps with floor contact of the signed distance, m, from the CoM's ground projection to the boundary of the convex hull of floor-contact points (positive inside). A hull of fewer than three non-collinear points gives zero or less. Null when no step touched the floor (gantry).",
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "support_margin_min_m"
+      ],
+      "type": "object"
+    },
+    "checks": {
+      "additionalProperties": false,
+      "description": "Model checks as known when the run started. passed and failed list the check IDs from checks/last_run.json; waived lists the confirmed waivers in checks/waivers.yaml.",
+      "properties": {
+        "failed": {
+          "description": "IDs of checks that failed (and are not waived) in the last check run.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "passed": {
+          "description": "IDs of checks that passed in the last check run.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "status_model_sha256": {
+          "description": "Model hash the check status was computed for; null if checks/last_run.json is missing or predates the hash field.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status_stale": {
+          "description": "True when the check status was computed for a different model hash than this run's (or its hash is unknown).",
+          "type": "boolean"
+        },
+        "waived": {
+          "description": "IDs with a confirmed waiver in checks/waivers.yaml.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "passed",
+        "failed",
+        "waived",
+        "status_model_sha256",
+        "status_stale"
+      ],
+      "type": "object"
+    },
+    "contacts": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "description": "Contact metrics for all geoms of one foot body against the floor.",
+        "properties": {
+          "friction_ratio_peak": {
+            "description": "Maximum over window steps with summed normal force of at least 1 N of (tangential force / normal force); null if no step reached 1 N.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "normal_force_peak_n": {
+            "description": "Maximum over the window of the normal force summed over the foot's floor contacts, N.",
+            "type": "number"
+          }
+        },
+        "required": [
+          "normal_force_peak_n",
+          "friction_ratio_peak"
+        ],
+        "type": "object"
+      },
+      "description": "Per-foot floor contact metrics keyed foot_right and foot_left; empty in gantry mode.",
+      "type": "object"
+    },
+    "controller": {
+      "additionalProperties": false,
+      "description": "The controller in sim/controllers/ used for a 'controller' drive; empty strings for inverse-dynamics playback.",
+      "properties": {
+        "name": {
+          "description": "Controller module name in sim/controllers/.",
+          "type": "string"
+        },
+        "version": {
+          "description": "Controller version string, bumped when its behaviour changes.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "type": "object"
+    },
+    "diagnostics": {
+      "additionalProperties": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "description": "Scenario-specific named measurements (for example settled penetration, total normal force and body weight in a standing hold). Keys carry their unit suffix.",
+      "type": "object"
+    },
+    "diff_sha256": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "SHA-256 of the output of `git diff HEAD`; null when the tree is clean."
+    },
+    "duration_s": {
+      "description": "Simulated duration, s.",
+      "type": "number"
+    },
+    "env": {
+      "additionalProperties": false,
+      "description": "Versions of the software the run used.",
+      "properties": {
+        "mujoco": {
+          "description": "mujoco package version.",
+          "type": "string"
+        },
+        "numpy": {
+          "description": "numpy package version.",
+          "type": "string"
+        },
+        "python": {
+          "description": "Python interpreter version.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "mujoco",
+        "python",
+        "numpy"
+      ],
+      "type": "object"
+    },
+    "git_commit": {
+      "description": "HEAD commit of the repo when the run started.",
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "git_dirty": {
+      "description": "True when tracked files differ from HEAD (git diff HEAD is non-empty). Untracked files do not count.",
+      "type": "boolean"
+    },
+    "joints": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "description": "Per-joint metrics over the measurement window. Torque is about the model's own hinge axes (the decoupled hip architecture): it is NOT actuator torque for the coupled-hip variant; the mapping to actuator space happens later. Positive torque and angle follow the model's sign convention (the sign of the joint axis in freyja.xml).",
+        "properties": {
+          "limit_hit_fraction": {
+            "description": "Fraction of window steps within 0.1 degrees of either limit; null if the joint is unlimited.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "power_peak_w": {
+            "description": "Maximum over the window of |torque x velocity|, W.",
+            "type": "number"
+          },
+          "rom_limit_deg": {
+            "description": "The model's joint range [lower, upper], degrees; null if the joint is unlimited.",
+            "items": {
+              "type": "number"
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "rom_used_deg": {
+            "description": "Signed [min, max] of the joint angle over the window, degrees, in the model's sign convention.",
+            "items": {
+              "type": "number"
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array"
+          },
+          "speed_peak_rad_s": {
+            "description": "Maximum absolute joint velocity over the window, rad/s.",
+            "type": "number"
+          },
+          "torque_peak_nm": {
+            "description": "Maximum absolute joint torque over the window, N m.",
+            "type": "number"
+          },
+          "torque_rms_nm": {
+            "description": "Time root-mean-square of joint torque over the window, N m.",
+            "type": "number"
+          },
+          "torque_source": {
+            "description": "Where the torque came from. 'applied' = ideal joint torque written to qfrc_applied during forward dynamics (ground mode). 'inverse_dynamics' = mj_inverse with prescribed qacc, used only in gantry mode where nothing touches the floor.",
+            "enum": [
+              "applied",
+              "inverse_dynamics"
+            ]
+          }
+        },
+        "required": [
+          "torque_source",
+          "torque_peak_nm",
+          "torque_rms_nm",
+          "speed_peak_rad_s",
+          "power_peak_w",
+          "rom_used_deg",
+          "rom_limit_deg",
+          "limit_hit_fraction"
+        ],
+        "type": "object"
+      },
+      "description": "Metrics for each joint that was measured, keyed by joint name.",
+      "type": "object"
+    },
+    "model_sha256": {
+      "description": "SHA-256 of sim/models/freyja.xml.",
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "outcome": {
+      "description": "completed, fell (pelvis height or trunk tilt past the scenario thresholds) or diverged (non-finite state or an unstable-simulation warning from MuJoCo).",
+      "enum": [
+        "completed",
+        "fell",
+        "diverged"
+      ]
+    },
+    "run_id": {
+      "description": "run.<YYYYMMDD>-<HHMM>-<scenario>; the start time of the run.",
+      "pattern": "^run\\.[0-9]{8}-[0-9]{4}-[a-z0-9_-]+$",
+      "type": "string"
+    },
+    "scenario": {
+      "additionalProperties": false,
+      "description": "The scenario file's content that defines the run.",
+      "properties": {
+        "name": {
+          "description": "Scenario name (the file name of sim/scenarios/<name>.yaml).",
+          "type": "string"
+        },
+        "params": {
+          "description": "All scenario parameters as authored, including drive type, PD gains and any integrator or timestep override.",
+          "type": "object"
+        }
+      },
+      "required": [
+        "name",
+        "params"
+      ],
+      "type": "object"
+    },
+    "schema": {
+      "const": "run-summary/1",
+      "description": "Schema identifier and version. Any change after the first committed run bumps the version."
+    },
+    "seed": {
+      "description": "Random seed for the run (scenario file); metrics are deterministic given it.",
+      "type": "integer"
+    },
+    "skipped": {
+      "additionalProperties": {
+        "enum": [
+          "unlimited"
+        ]
+      },
+      "description": "Joints a scenario did not exercise, with the reason. 'unlimited' = the model has no range for the joint, so no sweep span is invented.",
+      "type": "object"
+    },
+    "snapshot_sha256": {
+      "description": "SHA-256 of params/snapshot.csv (the full 64 hex characters).",
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "support": {
+      "description": "'ground' = standing on the floor, forward dynamics. 'gantry' = the pelvis is held, nothing touches the floor, inverse dynamics.",
+      "enum": [
+        "ground",
+        "gantry"
+      ]
+    },
+    "timestep_s": {
+      "description": "Integration timestep actually used, s.",
+      "type": "number"
+    },
+    "window": {
+      "additionalProperties": false,
+      "description": "The measurement window; every metric is computed over it.",
+      "properties": {
+        "end_s": {
+          "description": "Window end, s of simulated time.",
+          "type": "number"
+        },
+        "start_s": {
+          "description": "Window start, s of simulated time.",
+          "type": "number"
+        }
+      },
+      "required": [
+        "start_s",
+        "end_s"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema",
+    "run_id",
+    "git_commit",
+    "git_dirty",
+    "diff_sha256",
+    "snapshot_sha256",
+    "model_sha256",
+    "seed",
+    "env",
+    "scenario",
+    "controller",
+    "timestep_s",
+    "duration_s",
+    "support",
+    "window",
+    "outcome",
+    "joints",
+    "contacts",
+    "balance",
+    "checks"
+  ],
+  "title": "run-summary/1",
+  "type": "object"
+}

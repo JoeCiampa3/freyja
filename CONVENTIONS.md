@@ -16,7 +16,7 @@ Rules that outlive any tool in this repo. Tools get replaced; these do not. If c
 
 **Checks are executable and can fail.** A claim of correctness is a named check. Every check has a mutation test proving it fails when the thing it guards is broken. Known deviations are recorded as explicit waivers (section 7), never as a quiet INFO.
 
-**Determinism.** No timestamps or absolute paths inside generated content. Time lives in the log, not in artifacts. Same inputs, byte-identical output.
+**Determinism.** Build artifacts carry no timestamps or absolute paths. Time lives in the log, not in artifacts. Same inputs, byte-identical output. A run record is an event, not a build artifact: its `run_id` encodes the start time and nothing else in it is time-dependent, and every metric is deterministic given the same inputs and seed.
 
 **No secrets in the repo.** Per-machine configuration lives in `local_config.json` (gitignored) or environment variables. The service-account key stays outside the working tree.
 
@@ -29,7 +29,7 @@ Rules that outlive any tool in this repo. Tools get replaced; these do not. If c
 | `catalog/` | actuators, bearings, cable, stock; one file each, datasheet cited | authored |
 | `decisions/` | `NNNN-slug.md` decision records | authored |
 | `analysis/` | scripts that produce numbers entering the sheet | authored |
-| `sim/` | `models/` (template authored, `freyja.xml` generated), `scripts/`, `scenarios/`, `runs/` | mixed |
+| `sim/` | `models/` (template authored, `freyja.xml` generated), `scripts/`, `scenarios/`, `controllers/` (authored), `runs/` | mixed |
 | `cad/` | `fusion_addin/` authored; `sidecars/*.json` and `exports/` generated | mixed |
 | `fea/`, `tests/` | structured study and bench-run records | authored (entered), later scripted |
 | `data/` | raw measurements with a `manifest.json` each; large files stay out of git unless LFS | imported |
@@ -38,7 +38,7 @@ Rules that outlive any tool in this repo. Tools get replaced; these do not. If c
 | `roadmap/` | `roadmap.yaml` | authored |
 | `log/` | append-only event log | generated, plus `fy log` entries |
 | `reports/` | periodic digests | generated |
-| `docs/` | reference docs, program plan, `docs/memos/` sprint memos, `docs/briefs/` | authored |
+| `docs/` | reference docs, program plan, `docs/memos/` sprint memos, `docs/briefs/`, `docs/schemas/` (JSON Schemas for records) | authored |
 | `tools/fy/` | CLI glue; wrappers only, no domain logic | authored |
 
 ## 3. Identifiers
@@ -81,21 +81,25 @@ If the sheet has a `targets` named range (`'BSIP Reference'!A1:B2`: label in col
 
 ## 6. Run records (`run-summary/1`)
 
-Every sim run writes `sim/runs/<id minus "run.">/summary.json`. It is small and text-only, and is the thing Claude reads. Raw timeseries go in `raw.npz` beside it and stay gitignored.
+Every sim run writes `sim/runs/<id minus "run.">/summary.json`. It is small and text-only, and is the thing Claude reads. Raw timeseries go in `raw.npz` beside it and stay gitignored; `summary.json` files are tracked, as are the generated `sim/runs/DIGEST.md` and `sim/runs/ENVELOPE.md`. The schema is `docs/schemas/run-summary-1.schema.json`, which carries the definition of every field and is validated on every write. It was amended in place before any record existed; after the first committed run, any change bumps the version.
 
 ```json
 {
   "schema": "run-summary/1",
   "run_id": "run.20261012-1430-walk_1p4",
-  "git_commit": "<sha>", "git_dirty": false,
+  "git_commit": "<sha>", "git_dirty": false, "diff_sha256": null,
   "snapshot_sha256": "<sha>", "model_sha256": "<sha>",
+  "seed": 0,
+  "env": {"mujoco": "3.10.0", "python": "3.11.9", "numpy": "2.4.6"},
   "scenario": {"name": "walk_1p4", "params": {}},
   "controller": {"name": "", "version": ""},
   "timestep_s": 0.002, "duration_s": 0.0,
+  "support": "ground",
+  "window": {"start_s": 0.0, "end_s": 0.0},
   "outcome": "completed",
   "joints": {
     "hip_fe_right": {
-      "torque_source": "inverse_dynamics",
+      "torque_source": "applied",
       "torque_peak_nm": 0.0, "torque_rms_nm": 0.0,
       "speed_peak_rad_s": 0.0, "power_peak_w": 0.0,
       "rom_used_deg": [0.0, 0.0], "rom_limit_deg": [0.0, 0.0],
@@ -108,7 +112,7 @@ Every sim run writes `sim/runs/<id minus "run.">/summary.json`. It is small and 
 }
 ```
 
-`outcome` is `completed`, `fell` or `diverged`. Units are SI except angles in degrees, and are named in the key suffix.
+`outcome` is `completed`, `fell` or `diverged`. `support` is `ground` or `gantry`. `torque_source` is `applied` (ideal joint torque on `qfrc_applied` in forward dynamics, ground mode) or `inverse_dynamics` (`mj_inverse` with prescribed `qacc`, gantry mode only: with floor contacts the inverse contact force comes from the soft-constraint model, so the root rows do not close). `diff_sha256` hashes `git diff HEAD` and is null when the tracked tree is clean. Optional keys: `skipped` (joint to reason, e.g. `unlimited`) and `diagnostics` (scenario-specific named numbers). Joint torque is about the model's own hinge axes (the decoupled hip architecture); it is not actuator torque for a coupled-hip variant. Units are SI except angles in degrees, and are named in the key suffix.
 
 ## 7. Checks
 
