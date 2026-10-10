@@ -1,0 +1,88 @@
+{
+  "balance": {
+    "support_margin_min_m": null
+  },
+  "checks": {
+    "failed": [
+      "check.mjcf.com_pct_stature"
+    ],
+    "passed": [
+      "check.mjcf.com_lateral",
+      "check.mjcf.floor_contact",
+      "check.mjcf.joint_signs",
+      "check.mjcf.mass_closure",
+      "check.mjcf.mass_closure.target",
+      "check.mjcf.mirror",
+      "check.mjcf.stature_chain"
+    ],
+    "status_model_sha256": "7d0bdd7134f23a5593ae66fe732c106c5a17505dfdf0bd1ab534641a8c641044",
+    "status_stale": false,
+    "waived": []
+  },
+  "contacts": {},
+  "controller": {
+    "name": "pd_hold",
+    "version": "1"
+  },
+  "diagnostics": {
+    "body_weight_n": 637.0123500000001,
+    "ended_at_s": 1.3548,
+    "inverse_closure_max_joint_abs_nm": 3.7969627442180354e-13,
+    "inverse_closure_tolerance_rel": 1e-09,
+    "penetration_max_run_m": 0.0025917633314670036,
+    "support_margin_first_step_m": 0.0012870212410352258
+  },
+  "diff_sha256": null,
+  "duration_s": 1.3548,
+  "env": {
+    "mujoco": "3.10.0",
+    "numpy": "2.4.6",
+    "python": "3.11.9"
+  },
+  "git_commit": "74bbfbf6b5aceb24a0208fdc07c7563151a9284d",
+  "git_dirty": false,
+  "joints": {},
+  "model_sha256": "7d0bdd7134f23a5593ae66fe732c106c5a17505dfdf0bd1ab534641a8c641044",
+  "outcome": "fell",
+  "run_id": "run.20261010-1712-hold_pose",
+  "scenario": {
+    "name": "hold_pose",
+    "params": {
+      "controller": {
+        "name": "pd_hold",
+        "version": "1"
+      },
+      "drive": "controller",
+      "duration_s": 3.0,
+      "fall": {
+        "pelvis_height_fraction": 0.6,
+        "trunk_tilt_deg": 45.0
+      },
+      "model": "sim/models/freyja.xml",
+      "options": {
+        "integrator": "euler",
+        "timestep_s": 0.0002,
+        "verify_inverse": true
+      },
+      "params": {
+        "damping_ratio": 1.0,
+        "kp_nm_per_rad": 2000.0,
+        "stability_cap": 0.25
+      },
+      "support": "ground",
+      "window": {
+        "end_s": 3.0,
+        "start_s": 2.0
+      }
+    }
+  },
+  "schema": "run-summary/1",
+  "seed": 0,
+  "snapshot_sha256": "4db751576eb9162a684f9012a9ed12d535c63282bc86acb2ed3b15c40089a5d9",
+  "support": "ground",
+  "timestep_s": 0.0002,
+  "window": {
+    "end_s": 3.0,
+    "start_s": 2.0
+  }
+}

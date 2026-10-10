@@ -205,7 +205,8 @@ def _contacts_lines(s) -> list:
     for foot in sorted(s["contacts"]):
         c = s["contacts"][foot]
         lines.append(f"Contact {foot}: peak normal force {_f(c['normal_force_peak_n'], 1)} N, peak friction ratio {_f(c['friction_ratio_peak'], 3)}")
-    lines.append(f"Balance: support margin min {_f(s['balance']['support_margin_min_m'], 4)} m")
+    margin = s["balance"]["support_margin_min_m"]
+    lines.append("Balance: support margin min " + ("n/a (not measured)" if margin is None else f"{margin:.4f} m"))
     return lines
 
 
@@ -257,6 +258,8 @@ def digest(summaries, current_model_sha=None) -> str:
         lines.append("")
         if s["joints"]:
             lines += _joint_table(s["joints"], prev["joints"] if prev else {})
+        elif s["outcome"] != "completed":
+            lines.append(f"No joints measured: the run ended ({s['outcome']}) before its measurement window.")
         else:
             lines.append("No joints measured.")
         if s.get("skipped"):
