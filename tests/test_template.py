@@ -108,22 +108,30 @@ class DerivedKeys(unittest.TestCase):
         self.assertAlmostEqual(d["foot_right_box_pos_z"], -0.025)
         self.assertNotIn("foot_left_box_half_z", d)  # left chain not supplied
 
-    def test_head_sphere_top_is_the_vertex(self):
+    def test_head_top_is_the_vertex(self):
         d = pp.derive_keys({"head_neck_length": 0.27})
-        self.assertAlmostEqual(d["head_neck_sphere_z"] + d["head_neck_sphere_radius"], 0.27)
+        self.assertAlmostEqual(d["head_neck_head_z"] + d["head_neck_head_half_z"], 0.27)
+
+    def test_upper_body_keys_follow_the_thorax_length_and_shoulders(self):
+        d = pp.derive_keys({"thorax_length": 0.3})
+        self.assertAlmostEqual(d["thorax_chest_z"], -0.3 * pp.CHEST_Z_FRACTION)
+        self.assertAlmostEqual(d["thorax_chest_half_z"], 0.3 * pp.CHEST_HALF_FRACTION)
+        self.assertLess(d["thorax_chest_z"] + d["thorax_chest_half_z"], 0.0)  # chest stays inside the top joint
+        self.assertAlmostEqual(d["trapezius_start_z"], -d["trapezius_radius"])  # tip at the neck base
 
     def test_hanging_segments_are_centred_between_their_joints(self):
-        d = pp.derive_keys({"thorax_length": 0.3, "hand_left_length": 0.08})
+        d = pp.derive_keys({"thorax_length": 0.3, "hand_left_length": 0.08, "abdomen_length": 0.1})
         self.assertAlmostEqual(d["thorax_mid_z"], -0.15)
         self.assertAlmostEqual(d["thorax_half_z"], 0.15)
         self.assertAlmostEqual(d["hand_left_mid_z"], -0.04)
+        self.assertGreater(d["abdomen_half_z"], 0.05)  # abdomen and pelvis overlap their neighbours
 
     def test_missing_inputs_give_no_key(self):
         self.assertEqual(pp.derive_keys({}), {})
 
     def test_derived_names_never_clash_with_sheet_names(self):
         every = {f"{s}_{side}_length": 1.0 for s in pp.BILATERAL for side in ("right", "left")}
-        every.update({f"{s}_length": 1.0 for s in ("abdomen", "thorax", "head_neck")})
+        every.update({f"{s}_length": 1.0 for s in ("abdomen", "thorax", "head_neck", "pelvis")})
         self.assertFalse(set(pp.derive_keys(every)) & set(snapshot_values()))
 
 
@@ -159,29 +167,65 @@ class Geometry(unittest.TestCase):
             sph = next(g for g in body(root, f"shank_{side}").findall("geom") if g.get("type") == "sphere")
             self.assertEqual(floats(sph.get("pos")), [0.0, 0.0, 0.0])
 
-    def test_head_sphere_top_is_at_the_vertex(self):
+    def test_head_top_is_at_the_vertex(self):
         for f in self.FACTORS:
             v, root = self.values(f), model_xml(self.values(f))
-            sph = next(g for g in body(root, "head_and_neck").findall("geom") if g.get("type") == "sphere")
-            self.assertAlmostEqual(floats(sph.get("pos"))[2] + floats(sph.get("size"))[0], v["head_neck_length"], places=9)
+            head = next(g for g in body(root, "head_and_neck").findall("geom") if g.get("type") == "ellipsoid")
+            self.assertAlmostEqual(floats(head.get("pos"))[2] + floats(head.get("size"))[2], v["head_neck_length"], places=9)
+
+    def test_neck_starts_at_the_cervical_joint(self):
+        root = model_xml(self.values(1.0))
+        neck = next(g for g in body(root, "head_and_neck").findall("geom") if g.get("type") == "capsule")
+        self.assertAlmostEqual(floats(neck.get("fromto"))[2] - floats(neck.get("size"))[0], 0.0, places=9)
+
+    def test_shoulder_girdle_and_trapezius_end_at_the_shoulder_joint_centres(self):
+        for f in self.FACTORS:
+            v, root = self.values(f), model_xml(self.values(f))
+            caps = [floats(g.get("fromto")) for g in body(root, "thorax").findall("geom") if g.get("type") == "capsule"]
+            sh = {side: [v[f"upper_arm_{side}_pos_{a}"] for a in "xyz"] for side in ("right", "left")}
+            girdle = next(c for c in caps if c[1] != c[4])
+            for got, want in zip(girdle, sh["right"] + sh["left"]):
+                self.assertAlmostEqual(got, want, places=9)
+            traps = [c for c in caps if c is not girdle]
+            self.assertEqual(len(traps), 2)
+            for c in traps:
+                self.assertEqual(c[:2], [0.0, 0.0])
+                self.assertIn([round(x, 9) for x in c[3:]], [[round(x, 9) for x in sh[sd]] for sd in sh])
 
     def test_pelvis_spans_the_hip_joint_centres(self):
         v, root = snapshot_values(), model_xml(snapshot_values())
-        g = floats(body(root, "pelvis").findall("geom")[0].get("fromto"))
+        g = floats(body(root, "pelvis").find("geom[@type='capsule']").get("fromto"))
         self.assertAlmostEqual(g[1], v["thigh_right_pos_y"], places=9)
         self.assertAlmostEqual(g[4], v["thigh_left_pos_y"], places=9)
         self.assertAlmostEqual(g[0], v["thigh_right_pos_x"], places=9)
         self.assertAlmostEqual(g[2], v["thigh_right_pos_z"], places=9)
 
-    def test_hanging_segments_span_their_full_length(self):
+    def test_hanging_segments_cover_their_full_length(self):
+        # thorax and hands end exactly at their joints; abdomen and pelvis may overlap the
+        # neighbours (so the silhouette has no pinch) but never fall short
         for f in self.FACTORS:
             v, root = self.values(f), model_xml(self.values(f))
-            for name, key in (("abdomen", "abdomen_length"), ("thorax", "thorax_length"),
-                              ("hand_right", "hand_right_length"), ("hand_left", "hand_left_length")):
-                e = next(g for g in body(root, name).findall("geom") if g.get("type") == "ellipsoid")
+            for name, key, exact in (("abdomen", "abdomen_length", False), ("pelvis", "pelvis_length", False),
+                                     ("thorax", "thorax_length", True), ("hand_right", "hand_right_length", True),
+                                     ("hand_left", "hand_left_length", True)):
+                e = body(root, name).find("geom[@type='ellipsoid']")
                 zc, hz = floats(e.get("pos"))[2], floats(e.get("size"))[2]
-                self.assertAlmostEqual(zc + hz, 0.0, places=9, msg=name)
-                self.assertAlmostEqual(zc - hz, -v[key], places=9, msg=name)
+                top, bot = zc + hz, zc - hz
+                if exact:
+                    self.assertAlmostEqual(top, 0.0, places=9, msg=name)
+                    self.assertAlmostEqual(bot, -v[key], places=9, msg=name)
+                else:
+                    self.assertGreaterEqual(top, -1e-12, msg=name)
+                    self.assertLessEqual(bot, -v[key] + 1e-12, msg=name)
+
+    def test_chest_sits_inside_the_thorax_below_the_neck(self):
+        v, root = snapshot_values(), model_xml(snapshot_values())
+        ell = [g for g in body(root, "thorax").findall("geom") if g.get("type") == "ellipsoid"]
+        self.assertEqual(len(ell), 2)
+        chest = max(ell, key=lambda g: floats(g.get("size"))[1])  # the wider one
+        zc, hz = floats(chest.get("pos"))[2], floats(chest.get("size"))[2]
+        self.assertLess(zc + hz, 0.0)
+        self.assertGreater(zc - hz, -v["thorax_length"])
 
     def test_foot_box_follows_foot_length(self):
         base, big = model_xml(self.values(1.0)), model_xml(self.values(1.05))

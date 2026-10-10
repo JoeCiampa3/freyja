@@ -684,9 +684,16 @@ def render_counted(text: str, values: dict, report: Report, strict: bool = False
 CAPSULE_RADII_M = {"thigh": 0.05, "shank": 0.04, "upper_arm": 0.03, "forearm": 0.02}  # design choice, no sheet source
 KNEE_SPHERE_RADIUS_M = 0.045  # design choice, no sheet source: sphere centred on the knee
 PELVIS_RADIUS_M = 0.055  # design choice, no sheet source
-NECK_RADIUS_M = 0.05  # design choice, no sheet source
-HEAD_RADIUS_M = 0.085  # design choice, no sheet source
-HANGING = ["abdomen", "thorax", "hand_right", "hand_left"]  # body origin at the distal end, segment hangs below
+NECK_RADIUS_M = 0.045  # design choice, no sheet source
+HEAD_HALF_HEIGHT_M = 0.095  # design choice, no sheet source: the head is an ellipsoid, top at the vertex
+SHOULDER_RADIUS_M = 0.045  # design choice, no sheet source: shoulder girdle capsule between the shoulder joints
+TRAPEZIUS_RADIUS_M = 0.04  # design choice, no sheet source
+CHEST_Z_FRACTION = 0.30  # design choice, no sheet source: upper-chest ellipsoid centre, as a fraction of thorax length below the top
+CHEST_HALF_FRACTION = 0.20  # design choice, no sheet source: its half height, same units
+# Body origin at the distal end, segment hangs below. The value is the ellipsoid half length as a
+# fraction of the segment length: 0.5 ends exactly at the joints; more overlaps the neighbours so
+# the silhouette has no pinch at the joint (all these geoms are massless).
+HANG_HALF_FACTOR = {"abdomen": 0.75, "pelvis": 0.6, "thorax": 0.5, "hand_right": 0.5, "hand_left": 0.5}
 
 
 def derive_keys(values: dict) -> dict:
@@ -694,11 +701,13 @@ def derive_keys(values: dict) -> dict:
       <seg>_<s>_radius, _cap_top_z, _cap_bot_z   thigh/shank/upper_arm/forearm capsule: tip at the
                                                  proximal joint (z=0), tip at the distal joint (z=-length)
       knee_<s>_sphere_radius                     sphere centred on the knee (shank frame origin)
-      <abdomen|thorax|hand_<s>>_mid_z, _half_z   ellipsoid spanning the whole segment
+      <abdomen|pelvis|thorax|hand_<s>>_mid_z, _half_z   ellipsoid covering the segment (see HANG_HALF_FACTOR)
+      thorax_chest_z, _chest_half_z              upper-chest ellipsoid that fills out the shoulders
+      shoulder_radius, trapezius_radius, trapezius_start_z   shoulder girdle and the slope to the neck
       foot_<s>_box_pos_x / _half_x               foot length / 4 and / 2 (the collision box)
       foot_<s>_box_pos_z / _half_z               sole on the floor: box from the ankle height down to z=0
-      pelvis_radius, pelvis_cap_top_z            hip girdle capsule and the column up to the lumbosacral joint
-      head_neck_sphere_z / _radius               head sphere whose top is the vertex
+      pelvis_radius                              hip girdle capsule
+      head_neck_head_z / _head_half_z            head ellipsoid whose top is the vertex
       head_neck_neck_radius / _start_z           neck capsule from the cervical joint into the head"""
     out = {}
     for side in ("right", "left"):
@@ -717,16 +726,21 @@ def derive_keys(values: dict) -> dict:
             ankle = sum(chain)  # ankle height above the floor in the neutral pose
             out[f"foot_{side}_box_pos_z"] = -ankle / 2
             out[f"foot_{side}_box_half_z"] = ankle / 2
-    for seg in HANGING:
+    for seg, factor in HANG_HALF_FACTOR.items():
         if (L := values.get(f"{seg}_length")) is not None:
             out[f"{seg}_mid_z"] = -L / 2
-            out[f"{seg}_half_z"] = L / 2
+            out[f"{seg}_half_z"] = factor * L
     if "pelvis_length" in values:
         out["pelvis_radius"] = PELVIS_RADIUS_M
-        out["pelvis_cap_top_z"] = -PELVIS_RADIUS_M
+    if (L := values.get("thorax_length")) is not None:
+        out["thorax_chest_z"] = -CHEST_Z_FRACTION * L
+        out["thorax_chest_half_z"] = CHEST_HALF_FRACTION * L
+        out["shoulder_radius"] = SHOULDER_RADIUS_M
+        out["trapezius_radius"] = TRAPEZIUS_RADIUS_M
+        out["trapezius_start_z"] = -TRAPEZIUS_RADIUS_M
     if (L := values.get("head_neck_length")) is not None:
-        out["head_neck_sphere_z"] = L - HEAD_RADIUS_M
-        out["head_neck_sphere_radius"] = HEAD_RADIUS_M
+        out["head_neck_head_z"] = L - HEAD_HALF_HEIGHT_M
+        out["head_neck_head_half_z"] = HEAD_HALF_HEIGHT_M
         out["head_neck_neck_radius"] = NECK_RADIUS_M
         out["head_neck_neck_start_z"] = NECK_RADIUS_M
     return out
