@@ -118,7 +118,7 @@ Checks live in `checks/`, run under pytest (which also collects the existing uni
 @pytest.mark.check("check.mjcf.mirror", tier="gate")
 ```
 
-A **gate** check blocks installation of a new `freyja.xml`; the last good model stays in place. An **advisory** check reports and never blocks. Checks run offline, deterministically, and in seconds. Every tolerance is a named constant with its unit and its reason in a comment. Every check has a mutation test: a deliberately broken copy of the model on which the check must fail.
+A **gate** check blocks installation of a new `freyja.xml`: `build_model()` runs the checks on the temporary XML through its `post_checks` hook (`pre_processor.py` and `watch.py` both pass it), and on a gate failure parks the new XML as `freyja_FAILED.xml`, leaves the last good model, snapshot and metadata in place, and prints the failing check IDs. `--no-checks` skips the hook, as does a scratch build with `--output`. Advisory results are printed and written to `checks/last_run.json` (gitignored). An **advisory** check reports and never blocks. Checks run offline, deterministically, and in seconds. Every tolerance is a named constant with its unit and its reason in a comment. Every check has a mutation test: a deliberately broken copy of the model on which the check must fail.
 
 Known deviations are recorded in `checks/waivers.yaml`. A waived check still runs and reports as WAIVED. A waiver on a check that now passes produces a warning, as does one that names an unknown check or is past its `review_by` date. A waiver takes effect only with `confirmed: true`; Claude may propose one with `confirmed: false`, and Joe confirms it.
 

@@ -56,6 +56,8 @@ EVERY RUN ALSO
     * never replaces a good freyja.xml with a broken one
     * saves a CSV of every value used to archive/ (only when something changed)
     * installs params/snapshot.csv and snapshot.meta.json together with the model
+    * runs the model checks (checks/): a failing gate check parks the new XML as freyja_FAILED.xml and
+      keeps the last good model and snapshot; advisory results are printed and saved to checks/last_run.json
 """
 
 from __future__ import annotations
@@ -893,6 +895,7 @@ def parse_args(argv=None):
     ap.add_argument("--strict", action="store_true", help="missing ROM values are errors, not unlimited joints")
     ap.add_argument("--dry-run", action="store_true", help="check everything but write no files")
     ap.add_argument("--no-archive", action="store_true", help="skip the CSV archive")
+    ap.add_argument("--no-checks", action="store_true", help="skip the model checks (gate and advisory)")
     ap.add_argument("--template", type=Path, default=TEMPLATE)
     ap.add_argument("--output", type=Path, default=OUTPUT)
     return ap.parse_args(argv)
@@ -925,12 +928,13 @@ class BuildResult:
     model_line: str | None  # e.g. "16 bodies, 32 joints, total mass 64.935 kg"
     ankle: float | None
     notes: list
+    checks: object = None  # checklib.RunReport when a post_checks hook ran
 
 
 def build_model(tables: dict, *, template: Path = TEMPLATE, output: Path = OUTPUT,
                 failed_output: Path = FAILED_OUTPUT, archive_dir: Path = ARCHIVE_DIR,
                 snapshot_dir: Path | None = None, strict: bool = False, dry_run: bool = False,
-                archive: bool = True, progress=None) -> BuildResult:
+                archive: bool = True, progress=None, post_checks=None) -> BuildResult:
     """Sheet tables + template -> checked freyja.xml. This is the one function
     both the command line and the watcher use.
 
@@ -940,6 +944,10 @@ def build_model(tables: dict, *, template: Path = TEMPLATE, output: Path = OUTPU
     With `snapshot_dir`, snapshot.csv and snapshot.meta.json are staged and
     installed together with the model, or not at all. None = no snapshot (tests,
     custom --output), so a scratch build never overwrites the tracked snapshot.
+    `post_checks(xml_path, snapshot_text) -> RunReport` (see checks/checklib.make_post_checks)
+    is called on the finished temporary XML before anything is installed. A gate failure parks
+    the new XML as `failed_output`, leaves the last good model and snapshot in place and raises
+    BuildError naming the failing check IDs; advisory results are returned in BuildResult.checks.
     Raises BuildError (with every problem found) instead of exiting."""
     say = progress or (lambda msg: None)
     report = Report()
@@ -982,6 +990,17 @@ def build_model(tables: dict, *, template: Path = TEMPLATE, output: Path = OUTPU
             report.stop_if_errors(f"checking the XML (the broken build is saved as "
                                   f"{failed_output.name}; {output.name} was NOT touched)")
 
+        checks = None
+        if post_checks is not None:
+            say("      Running the model checks ...")
+            checks = _run_post_checks(post_checks, tmp, xml, snapshot_bytes, dry_run)
+            if checks.blocking:
+                if not dry_run:
+                    failed_output.write_bytes(xml.encode("utf-8"))
+                raise BuildError(f"running the gate checks (the new build is saved as {failed_output.name}; "
+                                 f"{output.name} and the snapshot were NOT touched)",
+                                 [f"{r.id}: {r.message}" for r in checks.blocking], report.warnings)
+
         say("[4/4] Writing ...")
         notes = []
         if dry_run:
@@ -1023,7 +1042,20 @@ def build_model(tables: dict, *, template: Path = TEMPLATE, output: Path = OUTPU
     if model is not None:
         model_line = (f"{model.nbody - 1} bodies, {model.njnt} joints, "
                       f"total mass {sum(model.body_mass):.3f} kg")
-    return BuildResult(status, filled, report.warnings, model_line, ankle, notes)
+    return BuildResult(status, filled, report.warnings, model_line, ankle, notes, checks)
+
+
+def _run_post_checks(post_checks, tmp: Path, xml: str, snapshot_bytes: bytes, dry_run: bool):
+    """Call the hook on the exact bytes that would be installed. A dry run has no temporary file next
+    to the model, so the hook gets one in the system temp directory, removed afterwards."""
+    snapshot_text = snapshot_bytes.decode("utf-8")
+    if not dry_run:
+        return post_checks(tmp, snapshot_text)
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        path = Path(d) / "freyja.xml"
+        path.write_bytes(xml.encode("utf-8"))
+        return post_checks(path, snapshot_text)
 
 
 def _install_together(changed: list, report: Report):
@@ -1061,6 +1093,27 @@ def _replace_with_retry(tmp: Path, output: Path, report: Report, tries: int = 6)
                      report.warnings, transient=True)
 
 
+def default_post_checks(args):
+    """The model checks (checks/checklib.py), for the default output only: a scratch build with
+    --output or --no-checks skips them, like the snapshot."""
+    if args.no_checks or args.output != OUTPUT:
+        return None
+    sys.path.insert(0, str(ROOT.parent / "checks"))
+    import checklib
+    return checklib.make_post_checks()
+
+
+def print_checks(report, say=print):
+    """Advisory and waived results and the waiver warnings; passing checks are just counted."""
+    passed = sum(r.status == "PASS" for r in report.results)
+    say(f"Checks: {passed} of {len(report.results)} passed")
+    for r in report.results:
+        if r.status != "PASS":
+            say(f"  {r.status:7} {r.tier:8} {r.id}: {r.message}")
+    for w in report.warnings:
+        say(f"  WARNING {w}")
+
+
 def main(argv=None):
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(errors="replace")  # never crash on an odd character in the console
@@ -1071,7 +1124,8 @@ def main(argv=None):
         tables = fetch_xlsx(args.xlsx) if args.xlsx else fetch_google()
         result = build_model(tables, template=args.template, output=args.output, strict=args.strict,
                              dry_run=args.dry_run, archive=not args.no_archive, progress=print,
-                             snapshot_dir=PARAMS_DIR if args.output == OUTPUT else None)
+                             snapshot_dir=PARAMS_DIR if args.output == OUTPUT else None,
+                             post_checks=default_post_checks(args))
     except SheetAccessError as e:
         sys.exit(str(e))
     except BuildError as e:
@@ -1085,6 +1139,8 @@ def main(argv=None):
         print(f"Standing pose: ankle joint {result.ankle * 1000:.1f} mm above the floor")
     for n in result.notes:
         print(n)
+    if result.checks is not None:
+        print_checks(result.checks)
     if result.warnings:
         print(f"\n{len(result.warnings)} warning(s):")
         for w in result.warnings:

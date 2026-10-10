@@ -26,6 +26,7 @@ REPO = Path(__file__).resolve().parents[1]
 MODEL_FILE = REPO / "sim" / "models" / "freyja.xml"
 SNAPSHOT_FILE = REPO / "params" / "snapshot.csv"
 WAIVERS_FILE = REPO / "checks" / "waivers.yaml"
+LAST_RUN_FILE = REPO / "checks" / "last_run.json"  # gitignored
 
 PASS, FAIL, SKIP, WAIVED = "PASS", "FAIL", "SKIP", "WAIVED"
 GATE, ADVISORY = "gate", "advisory"
@@ -199,3 +200,21 @@ def run_checks(ctx, tier=None, waivers=(), registry=None, today=None) -> RunRepo
         results = [r for r in results if r.tier == tier]
     results, warnings = apply_waivers(results, waivers, all_ids(reg), today or dt.date.today())
     return RunReport(results, warnings)
+
+
+def make_post_checks(last_run=None, waivers_path=None, tier=None):
+    """The hook build_model() calls on the finished XML before installing it:
+    hook(xml_path, snapshot_text) -> RunReport. The report is also written to checks/last_run.json
+    (gitignored), so the latest advisory numbers are on disk even when nothing else prints them."""
+    import mjcf_checks  # noqa: F401  (registers the checks)
+    target = Path(last_run or LAST_RUN_FILE)
+
+    def post_checks(xml_path, snapshot_text):
+        ctx = Context.from_files(xml_path=xml_path, snapshot_text=snapshot_text)
+        report = run_checks(ctx, tier=tier, waivers=load_waivers(waivers_path))
+        try:
+            target.write_text(report.to_json(), encoding="utf-8", newline="\n")
+        except OSError as e:  # a read-only disk must not turn a good build into a failed one
+            report.warnings.append(f"could not write {target.name}: {e}")
+        return report
+    return post_checks

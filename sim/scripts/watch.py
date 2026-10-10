@@ -83,6 +83,7 @@ class Watcher:
         self.last_error = None
         self.blocked = False  # a build is waiting on something outside the data (file locked)
         self.last_warnings = None
+        self.last_check_lines = None
 
     # --- one poll ----------------------------------------------------------
     def step(self) -> float:
@@ -183,6 +184,12 @@ class Watcher:
         if r.warnings and r.warnings != self.last_warnings:  # list them once, then only when they change
             self.out("warnings:\n" + "\n".join(f"    WARNING {w}" for w in r.warnings))
         self.last_warnings = r.warnings
+        if r.checks is not None:  # advisory / waived results and waiver warnings: once, then only when they change
+            lines = [f"    {x.status} {x.id}: {x.message}" for x in r.checks.results if x.status != "PASS"]
+            lines += [f"    WARNING {x}" for x in r.checks.warnings]
+            if lines and lines != self.last_check_lines:
+                self.out("checks:\n" + "\n".join(lines))
+            self.last_check_lines = lines
         return True
 
 
@@ -205,6 +212,7 @@ def parse_args(argv=None):
     ap.add_argument("--xlsx", metavar="FILE", help="watch a downloaded copy instead of the Google Sheet")
     ap.add_argument("--strict", action="store_true", help="missing ROM values fail the build instead of leaving joints unlimited")
     ap.add_argument("--no-archive", action="store_true", help="skip the CSV archive")
+    ap.add_argument("--no-checks", action="store_true", help="skip the model checks (gate and advisory)")
     ap.add_argument("--template", type=Path, default=pp.TEMPLATE)
     ap.add_argument("--output", type=Path, default=pp.OUTPUT)
     args = ap.parse_args(argv)
@@ -224,9 +232,11 @@ def main(argv=None):
     except pp.SheetAccessError as e:  # nothing configured: retrying cannot help
         sys.exit(str(e))
 
+    post_checks = pp.default_post_checks(args)
+
     def build(tables):
         return pp.build_model(tables, template=args.template, output=args.output, strict=args.strict,
-                              archive=not args.no_archive,
+                              archive=not args.no_archive, post_checks=post_checks,
                               snapshot_dir=pp.PARAMS_DIR if args.output == pp.OUTPUT else None)
 
     watcher = Watcher(source, build, args.template, args.interval, args.debounce)
