@@ -67,7 +67,7 @@
             <body name="abdomen" pos="0 0 0.126914349776">
                 <inertial pos="0.0309671013453 -0.000634571748879 -0.052669455157" mass="2.665" fullinertia="0.0192694037659 0.0129850626848 0.0254507228621 3.86332443514e-05 0.00171703308228 0.000107314567643"/>
                 <geom type="ellipsoid" pos="0 0 -0.0634571748879" size="0.08 0.10 0.0951857623318" mass="0" rgba="0.82 0.71 0.55 1.0"/> <!--waist; overlaps the pelvis and thorax so there is no pinch--> <!--design choice, no sheet source-->
-                <joint name="lsj_fe" type="hinge" pos="0 0 -0.126914349776" axis="0 -1 0"/> <!-- FIXME(pre_processor): no ROM in sheet for lumbosacral_extension, lumbosacral_flexion; joint left unlimited --> <!--lsj_fe= lumbrosacral joint flexion/extension. ROM fills in automatically once it is in the sheet-->
+                <joint name="lsj_fe" type="hinge" pos="0 0 -0.126914349776" axis="0 1 0"/> <!-- FIXME(pre_processor): no ROM in sheet for lumbosacral_extension, lumbosacral_flexion; joint left unlimited --> <!--lsj_fe= lumbrosacral joint flexion/extension. ROM fills in automatically once it is in the sheet--> <!--axis +y: the moving segment is ABOVE this joint, so +angle bends forward (flexion); the hip, shoulder and elbow use -y because their segment hangs below-->
                 <joint name="lsj_lat" type="hinge" pos="0 0 -0.126914349776" axis="1 0 0"/> <!-- FIXME(pre_processor): no ROM in sheet for lumbosacral_lateral_bending; joint left unlimited --> <!--lsj_lat= lumbrosacral joint lateral bending. ROM fills in automatically once it is in the sheet-->
                 <joint name="lsj_ax" type="hinge" pos="0 0 -0.126914349776" axis="0 0 1"/> <!-- FIXME(pre_processor): no ROM in sheet for lumbosacral_axial_rotation; joint left unlimited --> <!--lsj_ax= lumbosacral joint axial bending. ROM fills in automatically once it is in the sheet-->
 
@@ -79,7 +79,7 @@
                     <geom type="capsule" fromto="0.013794347058 -0.192059755192 -0.0774605642489 0.013794347058 0.192059755192 -0.0774605642489" size="0.045" mass="0" rgba="0.82 0.71 0.55 1.0"/> <!--shoulder girdle: centres on the shoulder joint centres-->
                     <geom type="capsule" fromto="0 0 -0.04 0.013794347058 -0.192059755192 -0.0774605642489" size="0.04" mass="0" rgba="0.82 0.71 0.55 1.0"/> <!--trapezius: neck base to shoulder-->
                     <geom type="capsule" fromto="0 0 -0.04 0.013794347058 0.192059755192 -0.0774605642489" size="0.04" mass="0" rgba="0.82 0.71 0.55 1.0"/>
-                    <joint name="tj_fe" type="hinge" pos="0 0 -0.328299103139" axis="0 -1 0" /> <!--tj_fe= thoracic joint flexion/extension. FIXME add rom when available-->
+                    <joint name="tj_fe" type="hinge" pos="0 0 -0.328299103139" axis="0 1 0" /> <!--tj_fe= thoracic joint flexion/extension. FIXME add rom when available-->
                     <joint name="tj_lat" type="hinge" pos="0 0 -0.328299103139" axis="1 0 0"/> <!--tj_lat= thoracic  joint lateral bending FIXME add rom when available-->
                     <joint name="tj_ax" type="hinge" pos="0 0 -0.328299103139" axis="0 0 1"/> <!--tj_ax= thoracic  joint axial bending FIXME add rom when available-->
 
@@ -130,7 +130,7 @@
                         <geom type="ellipsoid" pos="0 0 0.170366367713" size="0.09 0.072 0.095" mass="0" rgba="0.82 0.71 0.55 1.0"/> <!--top of the head is the vertex--> <!--design choice, no sheet source-->
                         <geom type="capsule" fromto="0 0 0.045 0 0 0.170366367713" size="0.045" mass="0" rgba="0.82 0.71 0.55 1.0"/> <!--neck: tip at the cervical joint, ends in the head-->
                         <site name="site_vertex" pos="0 0 0.265366367713"/> <!--vertex = cervical joint + head_neck_length; the stature check reads it-->
-                        <joint name="cj_fe" type="hinge" axis="0 -1 0" /> <!--cj_fe= cervical joint flexion/extension. FIXME add rom when available-->
+                        <joint name="cj_fe" type="hinge" axis="0 1 0" /> <!--cj_fe= cervical joint flexion/extension. FIXME add rom when available-->
                         <joint name="cj_lat" type="hinge" axis="1 0 0"/> <!--cj_lat= cervical  joint lateral bending FIXME add rom when available-->
                         <joint name="cj_ax" type="hinge" axis="0 0 1"/> <!--cj_ax= cervical  joint axial bending FIXME add rom when available-->
                     </body>

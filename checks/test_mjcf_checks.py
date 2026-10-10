@@ -122,8 +122,25 @@ def test_mirror_fails_on_a_broken_copy(ctx, name):
 @pytest.mark.check("check.mjcf.joint_signs", tier="gate")
 def test_joint_signs_on_the_model(ctx):
     rs = run(ctx, "check.mjcf.joint_signs")
-    assert rs[0].tier == "advisory"  # the polarity file is DRAFT until Joe approves it
-    require(rs)
+    assert rs[0].tier == "gate"  # Joe approved the polarity file
+    assert rs[0].status == cl.PASS, rs[0].message
+    assert rs[0].measured["checked"] == 31
+
+
+@pytest.mark.check("check.mjcf.joint_signs", tier="gate")
+def test_joint_signs_is_advisory_while_the_polarity_file_is_a_draft(ctx, tmp_path):
+    draft = tmp_path / "p.yaml"
+    draft.write_text(mc.POLARITY_FILE.read_text(encoding="utf-8").replace("status: approved", "status: DRAFT"), encoding="utf-8")
+    bad = mutated(ctx, lambda r: joint(r, "knee_right").set("axis", "0 -1 0"))
+    r = mc.joint_signs(bad, polarity=draft)
+    assert r.status == cl.FAIL and r.tier == "advisory"
+
+
+@pytest.mark.check("check.mjcf.joint_signs", tier="gate")
+def test_joint_signs_fails_when_a_spine_axis_is_negated(ctx):
+    bad = mutated(ctx, lambda r: joint(r, "tj_fe").set("axis", "0 -1 0"))
+    r = run(bad, "check.mjcf.joint_signs")[0]
+    assert r.status == cl.FAIL and "tj_fe" in r.message
 
 
 @pytest.mark.check("check.mjcf.joint_signs", tier="gate")
@@ -134,13 +151,10 @@ def test_joint_signs_fails_when_one_axis_is_negated(ctx):
 
 
 @pytest.mark.check("check.mjcf.joint_signs", tier="gate")
-def test_joint_signs_is_a_gate_once_the_polarity_file_is_approved(ctx, tmp_path):
-    text = mc.POLARITY_FILE.read_text(encoding="utf-8")
-    assert "status: DRAFT" in text
-    approved = tmp_path / "p.yaml"
-    approved.write_text(text.replace("status: DRAFT", "status: approved"), encoding="utf-8")
+def test_joint_signs_is_a_gate_once_the_polarity_file_is_approved(ctx):
+    assert "status: approved" in mc.POLARITY_FILE.read_text(encoding="utf-8")
     bad = mutated(ctx, lambda r: joint(r, "knee_right").set("axis", "0 -1 0"))
-    r = mc.joint_signs(bad, polarity=approved)
+    r = mc.joint_signs(bad)
     assert r.status == cl.FAIL and r.tier == "gate"
 
 

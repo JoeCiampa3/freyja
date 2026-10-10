@@ -1,8 +1,7 @@
 # check.mjcf.joint_signs: the expected sign of every hinge, written independently of the template axes.
 #
-# status: DRAFT   <- Claude drafted this file. Until Joe changes it to `approved` the check reports
-#                    as advisory and cannot block a build. Review every row, especially the groups
-#                    marked PROPOSED, then edit the status line.
+# status: approved by Joe (see the `status:` line below). A row that fails is a gate failure: the new
+# freyja.xml is not installed. Change a row only with a reason, and record it in a decision.
 #
 # How a row is used. At neutral the check sets ONE joint to +0.1 rad (all others at 0), runs forward
 # kinematics, and moves `probe` (a point in the frame of the joint's own body) with it. The world
@@ -28,11 +27,12 @@
 # recommendations; the sign comments already in freyja_template.xml. Wu 2002 is in data/literature;
 # Wu 2005 is not, so the upper-limb groups are cited but not re-read here.
 #
-# PROPOSED groups (no sheet ROM or no ISB definition decides them): spine and neck lateral bending
-# and axial rotation. The sheet gives symmetric limits there, so the sign is a convention. The rows
-# below use right-hand rotation about the ISB axes: lateral bending positive toward the RIGHT, axial
-# rotation positive toward the LEFT (counterclockwise seen from above). Change them if the controller
-# will use another convention.
+# Spine and neck. The sheet gives symmetric limits (or none) for lateral bending and axial rotation,
+# so the sign is a convention. Wu et al. 2005 section 2.4.1 (thorax relative to the global system)
+# fixes it: lateral flexion positive toward the RIGHT, axial rotation positive toward the LEFT. Those
+# rows follow it. The same section makes flexion NEGATIVE (an Euler-angle choice about a right-pointing
+# axis); the model does not follow that, because the template's ranges are written
+# range="-extension flexion", so a positive spine angle is flexion, as for every other joint here.
 
 schema: joint-polarity/1
 status: approved
@@ -78,11 +78,11 @@ joints:
   lsj_fe:  {probe: [0, 0, 0],    axis: x, sign: 1,  positive: flexion, why: "lumbosacral flexion bends the trunk forward"}
   tj_fe:   {probe: [0, 0, 0],    axis: x, sign: 1,  positive: flexion, why: "thoracic flexion bends the upper trunk forward"}
   cj_fe:   {probe: [0, 0, 0.15], axis: x, sign: 1,  positive: flexion, why: "cervical flexion nods the head forward"}
-  # PROPOSED: lateral bending positive toward the right (right-hand rotation about the anterior axis)
-  lsj_lat: {probe: [0, 0, 0],    axis: y, sign: -1, positive: lateral bending to the right, why: "PROPOSED convention; the sheet range is symmetric"}
-  tj_lat:  {probe: [0, 0, 0],    axis: y, sign: -1, positive: lateral bending to the right, why: "PROPOSED convention; no ROM in the sheet yet"}
-  cj_lat:  {probe: [0, 0, 0.15], axis: y, sign: -1, positive: lateral bending to the right, why: "PROPOSED convention; no ROM in the sheet yet"}
-  # PROPOSED: axial rotation positive toward the left (right-hand rotation about the vertical axis)
-  lsj_ax:  {probe: [0.1, 0, 0],  axis: y, sign: 1,  positive: axial rotation to the left, why: "PROPOSED convention; the sheet range is symmetric"}
-  tj_ax:   {probe: [0.1, 0, 0],  axis: y, sign: 1,  positive: axial rotation to the left, why: "PROPOSED convention; no ROM in the sheet yet"}
-  cj_ax:   {probe: [0.1, 0, 0.1], axis: y, sign: 1, positive: axial rotation to the left, why: "PROPOSED convention; no ROM in the sheet yet"}
+  # lateral bending positive toward the right (Wu 2005 section 2.4.1)
+  lsj_lat: {probe: [0, 0, 0],    axis: y, sign: -1, positive: lateral bending to the right, why: "Wu 2005 section 2.4.1; the sheet range is symmetric"}
+  tj_lat:  {probe: [0, 0, 0],    axis: y, sign: -1, positive: lateral bending to the right, why: "Wu 2005 section 2.4.1; no ROM in the sheet yet"}
+  cj_lat:  {probe: [0, 0, 0.15], axis: y, sign: -1, positive: lateral bending to the right, why: "Wu 2005 section 2.4.1; no ROM in the sheet yet"}
+  # axial rotation positive toward the left (Wu 2005 section 2.4.1)
+  lsj_ax:  {probe: [0.1, 0, 0],  axis: y, sign: 1,  positive: axial rotation to the left, why: "Wu 2005 section 2.4.1; the sheet range is symmetric"}
+  tj_ax:   {probe: [0.1, 0, 0],  axis: y, sign: 1,  positive: axial rotation to the left, why: "Wu 2005 section 2.4.1; no ROM in the sheet yet"}
+  cj_ax:   {probe: [0.1, 0, 0.1], axis: y, sign: 1, positive: axial rotation to the left, why: "Wu 2005 section 2.4.1; no ROM in the sheet yet"}
