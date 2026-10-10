@@ -218,6 +218,7 @@ def make_post_checks(last_run=None, waivers_path=None, tier=None):
     hook(xml_path, snapshot_text) -> RunReport. The report is also written to checks/last_run.json
     (gitignored), so the latest advisory numbers are on disk even when nothing else prints them."""
     import mjcf_checks  # noqa: F401  (registers the checks)
+    import sim_checks  # noqa: F401
     target = Path(last_run or LAST_RUN_FILE)
 
     def post_checks(xml_path, snapshot_text):

@@ -359,12 +359,18 @@ def run_scenario(scn: dict, *, model_path=None, snapshot_path=None, meta_path=No
         balance = {"support_margin_min_m": float(finite.min()) if finite.size else None}
         weight = float(model.body_mass.sum() * abs(model.opt.gravity[2]))
         diagnostics.update({
-            "body_weight_n": weight,
             "vertical_force_mean_n": float(raw["vertical_n"][i0:i1].mean()),
             "force_closure_ratio": float(raw["vertical_n"][i0:i1].mean() / weight),
             "normal_force_total_peak_n": float(raw["total_normal_n"][i0:i1].max()),
             "penetration_max_m": float(raw["penetration_m"][i0:i1].max()),
         })
+    if not gantry and has_floor and done > 0:  # whole-run numbers, so a run that falls before its window still reports them
+        diagnostics["body_weight_n"] = float(model.body_mass.sum() * abs(model.opt.gravity[2]))
+        first = raw["support_margin_m"][0]
+        diagnostics["support_margin_first_step_m"] = float(first) if np.isfinite(first) else None
+        diagnostics["penetration_max_run_m"] = float(raw["penetration_m"].max())
+        if outcome != "completed":
+            diagnostics["ended_at_s"] = done * dt_
     if closure_err is not None:
         diagnostics["inverse_closure_max_joint_abs_nm"] = closure_err
         diagnostics["inverse_closure_tolerance_rel"] = INVERSE_CLOSURE_REL

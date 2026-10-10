@@ -1,0 +1,23 @@
+# hold_pose: ideal-torque PD holds the neutral standing pose on the floor (forward dynamics, applied torque).
+# Settle for 2 s, then measure the static standing loads for 1 s.
+#
+# The timestep is overridden from the model's 0.002 s to 0.0002 s: the ankle and wrist joints are light and a
+# stiff explicit PD on qfrc_applied is unstable at 0.002 s (it diverged at 0.002 s and at 0.0005 s with kp = 2000).
+# Gains are scaled to each joint's effective inertia and capped (sim/controllers/pd_hold.py).
+name: hold_pose
+model: sim/models/freyja.xml
+seed: 0
+support: ground
+drive: controller
+controller: {name: pd_hold, version: "1"}
+duration_s: 3.0
+window: {start_s: 2.0, end_s: 3.0}
+options:
+  timestep_s: 0.0002
+  integrator: euler
+  verify_inverse: true
+fall: {pelvis_height_fraction: 0.6, trunk_tilt_deg: 45.0}
+params:
+  kp_nm_per_rad: 2000.0
+  damping_ratio: 1.0
+  stability_cap: 0.25

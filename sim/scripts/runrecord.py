@@ -64,6 +64,12 @@ def env_versions() -> dict:
     return {"mujoco": mujoco.__version__, "python": platform.python_version(), "numpy": numpy.__version__}
 
 
+def load_summaries(runs_dir=None) -> list:
+    """Every sim/runs/*/summary.json, oldest run id first. Records are returned as written (not re-validated)."""
+    found = [json.loads(p.read_text(encoding="utf-8")) for p in Path(runs_dir or RUNS_DIR).glob("*/summary.json")]
+    return sorted(found, key=lambda r: r["run_id"])
+
+
 def load_schema(path=None) -> dict:
     return json.loads(Path(path or SCHEMA_FILE).read_text(encoding="utf-8"))
 

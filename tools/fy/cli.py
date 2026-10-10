@@ -65,6 +65,7 @@ def run_check(root: Path, tier: str | None, say=print) -> int:
     _use(root, "checks")
     import checklib
     import mjcf_checks  # noqa: F401  (registers the checks)
+    import sim_checks  # noqa: F401
     report = checklib.run_checks(checklib.Context.from_files(), tier=tier, waivers=checklib.load_waivers())
     if tier is None:  # a full run is the 'status from the last run' that run records quote; a partial one is not
         checklib.write_last_run(report)

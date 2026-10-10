@@ -1,0 +1,15 @@
+# rom_sweep: each limited joint in turn sweeps 99% of its model range, all others at neutral (gantry, inverse
+# dynamics). It records the gravity-torque curve and is an end-to-end test of the sheet-to-model chain.
+# Unlimited joints are skipped, not invented (see sim/controllers/rom_sweep.py).
+name: rom_sweep
+model: sim/models/freyja.xml
+seed: 0
+support: gantry
+drive: inverse_dynamics_playback
+controller: {name: rom_sweep, version: "1"}
+# 18 limited joints x 20 s each. The runner measures every joint over its own segment.
+duration_s: 360.0
+window: {start_s: 0.0, end_s: 360.0}
+params:
+  sweep_s: 20.0
+  fraction: 0.99
