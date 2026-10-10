@@ -126,7 +126,7 @@ A **gate** check blocks installation of a new `freyja.xml`: `build_model()` runs
 
 Known deviations are recorded in `checks/waivers.yaml`. A waived check still runs and reports as WAIVED. A waiver on a check that now passes produces a warning, as does one that names an unknown check or is past its `review_by` date. A waiver takes effect only with `confirmed: true`; Claude may propose one with `confirmed: false`, and Joe confirms it.
 
-The machinery is `checks/checklib.py` (registry, context, waivers, `run_checks`), shared by pytest, the build gate and `fy check`; the checks are in `checks/mjcf_checks.py`. A check returns one or more results, and a result may carry its own ID (`check.mjcf.mass_closure.target` is the advisory half of `check.mjcf.mass_closure`). A check whose ID is unknown to the registry cannot be waived. `checks/joint_polarity.yaml` carries `status: DRAFT` until Joe approves it; while it is DRAFT, `check.mjcf.joint_signs` reports as advisory.
+The machinery is `checks/checklib.py` (registry, context, waivers, `run_checks`), shared by pytest, the build gate and `fy check`; the checks are in `checks/mjcf_checks.py` (the model) and `checks/sim_checks.py` (run records). A check returns one or more results, and a result may carry its own ID (`check.mjcf.mass_closure.target` is the advisory half of `check.mjcf.mass_closure`). A check whose ID is unknown to the registry cannot be waived. `checks/joint_polarity.yaml` carries `status: DRAFT` until Joe approves it; while it is DRAFT, `check.mjcf.joint_signs` reports as advisory.
 
 ```yaml
 - check: check.mjcf.com_pct_stature

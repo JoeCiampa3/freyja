@@ -78,6 +78,16 @@ class Dispatch(unittest.TestCase):
         code, fn = self.run_from_subdir(["test", "-k", "mirror"], "run_tests")
         fn.assert_called_once_with(REPO, ["-k", "mirror"])
 
+    def test_run_passes_the_scenario_and_options_to_the_runner(self):
+        code, fn = self.run_from_subdir(["run", "hold_pose"], "run_scenario")
+        self.assertEqual(code, 0)
+        fn.assert_called_once_with(REPO, ["hold_pose"])
+
+    def test_runs_passes_its_subcommand_and_arguments_to_the_report_module(self):
+        for argv in (["runs", "list", "--scenario", "hold_pose"], ["runs", "compare", "a", "b"], ["runs", "digest"], ["runs", "envelope"]):
+            code, fn = self.run_from_subdir(argv, "run_runs")
+            fn.assert_called_once_with(REPO, argv[1:])
+
     def test_check_defaults_to_every_tier(self):
         code, fn = self.run_from_subdir(["check"], "run_check")
         fn.assert_called_once_with(REPO, None)
@@ -116,6 +126,18 @@ class RealFunctions(unittest.TestCase):
         with mock.patch.object(pre_processor, "main") as m:
             cli.run_build(REPO, ["--dry-run"])
         m.assert_called_once_with(["--dry-run"])
+
+    def test_run_scenario_calls_the_runner_main(self):
+        import simrun
+        with mock.patch.object(simrun, "main", return_value=0) as m:
+            self.assertEqual(cli.run_scenario(REPO, ["hold_pose"]), 0)
+        m.assert_called_once_with(["hold_pose"])
+
+    def test_run_runs_calls_the_report_main(self):
+        import runs_report
+        with mock.patch.object(runs_report, "main", return_value=0) as m:
+            self.assertEqual(cli.run_runs(REPO, ["digest"]), 0)
+        m.assert_called_once_with(["digest"])
 
     def test_run_watch_calls_watch_main(self):
         import watch

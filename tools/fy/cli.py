@@ -7,6 +7,8 @@ CONVENTIONS.md, so it works from any directory.
     fy watch [watch options]             python sim/scripts/watch.py
     fy test [pytest options]             pytest over tests/ and checks/
     fy check [--tier gate|advisory]      the model checks on the committed model and snapshot
+    fy run <scenario>                    run sim/scenarios/<scenario>.yaml and write its run record
+    fy runs list|show|compare|digest|envelope   read run records; digest and envelope write sim/runs/*.md
 """
 from __future__ import annotations
 
@@ -60,6 +62,18 @@ def run_tests(root: Path, args: list) -> int:
                             *args]))
 
 
+def run_scenario(root: Path, args: list):
+    _use(root, "sim/scripts")
+    import simrun
+    return simrun.main(args)
+
+
+def run_runs(root: Path, args: list):
+    _use(root, "sim/scripts")
+    import runs_report
+    return runs_report.main(args)
+
+
 def run_check(root: Path, tier: str | None, say=print) -> int:
     """Run the checks on the committed model and snapshot. Exit code 1 only when a gate check fails."""
     _use(root, "checks")
@@ -82,6 +96,8 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("build", help="build freyja.xml and the snapshot from the sheet", add_help=False)
     sub.add_parser("watch", help="rebuild whenever the sheet or template changes", add_help=False)
     sub.add_parser("test", help="run the tests and checks under pytest", add_help=False)
+    sub.add_parser("run", help="run a scenario and write its run record", add_help=False)
+    sub.add_parser("runs", help="list, show and compare run records; write the digest and envelope", add_help=False)
     chk = sub.add_parser("check", help="run the model checks")
     chk.add_argument("--tier", choices=("gate", "advisory"), help="only results of this tier")
     return ap
@@ -90,8 +106,8 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv=None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     ap = build_parser()
-    # build, watch and test hand everything after the command to the tool that owns the options
-    if argv[:1] and argv[0] in ("build", "watch", "test"):
+    # build, watch, test, run and runs hand everything after the command to the tool that owns the options
+    if argv[:1] and argv[0] in ("build", "watch", "test", "run", "runs"):
         command, rest = argv[0], argv[1:]
         tier = None
     else:
@@ -106,4 +122,8 @@ def main(argv=None) -> int:
         return run_watch(root, rest) or 0
     if command == "test":
         return run_tests(root, rest)
+    if command == "run":
+        return run_scenario(root, rest)
+    if command == "runs":
+        return run_runs(root, rest)
     return run_check(root, tier)
