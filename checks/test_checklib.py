@@ -100,3 +100,14 @@ def test_report_json_is_plain_data():
     rep = cl.run_checks(None, registry=fake_registry(a=cl.PASS, adv_b=cl.FAIL), today=TODAY)
     data = json.loads(rep.to_json())
     assert data["results"][0]["id"] == "check.fake.a" and set(data) == {"results", "warnings"}
+
+
+@pytest.mark.check("check.infra.registry", tier="gate")
+def test_report_carries_the_hash_of_the_model_it_was_run_on(ctx):
+    import hashlib
+    import json
+    expected = hashlib.sha256(cl.MODEL_FILE.read_bytes()).hexdigest()
+    assert ctx.model_sha256 == expected
+    rep = cl.run_checks(ctx, registry=fake_registry(a=cl.PASS), today=TODAY)
+    assert rep.model_sha256 == expected
+    assert json.loads(rep.to_json())["model_sha256"] == expected

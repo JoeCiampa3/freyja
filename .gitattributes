@@ -1,2 +1,6 @@
 params/** text eol=lf
 sim/models/freyja.xml text eol=lf
+sim/runs/**/summary.json text eol=lf
+sim/runs/DIGEST.md text eol=lf
+sim/runs/ENVELOPE.md text eol=lf
+docs/schemas/*.json text eol=lf

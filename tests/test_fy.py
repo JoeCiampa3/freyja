@@ -143,6 +143,20 @@ class RealFunctions(unittest.TestCase):
         self.assertFalse(any("advisory" in line for line in gate_only if line.startswith(("PASS", "FAIL"))))
 
 
+class LastRun(unittest.TestCase):
+    """`fy check` leaves checks/last_run.json behind, with the model hash, so run records can say whether it is stale."""
+
+    def test_full_run_writes_last_run_with_the_model_hash_and_a_tier_run_does_not(self):
+        import json
+        import checklib
+        with tempfile.TemporaryDirectory() as d, mock.patch.object(checklib, "LAST_RUN_FILE", Path(d) / "last_run.json"):
+            cli.run_check(REPO, "gate", say=lambda line: None)
+            self.assertFalse((Path(d) / "last_run.json").exists())
+            cli.run_check(REPO, None, say=lambda line: None)
+            data = json.loads((Path(d) / "last_run.json").read_text(encoding="utf-8"))
+            self.assertEqual(data["model_sha256"], checklib.hashlib.sha256(checklib.MODEL_FILE.read_bytes()).hexdigest())
+
+
 class Subprocess(unittest.TestCase):
     """`python tools/fy ...` from a subdirectory, the way a person runs it."""
 

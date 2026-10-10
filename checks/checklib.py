@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import csv
 import datetime as dt
+import hashlib
 import io
 import json
 from dataclasses import asdict, dataclass, field
@@ -88,22 +89,24 @@ def load_snapshot(text: str) -> dict:
 class Context:
     """The model at the neutral pose (qpos0, forward kinematics done) plus the snapshot values."""
 
-    def __init__(self, model, data, snapshot: dict, xml_text: str):
+    def __init__(self, model, data, snapshot: dict, xml_text: str, model_sha256: str | None = None):
         self.model, self.data, self.snapshot, self.xml_text = model, data, snapshot, xml_text
+        self.model_sha256 = model_sha256  # of the model file's bytes: what a run record's model hash is compared with
 
     @classmethod
-    def from_xml_text(cls, xml_text: str, snapshot: dict):
+    def from_xml_text(cls, xml_text: str, snapshot: dict, model_sha256: str | None = None):
         import mujoco
         model = mujoco.MjModel.from_xml_string(xml_text)
         data = mujoco.MjData(model)
         mujoco.mj_forward(model, data)
-        return cls(model, data, dict(snapshot), xml_text)
+        return cls(model, data, dict(snapshot), xml_text, model_sha256)
 
     @classmethod
     def from_files(cls, xml_path=None, snapshot_path=None, snapshot_text=None):
-        xml_text = Path(xml_path or MODEL_FILE).read_text(encoding="utf-8")
+        raw = Path(xml_path or MODEL_FILE).read_bytes()
+        xml_text = raw.decode("utf-8")
         text = snapshot_text if snapshot_text is not None else Path(snapshot_path or SNAPSHOT_FILE).read_text(encoding="utf-8")
-        return cls.from_xml_text(xml_text, load_snapshot(text))
+        return cls.from_xml_text(xml_text, load_snapshot(text), hashlib.sha256(raw).hexdigest())
 
 
 # ---------------------------------------------------------------- waivers
@@ -175,14 +178,17 @@ def apply_waivers(results: list, waivers, known_ids: set, today: dt.date):
 class RunReport:
     results: list = field(default_factory=list)
     warnings: list = field(default_factory=list)
+    model_sha256: str | None = None  # the model the results are for; run records compare it with their own
 
     @property
     def blocking(self) -> list:
         return [r for r in self.results if r.blocking]
 
     def to_json(self) -> str:
-        return json.dumps({"results": [asdict(r) for r in self.results], "warnings": self.warnings},
-                          indent=2, sort_keys=True, default=float) + "\n"
+        data = {"results": [asdict(r) for r in self.results], "warnings": self.warnings}
+        if self.model_sha256:
+            data["model_sha256"] = self.model_sha256
+        return json.dumps(data, indent=2, sort_keys=True, default=float) + "\n"
 
     def format(self) -> str:
         lines = [f"{r.status:7} {r.tier:8} {r.id}" + (f"  {r.message}" if r.message and r.status != PASS else "")
@@ -199,7 +205,12 @@ def run_checks(ctx, tier=None, waivers=(), registry=None, today=None) -> RunRepo
     if tier:
         results = [r for r in results if r.tier == tier]
     results, warnings = apply_waivers(results, waivers, all_ids(reg), today or dt.date.today())
-    return RunReport(results, warnings)
+    return RunReport(results, warnings, getattr(ctx, "model_sha256", None))
+
+
+def write_last_run(report: RunReport, path=None) -> None:
+    """Save a report to checks/last_run.json (gitignored): the advisory status a run record quotes."""
+    Path(path or LAST_RUN_FILE).write_text(report.to_json(), encoding="utf-8", newline="\n")
 
 
 def make_post_checks(last_run=None, waivers_path=None, tier=None):
