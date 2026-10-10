@@ -12,11 +12,11 @@ CONVENTIONS section 9 applies. No new dependencies. Tests first, one commit per 
 
 The default CoM target, `pose.com_x_rel_ankle_m`. Proposed 0.0, directly over the ankle: ankle torque is near zero and the heel edge is 41 mm behind. Real quiet standing sits forward of this, but any literature value must be cited before it becomes the default. This is a design parameter, so the standing ankle torque is a function of it, not a measurement.
 
-The foot box forward extent. The box reaches 123.75 mm ahead of the ankle; the sheet's foot length is 165 mm from the ankle to the midpoint of the metatarsal heads. T0 reports the numbers; Joe decides whether to change the derived keys.
+The foot box (decided): the forward edge moves to the sheet's foot length from the ankle (165 mm, ankle to the midpoint of the metatarsal heads), and the rear edge stays a quarter of that length behind the ankle (41.25 mm) as a named design constant with no sheet source until a cited value replaces it.
 
 ## T0. Housekeeping and report
 
-Replace the mirror-torque sentence in the committed `docs/briefs/stage1-brief.md` with: "carry the same scalar torque within 2% (the mirror rule's axis flips already encode the sign; only the world-frame torque vectors are mirror images)". Run `fy test`. Report the foot box x-extent relative to the ankle against the sheet's foot length, and stop on that item.
+Replace the mirror-torque sentence in the committed `docs/briefs/stage1-brief.md` with: "carry the same scalar torque within 2% (the mirror rule's axis flips already encode the sign; only the world-frame torque vectors are mirror images)". Run `fy test`. Change the foot box through the derived keys: x from -L/4 to +L about the ankle (centre 3L/8, half-length 5L/8; for L = 0.165 m, 0.061875 and 0.103125), with the rear offset a named design constant carrying the `design choice, no sheet source` comment. Tests first: the box edges equal -L/4 and +L within 1e-9, the sole stays at z = 0, and `check.mjcf.floor_contact` still passes. The model hash changes, so re-run `rom_sweep` afterwards, or the envelope will exclude it as stale.
 
 ## T1. Lean-pose solver
 
