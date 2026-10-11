@@ -7,8 +7,4 @@ grid:
   com_x_rel_ankle_m: {start: -0.02, stop: 0.05, n: 8}
   lsj_fe_deg: {start: -10.0, stop: 20.0, n: 7}
   tj_fe_deg: {start: -10.0, stop: 20.0, n: 7}
-constraints:
-  min_support_margin_m: 0.02
-  # 1.0, not the default 2.0: at neutral the knee is 1.6 deg from its -1.6 deg extension stop, so a 2.0 deg constraint makes
-  # every standing pose infeasible (0 of 392 points). Joe to decide whether the default or the knee limit should change.
-  min_limit_margin_deg: 1.0
+# constraints: the defaults (support margin 0.02 m, limit margin 1.0 deg; see sim/scripts/sweep.py for why the limit margin is not 2.0)

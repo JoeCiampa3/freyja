@@ -107,7 +107,7 @@ class Grid(unittest.TestCase):
     def test_constraint_defaults(self):
         s = spec()
         del s["constraints"]
-        self.assertEqual(sweep.check_spec(s)["constraints"], {"min_support_margin_m": 0.02, "min_limit_margin_deg": 2.0})
+        self.assertEqual(sweep.check_spec(s)["constraints"], {"min_support_margin_m": 0.02, "min_limit_margin_deg": 1.0})
 
     def test_point_cap_is_enforced_before_anything_is_created(self):
         ws = Workspace()
