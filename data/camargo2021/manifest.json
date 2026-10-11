@@ -1,0 +1,400 @@
+{
+ "dataset": {
+  "parts": {
+   "1": "10.17632/fcgm3chfff.2",
+   "2": "10.17632/k9kvm5tn3f.2",
+   "3": "10.17632/jj3r5f9pnf.2"
+  },
+  "retrieved": "2026-10-11",
+  "title": "A comprehensive, open-source dataset of lower limb biomechanics in multiple conditions of stairs, ramps, and level-ground ambulation and transitions",
+  "version": 2
+ },
+ "files_sha256": {
+  "AB06/treadmill_03_01/conditions": "cb62b6bb6f4c66b584d63d49d0f80096ee18c2c26f4376bc09baa801d3ad4b9f",
+  "AB06/treadmill_03_01/fp": "7068b115bc327785c20b699624dce15a243a3059a44b868d803c605157e153b8",
+  "AB06/treadmill_03_01/id": "6dfe959320387322f8b180e7f4357160102803831f671e105d890bcd7cf9d14d",
+  "AB06/treadmill_03_01/ik": "afbefd9944e6966e465b7ebf7a7fe7fc4c1d72bb88f7a5061374e2ddaf616ae4",
+  "AB06/treadmill_07_01/conditions": "cdce3568393bc44d303ba89585c8e035b1765fd230dff48daf4f70662279f3f9",
+  "AB06/treadmill_07_01/fp": "7a499a65407713d5d581cd7e3765d212b3e086258c164fb0a6eebe37414b6d74",
+  "AB06/treadmill_07_01/id": "174ae320a6f6afbc198a9a07d00db27d275f383debebcd342aff5a74557468bf",
+  "AB06/treadmill_07_01/ik": "12d9286bbeb40e597fd43c31aee960337ce849aec98f0a4e2e315347bbb820ba",
+  "AB07/treadmill_03_01/conditions": "6b9ac7bf4fb071b4fa09a61974532dccdd80134f067a8e9efe97d645b1f6aea6",
+  "AB07/treadmill_03_01/fp": "ea035199f6b4b11084318e0401cec58c7dd110f034eb6763140deb5e94ede640",
+  "AB07/treadmill_03_01/id": "a987bdbe3697aa930c71e9fafe9e994bffca83a1f10f9de7d7e9031c217784c3",
+  "AB07/treadmill_03_01/ik": "297e2c931cb8f1448898636db88182aadcdb1ae4a77a4c69df72b4ae1ee7ee12",
+  "AB07/treadmill_07_01/conditions": "45893b5d664eb442cd7ae94d6f0cf99ca08a934a803c0b05fb99610f6f4eaff9",
+  "AB07/treadmill_07_01/fp": "e190071338e3011d5c6eb63eab4a65b4cfbd3efbb855f400c03b12c3d4021678",
+  "AB07/treadmill_07_01/id": "16b39237e05698515b9ceda88cbb9c34f0800a6953235d788e9945fe6a5fdfb6",
+  "AB07/treadmill_07_01/ik": "174898d8f153148f1a05ae6c9596ed85fa1d5c9e1ac04b85063366be5f5c06d0",
+  "AB08/treadmill_02_01/conditions": "011f4412a3559089a71ecaa1954ca160aa394b5fea8e313b2f04b9c973ebf181",
+  "AB08/treadmill_02_01/fp": "f1fed9013bb682ec6d6e618cea7efb28810206c2669fbeddb327339117c23215",
+  "AB08/treadmill_02_01/id": "54d8dd9dd6ef5ecbdaaa949d419e3b208b65322f52cb48c2a76623a247d42c9f",
+  "AB08/treadmill_02_01/ik": "f656131a28e76d67fd812de94e114b665355f2e5978c481b34c6d58fb535c7d8",
+  "AB08/treadmill_05_01/conditions": "e525ba7e1bb9c6706c80d6a8b590919bef8c1bbd7867692dcbc9f5b9582836e0",
+  "AB08/treadmill_05_01/fp": "c2cf3583dbb592fec4dae7caa509a4a27144cfff6ee8d5a2ad100e5e53490de5",
+  "AB08/treadmill_05_01/id": "861d1a4fa3dfdfa2de2408d5e13b62c787a2501ef54b97364402596accdcb275",
+  "AB08/treadmill_05_01/ik": "75d885bb68b24be134d0503a65ee4ce79aed0ed48bda96bfd1044e1eb7bbb72b",
+  "AB09/treadmill_02_01/conditions": "d53ba6ada86618c5da9c324de6b433a1a9c8d585eea98bfd138ec8fadb48f24b",
+  "AB09/treadmill_02_01/fp": "101f6c4fbd1dfe1791a22dded3537ae203516878e0e2f0c95ed2e4cdd1ea66b0",
+  "AB09/treadmill_02_01/id": "570b42be3bc4f25fd47ebecc9ed314d2ebc58f28ce9e9a5f05ad4fff0ea121ee",
+  "AB09/treadmill_02_01/ik": "28314d52ad10e5c49724c2c207d673b70164b743edc7d25c4216ace78926125d",
+  "AB09/treadmill_05_01/conditions": "e5bab81c3d373b77f9637f260f3d89ba7980f003d116f57555aa5d96434fb8c5",
+  "AB09/treadmill_05_01/fp": "aa72f91ec2087c00dd9fe86e6176859dc1215c9158a160f9fe1f09d31a5a13b0",
+  "AB09/treadmill_05_01/id": "5340ecf6525ea7b6a8225d93d73b40e48c9bf7100e896ca31a418d75e5e93057",
+  "AB09/treadmill_05_01/ik": "92b9ad32499f931d37b076cfb826047126fd34fad9890e4e400ccfc09b33b743",
+  "AB10/treadmill_02_01/conditions": "a068dbb9cebed779d92e58a6de1fdc7c112d15447e7a5bd75a507331b5c98bb7",
+  "AB10/treadmill_02_01/fp": "cbd6a5e3f4988c044afaea6d60cb8f43a208c7864ff9ba31a666d69365d0bd48",
+  "AB10/treadmill_02_01/id": "0d411300cf8ee9d268f83b0eebaa53023e8028391b12c5f422d53f364183fa1f",
+  "AB10/treadmill_02_01/ik": "8b639c2c9f55df6c8adf21754322028ac7338df4c600145878dda46a7a28d54d",
+  "AB10/treadmill_05_01/conditions": "8fe5d13bc332f83b3ab9e9c3ef64d2b6f318ad26fc1a8c090b283b99f54badf7",
+  "AB10/treadmill_05_01/fp": "f5bd272edac5daf3f1283e0d1ec834b45c9eebd42c81b6806d2f749623e1e1cc",
+  "AB10/treadmill_05_01/id": "fe5ac027a310f4f660d5c232e3ebd9378da6e1e679af7e6a24d7795221bb2e7c",
+  "AB10/treadmill_05_01/ik": "33b9f9a7a17d743b34926266520ff5f87549e650f302b0f176c64698a65e4b39",
+  "AB11/treadmill_02_01/conditions": "c0f23d975f082d6129b06ff8a034f8c7ef957ee7601fa6a69580061a09a8fbf3",
+  "AB11/treadmill_02_01/fp": "45ef44db813022bd25ee414679d965be360dbfa698c5da157eda5f2c3c1496ed",
+  "AB11/treadmill_02_01/id": "492a84b0c0b6030bd263410697b347458c49e5a2c0418f8297c71b2c3fbe4ba7",
+  "AB11/treadmill_02_01/ik": "f6e909962b0856c44f8d11d71913ae8fed4e28eda1b9ab25f0d37c771e3b5b04",
+  "AB11/treadmill_05_01/conditions": "011a037965658d98242db106c4155123a4d9f597086fdd107941107b77fff164",
+  "AB11/treadmill_05_01/fp": "ebadd34e4ddff57c084c49286da6621ea501a97e13ed50eb3b9bc39b150ec26e",
+  "AB11/treadmill_05_01/id": "99ade1b818fa14cd60d576f98f3513388b465a6e1a7437581c02cbb60004fb11",
+  "AB11/treadmill_05_01/ik": "951d471b62af7da9370bf7f83f6a89ab04676ad4cf3d6fcb61d323e774ca085c",
+  "AB12/treadmill_02_01/conditions": "9bd8b3a38066092de03f2d876d4dbcafee99b4da295e69fdf8e102f2692b17ec",
+  "AB12/treadmill_02_01/fp": "5bb4d899cd5597c5ef2429043704b204dbafaa081d8d30cfb7f5aa30be059e00",
+  "AB12/treadmill_02_01/id": "f110c8001f56c405105996d4ca6dc356f04fd2fb27d18d0fcad11615e7ccabe8",
+  "AB12/treadmill_02_01/ik": "5a76e8b3657c095cb00d4fc4775d25326bb00c68f3efb19a90170635226da615",
+  "AB12/treadmill_05_01/conditions": "789555163490144a6b891041314ca2feb31f8403f468970461dcdf143c0990c7",
+  "AB12/treadmill_05_01/fp": "b913326f263512883dc8c339f5b170fef45c133afc5c7f5861b94e27504be43d",
+  "AB12/treadmill_05_01/id": "3fb94a538e65029c7bb1f302a6e243cc11bc46e39600ce203f75d1c78f27cd97",
+  "AB12/treadmill_05_01/ik": "9ced52628d172d3c77f0549c08d027fc31fa0895a2e0aec5a9f62b9ea8927c80",
+  "AB13/treadmill_02_01/conditions": "7f7ccc153934acc444277b2843b22485defbeda30f929c5c679d9e2265aa85af",
+  "AB13/treadmill_02_01/fp": "2cff47fb60fc7e8539f4fff8cb0c4b16d64e422f7b16460fa0b875ed8c05a88c",
+  "AB13/treadmill_02_01/id": "32048e487ee3f8a31379bd2af768a23cabad419060501f1ff78f851c9232cba6",
+  "AB13/treadmill_02_01/ik": "b6497e5f6f0a9ca36c06fc8303ddc4db6e040ca199a9199a925ff6f12cd62313",
+  "AB13/treadmill_05_01/conditions": "e9e5e00446226669865a56387c38e839542a69fb5c7fb29fdfff38b48a6bb542",
+  "AB13/treadmill_05_01/fp": "f1e003d92a7a15974868b67ea2e544b5c22464adfbb50a4b3810692e733b8bff",
+  "AB13/treadmill_05_01/id": "452adf7f6db3092f84dc03d6aceb2a68c1a9ceae9d4c007bef533dfd0e2db3c8",
+  "AB13/treadmill_05_01/ik": "6cfe5da359d1d9d79152904f81637f06d116d4b148bcb1e3ea6504a4c41d8014",
+  "AB14/treadmill_02_01/conditions": "80ef68424f280a3b461710c9ad82219b49399453b90a5e738c7f7f15121a8a7c",
+  "AB14/treadmill_02_01/fp": "e3ba7531cb8cbc9b9484c25381f632923b9fa2a26c3aeb8170bf57a4c58aed15",
+  "AB14/treadmill_02_01/id": "bcb56ab49d25b346de2b795188e594b6df087c628d38db46a090a4cb667a6bb4",
+  "AB14/treadmill_02_01/ik": "d108c81f9d8365b8c9531f4399954acc8f1425f78d3c45a213e8e5643167ed24",
+  "AB14/treadmill_05_01/conditions": "35ed00b55221e8064a0ea309346d6d93d7e9d4db7041e323816f2993dcd70059",
+  "AB14/treadmill_05_01/fp": "2d8a42cf0018537afc715210a5696555c8f8d604e9bcef64c39a6ce15bf4947c",
+  "AB14/treadmill_05_01/id": "5369d3d2ea012a624e753262c8be9821512fd4e39904d7afb2c2cc66c0e3f01a",
+  "AB14/treadmill_05_01/ik": "b364b1402158734fe5ccb477c1c88e5803eecd8b059c4bcfcfcab3babaef262b",
+  "AB15/treadmill_02_01/conditions": "1a8afad4dd5b5f86f46c29d23f0f1c10a075b1ccb0cce8a91e59fe19cfcfdb23",
+  "AB15/treadmill_02_01/fp": "5a1e80257c7926860551c989974e0bd1e438c503f4af43766e8356b9b777a47c",
+  "AB15/treadmill_02_01/id": "eef3f3a605b7eda89b81af11065cd411d89c984d1ee211ee6e2165bba9dea75b",
+  "AB15/treadmill_02_01/ik": "2898c2e39824fa645f0595d7503a4f6b9ffd2f78796aaccd7fa64b39cb1f7d0e",
+  "AB15/treadmill_05_01/conditions": "b03b593663d5bf3142babe5a336db1f62ca162fad1b7e8a130d3dca967af852e",
+  "AB15/treadmill_05_01/fp": "222a63c3c518978d46a21e027f5e3352e10cce0ec06655dfa9928ae719218d04",
+  "AB15/treadmill_05_01/id": "d72a72b7f0cfea3b559263cbf208d80fad937b887839897a6f880a697d8e3872",
+  "AB15/treadmill_05_01/ik": "4e5832cf0bbb097f3b59f9920e03c0f4800d1a68992c17ad1699b7bfe4da2233",
+  "AB16/treadmill_02_01/conditions": "0189dc94e3357615a415d3e886416bd1b4bc34baa53cd89bad6d0e53a6c95ef9",
+  "AB16/treadmill_02_01/fp": "c4096973283c65b4a5ac4929fa5d22f5f88a14dd928fd899f036bcceb2a48bd6",
+  "AB16/treadmill_02_01/id": "1ad95328654d2b9245252ddb124c978550ff45d12d90a9e9ac743b665663334b",
+  "AB16/treadmill_02_01/ik": "1e42a7db51b7ca4e424944d1f03a4d826d535577ec53e36f16e232f3b2020bc5",
+  "AB16/treadmill_05_01/conditions": "e17783e60d1e463c3780bb70838ff1978244ddccb3585e1307517b5e2e3f62a7",
+  "AB16/treadmill_05_01/fp": "10130c13f73f9f605ba2d0b0664b2e7d4abbc07f19dac72429f16c925e981f56",
+  "AB16/treadmill_05_01/id": "75cafa49967dd9283076f374c0f2c9ca8083945e332908cc8de3c6a3319a8ece",
+  "AB16/treadmill_05_01/ik": "e8f650b5388169d30ff4332522a53abab7493da7f4987172b654407d95096a7e",
+  "AB17/treadmill_02_01/conditions": "5efddd6f3cce99cb0fdb581772e5fb5d8ea8d4b6d85bee42df528860bf39f558",
+  "AB17/treadmill_02_01/fp": "77a5ad2a2dbc81d944d51d405db788ddc4c610c937bcd511fd01286b13b386d3",
+  "AB17/treadmill_02_01/id": "c9007a4015b7ddc65fd207f41953442691a90414563b93f4b8d9f4d3558163aa",
+  "AB17/treadmill_02_01/ik": "72e22c236a99651831b6fd87028946f61f353e00e77aabe98df7d504356fa764",
+  "AB17/treadmill_05_01/conditions": "47da2178fc2f8d8be85b71795ddfdbe4366e9501a72352a12e3635083e567040",
+  "AB17/treadmill_05_01/fp": "f11e04120375a9620b56d0ed6c4b4b6b70c33c42c001f0ca0c2f6443f21500ec",
+  "AB17/treadmill_05_01/id": "f31c10b65f2317a3355de36babb3ca4dd3079b7bc7500512bfddb0b9bf4dd007",
+  "AB17/treadmill_05_01/ik": "3ff8132386427ccd24de29565fa8d856461688ddaa8abc888c454cda7c3a0499",
+  "AB18/treadmill_02_01/conditions": "47a358cf92003736e0dc5fe3a7574c4033d884707dd1d7cef4953e10a3def6de",
+  "AB18/treadmill_02_01/fp": "af837710531a56f4264b20bc27b85eb2b553b3557bddfd6051b2cb5932d4c8c8",
+  "AB18/treadmill_02_01/id": "79daac239865df8fe309d9f4a9ed2d2f534ccb7ba3be130834f194a83d6f9773",
+  "AB18/treadmill_02_01/ik": "1065903f6591a9bca75afbbde585c7162c2870d0e967a5a536c445181e69f6a3",
+  "AB18/treadmill_05_01/conditions": "917de0a146013ce64b034857616026157321c2b8f82d73e6baf5288dcaf31972",
+  "AB18/treadmill_05_01/fp": "b806c703a7eac45533103234be37c8ab9d74870ec171633c622f72548e95ff78",
+  "AB18/treadmill_05_01/id": "7055f3536ac86e093069e1dc0f9af0105438ffd96af454b4af80d694438f4623",
+  "AB18/treadmill_05_01/ik": "27f176866e41d24f33a6ef08f82b9c553f377a7ce0053f5c7708b398200d4695",
+  "AB19/treadmill_02_01/conditions": "94ca8db7cc7a7bac14fc65fd3cbc338f1b020852d7cdfaaaa7ce36498edfdc86",
+  "AB19/treadmill_02_01/fp": "b79f4532dcb281c8945aff5c66b98fa4c7db21e881b994c47f8dc19097d9fc85",
+  "AB19/treadmill_02_01/id": "d33201f10bb051b2a62b96434888929f2c6d27413ee6bc31466797c31bf7bc67",
+  "AB19/treadmill_02_01/ik": "5f92fb1f0477014d9c795d5e21746a3ba0f0f51eb0d07d8486c3681d41971d59",
+  "AB19/treadmill_05_01/conditions": "8636ce7a33dd613d42865162114e2760a655e61c517cb9f325c817a5dea4d429",
+  "AB19/treadmill_05_01/fp": "b9ff4ea438adc5824aa772eb0e57f63a6ba919326e4740830e8e777f3816ee07",
+  "AB19/treadmill_05_01/id": "e5c698edcf268130e8e2dccb8241aebae0bd8e2ed57648e993c3a6100e210e9c",
+  "AB19/treadmill_05_01/ik": "e2c3310b84da23e5a995859eaec2bfd90dac60089612903afa8303f71f538162",
+  "AB20/treadmill_02_01/conditions": "5aeb464887a48181177a36b4c68a60eed47486591e11cfba4fe9dc20e942875f",
+  "AB20/treadmill_02_01/fp": "54c6c0af6ea14ead443ad682154664b6f9e8cbc6784f745fff3293e2f228dc60",
+  "AB20/treadmill_02_01/id": "5c47d4eb18cd08091b9f39f61efe661269e2274ffbe9a60416ee88736365543a",
+  "AB20/treadmill_02_01/ik": "d0d375c259313c58a195f9b119fd34f390d2d246edf6999632a38635c39d453d",
+  "AB20/treadmill_05_01/conditions": "a81f21ef0952588b4144acfcedf9e660f8c3bd951fbf1d8e2b100ad3367bcf2a",
+  "AB20/treadmill_05_01/fp": "fcc06c292a2053ff7d56d2e820338ede51046120a8d5500b374d295092535d99",
+  "AB20/treadmill_05_01/id": "ec40dd4da86304babfcc88c838ccda6af2ffec47ded4732fa6d18af811bda486",
+  "AB20/treadmill_05_01/ik": "4aa99814608d7b1cbff8a9beb65211f5ec73d5ad6652a1fefa4c26557546fd1d",
+  "AB21/treadmill_02_01/conditions": "49acb03aed6595985ffd5c49c9638a3478a1f2aee94572ac05932b2441062e49",
+  "AB21/treadmill_02_01/fp": "9995c5122fa046edd8874a2d4fd8160e2d70a5257f4065330a7462b84c2fb2e6",
+  "AB21/treadmill_02_01/id": "7f8a1e58e10e6651503953032b61b0938a1e7166b4e48fc206b5086777a06f88",
+  "AB21/treadmill_02_01/ik": "4aba4d906285c83ad5aaf4cfee72ade29d7ff3e26fa38d4793a4b10da0d22fa5",
+  "AB21/treadmill_05_01/conditions": "b0dab0fd596dbb23100dca714bfa18d65d2c8235d06a189f48fe3fe0d347962a",
+  "AB21/treadmill_05_01/fp": "d02e5a81607aa3076c1cd2334446211d176940ef73c5e7b56c062f4d2985c043",
+  "AB21/treadmill_05_01/id": "82787dda9ff72e934ba5bbcb79cf3600b427f1bf8083388c60790e331113d805",
+  "AB21/treadmill_05_01/ik": "34a9b335d5641ba7c9a16c4143874139c8a43087c2e06782aef569ad71503f79",
+  "AB23/treadmill_02_01/conditions": "be797b0bc39af486869e0b3c7dfe618132be1d9cf0caf48f5f70629d7a797f4f",
+  "AB23/treadmill_02_01/fp": "413f4fe2f1fc3c15c005c63e4fe75a462e7d5e17247bde1f33deb44021d305dc",
+  "AB23/treadmill_02_01/id": "be619235820370ded17605479c578227fa9a313124754bdaa73d08cb262d4074",
+  "AB23/treadmill_02_01/ik": "e7a906b6a9eb4af23a71e307956ad6798f8b9e800149aab5b247bd7cdf80dbe5",
+  "AB23/treadmill_05_01/conditions": "51c9c94bea84213ba9bc4759e3f782c3a4078ce9e75121de0095182747c3ff59",
+  "AB23/treadmill_05_01/fp": "ca19fac444dd2641744b689099b5cc8e3831ce79c1b801672556c11812a77f26",
+  "AB23/treadmill_05_01/id": "6d6dca8e792025283f1968f7c48aa76a3d8dfce903f812d06e18376cbe57cb43",
+  "AB23/treadmill_05_01/ik": "6e497220d01a8f4b3641af4a8e4796f219a7479d63fd6804e896cb4797d5aa7c"
+ },
+ "generated_by": "analysis/ingest_camargo.py",
+ "inputs": [
+  "data/camargo2021/ingest_spec.yaml",
+  "data/camargo2021/SubjectInfo.mat",
+  "raw/<subject>.zip trials listed in files_sha256"
+ ],
+ "schema": "camargo-manifest/1",
+ "script": "analysis/ingest_camargo.py",
+ "script_version": "1",
+ "spec_sha256": "eef4351efcc12e18eed455da52bf7313a74e05183a2b9a4448ed7d566598dce8",
+ "subjects": {
+  "AB06": {
+   "age": 20.0,
+   "height_m": 1.8,
+   "mass_kg": 74.84,
+   "rejected": {
+    "1.4": {},
+    "1.6": {}
+   },
+   "sex": "M",
+   "strides": {
+    "1.4": 27,
+    "1.6": 28
+   }
+  },
+  "AB07": {
+   "age": 20.0,
+   "height_m": 1.65,
+   "mass_kg": 55.34,
+   "rejected": {
+    "1.4": {},
+    "1.6": {}
+   },
+   "sex": "M",
+   "strides": {
+    "1.4": 25,
+    "1.6": 27
+   }
+  },
+  "AB08": {
+   "age": 21.0,
+   "height_m": 1.74,
+   "mass_kg": 72.57,
+   "rejected": {
+    "1.4": {},
+    "1.6": {}
+   },
+   "sex": "M",
+   "strides": {
+    "1.4": 27,
+    "1.6": 30
+   }
+  },
+  "AB09": {
+   "age": 21.0,
+   "height_m": 1.63,
+   "mass_kg": 63.5,
+   "rejected": {
+    "1.4": {},
+    "1.6": {}
+   },
+   "sex": "F",
+   "strides": {
+    "1.4": 27,
+    "1.6": 31
+   }
+  },
+  "AB10": {
+   "age": 22.0,
+   "height_m": 1.75,
+   "mass_kg": 83.91,
+   "rejected": {
+    "1.4": {},
+    "1.6": {}
+   },
+   "sex": "M",
+   "strides": {
+    "1.4": 28,
+    "1.6": 30
+   }
+  },
+  "AB11": {
+   "age": 21.0,
+   "height_m": 1.75,
+   "mass_kg": 77.11,
+   "rejected": {
+    "1.4": {},
+    "1.6": {}
+   },
+   "sex": "M",
+   "strides": {
+    "1.4": 27,
+    "1.6": 30
+   }
+  },
+  "AB12": {
+   "age": 24.0,
+   "height_m": 1.74,
+   "mass_kg": 86.18,
+   "rejected": {
+    "1.4": {},
+    "1.6": {}
+   },
+   "sex": "M",
+   "strides": {
+    "1.4": 26,
+    "1.6": 29
+   }
+  },
+  "AB13": {
+   "age": 19.0,
+   "height_m": 1.73,
+   "mass_kg": 58.97,
+   "rejected": {
+    "1.4": {},
+    "1.6": {}
+   },
+   "sex": "M",
+   "strides": {
+    "1.4": 28,
+    "1.6": 32
+   }
+  },
+  "AB14": {
+   "age": 22.0,
+   "height_m": 1.52,
+   "mass_kg": 58.41,
+   "rejected": {
+    "1.4": {},
+    "1.6": {}
+   },
+   "sex": "F",
+   "strides": {
+    "1.4": 30,
+    "1.6": 33
+   }
+  },
+  "AB15": {
+   "age": 21.0,
+   "height_m": 1.78,
+   "mass_kg": 96.16,
+   "rejected": {
+    "1.4": {},
+    "1.6": {}
+   },
+   "sex": "M",
+   "strides": {
+    "1.4": 29,
+    "1.6": 33
+   }
+  },
+  "AB16": {
+   "age": 20.0,
+   "height_m": 1.65,
+   "mass_kg": 55.79,
+   "rejected": {
+    "1.4": {},
+    "1.6": {}
+   },
+   "sex": "F",
+   "strides": {
+    "1.4": 29,
+    "1.6": 32
+   }
+  },
+  "AB17": {
+   "age": 19.0,
+   "height_m": 1.68,
+   "mass_kg": 61.23,
+   "rejected": {
+    "1.4": {},
+    "1.6": {}
+   },
+   "sex": "M",
+   "strides": {
+    "1.4": 27,
+    "1.6": 30
+   }
+  },
+  "AB18": {
+   "age": 19.0,
+   "height_m": 1.8,
+   "mass_kg": 60.13,
+   "rejected": {
+    "1.4": {},
+    "1.6": {}
+   },
+   "sex": "F",
+   "strides": {
+    "1.4": 27,
+    "1.6": 30
+   }
+  },
+  "AB19": {
+   "age": 19.0,
+   "height_m": 1.7,
+   "mass_kg": 68.04,
+   "rejected": {
+    "1.4": {},
+    "1.6": {}
+   },
+   "sex": "M",
+   "strides": {
+    "1.4": 28,
+    "1.6": 31
+   }
+  },
+  "AB20": {
+   "age": 21.0,
+   "height_m": 1.71,
+   "mass_kg": 68.04,
+   "rejected": {
+    "1.4": {},
+    "1.6": {}
+   },
+   "sex": "F",
+   "strides": {
+    "1.4": 29,
+    "1.6": 32
+   }
+  },
+  "AB21": {
+   "age": 20.0,
+   "height_m": 1.57,
+   "mass_kg": 58.06,
+   "rejected": {
+    "1.4": {},
+    "1.6": {}
+   },
+   "sex": "F",
+   "strides": {
+    "1.4": 28,
+    "1.6": 30
+   }
+  },
+  "AB23": {
+   "age": 20.0,
+   "height_m": 1.8,
+   "mass_kg": 76.82,
+   "rejected": {
+    "1.4": {},
+    "1.6": {}
+   },
+   "sex": "M",
+   "strides": {
+    "1.4": 27,
+    "1.6": 31
+   }
+  }
+ }
+}

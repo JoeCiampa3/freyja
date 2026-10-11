@@ -37,3 +37,4 @@ sim/runs/*/raw.npz
 sim/sweeps/*/sweep.json
 data/camargo2021/raw
 data/camargo2021/scripts.zip
+data/camargo2021/processed
