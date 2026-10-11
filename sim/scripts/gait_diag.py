@@ -147,7 +147,7 @@ def cop_steps(args):
         for i in range(min(args.cap, d["strides"][args.speed])):
             T = float(z[f"{args.speed}_duration_s"][i])
             ik, fp = z[f"{args.speed}_ik"][i], z[f"{args.speed}_fp"][i]
-            cyc = retarget.Cycle(m, c.mapping, c.stand, ik, T, ratio, hip_in_pelvis_os=hip, trunk_compensation=args.trunk_compensation)
+            cyc = retarget.Cycle(m, c.mapping, c.stand, ik, T, ratio, hip_in_pelvis_os=hip, trunk_compensation=args.trunk_compensation, pitch_mean=args.pitch_mean)
             q, qd, qdd = cyc.grid()
             ref_lab = retarget.dataset_hip_mid_lab(ik, hip)
             fmk = z[f"{args.speed}_foot_markers"][i]
@@ -186,7 +186,7 @@ def cop_steps(args):
                             poly[vname + name][key][0] += 1; poly[vname + name][key][1] += not mg >= 0
                             if not mg >= 0:
                                 poly[vname + name][key][2].append(-mg)
-    print(f"=== {args.speed} m/s, {args.cap} strides per subject, trunk compensation {args.trunk_compensation}, measured CoP mapping {args.cop_mode} ===")
+    print(f"=== {args.speed} m/s, {args.cap} strides per subject, trunk compensation {args.trunk_compensation}, measured CoP mapping {args.cop_mode}, pelvis pitch mean {args.pitch_mean} ===")
     print("Step 2: whole-body CoP against the measured one (model axes: x fore-aft, y lateral), rms mm over stance frames")
     for key in ("single", "double"):
         ef, ep, a = (np.array(x[key]) for x in (e_full, e_pm, am))
@@ -223,6 +223,7 @@ def main(argv=None):
     f.add_argument("--trunk-compensation", action="store_true")
     cp = sub.add_parser("cop")
     cp.add_argument("--cap", type=int, default=4)
+    cp.add_argument("--pitch-mean", default="measured", choices=["design", "measured"])
     cp.add_argument("--cop-mode", default="foot_frame", choices=["hip_reference", "foot_frame"])
     cp.add_argument("--speed", default="1.4")
     cp.add_argument("--trunk-compensation", action="store_true")
