@@ -183,10 +183,13 @@ class Cycle:
             hm = dataset_hip_mid_lab(ik, hip_in_pelvis_os)  # from the measured (unadjusted) pelvis orientation
         else:
             hm = np.stack([col("pelvis_tx"), col("pelvis_ty"), col("pelvis_tz")], axis=1)
-        # Pelvis tilt: the dataset supplies only the oscillation. The cycle-mean tilt is removed and the mean is set to the
-        # design parameter tilt_offset_deg (default 0 = the standing pose's pelvis orientation from stand_static). The model's
-        # zero and OpenSim's zero need not coincide, and the subject's static tilt is standing posture, not an offset.
-        eul[0] = eul[0] - eul[0][:N_UNIQUE].mean() + np.deg2rad(tilt_offset_deg)
+        # Pelvis pitch: the dataset supplies only the oscillation. The cycle-mean pitch is removed and the mean is set to the design
+        # parameter tilt_offset_deg (positive = anterior), relative to the standing pose's pelvis orientation from stand_static.
+        # The model's zero and OpenSim's zero need not coincide, and the subject's static pitch is standing posture, not an offset.
+        # Which dataset coordinate is the sagittal pitch is a property of the lab frame (see camargo_mapping.yaml): here pelvis_list.
+        pitch = mapping["frame"]["pelvis_pitch"]
+        pi = mapping["frame"]["pelvis_euler"].index(pitch["coordinate"])
+        eul[pi] = eul[pi] - eul[pi][:N_UNIQUE].mean() + pitch["sign"] * np.deg2rad(tilt_offset_deg)
         self.R_stand = np.zeros(9)
         mujoco.mju_quat2Mat(self.R_stand, self.stand[3:7])
         self.R_stand = self.R_stand.reshape(3, 3)

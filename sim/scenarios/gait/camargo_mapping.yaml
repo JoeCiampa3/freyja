@@ -18,6 +18,12 @@ frame:
   osim_pelvis_to_model: [[1, 0, 0], [0, 0, -1], [0, 1, 0]]
   # OpenSim pelvis rotation order (parent-to-child): Rz(tilt) Rx(list) Ry(rotation), degrees.
   pelvis_euler: [pelvis_tilt, pelvis_list, pelvis_rotation]
+  # In this lab the ground z axis points along the walking direction, so the dataset's `pelvis_tilt` (a rotation about ground z) is
+  # the pelvis's ROLL (obliquity, an oscillation of a few degrees) and `pelvis_list` (about ground x, the subject's right) is its
+  # sagittal PITCH. The names come from the OpenSim model's own axes, not from this setup. Positive pelvis_list rotates the top of
+  # the pelvis backward, so anterior (forward) pitch, the model's flexion direction, is minus pelvis_list. The mean-pitch design
+  # parameter acts on this coordinate only.
+  pelvis_pitch: {coordinate: pelvis_list, sign: -1}
 joints:
   hip_fe_right:       {dataset: hip_flexion_r,    sign: 1,  verified: hip_extension_late_stance}
   hip_fe_left:        {dataset: hip_flexion_l,    sign: 1,  verified: hip_extension_late_stance}

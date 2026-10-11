@@ -41,7 +41,9 @@ def compare(fb, fm):
     h1, h2 = ph < 0.3, (ph >= 0.3) & (ph < 0.65)
     return {"peak_ratio": z.max() / zm.max(), "hump1_ratio": z[h1].max() / zm[h1].max(), "hump2_ratio": z[h2].max() / zm[h2].max(),
             "rms_pct_of_peak": 100 * np.sqrt(np.mean((z - zm) ** 2)) / zm.max(), "corr": np.corrcoef(z, zm)[0, 1],
-            "ap_ptp_ratio": np.ptp(fb[:, 0]) / np.ptp(fm[:, 0]), "ap_corr": np.corrcoef(fb[:, 0], fm[:, 0])[0, 1]}
+            "ap_ptp_ratio": np.ptp(fb[:, 0]) / np.ptp(fm[:, 0]), "ap_corr": np.corrcoef(fb[:, 0], fm[:, 0])[0, 1],
+            "lat_ptp_ratio": np.ptp(fb[:, 1]) / np.ptp(fm[:, 1]), "lat_corr": np.corrcoef(fb[:, 1], fm[:, 1])[0, 1],
+            "lat_rms_n": float(np.sqrt(np.mean((fb[:, 1] - fm[:, 1]) ** 2))), "lat_mean_diff_n": float((fb[:, 1] - fm[:, 1]).mean())}
 
 
 THRESH = {"peak_ratio": (0.85, 1.15), "ap_ptp_ratio": (0.85, 1.15), "corr": (0.85, 1.01), "ap_corr": (0.85, 1.01)}

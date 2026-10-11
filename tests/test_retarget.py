@@ -82,18 +82,37 @@ def test_both_root_rules_put_a_standing_foot_on_the_floor(model, stand, rule):
     assert abs(c.lowest_foot_z(c.eval(0.4)[0])) < 1e-9
 
 
-def test_pelvis_tilt_mean_is_the_design_parameter_and_only_the_oscillation_comes_from_the_dataset(model, stand):
+def pitch_forward_rad(q, stand):
+    """Rotation of the pelvis relative to the standing orientation about the model's lateral (+y) axis, forward positive."""
+    r = np.zeros(3)
+    mujoco.mju_subQuat(r, q[3:7], stand[3:7])
+    return r[1]
+
+
+def test_pelvis_pitch_mean_is_the_design_parameter_and_only_the_oscillation_comes_from_the_dataset(model, stand):
     ik = standing_ik()
-    ik[:, ic.IK_CHANNELS.index("pelvis_tilt")] = 7.0  # any constant tilt is removed: the standing orientation results
+    col = ic.IK_CHANNELS.index("pelvis_list")  # the sagittal pitch in this lab frame (pelvis_tilt is the roll)
+    ik[:, col] = -7.0  # a constant pitch is removed: the standing orientation results
     flat = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0)
     assert rot_diff_rad(flat.eval(0.3)[0][3:7], stand[3:7]) < 1e-9
-    off = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0, tilt_offset_deg=-5.0)
-    assert rot_diff_rad(off.eval(0.3)[0][3:7], stand[3:7]) == pytest.approx(np.deg2rad(5.0), abs=1e-9)
-    # an oscillation survives with its amplitude
-    ik[:, ic.IK_CHANNELS.index("pelvis_tilt")] = 7.0 + 2.0 * np.sin(2 * np.pi * np.linspace(0, 1, 101))
+    fwd = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0, tilt_offset_deg=5.0)
+    assert pitch_forward_rad(fwd.eval(0.3)[0], stand) == pytest.approx(np.deg2rad(5.0), abs=1e-9)  # positive = anterior
+    back = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0, tilt_offset_deg=-5.0)
+    assert pitch_forward_rad(back.eval(0.3)[0], stand) == pytest.approx(-np.deg2rad(5.0), abs=1e-9)
+    ik[:, col] = -7.0 - 2.0 * np.sin(2 * np.pi * np.linspace(0, 1, 101))  # an oscillation survives; forward = minus list
     osc = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0)
-    angles = [rot_diff_rad(osc.eval(t)[0][3:7], stand[3:7]) for t in np.linspace(0, 1, 50, endpoint=False)]
-    assert max(angles) == pytest.approx(np.deg2rad(2.0) * 0.99, rel=0.05)  # 1 s stride at 100 Hz sampling, 6 Hz cutoff: ~unattenuated
+    p = [pitch_forward_rad(osc.eval(t)[0], stand) for t in np.linspace(0, 1, 50, endpoint=False)]
+    assert max(p) == pytest.approx(np.deg2rad(2.0) * 0.99, rel=0.05)
+
+
+def test_the_offset_is_a_pitch_not_a_roll(model, stand):
+    """The reason pelvis_list, not pelvis_tilt, carries the offset: a roll would load the right and left lateral torques in
+    opposite directions, a pitch loads both limbs alike. Here: the offset changes no roll."""
+    ik = standing_ik()
+    q = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0, tilt_offset_deg=5.0).eval(0.2)[0]
+    r = np.zeros(3)
+    mujoco.mju_subQuat(r, q[3:7], stand[3:7])
+    assert abs(r[0]) < 1e-9 and abs(r[2]) < 1e-9 and abs(r[1]) == pytest.approx(np.deg2rad(5.0), abs=1e-9)
 
 
 def test_wrap_gap_is_reported_per_joint(model, stand):
