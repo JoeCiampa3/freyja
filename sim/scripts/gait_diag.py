@@ -333,6 +333,118 @@ def polygon_report(args):
                       f"(outside {100 * b25['single']['outside_fraction']:.1f}%), double {ms(b25['double']['median_outside_m'])} mm (outside {100 * b25['double']['outside_fraction']:.1f}%)")
 
 
+def _single_support_frames(args, trunk, model_for_loads=None):
+    """Yield (subject, stride data, frame k, stance foot, cycle q/qd/qdd, ref_lab, ratio, subject info) for every single-support frame."""
+    import gaitloads
+    import retarget
+    c = gait._ctx(str(gait.simrun.MODEL_FILE))
+    manifest = json.loads((REPO / "data/camargo2021/manifest.json").read_text(encoding="utf-8"))
+    for s, d in manifest["subjects"].items():
+        z = np.load(REPO / f"data/camargo2021/processed/{s}.npz")
+        ratio = retarget.leg_length_ratio(c.model, d["height_m"])
+        for i in range(min(args.cap, d["strides"][args.speed])):
+            ik, fp, fmk = z[f"{args.speed}_ik"][i], z[f"{args.speed}_fp"][i], z[f"{args.speed}_foot_markers"][i]
+            cyc = retarget.Cycle(c.model, c.mapping, c.stand, ik, float(z[f"{args.speed}_duration_s"][i]), ratio,
+                                 hip_in_pelvis_os=d["hip_in_pelvis_os_m"], trunk=trunk, pitch_mean="measured")
+            q, qd, qdd = cyc.grid()
+            ref_lab = retarget.dataset_hip_mid_lab(ik, d["hip_in_pelvis_os_m"])
+            for k in range(100):
+                stance = [f for j, f in enumerate(gait.FEET) if fp[j, k, 6] >= gaitloads.STANCE_FLAG]
+                if len(stance) == 1:
+                    yield dict(subject=s, d=d, k=k, foot=stance[0], q=q[k], qd=qd[k], qdd=qdd[k], fp=fp[:, k, :], fmk=fmk[k], ref_lab=ref_lab[k], ratio=ratio)
+
+
+def swing_report(args):
+    """T3c.5a: B's single-support CoP by segment group (stance leg, swing leg, pelvis and trunk): where each group's mass sits relative to
+    the stance ankle and what its motion adds, with the measured CoP's offset from the ankle for reference."""
+    import gaitloads
+    import mujoco
+    import partition
+    dyn = gait.dynamics
+    c = gait._ctx(str(gait.simrun.MODEL_FILE))
+    m = c.model
+    for trunk in ("rigid", "counter_rotate"):
+        com, dyn_t, b_off, m_off, err = {}, {}, [], [], []
+        for fr in _single_support_frames(args, trunk):
+            d = mujoco_data(m, fr["q"])
+            ankle = d.xpos[mujoco_body(m, fr["foot"])][:2].copy()
+            parts = partition.cop_partition(m, fr["q"], fr["qd"], fr["qdd"], fr["foot"], ankle_xy=ankle)
+            full = dyn.cop_decomposition(m, fr["q"], dyn.inverse_frame(m, fr["q"], fr["qd"], fr["qdd"]))[0][:2]
+            mf, mc = gaitloads.measured_to_model_foot(fr["fp"], fr["fmk"], dyn.foot_floor_segments(m, fr["q"]), c.mass / fr["d"]["mass_kg"])
+            for g, v in parts.items():
+                com.setdefault(g, []).append((v["mass_fraction"], *v["com_minus_ankle_xy"]))
+                dyn_t.setdefault(g, []).append(v["dynamic_xy"])
+            b_off.append(full - ankle); m_off.append(mc[fr["foot"]][:2] - ankle); err.append(full - mc[fr["foot"]][:2])
+        mm = lambda a, nd=0: "(" + ", ".join(f"{1000 * v:.{nd}f}" for v in a) + ")"
+        print(f"=== {args.speed} m/s, trunk {trunk}, {len(b_off)} single-support frames: offsets from the stance ankle, mm (x fore-aft, y lateral) ===")
+        print("group          mass %   where its mass sits: mean / rms        what its motion adds: mean / rms")
+        for g in com:
+            cm, dy = np.array(com[g]), np.array(dyn_t[g])
+            print(f"  {g:13s} {100 * cm[:, 0].mean():5.1f}   {mm(cm[:, 1:].mean(axis=0)):>14s} / {mm(np.sqrt((cm[:, 1:] ** 2).mean(axis=0))):>14s}      {mm(dy.mean(axis=0)):>14s} / {mm(np.sqrt((dy ** 2).mean(axis=0))):>14s}")
+        b_off, m_off, err = np.array(b_off), np.array(m_off), np.array(err)
+        print(f"  B CoP minus ankle: mean {mm(b_off.mean(axis=0))}, rms {mm(np.sqrt((b_off ** 2).mean(axis=0)))} | measured CoP minus ankle: mean {mm(m_off.mean(axis=0))}, rms {mm(np.sqrt((m_off ** 2).mean(axis=0)))} "
+              f"| B minus measured: mean {mm(err.mean(axis=0))}, rms {mm(np.sqrt((err ** 2).mean(axis=0)))}")
+
+
+def masses_report(args):
+    """T3c.5b: the same B CoP with the dataset model's segment masses and centres of mass in an in-memory copy of Freyja's model (never saved)."""
+    import gaitloads
+    import datasetmass
+    import retarget
+    import zipfile
+    dyn = gait.dynamics
+    c = gait._ctx(str(gait.simrun.MODEL_FILE))
+    m = c.model
+    copies = {}
+    for trunk in ("rigid", "counter_rotate"):
+        rows = {"freyja": [], "dataset masses": []}
+        for fr in _single_support_frames(args, trunk):
+            s = fr["subject"]
+            if s not in copies:
+                table = datasetmass.read_body_table(zipfile.ZipFile(ic_raw() / f"{s}.zip"), s)
+                copies[s] = datasetmass.with_dataset_masses(m, table, fr["ratio"], fr["d"]["hip_in_pelvis_os_m"][:2])
+            mf, mc = gaitloads.measured_to_model_foot(fr["fp"], fr["fmk"], dyn.foot_floor_segments(m, fr["q"]), c.mass / fr["d"]["mass_kg"])
+            for label, mod in (("freyja", m), ("dataset masses", copies[s])):
+                full = dyn.cop_decomposition(mod, fr["q"], dyn.inverse_frame(mod, fr["q"], fr["qd"], fr["qdd"]))[0][:2]
+                rows[label].append(full - mc[fr["foot"]][:2])
+        print(f"=== {args.speed} m/s, trunk {trunk}, single support ({len(rows['freyja'])} frames): B CoP minus measured CoP, rms mm (x fore-aft, y lateral) ===")
+        for label, r in rows.items():
+            r = np.array(r)
+            print(f"  {label:15s} x {1000 * np.sqrt((r[:, 0] ** 2).mean()):5.0f}  y {1000 * np.sqrt((r[:, 1] ** 2).mean()):5.0f}   mean x {1000 * r[:, 0].mean():+5.0f}  y {1000 * r[:, 1].mean():+5.0f}")
+
+
+def ic_raw():
+    import ingest_camargo as ic
+    return ic.raw_dir()
+
+
+def placement_report(args):
+    """T3c.5c: the lateral offset of each stance foot against the measured CoP's lateral position, and B's, in single support. The measured
+    CoP is placed by its position relative to the hip-centre midpoint (not on the foot), so this measures where Freyja's foot is, not
+    where her CoP is on it."""
+    import gaitloads
+    import retarget
+    dyn = gait.dynamics
+    c = gait._ctx(str(gait.simrun.MODEL_FILE))
+    m = c.model
+    for trunk in ("rigid", "counter_rotate"):
+        foot_y, meas_y, b_y, foot_x, meas_x, width = [], [], [], [], [], []
+        for fr in _single_support_frames(args, trunk):
+            d = mujoco_data(m, fr["q"])
+            seg = dyn.foot_floor_segments(m, fr["q"])[fr["foot"]]
+            centre = 0.5 * (seg[0] + seg[1])
+            mf, mc = gaitloads.measured_to_model(fr["fp"], fr["ref_lab"], retarget.model_hip_mid(m, fr["q"])[:2], c.mass / fr["d"]["mass_kg"], fr["ratio"])
+            full = dyn.cop_decomposition(m, fr["q"], dyn.inverse_frame(m, fr["q"], fr["qd"], fr["qdd"]))[0][:2]
+            foot_y.append(centre[1]); meas_y.append(mc[fr["foot"]][1]); b_y.append(full[1]); foot_x.append(centre[0]); meas_x.append(mc[fr["foot"]][0])
+            width.append(d.xpos[mujoco_body(m, "foot_left")][1] - d.xpos[mujoco_body(m, "foot_right")][1])
+        foot_y, meas_y, b_y, foot_x, meas_x, width = map(np.array, (foot_y, meas_y, b_y, foot_x, meas_x, width))
+        mm = lambda v: f"{1000 * np.mean(v):+.0f} +/- {1000 * np.std(v):.0f}"
+        print(f"=== {args.speed} m/s, trunk {trunk}, {len(foot_y)} single-support frames (mm, mean +/- sd; stance side sign folded so + is lateral) ===")
+        print(f"  stance foot centre minus measured CoP: lateral {mm(foot_y - meas_y)} (signed model y), fore-aft {mm(foot_x - meas_x)}")
+        print(f"  B CoP minus stance foot centre, lateral: {mm(b_y - foot_y)}; B CoP minus measured CoP, lateral: {mm(b_y - meas_y)}")
+        print(f"  Freyja's ankle-to-ankle width in single support: {mm(np.abs(width))}")
+
+
 BINS_MM = (10, 30, 100)
 
 
@@ -463,13 +575,17 @@ def main(argv=None):
     pgn.add_argument("--cap", type=int, default=4)
     pgn.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
     pgn.add_argument("--workers", type=int, default=5)
+    for name in ("swing", "masses", "placement"):
+        sp_ = sub.add_parser(name)
+        sp_.add_argument("--cap", type=int, default=4)
+        sp_.add_argument("--speed", default="1.4")
     la = sub.add_parser("lateral")
     la.add_argument("--cap", type=int, default=3)
     la.add_argument("--subjects", type=int, default=6)
     la.add_argument("--speed", default="1.4")
     la.add_argument("--trunk", default="rigid", choices=["rigid", "counter_rotate"])
     args = ap.parse_args(argv)
-    {"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "double": double_report, "polygon": polygon_report}[args.cmd](args)
+    {"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "double": double_report, "polygon": polygon_report, "swing": swing_report, "masses": masses_report, "placement": placement_report}[args.cmd](args)
 
 
 if __name__ == "__main__":
