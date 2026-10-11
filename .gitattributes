@@ -4,3 +4,6 @@ sim/runs/**/summary.json text eol=lf
 sim/runs/DIGEST.md text eol=lf
 sim/runs/ENVELOPE.md text eol=lf
 docs/schemas/*.json text eol=lf
+sim/sweeps/**/sweep.json text eol=lf
+sim/sweeps/**/SWEEP.md text eol=lf
+docs/schemas/*.json text eol=lf

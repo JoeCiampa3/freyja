@@ -1,0 +1,324 @@
+{
+  "$id": "sweep-summary/1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A posture sweep (Stage 1c): static standing torques over a grid of pose parameters. Written to sim/sweeps/<id minus 'sweep.'>/sweep.json with a generated SWEEP.md beside it. Stamped like a run record (commit, dirty hash, snapshot and model hashes, environment) but creates no run directory per point. Joint torque is about the model's own hinge axes (the decoupled hip architecture), not actuator torque for the coupled-hip variant. A minimum over the grid is a property of the model, not a recommended posture.",
+  "properties": {
+    "base_pose": {
+      "description": "The pose block of the base scenario, before the grid overrides it.",
+      "type": "object"
+    },
+    "counts": {
+      "additionalProperties": false,
+      "description": "Point counts.",
+      "properties": {
+        "feasible": {
+          "description": "Feasible grid points.",
+          "type": "integer"
+        },
+        "points": {
+          "description": "Total grid points.",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "points",
+        "feasible"
+      ],
+      "type": "object"
+    },
+    "diff_sha256": {
+      "anyOf": [
+        {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "SHA-256 of `git diff HEAD`; null when clean."
+    },
+    "env": {
+      "additionalProperties": false,
+      "description": "Software versions.",
+      "properties": {
+        "mujoco": {
+          "description": "mujoco package version.",
+          "type": "string"
+        },
+        "numpy": {
+          "description": "numpy package version.",
+          "type": "string"
+        },
+        "python": {
+          "description": "Python interpreter version.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "mujoco",
+        "python",
+        "numpy"
+      ],
+      "type": "object"
+    },
+    "git_commit": {
+      "description": "HEAD commit when the sweep started.",
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "git_dirty": {
+      "description": "True when tracked files differ from HEAD.",
+      "type": "boolean"
+    },
+    "minimum": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "params": {
+              "additionalProperties": {
+                "type": "number"
+              },
+              "description": "Parameters of the feasible point with the smallest sum of squared torques.",
+              "type": "object"
+            },
+            "sum_squares_nm2": {
+              "description": "Its sum of squared torques, N^2 m^2.",
+              "type": "number"
+            }
+          },
+          "required": [
+            "params",
+            "sum_squares_nm2"
+          ],
+          "type": "object"
+        }
+      ],
+      "description": "The feasible point with the smallest unnormalised sum of squared torques; null when none is feasible. A property of the model, not a recommended posture."
+    },
+    "model_sha256": {
+      "description": "SHA-256 of sim/models/freyja.xml.",
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "points": {
+      "description": "Every grid point, the last parameter varying fastest.",
+      "items": {
+        "additionalProperties": false,
+        "description": "One grid point.",
+        "properties": {
+          "feasible": {
+            "description": "True when the pose can be held (CoP inside the support polygon, every limited joint in range) and both sweep constraints are met.",
+            "type": "boolean"
+          },
+          "limit_joint": {
+            "description": "The joint that sets limit_margin_min_deg.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "limit_margin_min_deg": {
+            "description": "Smallest distance, degrees, from any limited joint to a limit (negative if outside); null when the pose was unreachable or no joint is limited.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "params": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "description": "The pose parameters at this point (the grid's axes), in the units of their names (m, deg).",
+            "type": "object"
+          },
+          "reasons": {
+            "description": "Why the point is infeasible (empty when feasible): an unreachable pose, a CoP outside the support polygon, a joint outside its range, or a violated constraint, naming the joint.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "sum_squares_nm2": {
+            "description": "Sum over all joints of torque squared, N^2 m^2. Unnormalised: it weights every joint equally regardless of its size or role.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "support_margin_m": {
+            "description": "Signed distance, m, from the CoP to the boundary of the support polygon (positive inside); null when the pose was unreachable.",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "torques": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "description": "Static joint torque, N m about each hinge's own axis (model sign convention, not actuator torque), keyed by joint; null when the pose was unreachable.",
+            "type": [
+              "object",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "params",
+          "feasible",
+          "reasons",
+          "support_margin_m",
+          "limit_margin_min_deg",
+          "limit_joint",
+          "torques",
+          "sum_squares_nm2"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "ranges": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "description": "Torque extremes of one joint across the feasible points.",
+        "properties": {
+          "max": {
+            "description": "Largest torque over the feasible points, N m.",
+            "type": "number"
+          },
+          "min": {
+            "description": "Smallest torque over the feasible points, N m.",
+            "type": "number"
+          },
+          "spread": {
+            "description": "max minus min, N m.",
+            "type": "number"
+          }
+        },
+        "required": [
+          "min",
+          "max",
+          "spread"
+        ],
+        "type": "object"
+      },
+      "description": "Per joint, the torque extremes over the feasible points only; empty when no point is feasible.",
+      "type": "object"
+    },
+    "schema": {
+      "const": "sweep-summary/1",
+      "description": "Schema identifier and version."
+    },
+    "snapshot_sha256": {
+      "description": "SHA-256 of params/snapshot.csv.",
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "spec": {
+      "additionalProperties": false,
+      "description": "The sweep spec as authored (defaults filled in).",
+      "properties": {
+        "base": {
+          "description": "The base scenario whose pose block the grid overrides.",
+          "type": "string"
+        },
+        "constraints": {
+          "additionalProperties": false,
+          "description": "Feasibility constraints beyond 'can be held'.",
+          "properties": {
+            "min_limit_margin_deg": {
+              "description": "Smallest allowed distance of any limited joint from its limit, degrees.",
+              "type": "number"
+            },
+            "min_support_margin_m": {
+              "description": "Smallest allowed support margin, m.",
+              "type": "number"
+            }
+          },
+          "required": [
+            "min_support_margin_m",
+            "min_limit_margin_deg"
+          ],
+          "type": "object"
+        },
+        "grid": {
+          "additionalProperties": {
+            "additionalProperties": false,
+            "description": "One grid axis: n evenly spaced values from start to stop inclusive.",
+            "properties": {
+              "n": {
+                "description": "Number of values.",
+                "minimum": 1,
+                "type": "integer"
+              },
+              "start": {
+                "description": "First value.",
+                "type": "number"
+              },
+              "stop": {
+                "description": "Last value.",
+                "type": "number"
+              }
+            },
+            "required": [
+              "start",
+              "stop",
+              "n"
+            ],
+            "type": "object"
+          },
+          "description": "Up to three pose parameters, each an axis.",
+          "type": "object"
+        },
+        "name": {
+          "description": "Spec name (the file name in sim/scenarios/sweeps/).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "base",
+        "grid",
+        "constraints"
+      ],
+      "type": "object"
+    },
+    "sweep_id": {
+      "description": "sweep.<YYYYMMDD>-<HHMM>-<spec name>; the start time of the sweep.",
+      "pattern": "^sweep\\.[0-9]{8}-[0-9]{4}-[a-z0-9_-]+$",
+      "type": "string"
+    },
+    "unbounded_joints": {
+      "description": "Hinge joints with no range in the model; the sweep ranges are the only bounds on them.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema",
+    "sweep_id",
+    "git_commit",
+    "git_dirty",
+    "diff_sha256",
+    "snapshot_sha256",
+    "model_sha256",
+    "env",
+    "spec",
+    "base_pose",
+    "points",
+    "ranges",
+    "minimum",
+    "unbounded_joints",
+    "counts"
+  ],
+  "title": "sweep-summary/1",
+  "type": "object"
+}

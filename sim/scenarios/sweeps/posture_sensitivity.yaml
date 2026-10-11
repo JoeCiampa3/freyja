@@ -1,0 +1,14 @@
+# posture_sensitivity: how the static standing torques (stand_static) move with the CoM position over the ankle and with
+# lumbosacral and thoracic flexion. PLACEHOLDER RANGES: no cited source for any of them, so nothing here says what a person
+# does. The grid is a model sensitivity, not a recommended posture, and its minimum is a property of the model.
+name: posture_sensitivity
+base: stand_static
+grid:
+  com_x_rel_ankle_m: {start: -0.02, stop: 0.05, n: 8}
+  lsj_fe_deg: {start: -10.0, stop: 20.0, n: 7}
+  tj_fe_deg: {start: -10.0, stop: 20.0, n: 7}
+constraints:
+  min_support_margin_m: 0.02
+  # 1.0, not the default 2.0: at neutral the knee is 1.6 deg from its -1.6 deg extension stop, so a 2.0 deg constraint makes
+  # every standing pose infeasible (0 of 392 points). Joe to decide whether the default or the knee limit should change.
+  min_limit_margin_deg: 1.0

@@ -83,6 +83,10 @@ class Dispatch(unittest.TestCase):
         self.assertEqual(code, 0)
         fn.assert_called_once_with(REPO, ["hold_pose"])
 
+    def test_sweep_passes_the_spec_to_the_sweep_tool(self):
+        code, fn = self.run_from_subdir(["sweep", "posture_sensitivity"], "run_sweep")
+        fn.assert_called_once_with(REPO, ["posture_sensitivity"])
+
     def test_view_passes_the_scenario_and_options_to_the_viewer(self):
         code, fn = self.run_from_subdir(["view", "hold_pose", "--speed", "0.5"], "run_view")
         fn.assert_called_once_with(REPO, ["hold_pose", "--speed", "0.5"])

@@ -22,7 +22,8 @@ POLARITY_FILE = Path(__file__).resolve().parents[2] / "checks" / "joint_polarity
 POSE_JOINTS = {"lsj_fe_deg": ("lsj_fe",), "tj_fe_deg": ("tj_fe",), "cj_fe_deg": ("cj_fe",),
                "pelvic_tilt_deg": ("hip_fe_right", "hip_fe_left")}
 
-BISECT_ITERATIONS = 100  # halvings of a bracket of at most a radian or so: far below floating-point round-off
+ROOT_XTOL = 1e-14  # rad: stop when the iterate moves less than this, far below the 0.1 mm the pose is checked to
+MAX_ROOT_ITERATIONS = 200  # a guard; the smooth functions here converge in under ten
 PITCH_BRACKET_RAD = 1.5  # rad: the search range of the root pitch (a level sole needs the pitch to cancel the ankle angle, at most 62 deg)
 
 
@@ -40,15 +41,32 @@ class Lean:
 
 
 def _bisect(f, lo, hi):
-    flo = f(lo)
-    for _ in range(BISECT_ITERATIONS):
-        mid = 0.5 * (lo + hi)
-        fm = f(mid)
-        if (fm > 0) == (flo > 0):
-            lo, flo = mid, fm
+    """Root of f in [lo, hi] (f changes sign there): the Illinois form of regula falsi, which is bracketed like bisection
+    but converges in a handful of evaluations on the smooth, nearly linear functions of a pose. Stops when the iterate moves
+    by less than ROOT_XTOL or f is zero."""
+    flo, fhi = f(lo), f(hi)
+    if flo == 0.0:
+        return lo
+    if fhi == 0.0:
+        return hi
+    side, x_prev = 0, None
+    for _ in range(MAX_ROOT_ITERATIONS):
+        x = (lo * fhi - hi * flo) / (fhi - flo)
+        fx = f(x)
+        if fx == 0.0 or (x_prev is not None and abs(x - x_prev) < ROOT_XTOL):
+            return x
+        x_prev = x
+        if (fx > 0) == (flo > 0):
+            lo, flo = x, fx
+            if side == 1:
+                fhi *= 0.5
+            side = 1
         else:
-            hi = mid
-    return 0.5 * (lo + hi)
+            hi, fhi = x, fx
+            if side == -1:
+                flo *= 0.5
+            side = -1
+    return x
 
 
 def _bottom_z(model, data, bodies):
@@ -86,6 +104,8 @@ def pose_offsets(model, pose: dict) -> dict:
     out = {}
     for key, joints in POSE_JOINTS.items():
         value = float(pose.get(key, 0.0))
+        if value == 0.0:
+            continue  # a zero parameter sets nothing (and a model without that joint is fine)
         for joint in joints:
             out[joint] = flexion_sign(model, joint) * np.radians(value)
     return out

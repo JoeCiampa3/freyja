@@ -29,7 +29,7 @@ Rules that outlive any tool in this repo. Tools get replaced; these do not. If c
 | `catalog/` | actuators, bearings, cable, stock; one file each, datasheet cited | authored |
 | `decisions/` | `NNNN-slug.md` decision records | authored |
 | `analysis/` | scripts that produce numbers entering the sheet | authored |
-| `sim/` | `models/` (template authored, `freyja.xml` generated), `scripts/`, `scenarios/`, `controllers/` (authored), `runs/` | mixed |
+| `sim/` | `models/` (template authored, `freyja.xml` generated), `scripts/`, `scenarios/` (authored; `scenarios/sweeps/` holds the sweep specs), `controllers/` (authored), `runs/` (tracked summaries), `sweeps/` (generated, tracked) | mixed |
 | `cad/` | `fusion_addin/` authored; `sidecars/*.json` and `exports/` generated | mixed |
 | `fea/`, `tests/` | structured study and bench-run records | authored (entered), later scripted |
 | `data/` | raw measurements with a `manifest.json` each; large files stay out of git unless LFS | imported |
@@ -113,6 +113,8 @@ Every sim run writes `sim/runs/<id minus "run.">/summary.json`. It is small and 
 ```
 
 `outcome` is `completed`, `fell` or `diverged`. `support` is `ground`, `gantry` or `ground_wrench`. A `ground_wrench` record is a static solve (`drive: static_equilibrium`, `sim/scripts/statics.py`): contacts are disabled for the call and the ground reaction is supplied explicitly as generalized forces through the foot Jacobians, so nothing goes through the contact solver; its window has zero width, its duration is zero, each joint's `torque_peak_nm` equals its `torque_rms_nm` and its speeds and powers are zero, and a pose that cannot be held (CoP outside the support polygon, a joint outside its range) is recorded as `fell` with the reasons in the optional `findings` list. `torque_source` is `applied` (ideal joint torque on `qfrc_applied` in forward dynamics, ground mode) or `inverse_dynamics` (`mj_inverse` with prescribed `qacc`, gantry mode only: with floor contacts the inverse contact force comes from the soft-constraint model, so the root rows do not close). `diff_sha256` hashes `git diff HEAD` and is null when the tracked tree is clean. Scenario files may carry `envelope: false` (default true): a verification-only run, listed in `sim/runs/ENVELOPE.md` as excluded with that reason and never driving a row. Optional record keys: `skipped` (joint to reason, e.g. `unlimited`) and `diagnostics` (scenario-specific named numbers). Joint torque is about the model's own hinge axes (the decoupled hip architecture); it is not actuator torque for a coupled-hip variant. Units are SI except angles in degrees, and are named in the key suffix.
+
+Posture sweeps (`fy sweep <spec>`) write `sim/sweeps/<id minus "sweep.">/sweep.json` (`sweep-summary/1`, schema `docs/schemas/sweep-summary-1.schema.json`) and a generated `SWEEP.md`. A sweep record is stamped like a run (commit, `git_dirty`, `diff_sha256`, snapshot and model hashes, environment, the spec) and holds every grid point, but creates no run directory per point. It is deterministic (timing is printed, not recorded), `SWEEP.md` is under 400 lines, a grid is limited to 2000 points, and a minimum over it is a property of the model, not a recommended posture.
 
 ## 7. Checks
 
