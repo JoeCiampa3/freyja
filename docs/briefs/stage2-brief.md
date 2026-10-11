@@ -23,7 +23,7 @@ B primary, A and H as cross-checks (C, a whole-body controller, is Joe's later p
 
 ## Prerequisites for Joe
 
-Use Version 2 of each part (Mendeley Data: DOIs 10.17632/fcgm3chfff.2, 10.17632/k9kvm5tn3f.2, 10.17632/jj3r5f9pnf.2). Part 1 carries a CC BY 4.0 licence; confirm the same on Parts 2 and 3. Part 1 first: `README.txt`, `SubjectInfo.mat` and `scripts.zip` (about 204 MB), which is all T0 needs, then `Subjects_Part1_AB06-AB14.zip` (9.38 GB, nine subjects in one archive). Parts 2 and 3 come after the Part 1 checkpoint. Keep the downloads outside the repo, in the folder named by the `camargo_raw_dir` key in `local_config.json` (gitignored).
+Use Version 2 of each part (Mendeley Data: DOIs 10.17632/fcgm3chfff.2, 10.17632/k9kvm5tn3f.2, 10.17632/jj3r5f9pnf.2). Part 1 carries a CC BY 4.0 licence; confirm the same on Parts 2 and 3. Part 1 first: `README.txt`, `SubjectInfo.mat` and `scripts.zip` (about 204 MB), which is all T0 needs, then `Subjects_Part1_AB06-AB14.zip` (9.38 GB, nine subjects in one archive). Parts 2 and 3 come after the Part 1 checkpoint. Keep the downloads outside the repo and point to them with the `CAMARGO_RAW_DIR` environment variable, or with a `camargo_raw_dir` key that Joe adds to `sim/local_config.json` (Claude Code never edits that file).
 
 ## Amendments to CONVENTIONS (apply in T7)
 
@@ -52,15 +52,26 @@ Report, without clipping: the fraction of frames outside each joint's model limi
 
 Checkpoint: stop here and report T0 to T2.
 
+## T2b. Retargeting amendments (after Joe's reply, before T3)
+
+Pelvis tilt: apply the dataset's pelvis tilt as an excursion from the subject's static standing value (use the static trial if the dataset has one; report if it does not), added to the standing pose from `stand_static`, not as an absolute angle. The model's zero and OpenSim's zero need not coincide, and a 10 degree offset would move the upper body's CoM by several centimetres.
+
+Root rule: keep the proposed rule (minimum foot height, then filtered) and add a second one, the dataset's pelvis vertical and horizontal translation scaled by leg-length ratio. Report both against the measured force (the first step of T3) and keep whichever reproduces it better, recording both sets of numbers and that the choice is a retargeting-rule choice. The foot float and slip figures are secondary to the force: vertical force follows the CoM's vertical acceleration directly, so a smooth, faithful CoM trajectory matters more than the foot touching the floor.
+
+Wrap gap: report it per joint; flag strides with a gap above 10 degrees, do not drop them. Subject offsets: keep AB13 and AB15 and report every statistic with and without them.
+
 ## T3. Dynamic wrench solver (B)
 
-`sim/scripts/dynamics.py`, generalising `statics.py` to frames with non-zero `qvel` and `qacc`. Per frame, contacts disabled, `mj_inverse` gives `qfrc_inverse`. The root rows give the net ground wrench. Joint torque is the joint rows of `qfrc_inverse - qfrc_ground`. Single support: the total force acts at a CoP on the floor plane, solved from the two horizontal-moment equations; the vertical-axis moment is left in the root rows and reported. Double support: the proportional split of force (and of horizontal force), each foot's CoP at the same normalised offset along its own box with a shared lateral shift, both solved from the two moment equations. Swing foot: zero. Feasibility, reported per frame and never clipped: the CoP must lie inside the hull of the foot-box points within 1 mm of the floor; the friction ratio must be below the model's `mu`. The double-support bound sweeps the force split over its feasible range and keeps the worst case per joint.
+`sim/scripts/dynamics.py`, generalising `statics.py` to frames with non-zero `qvel` and `qacc`. Per frame, with contacts and joint-limit constraints both disabled (`mjDSBL_CONTACT` and `mjDSBL_LIMIT`, restored afterwards: a stop would otherwise carry load and understate the required torque on frames past a limit), `mj_inverse` gives `qfrc_inverse`. The root rows give the net ground wrench. Joint torque is the joint rows of `qfrc_inverse - qfrc_ground`. Single support: the total force acts at a CoP on the floor plane, solved from the two horizontal-moment equations; the vertical-axis moment is left in the root rows and reported. Double support: the proportional split of force (and of horizontal force), each foot's CoP at the same normalised offset along its own box with a shared lateral shift, both solved from the two moment equations. Swing foot: zero. Feasibility, reported per frame and never clipped: the CoP must lie inside the hull of the foot-box vertices within a named band (default 25 mm) of that foot's own lowest point, projected onto the floor, so a foot that floats slightly still has a contact polygon; the friction ratio must be below the model's `mu`. The double-support bound sweeps the force split over its feasible range and keeps the worst case per joint.
+
+First report, before any joint torque is computed: Freyja's total ground force from her own CoM motion (`m(a+g)`, from the root force rows) against the measured force scaled to her weight, per phase, for both root rules from T2b. The force depends on the kinematics alone, so this tests the root trajectory before any moment error can hide it. If the peak vertical force differs by more than 15% (my review threshold, not an acceptance limit) or the time-course differs in shape, stop and report.
 
 Tests first:
 - A single rigid body on a foot box with prescribed sway reproduces the ZMP formula for the CoP to 1e-9, with and without rotational inertia.
 - In free fall the root rows are zero.
 - Symmetric double support with the CoM centred gives an equal split.
 - Flipping the sign of the ground wrench breaks the root-row residual, and the test detects it.
+- A pose beyond a hinge limit gives the same torque as a copy of the model with that range removed.
 - Independent check: the hip, knee and ankle torques on five frames equal a bottom-up Newton-Euler recursion written in the test, using the solved ground force and MuJoCo kinematics but not `mj_inverse`, to 1e-6 relative.
 
 ## T4. Methods A and H
@@ -73,7 +84,7 @@ Tests first: in H the force rows close to round-off and only the moments leave a
 
 `fy gait <spec>` reads `sim/scenarios/gait/walk_treadmill.yaml` (dataset, speeds, subject selection, stride cap per subject, methods, smoothing, the upper-body assumption, the double-support rule) and runs every subject-stride. It writes `sim/gait/<id>/gait.json` (untracked) and a deterministic `GAIT.md` under 400 lines whose header carries the dataset attribution line. The record is stamped like a run: commit, dirty hash, snapshot and model hashes, spec hash, dataset manifest hash, environment.
 
-It reports per joint and per method, across subject-strides: mean, 95th percentile and maximum of peak torque, peak speed, and positive and negative peak power (regeneration matters for drives). It reports feasibility fractions, residual magnitudes, and the agreement with the dataset's own joint moments for the sagittal hip, knee and ankle (moments per kilogram: RMS difference as a percentage of the dataset's peak-to-peak range, peak difference, correlation). It also gives a smoothing-sensitivity table: the change in each joint's 95th-percentile peak torque at 4, 6 and 8 Hz. No pass or fail on agreement yet.
+It reports per joint and per method, across subject-strides: mean, 95th percentile and maximum of peak torque, peak speed, and positive and negative peak power (regeneration matters for drives). It reports feasibility fractions, residual magnitudes, and the agreement with the dataset's own joint moments for the sagittal hip, knee and ankle (moments per kilogram: RMS difference as a percentage of the dataset's peak-to-peak range, peak difference, correlation). It also gives sensitivity tables: the change in each joint's 95th-percentile peak torque at smoothing cutoffs of 4, 6 and 8 Hz, and at pelvis-tilt offsets of -5, 0 and +5 degrees. The comparison with the dataset's moments also covers hip ab/adduction, hip rotation and ankle inversion, as a sign check of the mappings that sagittal features cannot verify; a sign disagreement is a mapping error until explained. It reports the distribution (median, 95th percentile, maximum across subject-strides) of peak hip extension at each speed against the model's -18.1 degree stop: that is a finding for the Joint ROM sheet's functional-demand column, not a reason to clip. No pass or fail on agreement yet.
 
 Tests first, on synthetic strides with known answers: aggregation statistics; point caps; byte-identical output on a second run.
 
