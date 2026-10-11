@@ -101,8 +101,34 @@ def _hinges(model):
             for j in range(model.njnt) if model.jnt_type[j] == mujoco.mjtJoint.mjJNT_HINGE]
 
 
+SEGMENT_TOL_M = HULL_BAND_M  # m. A foot rolling on its heel or toe edge has a segment for a contact polygon; a CoP within this of the
+#                              segment counts as inside, because a sole is not zero-width. Used by the polygon baseline (T3b step 4).
+
+
+def contact_margin(corners, xy, band_m=HULL_BAND_M, segment_tol_m=0.0):
+    """Signed distance of the floor point xy to a foot's contact polygon (positive inside) and whether the polygon is degenerate.
+    `corners` are the foot box's world vertices; the polygon is the hull of those within band_m of the lowest one. A degenerate
+    polygon (a segment or a point) gives minus the distance to it, raised by segment_tol_m so that a point within the tolerance of
+    the segment is not outside."""
+    pts = corners[corners[:, 2] <= corners[:, 2].min() + band_m][:, :2]
+    margin = float(metrics.support_margin(pts, xy))
+    degenerate = len(metrics.convex_hull(pts)) < 3
+    if degenerate:
+        margin += segment_tol_m
+    return margin, degenerate
+
+
+def foot_polygon_margin(model, qpos, foot, xy, band_m=HULL_BAND_M, segment_tol_m=0.0):
+    """contact_margin for the named foot of the pose qpos."""
+    d = mujoco.MjData(model)
+    d.qpos[:] = qpos
+    mujoco.mj_kinematics(model, d)
+    corners, _ = _foot_boxes(model, d, mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, foot))
+    return contact_margin(corners, np.asarray(xy, float)[:2], band_m, segment_tol_m)
+
+
 def solve_frame(model, qpos, qvel, qacc, stance=FEET, feet=FEET, sweep=False, band_m=HULL_BAND_M, n_sweep=N_SWEEP,
-                _ground_sign: float = 1.0, qfrc=None) -> FrameResult:
+                _ground_sign: float = 1.0, qfrc=None, split_right_override=None, segment_tol_m=0.0) -> FrameResult:
     """Ground wrench, CoPs, joint torques and feasibility for one frame. `stance` lists the feet on the ground. With `sweep` and
     two stance feet, the right-foot force share is swept over its feasible range and the worst case per joint is kept in
     `torque_range`. `_ground_sign` exists for the mutation test only."""
@@ -140,9 +166,7 @@ def solve_frame(model, qpos, qvel, qacc, stance=FEET, feet=FEET, sweep=False, ba
         reasons, margin, fric, degenerate = [], {}, {}, {}
         for n in stance:
             corners, (_, _, mu) = geo[n]
-            pts = corners[corners[:, 2] <= corners[:, 2].min() + band_m][:, :2]
-            margin[n] = float(metrics.support_margin(pts, cops[n][:2]))
-            degenerate[n] = len(metrics.convex_hull(pts)) < 3
+            margin[n], degenerate[n] = contact_margin(corners, cops[n][:2], band_m, segment_tol_m)
             fz = forces[n][2]
             fric[n] = float(np.hypot(forces[n][0], forces[n][1]) / fz) if fz > 0 else float("inf")
             if not fz > 0:
@@ -184,7 +208,7 @@ def solve_frame(model, qpos, qvel, qacc, stance=FEET, feet=FEET, sweep=False, ba
         pr, pl = d.xpos[bodies[stance[0]]][:2], d.xpos[bodies[stance[1]]][:2]
         axis = pl - pr
         s = float(np.clip(np.dot(com[:2] - pr, axis) / np.dot(axis, axis), 0.0, 1.0))
-        split_right = 1.0 - s
+        split_right = 1.0 - s if split_right_override is None else float(split_right_override)  # an override is a control property the kinematics cannot predict
         forces, cops = double(split_right)
     net, residual = assemble(forces, cops)
     margin, fric, reasons, degenerate = feasibility(forces, cops)
@@ -224,3 +248,22 @@ def solve_given(model, qpos, qfrc, forces, cops, feet=FEET):
         g += jp.T @ np.asarray(f, float)
     net = qfrc - g
     return {n: float(net[dof]) for n, dof in _hinges(model)}, np.r_[net[:3], R @ net[3:6]], net
+
+
+def cop_decomposition(model, qpos, qfrc):
+    """The whole-body CoP (the point where the total ground force must act for the horizontal moments to close) split into
+    its point-mass term, p = c_xy - (c_z / F_z) F_xy (CoM position and total force only), and the remainder, the
+    angular-momentum term (the rate of change of the angular momentum about the CoM over F_z). Returns (full, point_mass,
+    angular_momentum), each a floor point (3,). Independent of how the force is shared between the feet."""
+    d = mujoco.MjData(model)
+    d.qpos[:] = qpos
+    mujoco.mj_kinematics(model, d)
+    mujoco.mj_comPos(model, d)
+    root = int(model.jnt_bodyid[0])
+    F = np.asarray(qfrc[:3], float)
+    M = d.xmat[root].reshape(3, 3) @ qfrc[3:6]
+    p0 = np.asarray(qpos[:3], float)
+    full = np.array([p0[0] - (M[1] + p0[2] * F[0]) / F[2], p0[1] + (M[0] - p0[2] * F[1]) / F[2], 0.0])
+    com = d.subtree_com[0]
+    pm = np.array([com[0] - com[2] * F[0] / F[2], com[1] - com[2] * F[1] / F[2], 0.0])
+    return full, pm, full - pm

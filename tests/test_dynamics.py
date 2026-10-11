@@ -228,3 +228,41 @@ def test_stance_leg_torques_equal_a_bottom_up_newton_euler_recursion(model):
         for joint in ("hip_fe_right", "hip_aa_right", "hip_ier_right", "knee_right", "ankle_pdflex_right", "ankle_ie_right"):
             ref = res.torque[joint]
             assert torques[joint] == pytest.approx(ref, rel=1e-6, abs=1e-6), (ph, joint)
+
+
+# ---- T3b: split override, segment tolerance, CoP decomposition
+
+def test_a_split_override_sets_the_force_share(model):
+    q = neutral(model)
+    r = dynamics.solve_frame(model, q, np.zeros(model.nv), np.zeros(model.nv), split_right_override=0.8)
+    w = model.body_mass.sum() * G
+    assert r.split_right == 0.8
+    assert r.force["foot_right"][2] == pytest.approx(0.8 * w, rel=1e-12) and r.force["foot_left"][2] == pytest.approx(0.2 * w, rel=1e-12)
+    assert np.abs(r.residual[:5]).max() < 1e-8  # the CoPs re-solve, so the wrench still closes
+
+
+def test_segment_polygon_gets_a_named_tolerance_band():
+    # a box rolled onto its toe edge: only the two toe-side bottom vertices are within the band of the lowest one
+    corners = np.array([[0.1, -0.05, 0.0], [0.1, 0.05, 0.0], [-0.1, -0.05, 0.06], [-0.1, 0.05, 0.06],
+                        [0.1, -0.05, 0.06], [0.1, 0.05, 0.06], [-0.1, -0.05, 0.12], [-0.1, 0.05, 0.12]])
+    margin, degenerate = dynamics.contact_margin(corners, np.array([0.1, 0.0]), band_m=0.025)
+    assert degenerate and margin == pytest.approx(0.0, abs=1e-12)  # on the edge
+    margin, _ = dynamics.contact_margin(corners, np.array([0.1, 0.12]), band_m=0.025)
+    assert margin == pytest.approx(-0.07)  # 70 mm beyond the toe-edge segment's end
+    near = dynamics.contact_margin(corners, np.array([0.08, 0.0]), band_m=0.025)[0]
+    assert near < 0 and dynamics.contact_margin(corners, np.array([0.08, 0.0]), 0.025, segment_tol_m=dynamics.SEGMENT_TOL_M)[0] >= 0
+    assert dynamics.contact_margin(corners, np.array([0.0, 0.0]), 0.025, segment_tol_m=dynamics.SEGMENT_TOL_M)[0] < 0  # 100 mm away stays outside
+
+
+@pytest.mark.parametrize("pitch", [False, True])
+def test_cop_decomposition_point_mass_term_and_angular_momentum_term(pitch):
+    m = mujoco.MjModel.from_xml_string(ZMP_XML)
+    for t in (0.2, 0.5, 0.9):
+        q, qd, qdd, (x, z, xdd, zdd, thdd) = zmp_state(t, pitch)
+        qfrc = dynamics.inverse_frame(m, q, qd, qdd)
+        full, pm, am = dynamics.cop_decomposition(m, q, qfrc)
+        assert pm[0] == pytest.approx(x - z * xdd / (zdd + G), abs=1e-9)
+        assert am[0] == pytest.approx(-(0.5 * thdd) / (10.0 * (zdd + G)), abs=1e-9)
+        assert full[0] == pytest.approx(pm[0] + am[0], abs=1e-12)
+        if not pitch:
+            assert abs(am[0]) < 1e-9
