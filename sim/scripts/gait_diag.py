@@ -445,6 +445,53 @@ def placement_report(args):
         print(f"  Freyja's ankle-to-ankle width in single support: {mm(np.abs(width))}")
 
 
+def pushoff_report(args):
+    """T3c.4 (toe question): can a rigid, toeless foot box represent push-off? The measured CoP, placed on Freyja's foot at the same
+    normalised place, tested against that foot's contact polygon, by stance-phase decile of each foot's own stance (0 = heel strike of that
+    foot, 100 = its toe-off), single support and double support separately; with the foot's pitch (heel height above the toe) beside it."""
+    import gaitloads
+    import retarget
+    dyn = gait.dynamics
+    c = gait._ctx(str(gait.simrun.MODEL_FILE))
+    m = c.model
+    manifest = json.loads((REPO / "data/camargo2021/manifest.json").read_text(encoding="utf-8"))
+    bins = {k: [[] for _ in range(10)] for k in ("single", "double")}
+    pitch = [[] for _ in range(10)]
+    for s, d in manifest["subjects"].items():
+        z = np.load(REPO / f"data/camargo2021/processed/{s}.npz")
+        ratio = retarget.leg_length_ratio(m, d["height_m"])
+        for i in range(min(args.cap, d["strides"][args.speed])):
+            ik, fp, fmk = z[f"{args.speed}_ik"][i], z[f"{args.speed}_fp"][i], z[f"{args.speed}_foot_markers"][i]
+            cyc = retarget.Cycle(m, c.mapping, c.stand, ik, float(z[f"{args.speed}_duration_s"][i]), ratio, hip_in_pelvis_os=d["hip_in_pelvis_os_m"],
+                                 trunk=args.trunk, pitch_mean="measured")
+            q, qd, qdd = cyc.grid()
+            for fi, foot in enumerate(gait.FEET):
+                st = np.flatnonzero(fp[fi, :100, 6] >= 0.5)
+                if len(st) < 5:
+                    continue
+                first, last = st[0], st[-1]
+                for k in st:
+                    dec = min(9, int(10 * (k - first) / max(1, last - first + 1)))
+                    stance = tuple(f for j, f in enumerate(gait.FEET) if fp[j, k, 6] >= 0.5)
+                    mf, mc = gaitloads.measured_to_model_foot(fp[:, k, :], fmk[k], dyn.foot_floor_segments(m, q[k]), c.mass / d["mass_kg"])
+                    key = "single" if len(stance) == 1 else "double"
+                    dist = dyn.polygon_outside_m(m, q[k], (foot,), mc[foot][:2]) if len(stance) == 1 else dyn.polygon_outside_m(m, q[k], (foot,), mc[foot][:2])
+                    bins[key][dec].append(dist)
+                    dd = mujoco_data(m, q[k])
+                    heel, toe = dyn.foot_floor_segments(m, q[k])[foot]
+                    corners, _ = dyn._foot_boxes(m, dd, mujoco_body(m, foot))
+                    pitch[dec].append(float(corners[:, 2].max() - corners[:, 2].min()))
+    print(f"=== {args.speed} m/s, trunk {args.trunk}: the measured CoP on each foot's own contact polygon, by decile of that foot's stance ===")
+    print("  stance %   single support: outside % (median mm)    double support: outside % (median mm)    box height span mm")
+    for dec in range(10):
+        row = []
+        for key in ("single", "double"):
+            v = np.array(bins[key][dec])
+            out = v[v > 1e-9]
+            row.append(f"{100 * len(out) / len(v):5.1f} ({1000 * np.median(out) if len(out) else 0:3.0f}) n={len(v)}" if len(v) else "   -")
+        print(f"  {10 * dec:3d}-{10 * dec + 10:3d}    {row[0]:>28s}        {row[1]:>28s}      {1000 * np.mean(pitch[dec]):5.0f}")
+
+
 BINS_MM = (10, 30, 100)
 
 
@@ -579,13 +626,17 @@ def main(argv=None):
         sp_ = sub.add_parser(name)
         sp_.add_argument("--cap", type=int, default=4)
         sp_.add_argument("--speed", default="1.4")
+    po = sub.add_parser("pushoff")
+    po.add_argument("--cap", type=int, default=4)
+    po.add_argument("--speed", default="1.4")
+    po.add_argument("--trunk", default="counter_rotate", choices=["rigid", "counter_rotate"])
     la = sub.add_parser("lateral")
     la.add_argument("--cap", type=int, default=3)
     la.add_argument("--subjects", type=int, default=6)
     la.add_argument("--speed", default="1.4")
     la.add_argument("--trunk", default="rigid", choices=["rigid", "counter_rotate"])
     args = ap.parse_args(argv)
-    {"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "double": double_report, "polygon": polygon_report, "swing": swing_report, "masses": masses_report, "placement": placement_report}[args.cmd](args)
+    {"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "double": double_report, "polygon": polygon_report, "swing": swing_report, "masses": masses_report, "placement": placement_report, "pushoff": pushoff_report}[args.cmd](args)
 
 
 if __name__ == "__main__":

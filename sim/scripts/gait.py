@@ -203,7 +203,8 @@ def run_stride(task: dict) -> dict:
     nf = N_FRAMES
     ref_xy = np.array([retarget.model_hip_mid(model, q[k])[:2] if ref == "hip_midpoint" else q[k, :2] for k in range(nf)])
     cop_mode = task.get("cop_mode", "hip_reference")
-    markers = z[f"{sp}_foot_markers"][i] if cop_mode == "foot_frame" else None
+    foot_markers = z[f"{sp}_foot_markers"][i]
+    markers = foot_markers if cop_mode == "foot_frame" else None
 
     def measured(frame, k):
         """Measured force and CoP of the loaded feet in the model frame, by the spec's CoP mapping."""
