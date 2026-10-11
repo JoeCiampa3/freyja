@@ -60,7 +60,8 @@ def force_report(args):
                 ratio = retarget.leg_length_ratio(c.model, d["height_m"])
                 for i in range(min(args.cap, d["strides"][speed])):
                     T = float(z[f"{speed}_duration_s"][i])
-                    cyc = retarget.Cycle(c.model, c.mapping, c.stand, z[f"{speed}_ik"][i], T, ratio, hip_in_pelvis_os=d["hip_in_pelvis_os_m"], root_ref=ref)
+                    cyc = retarget.Cycle(c.model, c.mapping, c.stand, z[f"{speed}_ik"][i], T, ratio, hip_in_pelvis_os=d["hip_in_pelvis_os_m"], root_ref=ref,
+                                         trunk_compensation=args.trunk_compensation)
                     q, qd, qdd = cyc.grid()
                     fb = np.array([gait.dynamics.inverse_frame(c.model, q[k], qd[k], qdd[k])[:3] for k in range(q.shape[0])])
                     fm = gfr.measured_force_model(z[f"{speed}_fp"][i], c.mass / d["mass_kg"])
@@ -70,6 +71,51 @@ def force_report(args):
             print(f"{speed} m/s, root reference {ref}, {len(rows)} strides, like for like at 6 Hz:")
             print("   vertical peak ratio {peak_ratio:.3f} corr {corr:.3f} | fore-aft ptp ratio {ap_ptp_ratio:.3f} corr {ap_corr:.3f} | "
                   "lateral ptp ratio {lat_ptp_ratio:.3f} corr {lat_corr:.3f}, rms {lat_rms_n:.1f} N, mean diff {lat_mean_diff_n:.1f} N".format(**m))
+
+
+GROUPS = {"legs": ["thigh_right", "shank_right", "foot_right", "thigh_left", "shank_left", "foot_left"], "pelvis": ["pelvis"],
+          "trunk": ["abdomen", "thorax", "head_and_neck"],
+          "arms": ["upper_arm_right", "forearm_right", "hand_right", "upper_arm_left", "forearm_left", "hand_left"]}
+
+
+def lateral(args):
+    """Which body group carries the mediolateral CoM force: m a_y of each group's centre of mass (second derivative of the
+    mass-weighted position of its segments), against the measured lateral force filtered like the kinematics."""
+    import mujoco
+    import gait_force_report as gfr
+    import retarget
+    c = gait._ctx(str(gait.simrun.MODEL_FILE))
+    m = c.model
+    manifest = json.loads((REPO / "data/camargo2021/manifest.json").read_text(encoding="utf-8"))
+    ids = {g: [mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, n) for n in v] for g, v in GROUPS.items()}
+    for ref in ("pelvis_origin", "hip_midpoint"):
+        res, tot, meas = {g: [] for g in GROUPS}, [], []
+        for s, d in list(manifest["subjects"].items())[:args.subjects]:
+            z = np.load(REPO / f"data/camargo2021/processed/{s}.npz")
+            ratio = retarget.leg_length_ratio(m, d["height_m"])
+            for i in range(args.cap):
+                T = float(z[f"{args.speed}_duration_s"][i])
+                cyc = retarget.Cycle(m, c.mapping, c.stand, z[f"{args.speed}_ik"][i], T, ratio, hip_in_pelvis_os=d["hip_in_pelvis_os_m"],
+                                     root_ref=ref, trunk_compensation=args.trunk_compensation)
+
+                def moment_y(t):
+                    dd = mujoco.MjData(m)
+                    dd.qpos[:] = cyc.eval(t)[0]
+                    mujoco.mj_kinematics(m, dd)
+                    return {g: sum(m.body_mass[b] * dd.xipos[b][1] for b in ids[g]) for g in ids}
+                eps, ts = 1e-4, np.linspace(0, T, 100, endpoint=False)
+                acc = {g: np.array([(moment_y(t + eps)[g] - 2 * moment_y(t)[g] + moment_y(t - eps)[g]) / eps ** 2 for t in ts]) for g in ids}
+                for g in ids:
+                    res[g].append(acc[g])
+                tot.append(sum(acc.values()))
+                meas.append(retarget.filter_cycle(gfr.measured_force_model(z[f"{args.speed}_fp"][i], c.mass / d["mass_kg"]), T, 6.0)[:100, 1])
+        tot, meas = np.array(tot), np.array(meas)
+        cc = lambda a: np.mean([np.corrcoef(x, y)[0, 1] for x, y in zip(a, meas)])
+        print(f"root reference {ref}, trunk compensation {args.trunk_compensation}: lateral force peak-to-peak, N (corr with the measured one)")
+        print(f"   measured {np.mean(np.ptp(meas, axis=1)):6.1f}   model total {np.mean(np.ptp(tot, axis=1)):6.1f} ({cc(tot):+.2f})")
+        for g in GROUPS:
+            a = np.array(res[g])
+            print(f"   {g:8s} {np.mean(np.ptp(a, axis=1)):6.1f} ({cc(a):+.2f})")
 
 
 def main(argv=None):
@@ -83,8 +129,14 @@ def main(argv=None):
     f = sub.add_parser("force")
     f.add_argument("--cap", type=int, default=5)
     f.add_argument("--speed", default="1.4")
+    f.add_argument("--trunk-compensation", action="store_true")
+    la = sub.add_parser("lateral")
+    la.add_argument("--cap", type=int, default=3)
+    la.add_argument("--subjects", type=int, default=6)
+    la.add_argument("--speed", default="1.4")
+    la.add_argument("--trunk-compensation", action="store_true")
     args = ap.parse_args(argv)
-    {"a-agreement": a_agreement, "force": force_report}[args.cmd](args)
+    {"a-agreement": a_agreement, "force": force_report, "lateral": lateral}[args.cmd](args)
 
 
 if __name__ == "__main__":

@@ -157,7 +157,7 @@ class Cycle:
     stride duration in seconds, `scale` the leg-length ratio applied to the pelvis translation."""
 
     def __init__(self, model, mapping, stand_qpos, ik, T, scale, cutoff_hz=CUTOFF_HZ,
-                 tilt_offset_deg=0.0, root_rule="pelvis_dataset", hip_in_pelvis_os=None, root_ref=None):
+                 tilt_offset_deg=0.0, root_rule="pelvis_dataset", hip_in_pelvis_os=None, root_ref=None, trunk_compensation=False):
         if root_rule not in ROOT_RULES:
             raise ValueError(f"root_rule must be one of {ROOT_RULES}")
         self.root_rule = root_rule
@@ -190,6 +190,21 @@ class Cycle:
         pitch = mapping["frame"]["pelvis_pitch"]
         pi = mapping["frame"]["pelvis_euler"].index(pitch["coordinate"])
         eul[pi] = eul[pi] - eul[pi][:N_UNIQUE].mean() + pitch["sign"] * np.deg2rad(tilt_offset_deg)
+        self.trunk_compensation = bool(trunk_compensation)
+        if trunk_compensation:
+            # Diagnostic variant (not the default): the lumbosacral lateral and axial joints cancel the pelvis's roll and yaw so the
+            # trunk stays upright in the world, as a real trunk largely does; flexion is left to follow the pelvis. Computed from the
+            # same pelvis angles the root uses, then filtered and splined with every other signal.
+            from scipy.spatial.transform import Rotation
+            comp = []
+            for k in range(len(eul[0])):
+                E, _, _ = euler_zxy([e[k] for e in eul], np.zeros(3), np.zeros(3))
+                _, lat, ax = Rotation.from_matrix((self.lab_to_model @ E @ self.B.T).T).as_euler("YXZ")
+                comp.append((lat, ax))
+            comp = np.array(comp)
+            for name, values in (("lsj_lat", comp[:, 0]), ("lsj_ax", comp[:, 1])):
+                self.joint_adr.append(_hinge_adr(model, name))
+                series.append(values)
         self.R_stand = np.zeros(9)
         mujoco.mju_quat2Mat(self.R_stand, self.stand[3:7])
         self.R_stand = self.R_stand.reshape(3, 3)

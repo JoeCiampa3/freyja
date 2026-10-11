@@ -268,3 +268,29 @@ def test_hip_reference_derivatives_match_finite_differences_and_integrate_back(m
     got = integrate(model, c, 0.0, 0.5 * c.T)
     ref, _, _ = c.eval(0.5 * c.T)
     assert np.abs(got[:3] - ref[:3]).max() < 1e-9 and rot_diff_rad(got[3:7], ref[3:7]) < 1e-9
+
+
+def test_trunk_compensation_keeps_the_thorax_upright_while_the_pelvis_rolls_and_yaws(model, stand):
+    ik = standing_ik()
+    ik[:, ic.IK_CHANNELS.index("pelvis_tilt")] = 4.0 * np.sin(2 * np.pi * np.linspace(0, 1, 101))  # roll (obliquity), a few degrees
+    ik[:, ic.IK_CHANNELS.index("pelvis_rotation")] = 90.0 + 5.0 * np.cos(2 * np.pi * np.linspace(0, 1, 101))
+    thorax = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "thorax")
+
+    def thorax_tilt(compensate):
+        c = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0, trunk_compensation=compensate)
+        worst = 0.0
+        for t in np.linspace(0, 1, 20, endpoint=False):
+            d = mujoco.MjData(model)
+            d.qpos[:] = c.eval(t)[0]
+            mujoco.mj_kinematics(model, d)
+            ref = mujoco.MjData(model)
+            ref.qpos[:] = stand
+            mujoco.mj_kinematics(model, ref)
+            r = np.zeros(3)
+            q1, q2 = np.zeros(4), np.zeros(4)
+            mujoco.mju_mat2Quat(q1, d.xmat[thorax]); mujoco.mju_mat2Quat(q2, ref.xmat[thorax])
+            mujoco.mju_subQuat(r, q1, q2)
+            worst = max(worst, abs(r[0]), abs(r[2]))  # roll and yaw of the thorax
+        return worst
+    assert thorax_tilt(False) > np.deg2rad(3.0)
+    assert thorax_tilt(True) < np.deg2rad(0.3)
