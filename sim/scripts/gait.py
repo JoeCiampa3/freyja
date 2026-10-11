@@ -176,7 +176,8 @@ def run_stride(task: dict) -> dict:
     hip = sub.get("hip_in_pelvis_os_m")
     ref = task["root_reference"] if hip is not None else "pelvis_origin"
     cyc = retarget.Cycle(model, mapping, c.stand, ik, T, ratio, cutoff_hz=cut, tilt_offset_deg=task["tilt_offset_deg"],
-                         root_rule=task["root_rule"], hip_in_pelvis_os=hip, root_ref=ref)
+                         root_rule=task["root_rule"], hip_in_pelvis_os=hip, root_ref=ref,
+                         pitch_mean=task.get("pelvis_pitch_mean", "design"), trunk_compensation=task.get("trunk_compensation", False))
     q, qd, qdd = cyc.grid()
     methods = task["methods"]
     joints = c.joints
@@ -281,7 +282,8 @@ def _tasks(spec, manifest, model_path, processed, methods, cutoff, tilt, cap, sw
             for i in idx:
                 tasks.append({"model_path": str(model_path), "processed": str(processed), "subject": s, "speed": str(speed), "index": i,
                               "subject_info": manifest["subjects"][s], "cutoff_hz": cutoff, "tilt_offset_deg": tilt,
-                              "root_rule": spec["root_rule"], "root_reference": spec.get("root_reference", "hip_midpoint"), "cop_mode": spec.get("cop_mode", "hip_reference"), "methods": methods, "sweep": sweep, "cop_scale": spec["cop_scale"],
+                              "root_rule": spec["root_rule"], "root_reference": spec.get("root_reference", "hip_midpoint"), "cop_mode": spec.get("cop_mode", "hip_reference"), "pelvis_pitch_mean": spec.get("pelvis_pitch_mean", "design"),
+                              "trunk_compensation": spec.get("trunk_compensation", False), "methods": methods, "sweep": sweep, "cop_scale": spec["cop_scale"],
                               "agreement": agreement_on, "kinematics": kin})
     return tasks
 

@@ -33,8 +33,8 @@ def _rows(spec, methods, cap, speed, workers, **overrides):
 def a_agreement(args):
     spec = gait.load_spec("walk_treadmill")
     spec["root_reference"] = args.root_reference
-    rows = _rows(spec, ["A_native", "A_filtered"], args.cap, args.speed, args.workers, cop_mode=args.cop_mode)
-    print(f"A agreement with the dataset moments; root reference {args.root_reference}; CoP mode {args.cop_mode}; {len(rows)} strides at {args.speed} m/s")
+    rows = _rows(spec, ["A_native", "A_filtered"], args.cap, args.speed, args.workers, cop_mode=args.cop_mode, pelvis_pitch_mean=args.pitch_mean)
+    print(f"A agreement with the dataset moments; root reference {args.root_reference}; CoP mode {args.cop_mode}; pelvis pitch mean {args.pitch_mean}; {len(rows)} strides at {args.speed} m/s")
     print("joint (both limbs pooled)   method       corr   rms % ptp   peak diff N m/kg")
     for stem in SAGITTAL:
         for m in ("A_native", "A_filtered"):
@@ -213,6 +213,7 @@ def main(argv=None):
     a = sub.add_parser("a-agreement")
     a.add_argument("--root-reference", default="hip_midpoint", choices=["hip_midpoint", "pelvis_origin"])
     a.add_argument("--cop-mode", default="hip_reference", choices=["hip_reference", "foot_frame"])
+    a.add_argument("--pitch-mean", default="design", choices=["design", "measured"])
     a.add_argument("--cap", type=int, default=3)
     a.add_argument("--speed", default="1.4")
     a.add_argument("--workers", type=int, default=5)

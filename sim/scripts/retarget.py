@@ -157,7 +157,7 @@ class Cycle:
     stride duration in seconds, `scale` the leg-length ratio applied to the pelvis translation."""
 
     def __init__(self, model, mapping, stand_qpos, ik, T, scale, cutoff_hz=CUTOFF_HZ,
-                 tilt_offset_deg=0.0, root_rule="pelvis_dataset", hip_in_pelvis_os=None, root_ref=None, trunk_compensation=False):
+                 tilt_offset_deg=0.0, root_rule="pelvis_dataset", hip_in_pelvis_os=None, root_ref=None, trunk_compensation=False, pitch_mean="design"):
         if root_rule not in ROOT_RULES:
             raise ValueError(f"root_rule must be one of {ROOT_RULES}")
         self.root_rule = root_rule
@@ -189,7 +189,13 @@ class Cycle:
         # Which dataset coordinate is the sagittal pitch is a property of the lab frame (see camargo_mapping.yaml): here pelvis_list.
         pitch = mapping["frame"]["pelvis_pitch"]
         pi = mapping["frame"]["pelvis_euler"].index(pitch["coordinate"])
-        eul[pi] = eul[pi] - eul[pi][:N_UNIQUE].mean() + pitch["sign"] * np.deg2rad(tilt_offset_deg)
+        if pitch_mean not in ("design", "measured"):
+            raise ValueError("pitch_mean must be 'design' or 'measured'")
+        # 'measured' keeps the dataset's absolute pitch (plus any offset). The leg angles are relative to the dataset's pelvis, so the
+        # legs' position in the world, and with it every lever arm of a measured ground reaction, is only consistent with the data
+        # when the measured pitch is kept; the verification of the loads against the dataset's own moments uses it.
+        base = 0.0 if pitch_mean == "measured" else eul[pi][:N_UNIQUE].mean()
+        eul[pi] = eul[pi] - base + pitch["sign"] * np.deg2rad(tilt_offset_deg)
         self.trunk_compensation = bool(trunk_compensation)
         if trunk_compensation:
             # Diagnostic variant (not the default): the lumbosacral lateral and axial joints cancel the pelvis's roll and yaw so the
