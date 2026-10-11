@@ -238,6 +238,76 @@ def trunk_imu_report(args):
                   f"phase lag {f('phase_lag_deg', 0)} deg | cancelled fraction {f('cancelled_fraction')}")
 
 
+def double_report(args):
+    """T3c.3: double-support feasibility. B's total CoP (fixed by the root rows) against the hull of the two contact polygons, with the
+    measured total CoP (force-weighted mean of the per-plate CoPs placed on Freyja's feet) as the baseline; whether the nominal split and
+    the measured share lie in the feasible set; the bound against the nominal torque against A."""
+    import gaitloads
+    import retarget
+    dyn = gait.dynamics
+    spec = gait.load_spec("walk_treadmill")
+    c = gait._ctx(str(gait.simrun.MODEL_FILE))
+    m = c.model
+    manifest = json.loads((REPO / "data/camargo2021/manifest.json").read_text(encoding="utf-8"))
+    for speed in args.speeds:
+        for trunk in ("rigid", "counter_rotate"):
+            rows = _rows(spec, ["B", "A_filtered"], args.cap, speed, args.workers, trunk=trunk, pitch_mean="measured")
+            res = gait.build_results(rows, c, {**spec, "speeds_mps": [float(speed)]})[speed]
+            fe = res["feasibility"]
+            # measured baseline and measured-share test, frame by frame (the same strides, the same retargeting)
+            base_out, base_n, share_in, share_n = [], 0, 0, 0
+            for s, d in manifest["subjects"].items():
+                z = np.load(REPO / f"data/camargo2021/processed/{s}.npz")
+                ratio = retarget.leg_length_ratio(m, d["height_m"])
+                for i in range(min(args.cap, d["strides"][speed])):
+                    fp, fmk = z[f"{speed}_fp"][i], z[f"{speed}_foot_markers"][i]
+                    cyc = retarget.Cycle(m, c.mapping, c.stand, z[f"{speed}_ik"][i], float(z[f"{speed}_duration_s"][i]), ratio,
+                                         hip_in_pelvis_os=d["hip_in_pelvis_os_m"], trunk=trunk, pitch_mean="measured")
+                    q, qd, qdd = cyc.grid()
+                    for k in range(100):
+                        if not (fp[0, k, 6] >= 0.5 and fp[1, k, 6] >= 0.5):
+                            continue
+                        mf, mc = gaitloads.measured_to_model_foot(fp[:, k, :], fmk[k], dyn.foot_floor_segments(m, q[k]), c.mass / d["mass_kg"])
+                        w = np.array([mf["foot_right"][2], mf["foot_left"][2]])
+                        p_meas = (w[0] * mc["foot_right"][:2] + w[1] * mc["foot_left"][:2]) / w.sum()
+                        dd = mujoco_data(m, q[k])
+                        polys = tuple(dyn.contact_polygon(dyn._foot_boxes(m, dd, mujoco_body(m, f))[0]) for f in gait.FEET)
+                        out = dyn.double_support_set(polys[0], polys[1], p_meas, n_alpha=3)
+                        base_n += 1
+                        if not out["feasible"]:
+                            base_out.append(out["outside_m"])
+                        qfrc = dyn.inverse_frame(m, q[k], qd[k], qdd[k])
+                        full = dyn.cop_decomposition(m, q[k], qfrc)[0]
+                        share_n += 1
+                        share_in += dyn.share_in_set(polys[0], polys[1], full[:2], w[0] / w.sum())
+            dist = lambda v: f"median {1000 * np.median(v):.0f} mm, 95th {1000 * np.percentile(v, 95):.0f} mm" if len(v) else "none"
+            od = fe.get("outside_distance_double_support_m")
+            print(f"=== {speed} m/s, trunk {trunk}, {args.cap} strides per subject ===")
+            print(f"B double support: {100 * fe['cop_outside_fraction_double_support']:.1f}% of frames infeasible (total CoP outside the hull), outside distance "
+                  f"{('median %.0f mm, 95th %.0f mm' % (1000 * od['median'], 1000 * od['p95'])) if od else 'none'}")
+            print(f"measured total CoP on Freyja's feet (baseline): {100 * len(base_out) / base_n:.1f}% of {base_n} double-support frames outside the hull, outside distance {dist(base_out)}")
+            print(f"nominal proportional split lies in the feasible set (B's total CoP): {100 * fe['double_support_nominal_split_in_feasible_set_fraction']:.1f}% of frames; "
+                  f"nominal rule's own CoP placement fails in {100 * fe['double_support_nominal_rule_placement_fails_fraction']:.1f}%; "
+                  f"measured share lies in the feasible set: {100 * share_in / share_n:.1f}% of {share_n} frames")
+            print("peak torque N m, mean / 95th over strides: joint | nominal B | bound B | A_filtered")
+            for j in ("hip_fe_right", "knee_right", "ankle_pdflex_right", "hip_aa_right", "hip_fe_left", "knee_left", "ankle_pdflex_left"):
+                nb, bb, aa = res["joints"][j]["B"]["peak_torque_nm"]["all"], res["bound"][j]["all"], res["joints"][j]["A_filtered"]["peak_torque_nm"]["all"]
+                print(f"   {j:20s} {nb['mean']:6.1f} / {nb['p95']:6.1f} | {bb['mean']:6.1f} / {bb['p95']:6.1f} | {aa['mean']:6.1f} / {aa['p95']:6.1f}")
+
+
+def mujoco_data(model, q):
+    import mujoco
+    d = mujoco.MjData(model)
+    d.qpos[:] = q
+    mujoco.mj_kinematics(model, d)
+    return d
+
+
+def mujoco_body(model, name):
+    import mujoco
+    return mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, name)
+
+
 BINS_MM = (10, 30, 100)
 
 
@@ -360,13 +430,17 @@ def main(argv=None):
     ti.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
     ti.add_argument("--min-quality", type=float, default=0.0, help="drop subjects whose accelerometer alignment correlation is below this on any axis")
     ti.add_argument("--gyro-unit", type=float, default=1.0, help="multiplier from the file's gyroscope unit to rad/s")
+    ds = sub.add_parser("double")
+    ds.add_argument("--cap", type=int, default=4)
+    ds.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
+    ds.add_argument("--workers", type=int, default=5)
     la = sub.add_parser("lateral")
     la.add_argument("--cap", type=int, default=3)
     la.add_argument("--subjects", type=int, default=6)
     la.add_argument("--speed", default="1.4")
     la.add_argument("--trunk", default="rigid", choices=["rigid", "counter_rotate"])
     args = ap.parse_args(argv)
-    {"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report}[args.cmd](args)
+    {"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "double": double_report}[args.cmd](args)
 
 
 if __name__ == "__main__":

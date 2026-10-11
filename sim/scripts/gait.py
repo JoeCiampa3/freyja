@@ -221,6 +221,8 @@ def run_stride(task: dict) -> dict:
     cop_margin_min = np.inf
     by_support = {"single": [0, 0], "double": [0, 0]}  # stance-foot frames, CoP outside
     degenerate_n = 0
+    nominal_n = [0, 0, 0]  # double-support frames, those where the nominal rule's own CoP placement fails, those where the nominal split is in the feasible set
+    out_dist = {"single": [], "double": []}  # outside distances (m) of the infeasible support frames
     miss = np.zeros(4)  # stance-foot frames with the CoP outside by <10, 10-30, 30-100, >100 mm
     cop_err = []  # single support: B's CoP minus the measured one (scaled), model axes x, y
     share_err = []  # double support: B's right-foot share minus the measured share
@@ -234,17 +236,29 @@ def run_stride(task: dict) -> dict:
             bound[k] = [max(abs(r.torque_range[j][0]), abs(r.torque_range[j][1])) for j in joints]
             resid["B"][k] = r.residual
             b = min(k * N_BINS // nf, N_BINS - 1)
-            for foot in stance:
+            # one test per support frame: the CoP against the foot's polygon in single support, the TOTAL CoP against the hull of the two
+            # polygons in double support (the decided rule); the nominal rule's own per-foot placement is counted separately
+            if stance:
+                if len(stance) == 1:
+                    dist = -r.cop_margin_m[stance[0]]
+                    degenerate_n += r.hull_degenerate[stance[0]]
+                    key = "single"
+                else:
+                    dist = r.ds_outside_m if r.ds_outside_m == r.ds_outside_m else float("inf")
+                    key = "double"
+                    nominal_n[0] += 1
+                    nominal_n[1] += not r.feasible_nominal
+                    nominal_n[2] += bool(r.nominal_in_set)
+                fr = max(r.friction_ratio.values())
                 stance_n[b] += 1
-                cop_out[b] += not r.cop_margin_m[foot] >= 0
-                fric_out[b] += not r.friction_ratio[foot] <= c.mu
-                cop_margin_min = min(cop_margin_min, r.cop_margin_m[foot])
-                degenerate_n += r.hull_degenerate[foot]
-                if not r.cop_margin_m[foot] >= 0:
-                    miss[np.searchsorted([0.010, 0.030, 0.100], -r.cop_margin_m[foot])] += 1
-                key = "single" if len(stance) == 1 else "double"
+                cop_out[b] += dist > 0
+                fric_out[b] += not fr <= c.mu
+                cop_margin_min = min(cop_margin_min, -dist)
+                if dist > 0:
+                    miss[np.searchsorted([0.010, 0.030, 0.100], dist)] += 1
+                    out_dist[key].append(float(dist))
                 by_support[key][0] += 1
-                by_support[key][1] += not r.cop_margin_m[foot] >= 0
+                by_support[key][1] += dist > 0
             mf, mc = measured(fp[:, k, :], k)
             if len(stance) == 1 and stance[0] in mc:
                 cop_err.append((r.cop[stance[0]] - mc[stance[0]])[:2])
@@ -279,7 +293,7 @@ def run_stride(task: dict) -> dict:
         out["bound"] = {j: float(bound[:, a].max()) for a, j in enumerate(joints)}
         out["feas"] = {"stance": stance_n.tolist(), "cop_out": cop_out.tolist(), "friction_out": fric_out.tolist(),
                        "cop_margin_min_m": float(cop_margin_min) if np.isfinite(cop_margin_min) else None,
-                       "by_support": by_support, "hull_degenerate": degenerate_n, "miss_bins": miss.tolist(),
+                       "by_support": by_support, "nominal_rule": nominal_n, "outside_m": out_dist, "hull_degenerate": degenerate_n, "miss_bins": miss.tolist(),
                        "cop_err_single": np.array(cop_err).reshape(-1, 2).tolist(), "share_err_double": share_err}
     fm_total = mass_ratio * ((fp[0, :, 0:3] + fp[1, :, 0:3]) @ gaitloads.LAB_TO_MODEL.T)
     out["force"] = force_metrics(ftot, retarget.filter_cycle(fm_total, T, cut)[:nf])  # like for like: the measured force filtered the same way
@@ -353,13 +367,19 @@ def build_results(rows, c: Context, spec) -> dict:
             stance = np.sum([r["feas"]["stance"] for r in R], axis=0)
             cop = np.sum([r["feas"]["cop_out"] for r in R], axis=0)
             fric = np.sum([r["feas"]["friction_out"] for r in R], axis=0)
-            d["feasibility"] = {"stance_foot_frames": int(stance.sum()), "cop_outside_fraction": float(cop.sum() / stance.sum()),
+            d["feasibility"] = {"support_frames": int(stance.sum()), "cop_outside_fraction": float(cop.sum() / stance.sum()),
                                 "friction_exceeded_fraction": float(fric.sum() / stance.sum()),
                                 "cop_outside_by_phase_bin": [float(a / b) if b else None for a, b in zip(cop, stance)],
                                 "friction_exceeded_by_phase_bin": [float(a / b) if b else None for a, b in zip(fric, stance)],
                                 "stance_frames_by_phase_bin": [int(x) for x in stance],
                                 "cop_margin_min_m": float(min(r["feas"]["cop_margin_min_m"] for r in R if r["feas"]["cop_margin_min_m"] is not None))}
-            d["feasibility"]["hull_degenerate_fraction"] = float(sum(r["feas"]["hull_degenerate"] for r in R) / stance.sum())
+            d["feasibility"]["hull_degenerate_fraction"] = float(sum(r["feas"]["hull_degenerate"] for r in R) / max(1, sum(r["feas"]["by_support"]["single"][0] for r in R)))
+            nom = np.sum([r["feas"]["nominal_rule"] for r in R], axis=0)
+            d["feasibility"]["double_support_nominal_rule_placement_fails_fraction"] = float(nom[1] / nom[0]) if nom[0] else None
+            d["feasibility"]["double_support_nominal_split_in_feasible_set_fraction"] = float(nom[2] / nom[0]) if nom[0] else None
+            for key in ("single", "double"):
+                dd = np.array([x for r in R for x in r["feas"]["outside_m"][key]])
+                d["feasibility"][f"outside_distance_{key}_support_m"] = {"median": float(np.median(dd)), "p95": float(np.percentile(dd, 95))} if len(dd) else None
             mb = np.sum([r["feas"]["miss_bins"] for r in R], axis=0)
             d["feasibility"]["cop_outside_by_distance_fraction"] = {lab: float(v / stance.sum()) for lab, v in zip(("lt_10mm", "10_30mm", "30_100mm", "gt_100mm"), mb)}
             for key in ("single", "double"):
@@ -582,12 +602,12 @@ def render_md(rec: dict) -> str:
         if d["feasibility"]:
             fe = d["feasibility"]
             pc = lambda v: "-" if v is None else f"{100 * v:.1f}%"
-            L += ["", f"### Feasibility of method B ({fe['stance_foot_frames']} stance-foot frames)", "",
+            L += ["", f"### Feasibility of method B ({fe['support_frames']} support frames: single-support CoP in its foot's polygon; double-support total CoP in the hull of the two)", "",
                   f"CoP outside the contact polygon: {pc(fe['cop_outside_fraction'])} (single support {pc(fe.get('cop_outside_fraction_single_support'))}, "
                   f"double support {pc(fe.get('cop_outside_fraction_double_support'))}); friction ratio above mu: {pc(fe['friction_exceeded_fraction'])}; "
                   f"smallest CoP margin {1000 * fe['cop_margin_min_m']:.0f} mm."]
-            L.append(f"Foot contact polygon degenerate (a segment: the foot rolls on its heel or toe edge): {pc(fe['hull_degenerate_fraction'])} of stance-foot frames. "
-                     "CoP outside by <10 / 10-30 / 30-100 / >100 mm: " + " / ".join(pc(v) for v in fe["cop_outside_by_distance_fraction"].values()) + " of stance-foot frames.")
+            L.append(f"Foot contact polygon degenerate (a segment: the foot rolls on its heel or toe edge): {pc(fe['hull_degenerate_fraction'])} of single-support frames. "
+                     "CoP outside by <10 / 10-30 / 30-100 / >100 mm: " + " / ".join(pc(v) for v in fe["cop_outside_by_distance_fraction"].values()) + " of support frames.")
             if "single_support_cop_error_mean_xy_m" in fe:
                 e, r = fe["single_support_cop_error_mean_xy_m"], fe["single_support_cop_error_rms_xy_m"]
                 L.append(f"Single support, B's CoP minus the measured one (scaled): mean x {1000 * e[0]:.0f} mm, y {1000 * e[1]:.0f} mm; rms x {1000 * r[0]:.0f}, y {1000 * r[1]:.0f} mm.")

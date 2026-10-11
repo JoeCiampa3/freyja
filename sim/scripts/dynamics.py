@@ -71,6 +71,15 @@ class FrameResult:
     reasons: list = field(default_factory=list)
     feasible_split: tuple | None = None  # (lowest, highest) feasible right-foot share in double support
     qfrc_net: np.ndarray | None = None
+    # double support (T3c.3): the total CoP is fixed by the root rows; the frame is feasible when it lies in the hull of the two feet's
+    # contact polygons. `feasible_nominal` is the older test of the nominal rule's own placement (each CoP inside its foot).
+    total_cop: np.ndarray | None = None
+    ds_feasible: bool | None = None
+    ds_outside_m: float | None = None
+    ds_solutions: list = field(default_factory=list)  # (alpha, p_R, p_L) satisfying alpha p_R + (1 - alpha) p_L = total CoP
+    polygons: tuple | None = None  # (right, left) contact polygons, hull vertices
+    feasible_nominal: bool | None = None
+    nominal_in_set: bool | None = None
 
 
 def root_closes(r: FrameResult) -> bool:
@@ -99,6 +108,85 @@ def _foot_boxes(model, d, body):
 def _hinges(model):
     return [(mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, j), int(model.jnt_dofadr[j]))
             for j in range(model.njnt) if model.jnt_type[j] == mujoco.mjtJoint.mjJNT_HINGE]
+
+
+N_PR = 5  # points along the feasible segment of the right-foot CoP, per feasible split (the brief's default)
+PLANE_TOL_M = 1e-9  # m. A point this close to a polygon boundary is inside: round-off, not a threshold
+
+
+def contact_polygon(corners, band_m=HULL_BAND_M):
+    """Hull vertices (counter-clockwise; fewer than three for a foot on an edge or a point) of the foot-box vertices within band_m of the
+    lowest one, projected on the floor."""
+    return metrics.convex_hull(corners[corners[:, 2] <= corners[:, 2].min() + band_m][:, :2])
+
+
+def margin_in_polygon(poly, p) -> float:
+    """Signed distance of the floor point p to the polygon, positive inside (a segment or a point is never positive)."""
+    return float(metrics.support_margin(poly, np.asarray(p, float)))
+
+
+def _minkowski(poly_r, poly_l, alpha):
+    return metrics.convex_hull([alpha * np.asarray(a) + (1.0 - alpha) * np.asarray(b) for a in poly_r for b in poly_l])
+
+
+def share_in_set(poly_r, poly_l, p, alpha) -> bool:
+    """Whether a right-foot force share alpha can produce the total CoP p with both CoPs inside their polygons: p must lie in
+    alpha P_R + (1 - alpha) P_L."""
+    return margin_in_polygon(_minkowski(poly_r, poly_l, alpha), p) >= -PLANE_TOL_M
+
+
+def _centroid(poly):
+    return np.mean(np.asarray(poly, float), axis=0)
+
+
+def double_support_set(poly_r, poly_l, p, n_alpha=N_SWEEP, n_pr=N_PR) -> dict:
+    """The feasible set of double support for the total CoP p: every split alpha (right-foot share) on an n_alpha grid for which
+    alpha p_R + (1 - alpha) p_L = p has a solution with p_R in poly_r and p_L in poly_l, and, for each, n_pr points along the segment of
+    feasible p_R (extremes found by linear programs along the polygon's longest direction). The set is non-empty exactly when p lies in
+    the convex hull of the two polygons. Returns feasible, outside_m (distance from p to that hull, 0 when inside), alpha_range and
+    solutions [(alpha, p_R, p_L)]; every solution satisfies the weighted-mean identity to round-off."""
+    from scipy.optimize import linprog
+    p = np.asarray(p, float)
+    hull_margin = margin_in_polygon(metrics.convex_hull(list(poly_r) + list(poly_l)), p)
+    if hull_margin < -PLANE_TOL_M:
+        return {"feasible": False, "outside_m": -hull_margin, "alpha_range": None, "solutions": []}
+    vr, vl = np.asarray(poly_r, float), np.asarray(poly_l, float)
+    far = max(((np.linalg.norm(a - b), a - b) for a in vr for b in vr), key=lambda x: x[0])
+    e = far[1] / far[0] if far[0] > 0 else np.array([1.0, 0.0])
+    sols, alphas = [], []
+    for alpha in np.linspace(0.0, 1.0, n_alpha):
+        alpha = float(alpha)
+        if alpha == 1.0:
+            if margin_in_polygon(poly_r, p) >= -PLANE_TOL_M:
+                alphas.append(alpha); sols.append((alpha, p.copy(), _centroid(poly_l)))
+            continue
+        if alpha == 0.0:
+            if margin_in_polygon(poly_l, p) >= -PLANE_TOL_M:
+                alphas.append(alpha); sols.append((alpha, _centroid(poly_r), p.copy()))
+            continue
+        if not share_in_set(poly_r, poly_l, p, alpha):
+            continue
+        nr, nl = len(vr), len(vl)
+        a_eq = np.zeros((4, nr + nl))
+        a_eq[0, :nr] = 1.0
+        a_eq[1, nr:] = 1.0
+        a_eq[2:, :nr] = alpha * vr.T
+        a_eq[2:, nr:] = (1.0 - alpha) * vl.T
+        b_eq = np.r_[1.0, 1.0, p]
+        ends = []
+        for sign in (1.0, -1.0):
+            c = np.r_[sign * (vr @ e), np.zeros(nl)]
+            res = linprog(c, A_eq=a_eq, b_eq=b_eq, bounds=(0, None), method="highs")
+            if res.status == 0:
+                ends.append(res.x[:nr] @ vr)
+        if not ends:
+            continue
+        alphas.append(alpha)
+        lo, hi = (ends[0], ends[-1])
+        pts = [lo + (hi - lo) * k / (n_pr - 1) for k in range(n_pr)] if np.linalg.norm(hi - lo) > 1e-12 else [lo]
+        for pr in pts:
+            sols.append((alpha, pr, (p - alpha * pr) / (1.0 - alpha)))
+    return {"feasible": bool(sols), "outside_m": 0.0, "alpha_range": (min(alphas), max(alphas)) if alphas else None, "solutions": sols}
 
 
 SEGMENT_TOL_M = HULL_BAND_M  # m. A foot rolling on its heel or toe edge has a segment for a contact polygon; a CoP within this of the
@@ -215,21 +303,43 @@ def solve_frame(model, qpos, qvel, qacc, stance=FEET, feet=FEET, sweep=False, ba
     torque = {n: float(net[dof]) for n, dof in hinges}
     rng = {n: (v, v) for n, v in torque.items()}
     feasible_split = None
-    if sweep and support == "double":
-        ok = []
-        for r_share in np.linspace(0.0, 1.0, n_sweep):
-            f2, c2 = double(float(r_share))
-            net2, _ = assemble(f2, c2)
-            if not feasibility(f2, c2)[2]:
-                ok.append(float(r_share))
+    total_cop = ds_feasible = ds_outside = polygons = feasible_nominal = nominal_in_set = None
+    ds_solutions = []
+    if len(stance) == 1 and F[2] != 0:
+        total_cop = cop_single(F)
+    if support == "double":
+        total_cop = cop_single(F) if F[2] != 0 else np.full(3, np.nan)
+        polygons = tuple(contact_polygon(geo[n][0], band_m) for n in stance)
+        feasible_nominal = not any("CoP outside" in r or "no vertical" in r for r in reasons)
+        found = double_support_set(polygons[0], polygons[1], total_cop[:2], n_alpha=n_sweep) if np.all(np.isfinite(total_cop)) else \
+            {"feasible": False, "outside_m": float("nan"), "alpha_range": None, "solutions": []}
+        ds_feasible, ds_outside = found["feasible"], found["outside_m"]
+        nominal_in_set = bool(share_in_set(polygons[0], polygons[1], total_cop[:2], split_right)) if np.all(np.isfinite(total_cop)) else False
+        # the decided rule: a double-support frame is feasible when the total CoP lies in the hull of the two polygons (and the friction holds)
+        reasons = [r for r in reasons if "CoP outside" not in r]
+        if not ds_feasible:
+            reasons.append(f"total CoP outside the hull of the two contact polygons by {1000 * ds_outside:.1f} mm")
+        if sweep and ds_feasible:
+            ds_solutions = found["solutions"]
+            feasible_split = found["alpha_range"]
+            ranges = [(torque, torque)] if feasible_nominal else []
+            first = {}
+            for alpha, p_r, p_l in ds_solutions:
+                forces2 = {stance[0]: alpha * F, stance[1]: (1.0 - alpha) * F}
+                cops2 = {stance[0]: np.r_[p_r, 0.0], stance[1]: np.r_[p_l, 0.0]}
+                net2, _ = assemble(forces2, cops2)
                 for n, dof in hinges:
-                    lo, hi = rng[n]
-                    rng[n] = (min(lo, float(net2[dof])), max(hi, float(net2[dof])))
-        if ok:
-            feasible_split = (min(ok), max(ok))
+                    v = float(net2[dof])
+                    lo, hi = first.get(n, (v, v))
+                    first[n] = (min(lo, v), max(hi, v))
+            if first:
+                rng = {n: (min(first[n][0], torque[n]) if feasible_nominal else first[n][0],
+                           max(first[n][1], torque[n]) if feasible_nominal else first[n][1]) for n in first}
     return FrameResult(torque=torque, torque_range=rng, force=forces, cop=cops, support=support, split_right=split_right,
                        residual=residual, yaw_moment_nm=float(residual[5]), weight_n=weight, cop_margin_m=margin,
-                       friction_ratio=fric, hull_degenerate=degenerate, feasible=not reasons, reasons=reasons, feasible_split=feasible_split, qfrc_net=net)
+                       friction_ratio=fric, hull_degenerate=degenerate, feasible=not reasons, reasons=reasons, feasible_split=feasible_split, qfrc_net=net,
+                       total_cop=total_cop, ds_feasible=ds_feasible, ds_outside_m=ds_outside, ds_solutions=ds_solutions, polygons=polygons,
+                       feasible_nominal=feasible_nominal, nominal_in_set=nominal_in_set)
 
 
 def solve_given(model, qpos, qfrc, forces, cops, feet=FEET):
