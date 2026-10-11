@@ -392,15 +392,15 @@ def build_results(rows, c: Context, spec) -> dict:
             nom = np.sum([r["feas"]["nominal_rule"] for r in R], axis=0)
             d["feasibility"]["double_support_nominal_rule_placement_fails_fraction"] = float(nom[1] / nom[0]) if nom[0] else None
             d["feasibility"]["double_support_nominal_split_in_feasible_set_fraction"] = float(nom[2] / nom[0]) if nom[0] else None
-            d["polygon"] = {}
+            d["feasibility"]["polygon"] = {}
             for src in ("B", "measured"):
-                d["polygon"][src] = {}
+                d["feasibility"]["polygon"][src] = {}
                 for b in R[0]["feas"]["polygon"][src]:
-                    d["polygon"][src][b] = {}
+                    d["feasibility"]["polygon"][src][b] = {}
                     for key in ("single", "double"):
                         v = np.array([x for r in R for x in r["feas"]["polygon"][src][b][key] if x == x])
                         out = v[v > 1e-9]
-                        d["polygon"][src][b][key] = {"frames": int(len(v)), "outside_fraction": float(len(out) / len(v)) if len(v) else None,
+                        d["feasibility"]["polygon"][src][b][key] = {"frames": int(len(v)), "outside_fraction": float(len(out) / len(v)) if len(v) else None,
                                                      "median_outside_m": float(np.median(out)) if len(out) else None,
                                                      "p95_outside_m": float(np.percentile(out, 95)) if len(out) else None}
             for key in ("single", "double"):

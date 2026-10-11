@@ -84,5 +84,10 @@ def test_two_runs_are_byte_identical_and_md_is_under_the_line_cap(tmp_path):
         res = gait.run_gait(spec, gait_dir=tmp_path / name, now=dt.datetime(2026, 10, 12, 10, 0))
         out.append((res.json_path.read_bytes(), res.md_path.read_bytes()))
     assert out[0] == out[1]
+    import json
+    fe = json.loads(out[0][0])["results"]["1.4"]["feasibility"]
+    assert set(fe["polygon"]) == {"B", "measured"} and set(fe["polygon"]["B"]) == {"0.01", "0.025", "0.04"}  # the polygon test at the three bands
+    assert set(fe["polygon"]["B"]["0.025"]) == {"single", "double"}
+    assert b"Polygon test, B beside the measured CoP" in out[0][1]
     assert out[0][1].count(b"\n") <= gait.MAX_LINES
     assert b"Camargo" in out[0][1].split(b"\n", 6)[2] or b"Camargo" in out[0][1][:1500]  # attribution in the header
