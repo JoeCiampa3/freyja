@@ -176,6 +176,68 @@ def trunk_report(args):
                       f"| power W p95 {jd['peak_power_pos_w']['all']['p95']:.0f} / regen {jd['peak_regeneration_w']['all']['p95']:.0f}")
 
 
+def trunk_imu_report(args):
+    """T3c.2: the trunk's roll and yaw relative to the pelvis's from the trunk IMU (no shoulder markers exist), per speed: amplitude
+    ratio, phase lag and cancelled fraction, median and spread across subjects (each subject's value is the median over its strides)."""
+    import retarget
+    import trunkimu
+    manifest = json.loads((REPO / "data/camargo2021/manifest.json").read_text(encoding="utf-8"))
+    names = ["roll", "yaw", "pitch"]  # pelvis axes x forward, y up, z right -> columns 0, 1, 2 of the body-frame vectors
+    axis_col = {"roll": 0, "yaw": 1, "pitch": 2}
+    prep = {}
+    for s in manifest["subjects"]:
+        z = np.load(REPO / f"data/camargo2021/processed/{s}.npz")
+        prep[s] = {}
+        for sp in args.speeds:
+            rows = []
+            for i in range(len(z[f"{sp}_duration_s"])):
+                ik = z[f"{sp}_ik"][i]
+                T = float(z[f"{sp}_duration_s"][i])
+                drift = lambda x: (x - np.outer(np.linspace(0, 1, 101), x[-1] - x[0]))[:100]  # periodic: the stride's linear drift removed
+                ang = np.deg2rad(drift(ik[:, :3]))  # tilt, list, rotation
+                pos = drift(ik[:, 3:6])
+                lp = lambda x: retarget.filter_cycle(np.vstack([x, x[:1]]), T, 6.0)[:100]  # the same zero-lag 6 Hz as the kinematics, on both sides
+                rows.append({"T": T, "ang": ang, "w_p": trunkimu.pelvis_body_omega(ang, T), "f_p": lp(trunkimu.pelvis_specific_force(pos, ang, T)),
+                             "acc": lp(z[f"{sp}_trunk_imu"][i][:100, :3]), "gyro": z[f"{sp}_trunk_imu"][i][:100, 3:6]})
+            prep[s][sp] = rows
+    summary = {sp: {a: {"amplitude_ratio": [], "phase_lag_deg": [], "cancelled_fraction": [], "pelvis_amp_deg": [], "trunk_amp_deg": []} for a in names} for sp in args.speeds}
+    quality, gains = [], {a: [] for a in names}
+    for s in manifest["subjects"]:
+        allrows = [r for sp in args.speeds for r in prep[s][sp]]
+        R, q = trunkimu.align_sensor_to_pelvis(np.concatenate([r["acc"] for r in allrows]), np.concatenate([r["f_p"] for r in allrows]))
+        quality.append(q)
+        if q.min() < args.min_quality:
+            continue  # the IMU could not be aligned to the pelvis frame well enough for this subject
+        for sp in args.speeds:
+            per = {a: {k: [] for k in summary[sp][a]} for a in names}
+            for r in prep[s][sp]:
+                w_t = (r["gyro"] * args.gyro_unit) @ R.T
+                th_t, th_p = trunkimu.angle_from_rate(w_t, r["T"]), trunkimu.angle_from_rate(r["w_p"], r["T"])
+                for a in names:
+                    c = axis_col[a]
+                    h = trunkimu.harmonic_ratio(th_t[:, c], th_p[:, c])
+                    for k in ("amplitude_ratio", "phase_lag_deg", "cancelled_fraction"):
+                        per[a][k].append(h[k])
+                    per[a]["pelvis_amp_deg"].append(np.degrees(abs(trunkimu.first_harmonic(th_p[:, c]))))
+                    per[a]["trunk_amp_deg"].append(np.degrees(abs(trunkimu.first_harmonic(th_t[:, c]))))
+                    gains[a].append(np.sqrt(np.mean(w_t[:, c] ** 2) / np.mean(r["w_p"][:, c] ** 2)))
+            for a in names:
+                for k in per[a]:
+                    summary[sp][a][k].append(float(np.median(per[a][k])))
+    q = np.array(quality)
+    print(f"alignment of the IMU to the pelvis frame: accelerometer correlation per pelvis axis (x fwd, y up, z right), median over {len(q)} subjects "
+          f"{np.median(q[:, 0]):.2f} / {np.median(q[:, 1]):.2f} / {np.median(q[:, 2]):.2f}, worst {q[:, 0].min():.2f} / {q[:, 1].min():.2f} / {q[:, 2].min():.2f}")
+    print("gyro rms over pelvis rms with the gyro read as rad/s (a unit error would show as ~57 or ~0.017): " + ", ".join(f"{a} {np.median(gains[a]):.2f}" for a in names))
+    for sp in args.speeds:
+        print(f"=== {sp} m/s: median [lower quartile, upper quartile] (min..max) across {len(summary[sp]['roll']['amplitude_ratio'])} subjects ===")
+        for a in names:
+            def f(k, nd=2):
+                v = np.array(summary[sp][a][k])
+                return f"{np.median(v):.{nd}f} [{np.percentile(v, 25):.{nd}f}, {np.percentile(v, 75):.{nd}f}] ({v.min():.{nd}f}..{v.max():.{nd}f})"
+            print(f"  {a:5s} pelvis amplitude {f('pelvis_amp_deg', 1)} deg | trunk amplitude {f('trunk_amp_deg', 1)} deg | ratio {f('amplitude_ratio')} | "
+                  f"phase lag {f('phase_lag_deg', 0)} deg | cancelled fraction {f('cancelled_fraction')}")
+
+
 BINS_MM = (10, 30, 100)
 
 
@@ -294,13 +356,17 @@ def main(argv=None):
     tr.add_argument("--cap", type=int, default=4)
     tr.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
     tr.add_argument("--workers", type=int, default=5)
+    ti = sub.add_parser("trunk-imu")
+    ti.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
+    ti.add_argument("--min-quality", type=float, default=0.0, help="drop subjects whose accelerometer alignment correlation is below this on any axis")
+    ti.add_argument("--gyro-unit", type=float, default=1.0, help="multiplier from the file's gyroscope unit to rad/s")
     la = sub.add_parser("lateral")
     la.add_argument("--cap", type=int, default=3)
     la.add_argument("--subjects", type=int, default=6)
     la.add_argument("--speed", default="1.4")
     la.add_argument("--trunk", default="rigid", choices=["rigid", "counter_rotate"])
     args = ap.parse_args(argv)
-    {"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report}[args.cmd](args)
+    {"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report}[args.cmd](args)
 
 
 if __name__ == "__main__":

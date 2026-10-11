@@ -214,3 +214,12 @@ def test_foot_markers_give_a_foot_pointing_forward_with_a_plausible_length(ab06)
     length = np.linalg.norm((fm[:, :, :, 1] - fm[:, :, :, 0])[..., [0, 2]], axis=-1)
     assert forward.mean() > 0.10 and 0.12 < length.mean() < 0.30  # metres: heel-to-toe-tip marker distance in the horizontal plane
     assert 0.0 < fm[:, :, :, 0, 1].mean() < 0.15  # heel marker height above the floor, metres
+
+
+@data_needed
+def test_trunk_imu_is_ingested_with_gravity_of_about_one_g(ab06):
+    imu = ab06["strides"][1.4]["trunk_imu"]  # (strides, 101, 6): accel XYZ in g, gyro XYZ in the file's units
+    n = ab06["strides"][1.4]["n"]
+    assert imu.shape == (n, 101, 6) and not np.isnan(imu).any()
+    g = np.linalg.norm(imu[:, :, :3].mean(axis=(0, 1)))
+    assert 0.9 < g < 1.1  # the mean specific force of a trunk walking steadily is gravity

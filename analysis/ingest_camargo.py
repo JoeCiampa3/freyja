@@ -44,7 +44,7 @@ ID_CHANNELS = ([f"{j}_{s}_moment" for j in ("hip_flexion", "hip_adduction", "hip
 FOOT_MARKERS = ("R_Heel", "R_Toe_Tip", "L_Heel", "L_Toe_Tip")  # mm in the file; stored per stride as (foot R/L, heel/toe, xyz) metres
 FP_CHANNELS = ["Fx", "Fy", "Fz", "CoPx", "CoPy", "CoPz", "stance"]
 FEET = ("R", "L")
-SENSORS = ("conditions", "ik", "id", "fp", "markers")
+SENSORS = ("conditions", "ik", "id", "fp", "markers", "imu")
 
 
 # ------------------------------------------------------------------ locations and tables
@@ -183,7 +183,7 @@ def ingest_subject(raw: Path, subject: str, spec: dict) -> dict:
     trials = sorted({Path(n).stem for n in names if re.search(r"/treadmill/conditions/.*\.mat$", n)})
     thr, min_c = spec["contact_force_n"], spec["min_contact_s"]
     n_ph = spec["n_phase"]
-    acc = {s: {k: [] for k in ("ik", "id", "fp", "foot_markers", "t0", "duration_s", "toe_off_phase", "contra_hs_phase", "contra_to_phase", "trial")}
+    acc = {s: {k: [] for k in ("ik", "id", "fp", "foot_markers", "trunk_imu", "t0", "duration_s", "toe_off_phase", "contra_hs_phase", "contra_to_phase", "trial")}
            for s in spec["speeds_mps"]}
     rejects = {s: {} for s in spec["speeds_mps"]}
     files = {}
@@ -214,12 +214,12 @@ def ingest_subject(raw: Path, subject: str, spec: dict) -> dict:
             continue
         blobs = {"conditions": cblob}
         tables = {"conditions": cond}
-        for sensor in ("ik", "id", "fp", "markers"):
+        for sensor in ("ik", "id", "fp", "markers", "imu"):
             blobs[sensor] = zf.read(_find(names, names, sensor, trial))
             tables[sensor] = read_table(blobs[sensor])
         for sensor, b in blobs.items():
             files[f"{subject}/{trial}/{sensor}"] = hashlib.sha256(b).hexdigest()
-        fp, ik, idt, mk = tables["fp"], tables["ik"], tables["id"], tables["markers"]
+        fp, ik, idt, mk, imu = tables["fp"], tables["ik"], tables["id"], tables["markers"], tables["imu"]
         tf = fp["Header"]
         con = {"R": contacts(tf, fp["Treadmill_R_vy"], thr, min_c), "L": contacts(tf, fp["Treadmill_L_vy"], thr, min_c)}
         speed_at = np.interp(tf, cond["Header"], cond["Speed"])
@@ -268,7 +268,10 @@ def ingest_subject(raw: Path, subject: str, spec: dict) -> dict:
                                 fmv[:, fi, mi, ci] = phase_normalise(mk["Header"], mk[f"{foot}_{mname}_{comp}"], t0, t1, n_ph) / 1000.0
                     if np.isnan(fmv).any():
                         reject(s, "nan_markers"); continue
-                    acc[s]["ik"].append(ikv); acc[s]["id"].append(idv); acc[s]["fp"].append(fpv); acc[s]["foot_markers"].append(fmv)
+                    imv = np.stack([phase_normalise(imu["Header"], imu[f"trunk_{k}_{c}"], t0, t1, n_ph) for k in ("Accel", "Gyro") for c in "XYZ"], axis=1)
+                    if np.isnan(imv).any():
+                        reject(s, "nan_imu"); continue
+                    acc[s]["ik"].append(ikv); acc[s]["id"].append(idv); acc[s]["fp"].append(fpv); acc[s]["foot_markers"].append(fmv); acc[s]["trunk_imu"].append(imv)
                     acc[s]["t0"].append(t0); acc[s]["duration_s"].append(T); acc[s]["toe_off_phase"].append(to_ph)
                     acc[s]["contra_hs_phase"].append(hs_ph); acc[s]["contra_to_phase"].append(lto_ph)
                     acc[s]["trial"].append(int(re.search(r"treadmill_(\d+)_", trial).group(1)))
@@ -280,6 +283,7 @@ def ingest_subject(raw: Path, subject: str, spec: dict) -> dict:
                       "id": np.array(d["id"]).reshape(n, n_ph, len(ID_CHANNELS)),
                       "fp": np.array(d["fp"]).reshape(n, 2, n_ph, len(FP_CHANNELS)),
                       "foot_markers": np.array(d["foot_markers"]).reshape(n, n_ph, 2, 2, 3),
+                      "trunk_imu": np.array(d["trunk_imu"]).reshape(n, n_ph, 6),
                       **{k: np.array(d[k]) for k in ("t0", "duration_s", "toe_off_phase", "contra_hs_phase", "contra_to_phase", "trial")}}
     return {"subject": subject, "mass_kg": info["mass_kg"], "height_m": info["height_m"], "sex": info["sex"], "age": info["age"],
             "strides": strides, "rejects": rejects, "files": files,
