@@ -11,9 +11,16 @@ cannot reach is an error, never a clipped pose.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
 import mujoco
 import numpy as np
+
+POLARITY_FILE = Path(__file__).resolve().parents[2] / "checks" / "joint_polarity.yaml"
+# pose parameter -> the hinge joints it sets (degrees, positive in the model's flexion direction). A pelvic tilt is a hip
+# flexion on both sides: the pelvis rotates forward about the hip axes and the legs stay where they are.
+POSE_JOINTS = {"lsj_fe_deg": ("lsj_fe",), "tj_fe_deg": ("tj_fe",), "cj_fe_deg": ("cj_fe",),
+               "pelvic_tilt_deg": ("hip_fe_right", "hip_fe_left")}
 
 BISECT_ITERATIONS = 100  # halvings of a bracket of at most a radian or so: far below floating-point round-off
 PITCH_BRACKET_RAD = 1.5  # rad: the search range of the root pitch (a level sole needs the pitch to cancel the ankle angle, at most 62 deg)
@@ -29,6 +36,7 @@ class Lean:
     lean_rad: float  # the ankle angle of every foot, model sign convention
     com_offset_m: float  # achieved whole-body CoM x minus ankle x
     root_pitch_rad: float
+    offsets: dict | None = None  # joint name -> rad set before the lean was solved
 
 
 def _bisect(f, lo, hi):
@@ -52,8 +60,61 @@ def _bottom_z(model, data, bodies):
     return low
 
 
-def solve_lean(model, com_x_rel_ankle_m: float, feet: dict) -> Lean:
-    """`feet` maps each foot body name to its ankle dorsiflexion joint name. Returns the pose."""
+def flexion_sign(model, joint: str) -> float:
+    """+1 when a positive qpos of `joint` moves its probe the way checks/joint_polarity.yaml says flexion does, -1 when
+    it moves it the other way. Found by forward kinematics, not assumed."""
+    import yaml
+    row = yaml.safe_load(POLARITY_FILE.read_text(encoding="utf-8"))["joints"][joint]
+    j = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, joint)
+    body, axis = int(model.jnt_bodyid[j]), "xyz".index(row["axis"])
+    data = mujoco.MjData(model)
+
+    def probe():
+        mujoco.mj_forward(model, data)
+        return data.xpos[body] + data.xmat[body].reshape(3, 3) @ np.array(row["probe"], dtype=float)
+    data.qpos[:] = model.qpos0
+    before = probe()
+    data.qpos[model.jnt_qposadr[j]] += 0.1
+    moved = (probe() - before)[axis]
+    if abs(moved) < 1e-6:
+        raise LeanError(f"the polarity probe of {joint} does not move; cannot find its flexion direction")
+    return 1.0 if np.sign(moved) == np.sign(row["sign"]) else -1.0
+
+
+def pose_offsets(model, pose: dict) -> dict:
+    """{joint: rad} for the sagittal pose parameters in `pose` (the others, such as com_x_rel_ankle_m, are ignored)."""
+    out = {}
+    for key, joints in POSE_JOINTS.items():
+        value = float(pose.get(key, 0.0))
+        for joint in joints:
+            out[joint] = flexion_sign(model, joint) * np.radians(value)
+    return out
+
+
+def solve_pose(model, pose: dict, feet: dict) -> Lean:
+    """The standing pose a scenario's `pose` block describes: sagittal offsets first, then the rigid lean about the ankle
+    that puts the CoM `com_x_rel_ankle_m` in front of it. Unknown keys and a missing CoM target are errors."""
+    unknown = sorted(set(pose) - set(POSE_JOINTS) - {"com_x_rel_ankle_m"})
+    if unknown:
+        raise LeanError(f"unknown pose parameter(s): {', '.join(unknown)}")
+    if "com_x_rel_ankle_m" not in pose:
+        raise LeanError("pose needs com_x_rel_ankle_m")
+    return solve_lean(model, float(pose["com_x_rel_ankle_m"]), feet, pose_offsets(model, pose))
+
+
+def solve_lean(model, com_x_rel_ankle_m: float, feet: dict, offsets: dict | None = None) -> Lean:
+    """`feet` maps each foot body name to its ankle dorsiflexion joint name. `offsets` ({joint: rad}) are set before the
+    lean is solved. Returns the pose."""
+    offsets = {k: float(v) for k, v in (offsets or {}).items() if float(v) != 0.0}
+    set_q = []
+    for name, value in offsets.items():
+        jj = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, name)
+        if jj < 0:
+            raise LeanError(f"no joint {name}")
+        if model.jnt_limited[jj] and not model.jnt_range[jj][0] <= value <= model.jnt_range[jj][1]:
+            raise LeanError(f"{name} = {np.degrees(value):+.2f} deg is outside its range "
+                            f"{np.degrees(model.jnt_range[jj][0]):.1f} to {np.degrees(model.jnt_range[jj][1]):.1f} deg")
+        set_q.append((int(model.jnt_qposadr[jj]), value))
     bid = lambda n: mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, n)  # noqa: E731
     jid = lambda n: mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, n)  # noqa: E731
     roots = [j for j in range(model.njnt) if model.jnt_type[j] == mujoco.mjtJoint.mjJNT_FREE]
@@ -72,6 +133,8 @@ def solve_lean(model, com_x_rel_ankle_m: float, feet: dict) -> Lean:
 
     def fk(theta, pitch, shift=(0.0, 0.0)):
         data.qpos[:] = model.qpos0
+        for adr, value in set_q:
+            data.qpos[adr] = value
         for adr, _ in ankle:
             data.qpos[adr] = theta
         data.qpos[r + 0] += shift[0]
@@ -101,4 +164,4 @@ def solve_lean(model, com_x_rel_ankle_m: float, feet: dict) -> Lean:
                         f"{np.degrees(lo):.1f} to {np.degrees(hi):.1f} deg, which reaches {min(o_lo, o_hi):+.4f} to {max(o_lo, o_hi):+.4f} m")
     theta = _bisect(lambda th: offset(th) - target, lo, hi)
     pitch, shift, achieved = pose(theta)
-    return Lean(data.qpos.copy(), float(theta), achieved, float(pitch))
+    return Lean(data.qpos.copy(), float(theta), achieved, float(pitch), offsets)

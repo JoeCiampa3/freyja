@@ -249,7 +249,7 @@ def _apply_pose(mj, model, data, pose):
     if not feet:
         raise ScenarioError("a pose needs foot_right/foot_left bodies with ankle_pdflex joints")
     try:
-        lean = leanpose.solve_lean(model, float(pose["com_x_rel_ankle_m"]), feet)
+        lean = leanpose.solve_pose(model, dict(pose), feet)
     except (leanpose.LeanError, KeyError) as e:
         raise ScenarioError(f"pose: {e}") from e
     data.qpos[:] = lean.qpos
