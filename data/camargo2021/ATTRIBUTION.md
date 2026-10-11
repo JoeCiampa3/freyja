@@ -12,8 +12,7 @@ Epic Lab. Version 2 of each part:
 
 **Paper.** Camargo J, Ramanathan A, Flanagan W, Young A. A comprehensive, open-source dataset of lower limb biomechanics in
 multiple conditions of stairs, ramps, and level-ground ambulation and transitions. Journal of Biomechanics, 2021, 119:110320.
-doi:10.1016/j.jbiomech.2021.110320. (Author list as printed in the dataset's own README citation; it was not re-read from the
-published paper in this session. Check it against the paper before publication.)
+doi:10.1016/j.jbiomech.2021.110320.
 
 **Licence.** Creative Commons Attribution 4.0 International, https://creativecommons.org/licenses/by/4.0/. Shown on the
 Mendeley Data page of Part 2 (checked 2026-10-11); Part 1 was stated as CC BY 4.0 by Joe; Part 3 is not yet downloaded or checked.
