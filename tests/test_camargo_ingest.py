@@ -188,11 +188,14 @@ def test_sign_mapping_passes_the_gait_feature_checks_and_one_flip_fails(ab06):
 
 
 @data_needed
-def test_static_standing_pelvis_tilt_is_read(ab06):
-    tilt = ab06["static_pelvis_tilt_deg"]
-    assert tilt is not None and -15 < tilt < 15  # degrees; the T-pose tilt of a standing subject
-    walking = ab06["strides"][1.4]["ik"][:, :, ic.IK_CHANNELS.index("pelvis_tilt")].mean()
-    assert abs(walking - tilt) < 10
+def test_static_standing_pelvis_roll_and_pitch_are_read_separately(ab06):
+    roll, pitch = ab06["static_pelvis_roll_deg"], ab06["static_pelvis_pitch_deg"]
+    assert roll is not None and pitch is not None and -15 < roll < 15 and -25 < pitch < 25  # degrees, standing
+    ik = ab06["strides"][1.4]["ik"]
+    # pitch is anterior positive, i.e. minus the dataset's pelvis_list; roll is the dataset's pelvis_tilt
+    assert abs(ik[:, :, ic.IK_CHANNELS.index("pelvis_tilt")].mean() - roll) < 10
+    assert abs(-ik[:, :, ic.IK_CHANNELS.index("pelvis_list")].mean() - pitch) < 20
+    assert roll != pitch
 
 
 @data_needed

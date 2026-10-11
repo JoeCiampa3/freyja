@@ -89,18 +89,18 @@ def pitch_forward_rad(q, stand):
     return r[1]
 
 
-def test_pelvis_pitch_mean_is_the_design_parameter_and_only_the_oscillation_comes_from_the_dataset(model, stand):
+def test_a_numeric_pitch_mean_sets_the_mean_and_only_the_oscillation_comes_from_the_dataset(model, stand):
     ik = standing_ik()
     col = ic.IK_CHANNELS.index("pelvis_list")  # the sagittal pitch in this lab frame (pelvis_tilt is the roll)
     ik[:, col] = -7.0  # a constant pitch is removed: the standing orientation results
-    flat = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0)
+    flat = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0, pitch_mean=0.0)
     assert rot_diff_rad(flat.eval(0.3)[0][3:7], stand[3:7]) < 1e-9
-    fwd = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0, tilt_offset_deg=5.0)
+    fwd = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0, pitch_mean=0.0, pitch_offset_deg=5.0)
     assert pitch_forward_rad(fwd.eval(0.3)[0], stand) == pytest.approx(np.deg2rad(5.0), abs=1e-9)  # positive = anterior
-    back = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0, tilt_offset_deg=-5.0)
+    back = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0, pitch_mean=0.0, pitch_offset_deg=-5.0)
     assert pitch_forward_rad(back.eval(0.3)[0], stand) == pytest.approx(-np.deg2rad(5.0), abs=1e-9)
     ik[:, col] = -7.0 - 2.0 * np.sin(2 * np.pi * np.linspace(0, 1, 101))  # an oscillation survives; forward = minus list
-    osc = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0)
+    osc = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0, pitch_mean=0.0)
     p = [pitch_forward_rad(osc.eval(t)[0], stand) for t in np.linspace(0, 1, 50, endpoint=False)]
     assert max(p) == pytest.approx(np.deg2rad(2.0) * 0.99, rel=0.05)
 
@@ -109,7 +109,7 @@ def test_the_offset_is_a_pitch_not_a_roll(model, stand):
     """The reason pelvis_list, not pelvis_tilt, carries the offset: a roll would load the right and left lateral torques in
     opposite directions, a pitch loads both limbs alike. Here: the offset changes no roll."""
     ik = standing_ik()
-    q = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0, tilt_offset_deg=5.0).eval(0.2)[0]
+    q = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0, pitch_mean=0.0, pitch_offset_deg=5.0).eval(0.2)[0]
     r = np.zeros(3)
     mujoco.mju_subQuat(r, q[3:7], stand[3:7])
     assert abs(r[0]) < 1e-9 and abs(r[2]) < 1e-9 and abs(r[1]) == pytest.approx(np.deg2rad(5.0), abs=1e-9)
@@ -270,14 +270,14 @@ def test_hip_reference_derivatives_match_finite_differences_and_integrate_back(m
     assert np.abs(got[:3] - ref[:3]).max() < 1e-9 and rot_diff_rad(got[3:7], ref[3:7]) < 1e-9
 
 
-def test_trunk_compensation_keeps_the_thorax_upright_while_the_pelvis_rolls_and_yaws(model, stand):
+def test_counter_rotate_keeps_the_thorax_upright_while_the_pelvis_rolls_and_yaws(model, stand):
     ik = standing_ik()
     ik[:, ic.IK_CHANNELS.index("pelvis_tilt")] = 4.0 * np.sin(2 * np.pi * np.linspace(0, 1, 101))  # roll (obliquity), a few degrees
     ik[:, ic.IK_CHANNELS.index("pelvis_rotation")] = 90.0 + 5.0 * np.cos(2 * np.pi * np.linspace(0, 1, 101))
     thorax = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "thorax")
 
     def thorax_tilt(compensate):
-        c = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0, trunk_compensation=compensate)
+        c = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0, trunk="counter_rotate" if compensate else "rigid")
         worst = 0.0
         for t in np.linspace(0, 1, 20, endpoint=False):
             d = mujoco.MjData(model)

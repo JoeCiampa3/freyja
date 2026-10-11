@@ -24,6 +24,12 @@ frame:
   # the pelvis backward, so anterior (forward) pitch, the model's flexion direction, is minus pelvis_list. The mean-pitch design
   # parameter acts on this coordinate only.
   pelvis_pitch: {coordinate: pelvis_list, sign: -1}
+  # Anatomical meanings of the three pelvis coordinates in this lab frame (every record and the audit README use these names):
+  #   pelvis_tilt      ROLL (obliquity): rotation about the walking axis; an oscillation of a few degrees, zero mean
+  #   pelvis_list      sagittal PITCH: rotation about the subject's right; anterior pitch is minus pelvis_list
+  #   pelvis_rotation  YAW: about the pelvis's own vertical axis; near 90 degrees because the lab z axis points backward
+  pelvis_roll: {coordinate: pelvis_tilt, sign: 1}
+  pelvis_yaw: {coordinate: pelvis_rotation, sign: 1}
 joints:
   hip_fe_right:       {dataset: hip_flexion_r,    sign: 1,  verified: hip_extension_late_stance}
   hip_fe_left:        {dataset: hip_flexion_l,    sign: 1,  verified: hip_extension_late_stance}

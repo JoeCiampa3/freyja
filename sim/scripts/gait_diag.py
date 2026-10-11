@@ -21,19 +21,24 @@ SAGITTAL = ("hip_fe", "knee", "ankle_pdflex")
 TARGET_CORR, TARGET_RMS_PCT = 0.9, 15.0  # review targets from the brief, not acceptance limits
 
 
+def _pitch(v):
+    """--pitch-mean: "measured" or a number of degrees."""
+    return v if v == "measured" else float(v)
+
+
 def _rows(spec, methods, cap, speed, workers, **overrides):
     spec = dict(spec)
     spec.update({"speeds_mps": [speed], "stride_cap_per_subject": cap, **overrides})
     manifest = json.loads((REPO / spec["dataset"]["manifest"]).read_text(encoding="utf-8"))
     tasks = gait._tasks(spec, manifest, gait.simrun.MODEL_FILE, REPO / spec["dataset"]["processed"], methods,
-                        float(spec["smoothing"]["cutoff_hz"]), float(spec["pelvis_tilt_offset_deg"]), cap, True, True, False)
+                        float(spec["smoothing"]["cutoff_hz"]), float(spec["pelvis_pitch_offset_deg"]), cap, True, True, False)
     return gait._run_tasks(tasks, workers)
 
 
 def a_agreement(args):
     spec = gait.load_spec("walk_treadmill")
     spec["root_reference"] = args.root_reference
-    rows = _rows(spec, ["A_native", "A_filtered"], args.cap, args.speed, args.workers, cop_mode=args.cop_mode, pelvis_pitch_mean=args.pitch_mean)
+    rows = _rows(spec, ["A_native", "A_filtered"], args.cap, args.speed, args.workers, cop_mode=args.cop_mode, pitch_mean=_pitch(args.pitch_mean))
     print(f"A agreement with the dataset moments; root reference {args.root_reference}; CoP mode {args.cop_mode}; pelvis pitch mean {args.pitch_mean}; {len(rows)} strides at {args.speed} m/s")
     print("joint (both limbs pooled)   method       corr   rms % ptp   peak diff N m/kg")
     for stem in SAGITTAL:
@@ -61,7 +66,7 @@ def force_report(args):
                 for i in range(min(args.cap, d["strides"][speed])):
                     T = float(z[f"{speed}_duration_s"][i])
                     cyc = retarget.Cycle(c.model, c.mapping, c.stand, z[f"{speed}_ik"][i], T, ratio, hip_in_pelvis_os=d["hip_in_pelvis_os_m"], root_ref=ref,
-                                         trunk_compensation=args.trunk_compensation)
+                                         trunk=args.trunk)
                     q, qd, qdd = cyc.grid()
                     fb = np.array([gait.dynamics.inverse_frame(c.model, q[k], qd[k], qdd[k])[:3] for k in range(q.shape[0])])
                     fm = gfr.measured_force_model(z[f"{speed}_fp"][i], c.mass / d["mass_kg"])
@@ -96,7 +101,7 @@ def lateral(args):
             for i in range(args.cap):
                 T = float(z[f"{args.speed}_duration_s"][i])
                 cyc = retarget.Cycle(m, c.mapping, c.stand, z[f"{args.speed}_ik"][i], T, ratio, hip_in_pelvis_os=d["hip_in_pelvis_os_m"],
-                                     root_ref=ref, trunk_compensation=args.trunk_compensation)
+                                     root_ref=ref, trunk=args.trunk)
 
                 def moment_y(t):
                     dd = mujoco.MjData(m)
@@ -111,11 +116,34 @@ def lateral(args):
                 meas.append(retarget.filter_cycle(gfr.measured_force_model(z[f"{args.speed}_fp"][i], c.mass / d["mass_kg"]), T, 6.0)[:100, 1])
         tot, meas = np.array(tot), np.array(meas)
         cc = lambda a: np.mean([np.corrcoef(x, y)[0, 1] for x, y in zip(a, meas)])
-        print(f"root reference {ref}, trunk compensation {args.trunk_compensation}: lateral force peak-to-peak, N (corr with the measured one)")
+        print(f"root reference {ref}, trunk {args.trunk}: lateral force peak-to-peak, N (corr with the measured one)")
         print(f"   measured {np.mean(np.ptp(meas, axis=1)):6.1f}   model total {np.mean(np.ptp(tot, axis=1)):6.1f} ({cc(tot):+.2f})")
         for g in GROUPS:
             a = np.array(res[g])
             print(f"   {g:8s} {np.mean(np.ptp(a, axis=1)):6.1f} ({cc(a):+.2f})")
+
+
+def foot_report(args):
+    """T3c.0(c): the retargeted root's stance float, penetration, swing clearance and slip, with the root referenced to the
+    pelvis origin and to the midpoint of the hip joint centres. The same statistic as GAIT.md's kinematics diagnostics: the mean
+    over subject-strides of each stride's maximum float / maximum penetration / minimum clearance / rms slip."""
+    import retarget
+    c = gait._ctx(str(gait.simrun.MODEL_FILE))
+    manifest = json.loads((REPO / "data/camargo2021/manifest.json").read_text(encoding="utf-8"))
+    for ref in ("pelvis_origin", "hip_midpoint"):
+        met = {}
+        for s, d in manifest["subjects"].items():
+            z = np.load(REPO / f"data/camargo2021/processed/{s}.npz")
+            ratio = retarget.leg_length_ratio(c.model, d["height_m"])
+            for i in range(min(args.cap, d["strides"][args.speed])):
+                cyc = retarget.Cycle(c.model, c.mapping, c.stand, z[f"{args.speed}_ik"][i], float(z[f"{args.speed}_duration_s"][i]), ratio,
+                                     hip_in_pelvis_os=d["hip_in_pelvis_os_m"], root_ref=ref, trunk=args.trunk, pitch_mean=_pitch(args.pitch_mean))
+                m = retarget.foot_metrics(c.model, cyc, z[f"{args.speed}_fp"][i][:, :, 6] >= 0.5, float(args.speed))
+                for k, v in m.items():
+                    met.setdefault(k, []).append(v)
+        print(f"{args.speed} m/s, root reference {ref}, trunk {args.trunk}, pitch mean {args.pitch_mean}, {len(met['stance_float_max_m'])} strides: "
+              f"stance float {1000 * np.mean(met['stance_float_max_m']):.1f} mm (mean of per-stride maxima), penetration {1000 * np.mean(met['stance_penetration_max_m']):.1f} mm, "
+              f"swing clearance minimum {1000 * np.mean(met['swing_clearance_min_m']):.1f} mm, stance slip rms {np.mean(met['stance_slip_rms_mps']):.2f} m/s")
 
 
 BINS_MM = (10, 30, 100)
@@ -147,7 +175,7 @@ def cop_steps(args):
         for i in range(min(args.cap, d["strides"][args.speed])):
             T = float(z[f"{args.speed}_duration_s"][i])
             ik, fp = z[f"{args.speed}_ik"][i], z[f"{args.speed}_fp"][i]
-            cyc = retarget.Cycle(m, c.mapping, c.stand, ik, T, ratio, hip_in_pelvis_os=hip, trunk_compensation=args.trunk_compensation, pitch_mean=args.pitch_mean)
+            cyc = retarget.Cycle(m, c.mapping, c.stand, ik, T, ratio, hip_in_pelvis_os=hip, trunk=args.trunk, pitch_mean=_pitch(args.pitch_mean))
             q, qd, qdd = cyc.grid()
             ref_lab = retarget.dataset_hip_mid_lab(ik, hip)
             fmk = z[f"{args.speed}_foot_markers"][i]
@@ -186,7 +214,7 @@ def cop_steps(args):
                             poly[vname + name][key][0] += 1; poly[vname + name][key][1] += not mg >= 0
                             if not mg >= 0:
                                 poly[vname + name][key][2].append(-mg)
-    print(f"=== {args.speed} m/s, {args.cap} strides per subject, trunk compensation {args.trunk_compensation}, measured CoP mapping {args.cop_mode}, pelvis pitch mean {args.pitch_mean} ===")
+    print(f"=== {args.speed} m/s, {args.cap} strides per subject, trunk {args.trunk}, measured CoP mapping {args.cop_mode}, pelvis pitch mean {args.pitch_mean} ===")
     print("Step 2: whole-body CoP against the measured one (model axes: x fore-aft, y lateral), rms mm over stance frames")
     for key in ("single", "double"):
         ef, ep, a = (np.array(x[key]) for x in (e_full, e_pm, am))
@@ -213,27 +241,32 @@ def main(argv=None):
     a = sub.add_parser("a-agreement")
     a.add_argument("--root-reference", default="hip_midpoint", choices=["hip_midpoint", "pelvis_origin"])
     a.add_argument("--cop-mode", default="hip_reference", choices=["hip_reference", "foot_frame"])
-    a.add_argument("--pitch-mean", default="design", choices=["design", "measured"])
+    a.add_argument("--pitch-mean", default="measured")
     a.add_argument("--cap", type=int, default=3)
     a.add_argument("--speed", default="1.4")
     a.add_argument("--workers", type=int, default=5)
     f = sub.add_parser("force")
     f.add_argument("--cap", type=int, default=5)
     f.add_argument("--speed", default="1.4")
-    f.add_argument("--trunk-compensation", action="store_true")
+    f.add_argument("--trunk", default="rigid", choices=["rigid", "counter_rotate"])
     cp = sub.add_parser("cop")
     cp.add_argument("--cap", type=int, default=4)
-    cp.add_argument("--pitch-mean", default="measured", choices=["design", "measured"])
+    cp.add_argument("--pitch-mean", default="measured")
     cp.add_argument("--cop-mode", default="foot_frame", choices=["hip_reference", "foot_frame"])
     cp.add_argument("--speed", default="1.4")
-    cp.add_argument("--trunk-compensation", action="store_true")
+    cp.add_argument("--trunk", default="rigid", choices=["rigid", "counter_rotate"])
+    fo = sub.add_parser("foot")
+    fo.add_argument("--cap", type=int, default=4)
+    fo.add_argument("--speed", default="1.4")
+    fo.add_argument("--pitch-mean", default="measured")
+    fo.add_argument("--trunk", default="rigid", choices=["rigid", "counter_rotate"])
     la = sub.add_parser("lateral")
     la.add_argument("--cap", type=int, default=3)
     la.add_argument("--subjects", type=int, default=6)
     la.add_argument("--speed", default="1.4")
-    la.add_argument("--trunk-compensation", action="store_true")
+    la.add_argument("--trunk", default="rigid", choices=["rigid", "counter_rotate"])
     args = ap.parse_args(argv)
-    {"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps}[args.cmd](args)
+    {"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report}[args.cmd](args)
 
 
 if __name__ == "__main__":

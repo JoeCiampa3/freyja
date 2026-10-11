@@ -49,6 +49,13 @@ def test_agreement_metrics():
     assert gait.agreement(-d, d)["corr"] == pytest.approx(-1.0)
 
 
+def test_a_numeric_pitch_mean_flags_methods_a_and_h_as_hybrid():
+    spec = {"methods": ["B", "A_native", "A_filtered", "H"], "pitch_mean": "measured"}
+    assert gait.hybrid_methods(spec) == []
+    assert gait.hybrid_methods({**spec, "pitch_mean": 4.0}) == ["A_native", "A_filtered", "H"]  # a force and CoP of the measured posture on a different one
+    assert gait.hybrid_methods({"methods": ["B"], "pitch_mean": 4.0}) == []
+
+
 def test_stride_cap_keeps_the_first_n_per_subject_and_never_more():
     counts = {"AB06": 27, "AB07": 3, "AB08": 0}
     assert gait.capped_indices(counts, None) == {"AB06": list(range(27)), "AB07": [0, 1, 2], "AB08": []}
@@ -60,7 +67,7 @@ def test_stride_cap_keeps_the_first_n_per_subject_and_never_more():
 def test_two_runs_are_byte_identical_and_md_is_under_the_line_cap(tmp_path):
     spec = gait.load_spec("walk_treadmill")
     spec.update({"subjects": ["AB06"], "stride_cap_per_subject": 2, "speeds_mps": [1.4]})
-    spec["sensitivity"] = {"cutoffs_hz": [4, 6], "tilt_offsets_deg": [0], "stride_cap_per_subject": 1}
+    spec["sensitivity"] = {"cutoffs_hz": [4, 6], "pitch_offsets_deg": [0], "stride_cap_per_subject": 1}
     out = []
     for name in ("a", "b"):
         res = gait.run_gait(spec, gait_dir=tmp_path / name, now=dt.datetime(2026, 10, 12, 10, 0))

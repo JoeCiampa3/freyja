@@ -9,7 +9,8 @@ Rules (all recorded in the gait record):
     last sample is removed from every signal (the size is reported as the wrap gap), the 100 unique samples are tiled three times,
     low-passed with a zero-lag (forward-backward) Butterworth, and the middle copy is fitted with a periodic cubic spline. qvel
     and qacc are the spline's analytic first and second derivatives, so they are exactly consistent with qpos.
-  - Root orientation: the dataset's pelvis tilt, list and rotation (OpenSim body-fixed order Rz Rx Ry), converted to the model's
+  - Root orientation: the dataset's pelvis_tilt (the pelvis ROLL in this lab), pelvis_list (its sagittal PITCH) and pelvis_rotation
+    (YAW) (OpenSim body-fixed order Rz Rx Ry), converted to the model's
     axes. The free joint's angular velocity and acceleration are in the body frame, as MuJoCo expects.
   - Root horizontal position: the dataset's pelvis translation, drift removed, scaled by the leg-length ratio. On a treadmill this
     is the oscillation about a fixed point; the belt carries the ground backward, so the model walks in place.
@@ -51,6 +52,7 @@ def _hinge_adr(model, name):
 
 ROOT_RULES = ("foot_min", "pelvis_dataset")
 ROOT_REFS = ("hip_midpoint", "pelvis_origin")
+TRUNK_MODES = ("rigid", "counter_rotate")
 
 
 def dataset_hip_mid_lab(ik, hip_in_pelvis):
@@ -157,7 +159,7 @@ class Cycle:
     stride duration in seconds, `scale` the leg-length ratio applied to the pelvis translation."""
 
     def __init__(self, model, mapping, stand_qpos, ik, T, scale, cutoff_hz=CUTOFF_HZ,
-                 tilt_offset_deg=0.0, root_rule="pelvis_dataset", hip_in_pelvis_os=None, root_ref=None, trunk_compensation=False, pitch_mean="design"):
+                 pitch_offset_deg=0.0, root_rule="pelvis_dataset", hip_in_pelvis_os=None, root_ref=None, trunk="rigid", pitch_mean="measured"):
         if root_rule not in ROOT_RULES:
             raise ValueError(f"root_rule must be one of {ROOT_RULES}")
         self.root_rule = root_rule
@@ -183,21 +185,26 @@ class Cycle:
             hm = dataset_hip_mid_lab(ik, hip_in_pelvis_os)  # from the measured (unadjusted) pelvis orientation
         else:
             hm = np.stack([col("pelvis_tx"), col("pelvis_ty"), col("pelvis_tz")], axis=1)
-        # Pelvis pitch: the dataset supplies only the oscillation. The cycle-mean pitch is removed and the mean is set to the design
-        # parameter tilt_offset_deg (positive = anterior), relative to the standing pose's pelvis orientation from stand_static.
-        # The model's zero and OpenSim's zero need not coincide, and the subject's static pitch is standing posture, not an offset.
+        # Pelvis pitch (anterior positive). pitch_mean is "measured" (each stride keeps the subject's own sagittal pitch) or a number
+        # of degrees: the dataset then supplies only the oscillation, and the cycle mean is set to that number relative to the standing
+        # pose's pelvis orientation from stand_static. pitch_offset_deg is added on top (the sensitivity knob). The model's zero and
+        # OpenSim's zero need not coincide, and the subject's static pitch is standing posture, not an offset.
         # Which dataset coordinate is the sagittal pitch is a property of the lab frame (see camargo_mapping.yaml): here pelvis_list.
         pitch = mapping["frame"]["pelvis_pitch"]
         pi = mapping["frame"]["pelvis_euler"].index(pitch["coordinate"])
-        if pitch_mean not in ("design", "measured"):
-            raise ValueError("pitch_mean must be 'design' or 'measured'")
+        if not (pitch_mean == "measured" or isinstance(pitch_mean, (int, float))):
+            raise ValueError("pitch_mean must be 'measured' or a number of degrees")
+        if trunk not in TRUNK_MODES:
+            raise ValueError(f"trunk must be one of {TRUNK_MODES}")
+        self.pitch_mean, self.trunk = pitch_mean, trunk
         # 'measured' keeps the dataset's absolute pitch (plus any offset). The leg angles are relative to the dataset's pelvis, so the
         # legs' position in the world, and with it every lever arm of a measured ground reaction, is only consistent with the data
         # when the measured pitch is kept; the verification of the loads against the dataset's own moments uses it.
-        base = 0.0 if pitch_mean == "measured" else eul[pi][:N_UNIQUE].mean()
-        eul[pi] = eul[pi] - base + pitch["sign"] * np.deg2rad(tilt_offset_deg)
-        self.trunk_compensation = bool(trunk_compensation)
-        if trunk_compensation:
+        if pitch_mean == "measured":
+            eul[pi] = eul[pi] + pitch["sign"] * np.deg2rad(pitch_offset_deg)
+        else:
+            eul[pi] = eul[pi] - eul[pi][:N_UNIQUE].mean() + pitch["sign"] * np.deg2rad(pitch_mean + pitch_offset_deg)
+        if trunk == "counter_rotate":
             # Diagnostic variant (not the default): the lumbosacral lateral and axial joints cancel the pelvis's roll and yaw so the
             # trunk stays upright in the world, as a real trunk largely does; flexion is left to follow the pelvis. Computed from the
             # same pelvis angles the root uses, then filtered and splined with every other signal.

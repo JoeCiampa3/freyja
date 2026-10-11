@@ -187,13 +187,18 @@ def ingest_subject(raw: Path, subject: str, spec: dict) -> dict:
            for s in spec["speeds_mps"]}
     rejects = {s: {} for s in spec["speeds_mps"]}
     files = {}
-    # the subject's standing pelvis tilt from the static trial(s): walking tilt is applied as an excursion from this
-    static_tilts = []
+    # The subject's standing pelvis roll and sagittal pitch from the static trial(s). In this lab the dataset's `pelvis_tilt` is the
+    # ROLL (a rotation about the walking axis) and `pelvis_list` the sagittal PITCH; pitch is reported anterior positive, which is
+    # minus pelvis_list (see sim/scenarios/gait/camargo_mapping.yaml).
+    static_roll, static_pitch = [], []
     for n in sorted(x for x in names if re.search(r"/static/ik/.*\.mat$", x)):
         blob = zf.read(n)
         files[f"{subject}/{Path(n).stem}/ik"] = hashlib.sha256(blob).hexdigest()
-        static_tilts.append(float(np.mean(read_table(blob)["pelvis_tilt"])))
-    static_tilt = float(np.mean(static_tilts)) if static_tilts else None
+        tbl = read_table(blob)
+        static_roll.append(float(np.mean(tbl["pelvis_tilt"])))
+        static_pitch.append(-float(np.mean(tbl["pelvis_list"])))
+    static_roll = float(np.mean(static_roll)) if static_roll else None
+    static_pitch = float(np.mean(static_pitch)) if static_pitch else None
     hip_in_pelvis = hip_centre_in_pelvis(zf, subject)
 
     def reject(s, why):
@@ -278,7 +283,8 @@ def ingest_subject(raw: Path, subject: str, spec: dict) -> dict:
                       **{k: np.array(d[k]) for k in ("t0", "duration_s", "toe_off_phase", "contra_hs_phase", "contra_to_phase", "trial")}}
     return {"subject": subject, "mass_kg": info["mass_kg"], "height_m": info["height_m"], "sex": info["sex"], "age": info["age"],
             "strides": strides, "rejects": rejects, "files": files,
-            "static_pelvis_tilt_deg": static_tilt, "hip_in_pelvis_os_m": hip_in_pelvis}
+            "static_pelvis_roll_deg": static_roll, "static_pelvis_pitch_deg": static_pitch,
+            "hip_in_pelvis_os_m": hip_in_pelvis}
 
 
 def model_angles(strides: dict, mapping: dict) -> dict:
@@ -309,11 +315,15 @@ def main(argv=None) -> int:
                 if k != "n":
                     arrays[f"{s}_{k}"] = v
         arrays["hip_in_pelvis_os_m"] = np.array(res["hip_in_pelvis_os_m"])
-        arrays["static_pelvis_tilt_deg"] = np.array(np.nan if res["static_pelvis_tilt_deg"] is None else res["static_pelvis_tilt_deg"])
+        for key in ("static_pelvis_roll_deg", "static_pelvis_pitch_deg"):
+            arrays[key] = np.array(np.nan if res[key] is None else res[key])
         np.savez(out_dir / f"{subject}.npz", **arrays)
         manifest["subjects"][subject] = {
             "mass_kg": res["mass_kg"], "height_m": res["height_m"], "sex": res["sex"], "age": res["age"],
-            "static_pelvis_tilt_deg": res["static_pelvis_tilt_deg"], "hip_in_pelvis_os_m": res["hip_in_pelvis_os_m"],
+            "static_pelvis_roll_deg": res["static_pelvis_roll_deg"], "static_pelvis_pitch_deg": res["static_pelvis_pitch_deg"],
+            "walking_pelvis_roll_deg": {str(s): float(d["ik"][:, :, IK_CHANNELS.index("pelvis_tilt")].mean()) for s, d in res["strides"].items()},
+            "walking_pelvis_pitch_deg": {str(s): -float(d["ik"][:, :, IK_CHANNELS.index("pelvis_list")].mean()) for s, d in res["strides"].items()},
+            "hip_in_pelvis_os_m": res["hip_in_pelvis_os_m"],
             "strides": {str(s): d["n"] for s, d in res["strides"].items()},
             "rejected": {str(s): res["rejects"][s] for s in res["rejects"]}}
         manifest["files_sha256"].update(res["files"])

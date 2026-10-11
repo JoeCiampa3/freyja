@@ -97,6 +97,14 @@ def agreement(model_per_kg, data_per_kg) -> dict:
     return {"rms_pct_ptp": rms, "peak_diff": float(np.abs(m).max() - np.abs(d).max()), "corr": corr}
 
 
+def hybrid_methods(spec: dict) -> list:
+    """Methods A and H apply a measured force and CoP that belong to the subject's measured posture; with any other pitch mean they
+    are a hybrid and not a load, and the record says so. B is unaffected."""
+    if spec.get("pitch_mean", "measured") == "measured":
+        return []
+    return [m for m in spec["methods"] if m.startswith("A") or m == "H"]
+
+
 def capped_indices(counts: dict, cap) -> dict:
     """The first `cap` stride indices of each subject (all when cap is None)."""
     return {s: list(range(n if cap is None else min(n, int(cap)))) for s, n in counts.items()}
@@ -175,9 +183,9 @@ def run_stride(task: dict) -> dict:
     cut = task["cutoff_hz"]
     hip = sub.get("hip_in_pelvis_os_m")
     ref = task["root_reference"] if hip is not None else "pelvis_origin"
-    cyc = retarget.Cycle(model, mapping, c.stand, ik, T, ratio, cutoff_hz=cut, tilt_offset_deg=task["tilt_offset_deg"],
+    cyc = retarget.Cycle(model, mapping, c.stand, ik, T, ratio, cutoff_hz=cut, pitch_offset_deg=task["pitch_offset_deg"],
                          root_rule=task["root_rule"], hip_in_pelvis_os=hip, root_ref=ref,
-                         pitch_mean=task.get("pelvis_pitch_mean", "design"), trunk_compensation=task.get("trunk_compensation", False))
+                         pitch_mean=task["pitch_mean"], trunk=task["trunk"])
     q, qd, qdd = cyc.grid()
     methods = task["methods"]
     joints = c.joints
@@ -273,7 +281,7 @@ def run_stride(task: dict) -> dict:
 
 # ------------------------------------------------------------------------------ batch
 
-def _tasks(spec, manifest, model_path, processed, methods, cutoff, tilt, cap, sweep, agreement_on, kin):
+def _tasks(spec, manifest, model_path, processed, methods, cutoff, pitch_offset, cap, sweep, agreement_on, kin):
     subjects = spec.get("subjects") or list(manifest["subjects"])
     tasks = []
     for speed in spec["speeds_mps"]:
@@ -281,9 +289,9 @@ def _tasks(spec, manifest, model_path, processed, methods, cutoff, tilt, cap, sw
         for s, idx in capped_indices(counts, cap).items():
             for i in idx:
                 tasks.append({"model_path": str(model_path), "processed": str(processed), "subject": s, "speed": str(speed), "index": i,
-                              "subject_info": manifest["subjects"][s], "cutoff_hz": cutoff, "tilt_offset_deg": tilt,
-                              "root_rule": spec["root_rule"], "root_reference": spec.get("root_reference", "hip_midpoint"), "cop_mode": spec.get("cop_mode", "hip_reference"), "pelvis_pitch_mean": spec.get("pelvis_pitch_mean", "design"),
-                              "trunk_compensation": spec.get("trunk_compensation", False), "methods": methods, "sweep": sweep, "cop_scale": spec["cop_scale"],
+                              "subject_info": manifest["subjects"][s], "cutoff_hz": cutoff, "pitch_offset_deg": pitch_offset,
+                              "root_rule": spec["root_rule"], "root_reference": spec.get("root_reference", "hip_midpoint"), "cop_mode": spec.get("cop_mode", "hip_reference"), "pitch_mean": spec.get("pitch_mean", "measured"),
+                              "trunk": spec.get("trunk", "rigid"), "methods": methods, "sweep": sweep, "cop_scale": spec["cop_scale"],
                               "agreement": agreement_on, "kinematics": kin})
     return tasks
 
@@ -367,11 +375,11 @@ def build_results(rows, c: Context, spec) -> dict:
 def _sensitivity(spec, manifest, model_path, processed, c, workers):
     s = spec["sensitivity"]
     cap = s.get("stride_cap_per_subject")
-    out = {"stride_cap_per_subject": cap, "cutoff_hz": {}, "tilt_offset_deg": {}}
-    for kind, values, key in (("cutoff_hz", s["cutoffs_hz"], "cutoff_hz"), ("tilt_offset_deg", s["tilt_offsets_deg"], "tilt_offset_deg")):
+    out = {"stride_cap_per_subject": cap, "cutoff_hz": {}, "pitch_offset_deg": {}}
+    for kind, values, key in (("cutoff_hz", s["cutoffs_hz"], "cutoff_hz"), ("pitch_offset_deg", s["pitch_offsets_deg"], "pitch_offset_deg")):
         for v in values:
             cut = float(v) if kind == "cutoff_hz" else float(spec["smoothing"]["cutoff_hz"])
-            tilt = float(v) if kind == "tilt_offset_deg" else float(spec["pelvis_tilt_offset_deg"])
+            tilt = float(v) if kind == "pitch_offset_deg" else float(spec["pelvis_pitch_offset_deg"])
             rows = _run_tasks(_tasks(spec, manifest, model_path, processed, ["B"], cut, tilt, cap, False, False, False), workers)
             by_speed = {}
             for sp in [str(x) for x in spec["speeds_mps"]]:
@@ -411,7 +419,7 @@ def run_gait(spec: dict, *, model_path=None, snapshot_path=None, meta_path=None,
     c = _ctx(str(model_path))
     started = []
     tasks = _tasks(spec, manifest, model_path, processed, [m for m in spec["methods"]], float(spec["smoothing"]["cutoff_hz"]),
-                   float(spec["pelvis_tilt_offset_deg"]), spec.get("stride_cap_per_subject"), True, True, True)
+                   float(spec["pelvis_pitch_offset_deg"]), spec.get("stride_cap_per_subject"), True, True, True)
     if not tasks:
         raise GaitError("the spec selects no strides")
     rows = _run_tasks(tasks, workers)
@@ -425,10 +433,11 @@ def run_gait(spec: dict, *, model_path=None, snapshot_path=None, meta_path=None,
         "schema": "gait-summary/1", "gait_id": gait_id, **runrecord.git_state(repo),
         "snapshot_sha256": snapshot_sha, "model_sha256": model_sha, "spec_sha256": _sha(spec),
         "dataset_manifest_sha256": hashlib.sha256(manifest_path.read_bytes()).hexdigest(), "env": runrecord.env_versions(),
+        "pitch_mean": spec.get("pitch_mean", "measured"), "trunk": spec.get("trunk", "rigid"), "hybrid_methods": hybrid_methods(spec),
         "retarget_version": retarget.VERSION, "dynamics_version": dynamics.VERSION, "gait_version": VERSION,
         "spec": spec,
         "assumptions": [spec["upper_body"], f"root rule {spec['root_rule']}: the dataset's pelvis translation scaled by leg-length ratio",
-                        f"pelvis tilt: dataset oscillation about a mean set to {spec['pelvis_tilt_offset_deg']} deg relative to the standing pose",
+                        f"pelvis pitch mean: {spec.get('pitch_mean', 'measured')} (anterior-positive offset {spec['pelvis_pitch_offset_deg']} deg); trunk mode: {spec.get('trunk', 'rigid')}",
                         "treadmill: the model walks in place, the belt carries the ground backward; no friction-cone or slip enforcement on the kinematics",
                         "methods A and H take the CoP relative to the subject's pelvis, scaled by leg-length ratio",
                         "joint limits and contacts are disabled in inverse dynamics; frames past a limit are not clipped"],
@@ -462,7 +471,7 @@ def reference_metrics(spec=None, *, model_path=None, manifest_path=None, process
     model_path = Path(model_path or simrun.MODEL_FILE)
     manifest = json.loads(Path(manifest_path or REPO / spec["dataset"]["manifest"]).read_text(encoding="utf-8"))
     tasks = _tasks(spec, manifest, model_path, Path(processed or REPO / spec["dataset"]["processed"]), list(spec["methods"]),
-                   float(spec["smoothing"]["cutoff_hz"]), float(spec["pelvis_tilt_offset_deg"]), spec["stride_cap_per_subject"], True, True, False)
+                   float(spec["smoothing"]["cutoff_hz"]), float(spec["pelvis_pitch_offset_deg"]), spec["stride_cap_per_subject"], True, True, False)
     rows = _run_tasks(tasks, 1)
     out = {}
     for m in rows[0]["agree"]:
@@ -592,7 +601,7 @@ def render_md(rec: dict) -> str:
     s = rec["sensitivity"]
     L += ["", f"## Sensitivity: 95th-percentile peak torque of method B, N m ({s['stride_cap_per_subject']} strides per subject)", ""]
     for speed in rec["results"]:
-        for kind, label in (("cutoff_hz", "smoothing cutoff Hz"), ("tilt_offset_deg", "pelvis-tilt offset deg")):
+        for kind, label in (("cutoff_hz", "smoothing cutoff Hz"), ("pitch_offset_deg", "pelvis-pitch offset deg")):
             vs = list(s[kind])
             L += [f"{speed} m/s, {label}:", "", "| joint | " + " | ".join(vs) + " |", "|---|" + "---|" * len(vs)]
             for j in next(iter(s[kind].values()))[speed]:

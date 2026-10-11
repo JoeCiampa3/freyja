@@ -35,6 +35,14 @@ to 1.45 body weights per subject confirms kg.
   ankle_angle + dorsiflexion. Subtalar and hip rotation signs are not testable with sagittal features (unverified).
 - The dataset has no CoM or ground-reaction data in a body-fixed frame; everything is in the lab frame.
 
+## Pelvis angle meanings (do not trust the coordinate names)
+OpenSim's `pelvis_tilt`, `pelvis_list` and `pelvis_rotation` are rotations about ground z, x and y in the order Rz Rx Ry. The lab z axis
+points along the walking direction (backward), so `pelvis_tilt` is the pelvis ROLL (obliquity), `pelvis_list` is its sagittal PITCH
+(a rotation about the subject's right; anterior pitch is minus `pelvis_list`) and `pelvis_rotation` is YAW, about 90 degrees. The
+manifest reports each subject's static and walking means for roll and pitch separately (`static_pelvis_roll_deg`,
+`static_pelvis_pitch_deg`, `walking_pelvis_roll_deg`, `walking_pelvis_pitch_deg` per speed). The model's hip centres in the pelvis
+frame (`hip_in_pelvis_os_m`) come from `osimxml/<subject>.osim`.
+
 ## Subjects used and speeds
 17 subjects, AB06 to AB21 and AB23, 469 strides at 1.4 m/s and 519 at 1.6 m/s after the acceptance tests in `ingest_spec.yaml`
 (zero rejections in this run; the settle time and 10 s plateau minimum remove the irregular steps at the start of a plateau).
