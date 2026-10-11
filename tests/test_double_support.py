@@ -65,6 +65,13 @@ def test_mutation_shrinking_a_polygon_turns_a_feasible_frame_infeasible():
     assert not shrunk["feasible"]  # the hull of two small patches no longer reaches the point
 
 
+def test_feasibility_is_the_hull_test_and_a_thin_set_between_grid_points_is_still_feasible():
+    tiny_r, tiny_l = box(0.0, -0.3, 0.001, 0.001), box(0.0, 0.3, 0.001, 0.001)
+    s = dynamics.double_support_set(tiny_r, tiny_l, np.array([0.0, 0.1]), n_alpha=3)  # needs alpha = 1/3, between the grid points 0, 0.5, 1
+    assert s["feasible"] and s["solutions"] == [] and s["alpha_range"] is None
+    assert dynamics.share_in_set(tiny_r, tiny_l, np.array([0.0, 0.1]), 1.0 / 3.0)  # and 1/3 does work
+
+
 def test_the_alpha_range_is_bounded_by_where_the_hull_allows():
     p = np.array([0.0, -0.25])  # inside the right foot (y from -0.35 to -0.25): even alpha = 1 is allowed
     s = dynamics.double_support_set(RIGHT, LEFT, p, n_alpha=21)
@@ -116,3 +123,36 @@ def test_the_nominal_and_a_measured_share_are_tested_against_the_feasible_set(mo
     assert dynamics.share_in_set(r.polygons[0], r.polygons[1], r.total_cop[:2], 0.5) is True
     assert dynamics.share_in_set(r.polygons[0], r.polygons[1], r.total_cop[:2] + np.array([0.0, 5.0]), 0.5) is False
     assert far["feasible"]
+
+
+# ---- T3c.4: one outside-distance function for single and double support, with the polygon band as a parameter
+
+def test_polygon_outside_distance_single_and_double_support(model):
+    q = neutral(model)
+    d = mujoco.MjData(model)
+    d.qpos[:] = q
+    mujoco.mj_kinematics(model, d)
+    corners, _ = dynamics._foot_boxes(model, d, mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "foot_right"))
+    front = corners[:, 0].max()  # the box reaches 165 mm ahead of the ankle
+    inside = np.array([0.057, -0.092])
+    ahead = np.array([front + 0.10, -0.092])
+    assert dynamics.polygon_outside_m(model, q, ("foot_right",), inside) == 0.0
+    assert dynamics.polygon_outside_m(model, q, ("foot_right",), ahead) == pytest.approx(0.10, abs=1e-6)
+    assert dynamics.polygon_outside_m(model, q, ("foot_left",), inside) == pytest.approx(0.1343, abs=1e-3)  # the right foot's spot, 134 mm from the left foot's inner edge
+    both = ("foot_right", "foot_left")
+    assert dynamics.polygon_outside_m(model, q, both, np.array([0.057, 0.0])) == 0.0  # between the feet: inside their hull
+    assert dynamics.polygon_outside_m(model, q, both, ahead) == pytest.approx(0.10, abs=1e-6)
+
+
+def test_the_band_decides_which_vertices_make_the_polygon(model):
+    """Rolled onto the toe edge the polygon is a segment; a wider band lets the heel-side vertices in and the polygon grows."""
+    q = neutral(model)
+    d = mujoco.MjData(model)
+    d.qpos[:] = q
+    ankle = model.jnt_qposadr[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "ankle_pdflex_right")]
+    q[ankle] = -0.35  # plantarflexed about 20 degrees: the toe edge is lowest
+    q[2] += 0.05
+    point = np.array([0.057, -0.092])  # over the ankle: behind the toe edge
+    narrow = dynamics.polygon_outside_m(model, q, ("foot_right",), point, band_m=0.010)
+    wide = dynamics.polygon_outside_m(model, q, ("foot_right",), point, band_m=0.200)
+    assert narrow > 0.05 and wide == 0.0

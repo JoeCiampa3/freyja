@@ -143,8 +143,8 @@ def double_support_set(poly_r, poly_l, p, n_alpha=N_SWEEP, n_pr=N_PR) -> dict:
     """The feasible set of double support for the total CoP p: every split alpha (right-foot share) on an n_alpha grid for which
     alpha p_R + (1 - alpha) p_L = p has a solution with p_R in poly_r and p_L in poly_l, and, for each, n_pr points along the segment of
     feasible p_R (extremes found by linear programs along the polygon's longest direction). The set is non-empty exactly when p lies in
-    the convex hull of the two polygons. Returns feasible, outside_m (distance from p to that hull, 0 when inside), alpha_range and
-    solutions [(alpha, p_R, p_L)]; every solution satisfies the weighted-mean identity to round-off."""
+    the convex hull of the two polygons, and `feasible` is that test. Returns feasible, outside_m (distance from p to that hull, 0 when
+    inside), alpha_range and solutions [(alpha, p_R, p_L)]; every solution satisfies the weighted-mean identity to round-off."""
     from scipy.optimize import linprog
     p = np.asarray(p, float)
     hull_margin = margin_in_polygon(metrics.convex_hull(list(poly_r) + list(poly_l)), p)
@@ -186,7 +186,8 @@ def double_support_set(poly_r, poly_l, p, n_alpha=N_SWEEP, n_pr=N_PR) -> dict:
         pts = [lo + (hi - lo) * k / (n_pr - 1) for k in range(n_pr)] if np.linalg.norm(hi - lo) > 1e-12 else [lo]
         for pr in pts:
             sols.append((alpha, pr, (p - alpha * pr) / (1.0 - alpha)))
-    return {"feasible": bool(sols), "outside_m": 0.0, "alpha_range": (min(alphas), max(alphas)) if alphas else None, "solutions": sols}
+    # feasibility is the hull test; the grid only samples the set, so a very thin set can fall between grid points (no solutions listed)
+    return {"feasible": True, "outside_m": 0.0, "alpha_range": (min(alphas), max(alphas)) if alphas else None, "solutions": sols}
 
 
 SEGMENT_TOL_M = HULL_BAND_M  # m. A foot rolling on its heel or toe edge has a segment for a contact polygon; a CoP within this of the
@@ -319,7 +320,7 @@ def solve_frame(model, qpos, qvel, qacc, stance=FEET, feet=FEET, sweep=False, ba
         reasons = [r for r in reasons if "CoP outside" not in r]
         if not ds_feasible:
             reasons.append(f"total CoP outside the hull of the two contact polygons by {1000 * ds_outside:.1f} mm")
-        if sweep and ds_feasible:
+        if sweep and ds_feasible and found["solutions"]:
             ds_solutions = found["solutions"]
             feasible_split = found["alpha_range"]
             ranges = [(torque, torque)] if feasible_nominal else []
@@ -389,3 +390,17 @@ def foot_floor_segments(model, qpos, feet=FEET):
         _, (centre, half, _) = _foot_boxes(model, d, mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, n))
         out[n] = (centre[:2] - half[:2], centre[:2] + half[:2])
     return out
+
+
+def polygon_outside_m(model, qpos, stance, xy, band_m=HULL_BAND_M) -> float:
+    """Distance from the floor point xy to the contact polygon of the stance feet, 0 when inside: the polygon of the one stance foot, or
+    in double support the convex hull of the two feet's polygons. band_m is which vertices form a polygon (the foot box's vertices within
+    band_m of that foot's lowest one), a geometric definition and not a threshold."""
+    d = mujoco.MjData(model)
+    d.qpos[:] = qpos
+    mujoco.mj_kinematics(model, d)
+    pts = []
+    for n in stance:
+        corners, _ = _foot_boxes(model, d, mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, n))
+        pts += contact_polygon(corners, band_m)
+    return max(0.0, -margin_in_polygon(metrics.convex_hull(pts), np.asarray(xy, float)[:2]))
