@@ -34,7 +34,8 @@ def measured_force_model(fp, mass_ratio):
 
 
 def compare(fb, fm):
-    """Per stride: peak vertical ratio, per-hump peak ratios, shape error and correlation (vertical), AP peak-to-peak ratio."""
+    """Per stride: vertical peak ratio, per-hump peak ratios, shape error and correlation, fore-aft peak-to-peak ratio and
+    correlation, of Freyja's force fb against the measured fm (both (101, 3))."""
     ph = np.linspace(0, 1, fb.shape[0])
     z, zm = fb[:, 2], fm[:, 2]
     h1, h2 = ph < 0.3, (ph >= 0.3) & (ph < 0.65)
@@ -43,55 +44,73 @@ def compare(fb, fm):
             "ap_ptp_ratio": np.ptp(fb[:, 0]) / np.ptp(fm[:, 0]), "ap_corr": np.corrcoef(fb[:, 0], fm[:, 0])[0, 1]}
 
 
+THRESH = {"peak_ratio": (0.85, 1.15), "ap_ptp_ratio": (0.85, 1.15), "corr": (0.85, 1.01), "ap_corr": (0.85, 1.01)}
+CUTOFFS = (6.0, 8.0, 10.0, 12.0, 15.0)
+
+
+def flags(stats):
+    return ", ".join(f"{k} {'ok' if lo <= stats[k] <= hi else 'MISS'}" for k, (lo, hi) in THRESH.items())
+
+
 def main():
     model = mujoco.MjModel.from_xml_path(str(REPO / "sim" / "models" / "freyja.xml"))
     stand = leanpose.solve_lean(model, 0.0, FEET).qpos
     mapping = yaml.safe_load((REPO / "sim/scenarios/gait/camargo_mapping.yaml").read_text())
     manifest = json.loads((REPO / "data/camargo2021/manifest.json").read_text())
     mass = float(model.body_mass.sum())
-    print(f"Freyja mass {mass:.2f} kg")
+    print(f"Freyja mass {mass:.2f} kg; root rule pelvis_dataset; review thresholds: peak ratios 0.85 to 1.15, correlations >= 0.85")
     for speed in ("1.4", "1.6"):
-        rows = {r: [] for r in retarget.ROOT_RULES}
-        curves = {r: [] for r in retarget.ROOT_RULES}
-        meas = []
-        subj = []
+        like = {c: [] for c in CUTOFFS}   # Freyja vs measured filtered identically
+        raw = {c: [] for c in CUTOFFS}    # Freyja vs measured unfiltered
+        meas_raw = {c: [] for c in CUTOFFS}  # filtered measured peak / raw measured peak
+        curves = {"measured_raw": [], "measured_6Hz": [], "freyja_6Hz": []}
+        subj, legr = [], []
         for s, d in manifest["subjects"].items():
             z = np.load(REPO / f"data/camargo2021/processed/{s}.npz")
             ratio = retarget.leg_length_ratio(model, d["height_m"])
-            tilt0 = float(z["static_pelvis_tilt_deg"])
             for i in range(len(z[f"{speed}_duration_s"])):
+                T = float(z[f"{speed}_duration_s"][i])
                 fm = measured_force_model(z[f"{speed}_fp"][i], mass / d["mass_kg"])
-                meas.append(fm); subj.append(s)
-                for rule in retarget.ROOT_RULES:
-                    c = retarget.Cycle(model, mapping, stand, z[f"{speed}_ik"][i], float(z[f"{speed}_duration_s"][i]), ratio,
-                                       static_tilt_deg=tilt0, root_rule=rule)
+                subj.append(s); legr.append(ratio)
+                for cut in CUTOFFS:
+                    c = retarget.Cycle(model, mapping, stand, z[f"{speed}_ik"][i], T, ratio, cutoff_hz=cut)
                     q, qd, qdd = c.grid()
                     fb = np.array([dynamics.inverse_frame(model, q[k], qd[k], qdd[k])[:3] for k in range(q.shape[0])])
-                    rows[rule].append(compare(fb, fm)); curves[rule].append(fb)
-        subj = np.array(subj)
+                    fmf = retarget.filter_cycle(fm, T, cut)
+                    like[cut].append(compare(fb, fmf)); raw[cut].append(compare(fb, fm))
+                    meas_raw[cut].append(fmf[:, 2].max() / fm[:, 2].max())
+                    if cut == 6.0:
+                        curves["measured_raw"].append(fm); curves["measured_6Hz"].append(fmf); curves["freyja_6Hz"].append(fb)
+        subj, legr = np.array(subj), np.array(legr)
         keep = ~np.isin(subj, OFFSET_SUBJECTS)
         print(f"\n== {speed} m/s, {len(subj)} strides ({keep.sum()} without {OFFSET_SUBJECTS}) ==")
-        for rule in retarget.ROOT_RULES:
-            print(f"-- root rule {rule}")
+        for name, rows in (("LIKE FOR LIKE (measured filtered identically), 6 Hz", like[6.0]), ("RAW measured, 6 Hz kinematics", raw[6.0])):
+            print(f"-- {name}")
             for label, mask in (("all", np.ones_like(keep)), ("without AB13, AB15", keep)):
-                line = []
-                for k in rows[rule][0]:
-                    v = np.array([r[k] for r in rows[rule]])[mask]
-                    line.append(f"{k} {v.mean():.3f} (sd {v.std():.3f})")
-                print(f"  {label:20s} " + "; ".join(line))
-        meas = np.array(meas)
-        print("-- mean vertical force by phase (N), measured vs each rule:")
+                st = {k: float(np.array([r[k] for r in rows])[mask].mean()) for k in rows[0]}
+                print(f"  {label:20s} " + "; ".join(f"{k} {v:.3f}" for k, v in st.items()))
+                if label == "all":
+                    print(f"  {'':20s} thresholds: {flags(st)}")
+        print("-- ratio versus cutoff (all strides; measured filtered identically at each cutoff)")
+        print("  cutoff  meas_filtered/raw_peak  like:peak_ratio  hump1  hump2  corr   ap_ptp_ratio  ap_corr  | raw:peak_ratio")
+        for cut in CUTOFFS:
+            m = {k: np.mean([r[k] for r in like[cut]]) for k in like[cut][0]}
+            print(f"  {cut:5.0f}   {np.mean(meas_raw[cut]):.3f}                  {m['peak_ratio']:.3f}           {m['hump1_ratio']:.3f}  {m['hump2_ratio']:.3f}  {m['corr']:.3f}  {m['ap_ptp_ratio']:.3f}         {m['ap_corr']:.3f}    | {np.mean([r['peak_ratio'] for r in raw[cut]]):.3f}")
+        print("-- mean force by phase (N)")
         idx = list(range(0, 101, 10))
-        print("  phase     " + " ".join(f"{i:6d}" for i in idx))
-        print("  measured  " + " ".join(f"{meas[:, i, 2].mean():6.0f}" for i in idx))
-        for rule in retarget.ROOT_RULES:
-            cv = np.array(curves[rule])
-            print(f"  {rule[:9]:9s} " + " ".join(f"{cv[:, i, 2].mean():6.0f}" for i in idx))
-        print("-- mean AP force by phase (N):")
-        print("  measured  " + " ".join(f"{meas[:, i, 0].mean():6.0f}" for i in idx))
-        for rule in retarget.ROOT_RULES:
-            cv = np.array(curves[rule])
-            print(f"  {rule[:9]:9s} " + " ".join(f"{cv[:, i, 0].mean():6.0f}" for i in idx))
+        print("  phase          " + " ".join(f"{i:6d}" for i in idx))
+        for comp, nm in ((2, "vertical"), (0, "fore-aft")):
+            for key in ("measured_raw", "measured_6Hz", "freyja_6Hz"):
+                cv = np.array(curves[key])
+                print(f"  {nm[:4]} {key:13s}" + " ".join(f"{cv[:, i, comp].mean():6.0f}" for i in idx))
+        # diagnostic 2: does the fore-aft shortfall per subject track the leg-length ratio?
+        per = {}
+        for s, r, row in zip(subj, legr, like[6.0]):
+            per.setdefault(s, []).append((r, row["ap_ptp_ratio"]))
+        xs = np.array([np.mean([a for a, _ in v]) for v in per.values()])
+        ys = np.array([np.mean([b for _, b in v]) for v in per.values()])
+        print(f"-- diagnostic: per-subject AP peak-to-peak ratio (6 Hz, like for like) vs leg-length ratio: corr {np.corrcoef(xs, ys)[0, 1]:.2f}, "
+              f"slope {np.polyfit(xs, ys, 1)[0]:.2f} per unit ratio; subject range {ys.min():.2f} to {ys.max():.2f}")
 
 
 if __name__ == "__main__":

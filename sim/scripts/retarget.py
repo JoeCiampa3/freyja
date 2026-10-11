@@ -109,12 +109,22 @@ def _detrend_periodic(x):
     return (x - gap * ph)[:N_UNIQUE], gap
 
 
+def filter_cycle(x, T, cutoff_hz=CUTOFF_HZ):
+    """x (101, c) over one stride of duration T: the same drift removal and zero-lag low-pass the kinematics get, returned on
+    101 points (the last repeats the first). For comparing a measured signal with kinematics-derived ones like for like."""
+    x = np.asarray(x, float)
+    x = x[:, None] if x.ndim == 1 else x
+    xd, _ = _detrend_periodic(x)
+    xf = _lowpass_periodic(xd, N_UNIQUE / T, cutoff_hz)
+    return np.vstack([xf, xf[:1]])
+
+
 class Cycle:
     """One stride as a continuous periodic function of time. `ik` is (101, n_ik) in the dataset's channels and units, `T` the
     stride duration in seconds, `scale` the leg-length ratio applied to the pelvis translation."""
 
-    def __init__(self, model, mapping, stand_qpos, ik, T, scale, cutoff_hz=CUTOFF_HZ, static_tilt_deg=0.0,
-                 tilt_offset_deg=0.0, root_rule="foot_min"):
+    def __init__(self, model, mapping, stand_qpos, ik, T, scale, cutoff_hz=CUTOFF_HZ,
+                 tilt_offset_deg=0.0, root_rule="pelvis_dataset"):
         if root_rule not in ROOT_RULES:
             raise ValueError(f"root_rule must be one of {ROOT_RULES}")
         self.root_rule = root_rule
@@ -130,9 +140,10 @@ class Cycle:
             self.joint_adr.append(_hinge_adr(model, joint))
             series.append(np.deg2rad(spec["sign"] * col(spec["dataset"])))
         eul = [np.deg2rad(col(n)) for n in mapping["frame"]["pelvis_euler"]]
-        # pelvis tilt is an excursion from the subject's standing value, added to the model's standing pelvis orientation
-        # (the model's zero and OpenSim's zero need not coincide). tilt_offset_deg is the sensitivity knob.
-        eul[0] = eul[0] - np.deg2rad(static_tilt_deg) + np.deg2rad(tilt_offset_deg)
+        # Pelvis tilt: the dataset supplies only the oscillation. The cycle-mean tilt is removed and the mean is set to the
+        # design parameter tilt_offset_deg (default 0 = the standing pose's pelvis orientation from stand_static). The model's
+        # zero and OpenSim's zero need not coincide, and the subject's static tilt is standing posture, not an offset.
+        eul[0] = eul[0] - eul[0][:N_UNIQUE].mean() + np.deg2rad(tilt_offset_deg)
         self.R_stand = np.zeros(9)
         mujoco.mju_quat2Mat(self.R_stand, self.stand[3:7])
         self.R_stand = self.R_stand.reshape(3, 3)

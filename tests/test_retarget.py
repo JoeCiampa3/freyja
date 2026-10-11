@@ -82,15 +82,18 @@ def test_both_root_rules_put_a_standing_foot_on_the_floor(model, stand, rule):
     assert abs(c.lowest_foot_z(c.eval(0.4)[0])) < 1e-9
 
 
-def test_pelvis_tilt_is_an_excursion_from_the_static_value(model, stand):
+def test_pelvis_tilt_mean_is_the_design_parameter_and_only_the_oscillation_comes_from_the_dataset(model, stand):
     ik = standing_ik()
-    ik[:, ic.IK_CHANNELS.index("pelvis_tilt")] = 7.0
-    same = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0, static_tilt_deg=7.0)
-    assert rot_diff_rad(same.eval(0.3)[0][3:7], stand[3:7]) < 1e-9  # no excursion: the standing pose, whatever the absolute tilt
-    five = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0, static_tilt_deg=2.0)
-    assert rot_diff_rad(five.eval(0.3)[0][3:7], stand[3:7]) == pytest.approx(np.deg2rad(5.0), abs=1e-9)
-    off = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0, static_tilt_deg=7.0, tilt_offset_deg=-5.0)
+    ik[:, ic.IK_CHANNELS.index("pelvis_tilt")] = 7.0  # any constant tilt is removed: the standing orientation results
+    flat = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0)
+    assert rot_diff_rad(flat.eval(0.3)[0][3:7], stand[3:7]) < 1e-9
+    off = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0, tilt_offset_deg=-5.0)
     assert rot_diff_rad(off.eval(0.3)[0][3:7], stand[3:7]) == pytest.approx(np.deg2rad(5.0), abs=1e-9)
+    # an oscillation survives with its amplitude
+    ik[:, ic.IK_CHANNELS.index("pelvis_tilt")] = 7.0 + 2.0 * np.sin(2 * np.pi * np.linspace(0, 1, 101))
+    osc = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0)
+    angles = [rot_diff_rad(osc.eval(t)[0][3:7], stand[3:7]) for t in np.linspace(0, 1, 50, endpoint=False)]
+    assert max(angles) == pytest.approx(np.deg2rad(2.0) * 0.99, rel=0.05)  # 1 s stride at 100 Hz sampling, 6 Hz cutoff: ~unattenuated
 
 
 def test_wrap_gap_is_reported_per_joint(model, stand):
@@ -198,3 +201,14 @@ def test_limit_fraction_counts_frames_outside_the_model_range(model, cycle):
     adr = model.jnt_qposadr[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "knee_right")]
     q[:, adr] = model.jnt_range[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "knee_right")][1] + 0.1
     assert retarget.limit_fraction(model, q)["knee_right"] == 1.0
+
+
+def test_filter_cycle_passes_slow_content_and_removes_fast_content():
+    ph = np.linspace(0, 1, 101)
+    T = 1.0
+    slow = np.sin(2 * np.pi * 1.0 * ph * T)          # 1 Hz
+    fast = np.sin(2 * np.pi * 30.0 * ph * T)         # 30 Hz
+    assert np.abs(retarget.filter_cycle(slow, T)[:, 0] - slow).max() < 0.01
+    assert np.abs(retarget.filter_cycle(fast, T)[:, 0]).max() < 0.01
+    out = retarget.filter_cycle(np.full(101, 3.0), T)
+    assert np.allclose(out, 3.0) and out.shape == (101, 1)
