@@ -48,13 +48,13 @@ SENSORS = ("conditions", "ik", "id", "fp")
 
 # ------------------------------------------------------------------ locations and tables
 
-def raw_dir() -> Path:
+def raw_dir(config_path: Path | None = None) -> Path:
     """The raw folder: $CAMARGO_RAW_DIR, else the `camargo_raw_dir` key of sim/local_config.json (read, never written),
     else data/camargo2021/raw (gitignored)."""
     env = os.environ.get("CAMARGO_RAW_DIR")
     if env:
         return Path(env)
-    cfg = REPO / "sim" / "local_config.json"
+    cfg = Path(config_path) if config_path else REPO / "sim" / "local_config.json"
     if cfg.exists():
         try:
             key = json.loads(cfg.read_text()).get("camargo_raw_dir")
@@ -168,6 +168,13 @@ def ingest_subject(raw: Path, subject: str, spec: dict) -> dict:
            for s in spec["speeds_mps"]}
     rejects = {s: {} for s in spec["speeds_mps"]}
     files = {}
+    # the subject's standing pelvis tilt from the static trial(s): walking tilt is applied as an excursion from this
+    static_tilts = []
+    for n in sorted(x for x in names if re.search(r"/static/ik/.*\.mat$", x)):
+        blob = zf.read(n)
+        files[f"{subject}/{Path(n).stem}/ik"] = hashlib.sha256(blob).hexdigest()
+        static_tilts.append(float(np.mean(read_table(blob)["pelvis_tilt"])))
+    static_tilt = float(np.mean(static_tilts)) if static_tilts else None
 
     def reject(s, why):
         rejects[s][why] = rejects[s].get(why, 0) + 1
@@ -242,7 +249,8 @@ def ingest_subject(raw: Path, subject: str, spec: dict) -> dict:
                       "fp": np.array(d["fp"]).reshape(n, 2, n_ph, len(FP_CHANNELS)),
                       **{k: np.array(d[k]) for k in ("t0", "duration_s", "toe_off_phase", "contra_hs_phase", "contra_to_phase", "trial")}}
     return {"subject": subject, "mass_kg": info["mass_kg"], "height_m": info["height_m"], "sex": info["sex"], "age": info["age"],
-            "strides": strides, "rejects": rejects, "files": files}
+            "strides": strides, "rejects": rejects, "files": files,
+            "static_pelvis_tilt_deg": static_tilt}
 
 
 def model_angles(strides: dict, mapping: dict) -> dict:
@@ -272,9 +280,11 @@ def main(argv=None) -> int:
             for k, v in d.items():
                 if k != "n":
                     arrays[f"{s}_{k}"] = v
+        arrays["static_pelvis_tilt_deg"] = np.array(np.nan if res["static_pelvis_tilt_deg"] is None else res["static_pelvis_tilt_deg"])
         np.savez(out_dir / f"{subject}.npz", **arrays)
         manifest["subjects"][subject] = {
             "mass_kg": res["mass_kg"], "height_m": res["height_m"], "sex": res["sex"], "age": res["age"],
+            "static_pelvis_tilt_deg": res["static_pelvis_tilt_deg"],
             "strides": {str(s): d["n"] for s, d in res["strides"].items()},
             "rejected": {str(s): res["rejects"][s] for s in res["rejects"]}}
         manifest["files_sha256"].update(res["files"])

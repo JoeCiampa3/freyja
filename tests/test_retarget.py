@@ -72,8 +72,33 @@ def test_standing_input_gives_zero_velocity_and_flat_feet(model, stand):
     assert np.abs(qd).max() < 1e-9 and np.abs(qdd).max() < 1e-7
     low = c.lowest_foot_z(q)
     assert abs(low) < 1e-9  # the root rule puts the lowest foot point on the floor
-    # the pelvis orientation maps the dataset's 90 degree lab baseline to an upright, forward-facing pelvis
-    assert rot_diff_rad(q[3:7], np.array([1.0, 0, 0, 0])) < 1e-9
+    # the dataset's 90 degree lab baseline maps to a forward-facing pelvis, i.e. exactly the model's standing orientation
+    assert rot_diff_rad(q[3:7], stand[3:7]) < 1e-9
+
+
+@pytest.mark.parametrize("rule", retarget.ROOT_RULES)
+def test_both_root_rules_put_a_standing_foot_on_the_floor(model, stand, rule):
+    c = retarget.Cycle(model, MAPPING, stand, standing_ik(), 1.0, scale=0.9, root_rule=rule)
+    assert abs(c.lowest_foot_z(c.eval(0.4)[0])) < 1e-9
+
+
+def test_pelvis_tilt_is_an_excursion_from_the_static_value(model, stand):
+    ik = standing_ik()
+    ik[:, ic.IK_CHANNELS.index("pelvis_tilt")] = 7.0
+    same = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0, static_tilt_deg=7.0)
+    assert rot_diff_rad(same.eval(0.3)[0][3:7], stand[3:7]) < 1e-9  # no excursion: the standing pose, whatever the absolute tilt
+    five = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0, static_tilt_deg=2.0)
+    assert rot_diff_rad(five.eval(0.3)[0][3:7], stand[3:7]) == pytest.approx(np.deg2rad(5.0), abs=1e-9)
+    off = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0, static_tilt_deg=7.0, tilt_offset_deg=-5.0)
+    assert rot_diff_rad(off.eval(0.3)[0][3:7], stand[3:7]) == pytest.approx(np.deg2rad(5.0), abs=1e-9)
+
+
+def test_wrap_gap_is_reported_per_joint(model, stand):
+    ik = standing_ik()
+    ik[:, ic.IK_CHANNELS.index("knee_angle_r")] = -np.linspace(0, 12.0, 101)  # a 12 degree drift over the stride
+    gaps = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0).wrap_gap_deg()
+    assert abs(abs(gaps["knee_right"]) - 12.0) < 1e-9
+    assert abs(gaps["knee_left"]) < 1e-12
 
 
 def test_held_joints_stay_at_the_standing_pose(model, stand, cycle):

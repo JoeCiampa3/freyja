@@ -72,6 +72,21 @@ def test_steady_plateaus_split_on_speed_change():
     assert ic.steady_segments(t, sp, target=1.6, tol=0.01, ptp=0.001)[0][0] > 11.9
 
 
+# ---------- raw folder resolution ----------
+
+def test_raw_dir_order_env_then_config_key_then_default(tmp_path, monkeypatch):
+    cfg = tmp_path / "local_config.json"
+    cfg.write_text('{"camargo_raw_dir": "/from/config"}')
+    monkeypatch.delenv("CAMARGO_RAW_DIR", raising=False)
+    assert ic.raw_dir(cfg) == Path("/from/config")
+    monkeypatch.setenv("CAMARGO_RAW_DIR", "/from/env")
+    assert ic.raw_dir(cfg) == Path("/from/env")
+    monkeypatch.delenv("CAMARGO_RAW_DIR")
+    cfg.write_text('{"sheet_key": "x"}')
+    assert ic.raw_dir(cfg) == REPO / "data" / "camargo2021" / "raw"
+    assert ic.raw_dir(tmp_path / "missing.json") == REPO / "data" / "camargo2021" / "raw"
+
+
 # ---------- gait features on the sign mapping, with a mutation ----------
 
 def synthetic_stride_model_angles():
@@ -170,3 +185,11 @@ def test_sign_mapping_passes_the_gait_feature_checks_and_one_flip_fails(ab06):
         bad = dict(ang)
         bad[joint] = -ang[joint]
         assert gaitfeatures.check_all(bad), f"flipped {joint} not detected"
+
+
+@data_needed
+def test_static_standing_pelvis_tilt_is_read(ab06):
+    tilt = ab06["static_pelvis_tilt_deg"]
+    assert tilt is not None and -15 < tilt < 15  # degrees; the T-pose tilt of a standing subject
+    walking = ab06["strides"][1.4]["ik"][:, :, ic.IK_CHANNELS.index("pelvis_tilt")].mean()
+    assert abs(walking - tilt) < 10

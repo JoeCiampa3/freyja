@@ -49,6 +49,9 @@ def _hinge_adr(model, name):
     return int(model.jnt_qposadr[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, name)])
 
 
+ROOT_RULES = ("foot_min", "pelvis_dataset")
+
+
 def leg_length_ratio(model, height_m: float) -> float:
     """Freyja's hip-to-ankle length at the neutral pose over the subject's estimated one (SUBJECT_LEG_FRACTION x stature)."""
     d = mujoco.MjData(model)
@@ -110,7 +113,11 @@ class Cycle:
     """One stride as a continuous periodic function of time. `ik` is (101, n_ik) in the dataset's channels and units, `T` the
     stride duration in seconds, `scale` the leg-length ratio applied to the pelvis translation."""
 
-    def __init__(self, model, mapping, stand_qpos, ik, T, scale, cutoff_hz=CUTOFF_HZ):
+    def __init__(self, model, mapping, stand_qpos, ik, T, scale, cutoff_hz=CUTOFF_HZ, static_tilt_deg=0.0,
+                 tilt_offset_deg=0.0, root_rule="foot_min"):
+        if root_rule not in ROOT_RULES:
+            raise ValueError(f"root_rule must be one of {ROOT_RULES}")
+        self.root_rule = root_rule
         self.model, self.T, self.scale, self.cutoff_hz = model, float(T), float(scale), float(cutoff_hz)
         self._work = mujoco.MjData(model)
         self.stand = np.asarray(stand_qpos, float).copy()
@@ -123,10 +130,16 @@ class Cycle:
             self.joint_adr.append(_hinge_adr(model, joint))
             series.append(np.deg2rad(spec["sign"] * col(spec["dataset"])))
         eul = [np.deg2rad(col(n)) for n in mapping["frame"]["pelvis_euler"]]
+        # pelvis tilt is an excursion from the subject's standing value, added to the model's standing pelvis orientation
+        # (the model's zero and OpenSim's zero need not coincide). tilt_offset_deg is the sensitivity knob.
+        eul[0] = eul[0] - np.deg2rad(static_tilt_deg) + np.deg2rad(tilt_offset_deg)
+        self.R_stand = np.zeros(9)
+        mujoco.mju_quat2Mat(self.R_stand, self.stand[3:7])
+        self.R_stand = self.R_stand.reshape(3, 3)
         tx, tz = col("pelvis_tx"), col("pelvis_tz")
         pos_model = (self.lab_to_model @ np.stack([tx, col("pelvis_ty"), tz])).T  # lab -> model axes
         xy = scale * pos_model[:, :2]
-        X = np.column_stack(series + eul + [xy])
+        X = np.column_stack(series + eul + [xy, scale * col("pelvis_ty")])
         Xd, self.wrap_gap = _detrend_periodic(X)
         fs = N_UNIQUE / self.T
         if cutoff_hz >= fs / 2:
@@ -136,8 +149,16 @@ class Cycle:
         self._t_grid = np.linspace(0.0, self.T, N_UNIQUE + 1)
         self._spl = self._spline(Xf)
         # root height from the minimum rule on the filtered kinematics, then filtered like the rest
-        zraw = np.array([-self._lowest_z_at(self._t_grid[k]) for k in range(N_UNIQUE)])[:, None]
-        self._zspl = self._spline(_lowpass_periodic(zraw, fs, cutoff_hz))
+        if root_rule == "foot_min":
+            zraw = np.array([-self._lowest_z_at(self._t_grid[k]) for k in range(N_UNIQUE)])[:, None]
+            self._zspl = self._spline(_lowpass_periodic(zraw, fs, cutoff_hz))
+        else:
+            # the dataset's own pelvis height (already filtered above), shifted so the lowest foot point of the whole cycle
+            # touches z = 0 and nothing penetrates by more than the filter allows
+            zs = Xf[:, self._nj + 5][:, None]
+            self._zspl = self._spline(zs)
+            lows = np.array([self._lowest_z_at(self._t_grid[k]) for k in range(N_UNIQUE)])  # with the unshifted height
+            self._zspl = self._spline(zs - lows.min())
 
     def _spline(self, X):
         Xc = np.vstack([X, X[:1]])
@@ -158,7 +179,7 @@ class Cycle:
             q[adr], qd[dof], qdd[dof] = v[i], d1[i], d2[i]
         nj = self._nj
         E, dE, ddE = euler_zxy(v[nj:nj + 3], d1[nj:nj + 3], d2[nj:nj + 3])
-        Rm = self.lab_to_model @ E @ self.B.T
+        Rm = self.R_stand @ self.lab_to_model @ E @ self.B.T
         quat = np.zeros(4)
         mujoco.mju_mat2Quat(quat, Rm.ravel())
         w_os = _vee(E.T @ dE)
@@ -201,9 +222,17 @@ class Cycle:
         return self._corner_z(q, foot)
 
     def _lowest_z_at(self, t):
-        v, d1, d2, z = self._state(t, with_z=False)
+        if self.root_rule == "foot_min":
+            v, d1, d2, z = self._state(t, with_z=False)
+        else:
+            v, d1, d2, z = self._state(t)
         q, _, _ = self._assemble(v, d1, d2, z)
         return self._corner_z(q)
+
+    def wrap_gap_deg(self):
+        """Per mapped joint, the drift removed between the first and last sample of the stride (degrees), keyed by model joint."""
+        names = [mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_JOINT, int(np.searchsorted(self.model.jnt_qposadr, a))) for a in self.joint_adr]
+        return {n: float(np.degrees(g)) for n, g in zip(names, self.wrap_gap[:self._nj])}
 
 
 # ------------------------------------------------------------------ reporting (nothing here changes the kinematics)
