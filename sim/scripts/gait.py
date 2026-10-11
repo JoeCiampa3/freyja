@@ -431,6 +431,64 @@ def run_gait(spec: dict, *, model_path=None, snapshot_path=None, meta_path=None,
     return GaitResult(record, jp, mp)
 
 
+# ------------------------------------------------------------------------------ baseline (T6)
+
+BENCHMARK_FILE = REPO / "sim" / "benchmarks" / "walk_reference.json"
+# The check must run in seconds, so it reproduces a fixed small subset of the full run: the first strides of one subject at one
+# speed, all four methods. The full run's agreement table is stored beside it for information.
+REFERENCE_SUBSET = {"subjects": ["AB06"], "speeds_mps": [1.4], "stride_cap_per_subject": 3}
+REFERENCE_TOL = 1e-6  # relative to the larger magnitude, floor 1e-9: the computation is deterministic, this only absorbs round-off
+
+
+def reference_metrics(spec=None, *, model_path=None, manifest_path=None, processed=None) -> dict:
+    """Agreement with the dataset's moments (mean over the subset's strides) for each method and joint, on REFERENCE_SUBSET with the
+    walk_treadmill spec's rules. Pure function of the model, the processed data and the spec."""
+    spec = dict(spec or load_spec("walk_treadmill"))
+    spec.update(REFERENCE_SUBSET)
+    model_path = Path(model_path or simrun.MODEL_FILE)
+    manifest = json.loads(Path(manifest_path or REPO / spec["dataset"]["manifest"]).read_text(encoding="utf-8"))
+    tasks = _tasks(spec, manifest, model_path, Path(processed or REPO / spec["dataset"]["processed"]), list(spec["methods"]),
+                   float(spec["smoothing"]["cutoff_hz"]), float(spec["pelvis_tilt_offset_deg"]), spec["stride_cap_per_subject"], True, True, False)
+    rows = _run_tasks(tasks, 1)
+    out = {}
+    for m in rows[0]["agree"]:
+        out[m] = {j: {k: float(np.mean([r["agree"][m][j][k] for r in rows])) for k in ("rms_pct_ptp", "peak_diff", "corr")}
+                  for j in rows[0]["agree"][m]}
+    return out
+
+
+def compare_reference(baseline: dict, current: dict, tol=REFERENCE_TOL) -> list:
+    """Lines naming every metric that differs by more than tol (relative to the larger magnitude, floor 1e-9), or is missing."""
+    diffs = []
+    for m in sorted(set(baseline) | set(current)):
+        for j in sorted(set(baseline.get(m, {})) | set(current.get(m, {}))):
+            for k in sorted(set(baseline.get(m, {}).get(j, {})) | set(current.get(m, {}).get(j, {}))):
+                a, b = baseline.get(m, {}).get(j, {}).get(k), current.get(m, {}).get(j, {}).get(k)
+                if a is None or b is None:
+                    diffs.append(f"{m}/{j}/{k}: missing in {'baseline' if a is None else 'current'}")
+                elif abs(a - b) > tol * max(abs(a), abs(b), 1e-9 / tol):
+                    diffs.append(f"{m}/{j}/{k}: baseline {a:.9g}, now {b:.9g}")
+    return diffs
+
+
+def write_baseline(record: dict, path=None, *, model_path=None) -> Path:
+    """sim/benchmarks/walk_reference.json: the full run's agreement metrics (for information) and the reproducible subset's."""
+    path = Path(path or BENCHMARK_FILE)
+    spec = record["spec"]
+    body = {
+        "generated_by": "sim/scripts/gait.py --write-baseline", "inputs": ["sim/scenarios/gait/walk_treadmill.yaml", "data/camargo2021/manifest.json", "sim/models/freyja.xml"],
+        "schema": "walk-reference/1", "snapshot_sha256": record["snapshot_sha256"], "model_sha256": record["model_sha256"],
+        "spec_sha256": record["spec_sha256"], "git_commit": record["git_commit"], "git_dirty": record["git_dirty"], "gait_id": record["gait_id"],
+        "dataset_manifest_sha256": record["dataset_manifest_sha256"],
+        "agreement_full_run": {sp: d["agreement"] for sp, d in record["results"].items()},
+        "reproduction": {"subset": REFERENCE_SUBSET, "tolerance_rel": REFERENCE_TOL, "metrics": reference_metrics(spec, model_path=model_path)},
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(runrecord.dumps(_round(body)))
+    return path
+
+
 # ------------------------------------------------------------------------------ GAIT.md
 
 def _f(x, nd=1):
@@ -537,6 +595,7 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="fy gait", description="Compute walking joint loads on Freyja from the Camargo dataset.")
     ap.add_argument("spec", help="name of a file in sim/scenarios/gait/ (without .yaml)")
     ap.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 2) - 1))
+    ap.add_argument("--write-baseline", action="store_true", help="also write sim/benchmarks/walk_reference.json from this run")
     ap.add_argument("--gait-dir", help=argparse.SUPPRESS)
     args = ap.parse_args(argv)
     try:
@@ -544,6 +603,8 @@ def main(argv=None) -> int:
     except (GaitError, simrun.StaleModelError, runrecord.RecordError) as e:
         print(f"gait: {e}", file=sys.stderr)
         return 2
+    if args.write_baseline:
+        print(f"  baseline: {write_baseline(result.record)}")
     n = sum(r["n_strides"] for r in result.record["results"].values())
     print(f"{result.record['gait_id']}: {n} subject-strides")
     print(f"  {result.md_path}")
