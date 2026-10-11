@@ -229,6 +229,78 @@ class HoldPoseTorqueMatchesKinematics(unittest.TestCase):
         self.assertLessEqual(abs(measured - expected), max(0.05 * abs(expected), 0.2))
 
 
+class StandStatic(unittest.TestCase):
+    """The gain-independent standing loads (Stage 1c T3)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = tempfile.TemporaryDirectory()
+        cls.result = simrun.run_scenario(simrun.load_scenario("stand_static"), runs_dir=cls.tmp.name, now=NOW)
+        cls.rec = cls.result.record
+        cls.diag = cls.rec["diagnostics"]
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmp.cleanup()
+
+    def test_pose_block_is_identical_to_hold_pose(self):
+        self.assertEqual(simrun.load_scenario("stand_static")["pose"], simrun.load_scenario("hold_pose")["pose"])
+
+    def test_record_is_static_valid_and_feasible(self):
+        rr.validate(self.rec)
+        self.assertEqual((self.rec["support"], self.rec["outcome"]), ("ground_wrench", "completed"))
+        self.assertEqual(self.rec["duration_s"], 0.0)
+        self.assertEqual(self.rec["window"], {"start_s": 0.0, "end_s": 0.0})
+        self.assertEqual(self.diag["feasible"], 1.0)
+        self.assertNotIn("findings", self.rec)
+
+    def test_peak_equals_rms_and_speed_and_power_are_zero(self):
+        self.assertEqual(len(self.rec["joints"]), 31)
+        for name, j in self.rec["joints"].items():
+            self.assertEqual(j["torque_peak_nm"], j["torque_rms_nm"], name)
+            self.assertEqual((j["speed_peak_rad_s"], j["power_peak_w"]), (0.0, 0.0), name)
+            self.assertEqual(j["torque_source"], "inverse_dynamics")
+
+    def test_equilibrium_residual_vanishes_and_the_forces_sum_to_weight(self):
+        weight = self.diag["body_weight_n"]
+        self.assertLess(self.diag["equilibrium_residual_force_n"], 1e-9 * weight)
+        self.assertLess(self.diag["equilibrium_residual_moment_nm"], 1e-9 * weight)
+        self.assertAlmostEqual(self.diag["force_right_n"] + self.diag["force_left_n"], weight, delta=1e-9 * weight)
+        self.assertAlmostEqual(self.diag["cop_x_rel_ankle_m"], 0.0, delta=1e-9)
+
+    def test_ankle_torque_at_com_over_the_ankle_is_the_feet_weight_only(self):
+        # CoM directly over the ankle: the ground reaction has no moment about it, only the weight of the foot remains
+        a = self.rec["joints"]["ankle_pdflex_right"]["torque_peak_nm"]
+        self.assertLess(a, 0.5)
+        self.assertGreater(self.rec["balance"]["support_margin_min_m"], 0.02)
+
+    def test_two_runs_give_identical_records_apart_from_the_id(self):
+        again = simrun.run_scenario(simrun.load_scenario("stand_static"), runs_dir=self.tmp.name, now=dt.datetime(2026, 10, 12, 14, 31)).record
+        a, b = dict(self.rec), dict(again)
+        a.pop("run_id"), b.pop("run_id")
+        self.assertEqual(rr.dumps(a), rr.dumps(b))
+
+    def test_an_infeasible_pose_is_recorded_with_its_reason(self):
+        scn = simrun.apply_overrides(simrun.load_scenario("stand_static"), ["pose.com_x_rel_ankle_m=0.2"])  # beyond the toe edge at 0.165
+        with tempfile.TemporaryDirectory() as d:
+            rec = simrun.run_scenario(scn, runs_dir=d, now=NOW).record
+        rr.validate(rec)
+        self.assertEqual(rec["outcome"], "fell")
+        self.assertEqual(rec["diagnostics"]["feasible"], 0.0)
+        self.assertLess(rec["balance"]["support_margin_min_m"], 0.0)
+        self.assertTrue(any("support polygon" in f for f in rec["findings"]))
+
+    def test_static_scenarios_need_their_pairing_and_a_pose(self):
+        base = simrun.load_scenario("stand_static")
+        for bad in ({**base, "support": "ground"}, {**base, "duration_s": 1.0}, {k: v for k, v in base.items() if k != "pose"},
+                    {**base, "window": {"start_s": 0.0, "end_s": 1.0}}):
+            with self.assertRaises(simrun.ScenarioError):
+                simrun.check_scenario(bad)
+
+    def test_hold_pose_is_verification_only(self):
+        self.assertIs(simrun.load_scenario("hold_pose")["envelope"], False)
+
+
 class ViewerSetup(unittest.TestCase):
     """What `fy view` does before it opens a window, run headless."""
 

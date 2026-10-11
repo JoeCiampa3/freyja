@@ -23,6 +23,10 @@ options:
   integrator: euler
   verify_inverse: true
 pose: {com_x_rel_ankle_m: 0.0}
+# Verification only: this hold is a PD controller, so every torque it reports is kp times a sag angle at an equilibrium
+# about 11 mm behind the commanded pose, and the standing loads depend on the gains (Stage 1c brief). The load envelope
+# takes its standing loads from stand_static instead.
+envelope: false
 fall: {pelvis_height_fraction: 0.6, trunk_tilt_deg: 45.0}
 params:
   kp_nm_per_rad: 2000.0

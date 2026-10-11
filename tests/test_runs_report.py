@@ -86,18 +86,29 @@ class Envelope(unittest.TestCase):
         for word in ("sweep", "hold", "gait", "stairs", "sit-to-stand", "not a complete sizing basis"):
             self.assertIn(word, head)
 
-    def test_lists_joints_with_no_rom_data_and_says_their_row_is_the_standing_hold_only(self):
+    def test_lists_joints_with_no_rom_data_and_says_their_row_is_the_static_solve_only(self):
         sweep = summary("run.20261002-0900-sweep", "sweep", {"hip": joint()}, skipped={"lsj_fe": "unlimited", "cj_fe": "unlimited"})
         hold = summary("run.20261002-1000-hold", "hold", {"hip": joint(), "lsj_fe": joint(limit=None, tpk=30.0)})
         text = rp.envelope([sweep, hold])
         section = next(l for l in text.splitlines() if "no ROM data" in l)
         self.assertIn("cj_fe", section)
         self.assertIn("lsj_fe", section)
-        self.assertIn("standing hold only", text)
+        self.assertIn("static standing solve only", text)
         lsj = next(l for l in text.splitlines() if l.startswith("| lsj_fe "))
         self.assertIn("30.00", lsj)
         cj = next(l for l in text.splitlines() if l.startswith("| cj_fe "))  # skipped and never measured: a row that says so
         self.assertIn("no data", cj)
+
+    def test_a_verification_only_scenario_is_excluded_with_its_reason_and_never_drives(self):
+        hold = summary("run.20261002-1000-hold", "hold", {"hip": joint(tpk=500.0)})
+        hold["scenario"]["params"]["envelope"] = False
+        static = summary("run.20261002-0900-static", "static", {"hip": joint(tpk=40.0), "lsj_fe": joint(limit=None, tpk=5.0)})
+        text = rp.envelope([hold, static])
+        self.assertNotIn("500.00", text)
+        self.assertIn("verification only (envelope: false)", text)
+        self.assertIn("run.20261002-1000-hold", text)
+        lsj = next(l for l in text.splitlines() if l.startswith("| lsj_fe "))
+        self.assertIn("5.00", lsj)  # an unlimited joint gets its row from the static run instead of 'no data'
 
     def test_runs_that_did_not_complete_are_listed_but_do_not_drive(self):
         recs = [summary("run.20261002-0900-sweep", "sweep", {"hip": joint(tpk=40.0)}),

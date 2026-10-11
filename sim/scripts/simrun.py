@@ -38,6 +38,7 @@ import numpy as np
 import leanpose
 import metrics
 import runrecord
+import statics
 
 REPO = Path(__file__).resolve().parents[2]
 MODEL_FILE = REPO / "sim" / "models" / "freyja.xml"
@@ -53,8 +54,8 @@ INVERSE_CLOSURE_REL = 1e-9  # of the peak applied torque. mj_inverse on a forwar
 DEFAULT_FALL = {"pelvis_height_fraction": 0.6, "trunk_tilt_deg": 45.0, "pelvis_body": "pelvis", "trunk_body": "thorax"}
 INTEGRATORS = {"euler": 0, "implicit": 2, "implicitfast": 3}  # RK4 (1) cannot be split into step1/step2, so it is not offered
 REQUIRED = ("name", "seed", "support", "drive", "duration_s", "window")
-DRIVES = ("inverse_dynamics_playback", "controller")
-SUPPORTS = ("ground", "gantry")
+DRIVES = ("inverse_dynamics_playback", "controller", "static_equilibrium")
+SUPPORTS = ("ground", "gantry", "ground_wrench")
 
 
 class ScenarioError(ValueError):
@@ -86,8 +87,15 @@ def check_scenario(s: dict) -> dict:
         raise ScenarioError("inverse dynamics is only allowed in gantry mode; on the ground use drive: controller")
     if s["drive"] == "controller" and s["support"] != "ground":
         raise ScenarioError("a controller drive needs support: ground (a gantry run holds the pelvis and uses inverse dynamics)")
+    if (s["drive"] == "static_equilibrium") != (s["support"] == "ground_wrench"):
+        raise ScenarioError("drive: static_equilibrium and support: ground_wrench go together")
     w = s["window"]
-    if not (0 <= w["start_s"] < w["end_s"] <= s["duration_s"] + 1e-12):
+    if s["drive"] == "static_equilibrium":
+        if not (s["duration_s"] == 0 and w["start_s"] == 0 and w["end_s"] == 0):
+            raise ScenarioError("a static scenario has duration_s 0 and a zero-width window {start_s: 0, end_s: 0}")
+        if not s.get("pose"):
+            raise ScenarioError("a static scenario needs a pose block")
+    elif not (0 <= w["start_s"] < w["end_s"] <= s["duration_s"] + 1e-12):
         raise ScenarioError(f"window {w} must satisfy 0 <= start < end <= duration_s ({s['duration_s']})")
     integrator = (s.get("options") or {}).get("integrator", "euler")
     if integrator not in INTEGRATORS:
@@ -342,6 +350,48 @@ def _slice(window, dt_, done):
     return int(round(window[0] / dt_)), min(int(round(window[1] / dt_)), done)
 
 
+def _finish_static(mj, scn, model, data, lean, *, run_id, model_sha, snapshot_sha, runs_dir, last_run_path, waivers_path, repo) -> RunResult:
+    """A static_equilibrium run: no time stepping. The record has a zero-width window, zero duration, and per joint a torque
+    whose peak equals its rms, with zero speed and power. An infeasible pose is recorded with outcome 'fell' and its reasons."""
+    result = statics.solve_static(model, data)
+    hinges = _hinges(model)
+    joints = {}
+    for h in hinges:
+        q = np.array([result.qpos[h["qpos"]]])
+        joints[h["name"]] = metrics.joint_metrics(q, np.zeros(1), np.array([result.torque[h["name"]]]), "inverse_dynamics", h["limit"])
+    contacts = {key: metrics.foot_metrics(np.array([f]), np.array([0.0])) for key, f in sorted(result.force_split.items())}
+    diagnostics = {
+        "cop_x_rel_ankle_m": result.cop_x_rel_ankle_m,
+        "force_right_n": result.force_split.get("foot_right"), "force_left_n": result.force_split.get("foot_left"),
+        "support_margin_m": result.support_margin_m, "limit_margin_min_deg": result.limit_margin_deg,
+        "equilibrium_residual_force_n": result.residual_force_n, "equilibrium_residual_moment_nm": result.residual_moment_nm,
+        "body_weight_n": float(model.body_mass.sum() * abs(model.opt.gravity[2])),
+        "lean_angle_deg": float(np.degrees(lean.lean_rad)), "com_offset_commanded_m": float(scn["pose"]["com_x_rel_ankle_m"]),
+        "com_offset_initial_m": float(lean.com_offset_m), "feasible": 1.0 if result.feasible else 0.0,
+    }
+    spec = scn.get("controller") or {}
+    record = {
+        "schema": "run-summary/1", "run_id": run_id, **runrecord.git_state(repo),
+        "snapshot_sha256": snapshot_sha, "model_sha256": model_sha, "seed": int(scn["seed"]),
+        "env": runrecord.env_versions(),
+        "scenario": {"name": scn["name"], "params": {k: v for k, v in scn.items() if k not in ("name", "seed")}},
+        "controller": {"name": "statics", "version": statics.VERSION},
+        "timestep_s": float(model.opt.timestep), "duration_s": 0.0, "support": scn["support"],
+        "window": {"start_s": 0.0, "end_s": 0.0},
+        "outcome": "completed" if result.feasible else "fell", "joints": joints, "contacts": contacts,
+        "balance": {"support_margin_min_m": result.support_margin_m if np.isfinite(result.support_margin_m) else None},
+        "diagnostics": diagnostics,
+        "checks": check_status(last_run_path or LAST_RUN_FILE, waivers_path or WAIVERS_FILE, model_sha),
+    }
+    if result.reasons:
+        record["findings"] = list(result.reasons)
+    path = runrecord.write_summary(record, runs_dir)
+    raw = {"joint_names": [h["name"] for h in hinges], "q": np.array([[result.qpos[h["qpos"]] for h in hinges]]),
+           "tau": np.array([[result.torque[h["name"]] for h in hinges]])}
+    np.savez_compressed(path.parent / "raw.npz", **raw)
+    return RunResult(record, path, raw)
+
+
 def run_scenario(scn: dict, *, model_path=None, snapshot_path=None, meta_path=None, runs_dir=None, last_run_path=None,
                  waivers_path=None, controller=None, controllers_dir=None, now=None, repo=None) -> RunResult:
     import mujoco as mj
@@ -352,7 +402,8 @@ def run_scenario(scn: dict, *, model_path=None, snapshot_path=None, meta_path=No
     model_sha, snapshot_sha = verify_inputs(model_path, snapshot_path, meta_path or META_FILE)
     if (runs_dir / runrecord.run_dir_name(run_id)).exists():
         raise ScenarioError(f"{run_id} already exists; an id has minute resolution, so wait for the next minute")
-    ctrl = controller if controller is not None else load_controller(scn.get("controller"), controllers_dir)
+    static = scn["drive"] == "static_equilibrium"
+    ctrl = statics if static else (controller if controller is not None else load_controller(scn.get("controller"), controllers_dir))
 
     options = scn.get("options") or {}
     model = mj.MjModel.from_xml_path(str(model_path))
@@ -367,6 +418,9 @@ def run_scenario(scn: dict, *, model_path=None, snapshot_path=None, meta_path=No
     lean = None
     if scn.get("pose"):
         lean = _apply_pose(mj, model, data, scn["pose"])
+    if static:
+        return _finish_static(mj, scn, model, data, lean, run_id=run_id, model_sha=model_sha, snapshot_sha=snapshot_sha, runs_dir=runs_dir,
+                              last_run_path=last_run_path, waivers_path=waivers_path, repo=repo)
     params = {**(scn.get("params") or {}), "seed": scn["seed"]}
     ctrl.reset(model, data, params)
 

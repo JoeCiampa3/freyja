@@ -289,6 +289,8 @@ def envelope(summaries, current_model_sha=None) -> str:
         s = groups[name][-1]
         if current_model_sha is not None and s["model_sha256"] != current_model_sha:
             excluded.append(f"{s['run_id']} ({name}): stale, recorded for another model")
+        elif s["scenario"]["params"].get("envelope", True) is False:
+            excluded.append(f"{s['run_id']} ({name}): verification only (envelope: false), so it never drives a row")
         elif s["outcome"] != "completed":
             excluded.append(f"{s['run_id']} ({name}): {s['outcome']}, so its numbers do not count")
         else:
@@ -335,7 +337,7 @@ def envelope(summaries, current_model_sha=None) -> str:
                      f"{b['power_peak_w'][0]:.2f} | {b['power_peak_w'][1]} | {_rom(rom[jn])} | {_rom(limits.get(jn)) if jn in limits else 'unlimited'} |")
     lines.append("")
     if no_rom:
-        lines.append("Joints with no ROM data (unlimited, so never swept; each row reflects the standing hold only, or no data): "
+        lines.append("Joints with no ROM data (unlimited, so never swept; each row reflects the static standing solve only, or no data): "
                      + ", ".join(sorted(no_rom)) + ".")
     else:
         lines.append("Joints with no ROM data: none.")

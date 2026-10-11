@@ -162,6 +162,13 @@
       ],
       "type": "object"
     },
+    "findings": {
+      "description": "Human-readable reasons attached to the outcome, e.g. why a static pose is infeasible (naming the joint). Absent when there is nothing to say.",
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
     "git_commit": {
       "description": "HEAD commit of the repo when the run started.",
       "pattern": "^[0-9a-f]{40}$",
@@ -221,7 +228,7 @@
             "type": "number"
           },
           "torque_source": {
-            "description": "Where the torque came from. 'applied' = ideal joint torque written to qfrc_applied during forward dynamics (ground mode). 'inverse_dynamics' = mj_inverse with prescribed qacc, used only in gantry mode where nothing touches the floor.",
+            "description": "Where the torque came from. 'applied' = ideal joint torque written to qfrc_applied during forward dynamics (ground mode). 'inverse_dynamics' = mj_inverse with prescribed qacc, used only where nothing goes through the contact solver: gantry mode, and the static solve (ground_wrench) whose ground reaction is supplied explicitly.",
             "enum": [
               "applied",
               "inverse_dynamics"
@@ -249,7 +256,7 @@
       "type": "string"
     },
     "outcome": {
-      "description": "completed, fell (pelvis height or trunk tilt past the scenario thresholds) or diverged (non-finite state or an unstable-simulation warning from MuJoCo).",
+      "description": "completed, fell (pelvis height or trunk tilt past the scenario thresholds) or diverged (non-finite state or an unstable-simulation warning from MuJoCo). A static solve whose pose cannot be held (CoP outside the support polygon or a joint outside its range) is recorded as fell, with the reasons in findings.",
       "enum": [
         "completed",
         "fell",
@@ -303,10 +310,11 @@
       "type": "string"
     },
     "support": {
-      "description": "'ground' = standing on the floor, forward dynamics. 'gantry' = the pelvis is held, nothing touches the floor, inverse dynamics.",
+      "description": "'ground' = standing on the floor, forward dynamics. 'gantry' = the pelvis is held, nothing touches the floor, inverse dynamics. 'ground_wrench' = a static solve: contacts are disabled and the ground reaction is supplied explicitly as generalized forces; the window has zero width, the duration is zero, torque peak equals torque rms and speeds and powers are zero.",
       "enum": [
         "ground",
-        "gantry"
+        "gantry",
+        "ground_wrench"
       ]
     },
     "timestep_s": {

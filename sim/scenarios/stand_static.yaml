@@ -1,0 +1,12 @@
+# stand_static: the joint torques that hold the same standing pose as hold_pose, from statics alone (sim/scripts/statics.py):
+# mj_inverse at zero velocity and acceleration with contacts disabled, the ground reaction supplied explicitly as a vertical
+# force at the CoM's ground projection. No controller, so no gain enters the numbers; use this, not hold_pose, for standing loads.
+# The pose block must stay identical to hold_pose's (a test checks it).
+name: stand_static
+model: sim/models/freyja.xml
+seed: 0
+support: ground_wrench
+drive: static_equilibrium
+duration_s: 0.0
+window: {start_s: 0.0, end_s: 0.0}
+pose: {com_x_rel_ankle_m: 0.0}
