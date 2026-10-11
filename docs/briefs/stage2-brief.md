@@ -74,6 +74,19 @@ Tests first:
 - A pose beyond a hinge limit gives the same torque as a copy of the model with that range removed.
 - Independent check: the hip, knee and ankle torques on five frames equal a bottom-up Newton-Euler recursion written in the test, using the solved ground force and MuJoCo kinematics but not `mj_inverse`, to 1e-6 relative.
 
+## T3b. Diagnose method B (added after the first full run)
+
+The first run found B's CoP outside the contact polygon in 89% of stance-foot frames and B's 95th-percentile ankle torque about 2.5 times A's and H's. With the CoP inside a foot that reaches 165 mm ahead of the ankle, peak ankle torque is capped near peak ground force times that lever (about 140 N m), so B's 217 N m cannot be right and the CoP excursions are the cause. GAIT.md adds three findings. Method A, which uses the measured force and CoP, does not reproduce the dataset's own joint moments either (hip correlation 0.45, knee 0.70, peak overshoot of +1.0 and +1.5 N m/kg), so A is not yet a validation anchor. H's hip abduction correlation (0.24) is far below A's (0.90) although the two differ only in the force source, which points at Freyja's lateral force. And the stance float (about 45 mm) and A's overshoot are both about the size of the offset between the dataset model's pelvis origin and Freyja's. Diagnose in this order, report each, and change nothing else:
+
+0. Make A reproduce the dataset's joint moments first, because A is nearly a recomputation of the dataset's own inverse dynamics. (a) Find the pelvis origin and hip joint centre positions in the dataset's OpenSim model (README, scripts or model file) and compare them with Freyja's pelvis origin, the lumbosacral joint, whose hip centres are 56.6 mm anterior and 97.5 mm below. (b) Reference the measured CoP and the root translation to the midpoint of the hip joint centres, not the pelvis origin, and re-run A. (c) If the CoP can be expressed relative to the stance foot (for example from the foot's orientation and the flat-foot period), do so and compare. Review targets, mine and not acceptance limits: correlation at least 0.9 and RMS difference at most 15% of peak-to-peak for the sagittal hip, knee and ankle moments. Until A reaches them, B and H cannot be judged against the dataset.
+
+1. Add the mediolateral force to the force report (ratio, correlation and sign against the measured force, like for like). The earlier report covered vertical and fore-aft only, and lateral CoP error is dominated by the lateral CoM acceleration term at the ends of single support. Check the lab-to-model axis mapping and sign for the lateral direction (lab x is the subject's right, model y is left).
+2. Decompose B's CoP into the point-mass term (CoM position and total force only: p = c_xy - (c_z / F_z) F_xy) and the angular-momentum term, and report which carries the error, per direction, against the measured CoP.
+3. Double support: add a variant that uses the measured force share (the share is a control property the kinematics cannot predict). Keep the proportional rule and the bound sweep as the sizing bracket, and report whether the measured share falls inside the bracket.
+4. Baseline for the polygon test: compute the outside-the-polygon rate for the measured CoP mapped into Freyja's foot frame (human feet deform, so a rigid box rejects real CoPs too). Report distances outside, not only the rate, and treat segment polygons (a foot rolling on its heel or toe edge) with a named tolerance band.
+
+Only after these, look at swing-leg inertia, segment masses and foot lateral placement. Report and stop. If B remains infeasible, the baseline and envelope rows are built on A and H, flagged provisional because they borrow the human CoP, and B's failure is recorded as a finding.
+
 ## T4. Methods A and H
 
 A: scale the measured force by the weight ratio and the CoP along the foot by the length ratio (document the scaling and report its sensitivity). Run A with the measured force filtered to match the kinematics and with its native filtering; the difference bounds the impact-transient content that kinematics-based loads leave out. H: total force from Freyja's CoM motion, applied at the measured CoP. For both, report the root-row residual per frame and in aggregate.
@@ -90,11 +103,11 @@ Tests first, on synthetic strides with known answers: aggregation statistics; po
 
 ## T6. Baseline
 
-Write `sim/benchmarks/walk_reference.json`: the agreement metrics, snapshot hash, spec hash and commit. Add `check.sim.walk_reference` (advisory): when the current snapshot hash equals the baseline's, the metrics must reproduce within 1e-6; otherwise it reports that the baseline is superseded by a design change and shows the agreement for information. It never fails on a design change.
+Write `sim/benchmarks/walk_reference.json`: the agreement metrics, snapshot hash, spec hash and commit. Build it on the methods that survive T3b; a method that fails is reported as a finding and not baselined. Add `check.sim.walk_reference` (advisory): when the current snapshot hash equals the baseline's, the metrics must reproduce within 1e-6; otherwise it reports that the baseline is superseded by a design change and shows the agreement for information. It never fails on a design change.
 
 ## T7. Envelope and docs
 
-Add the gait rows to the envelope using the 95th percentile, with the maximum shown, and update its list of covered and uncovered scenario classes. Apply the CONVENTIONS amendments. Update `CLAUDE.md` and the scenarios README.
+Add the gait rows to the envelope using the 95th percentile, with the maximum shown, and update its list of covered and uncovered scenario classes. Do not add any torque or power row until a method reproduces the dataset's joint moments within a band Joe sets; joint speeds, which depend only on the kinematics, may be added earlier. Apply the CONVENTIONS amendments. Update `CLAUDE.md` and the scenarios README.
 
 ## Done when
 
