@@ -182,6 +182,14 @@ def run_stride(task: dict) -> dict:
     joints = c.joints
     nf = N_FRAMES
     ref_xy = np.array([retarget.model_hip_mid(model, q[k])[:2] if ref == "hip_midpoint" else q[k, :2] for k in range(nf)])
+    cop_mode = task.get("cop_mode", "hip_reference")
+    markers = z[f"{sp}_foot_markers"][i] if cop_mode == "foot_frame" else None
+
+    def measured(frame, k):
+        """Measured force and CoP of the loaded feet in the model frame, by the spec's CoP mapping."""
+        if cop_mode == "foot_frame":
+            return gaitloads.measured_to_model_foot(frame, markers[k], dynamics.foot_floor_segments(model, q[k]), mass_ratio)
+        return gaitloads.measured_to_model(frame, ref_lab[k], ref_xy[k], mass_ratio, ratio, task["cop_scale"])
     tor = {m: np.zeros((nf, len(joints))) for m in methods}
     bound = np.zeros((nf, len(joints)))
     dof = [c.hinge[j][1] for j in joints]
@@ -216,7 +224,7 @@ def run_stride(task: dict) -> dict:
                 key = "single" if len(stance) == 1 else "double"
                 by_support[key][0] += 1
                 by_support[key][1] += not r.cop_margin_m[foot] >= 0
-            mf, mc = gaitloads.measured_to_model(fp[:, k, :], ref_lab[k], ref_xy[k], mass_ratio, ratio, task["cop_scale"])
+            mf, mc = measured(fp[:, k, :], k)
             if len(stance) == 1 and stance[0] in mc:
                 cop_err.append((r.cop[stance[0]] - mc[stance[0]])[:2])
             if len(stance) == 2 and len(mf) == 2 and mf["foot_right"][2] + mf["foot_left"][2] > 0:
@@ -225,7 +233,7 @@ def run_stride(task: dict) -> dict:
             for m, frame in (("A_native", fp[:, k, :]), ("A_filtered", None if fpf is None else fpf[:, k, :]), ("H", fp[:, k, :])):
                 if m not in methods:
                     continue
-                forces, cops = gaitloads.measured_to_model(frame, ref_lab[k], ref_xy[k], mass_ratio, ratio, task["cop_scale"])
+                forces, cops = measured(frame, k)
                 if m == "H":
                     forces = gaitloads.method_h_forces(qfrc, forces)
                 t, res, _ = dynamics.solve_given(model, q[k], qfrc, forces, cops)
@@ -273,7 +281,7 @@ def _tasks(spec, manifest, model_path, processed, methods, cutoff, tilt, cap, sw
             for i in idx:
                 tasks.append({"model_path": str(model_path), "processed": str(processed), "subject": s, "speed": str(speed), "index": i,
                               "subject_info": manifest["subjects"][s], "cutoff_hz": cutoff, "tilt_offset_deg": tilt,
-                              "root_rule": spec["root_rule"], "root_reference": spec.get("root_reference", "hip_midpoint"), "methods": methods, "sweep": sweep, "cop_scale": spec["cop_scale"],
+                              "root_rule": spec["root_rule"], "root_reference": spec.get("root_reference", "hip_midpoint"), "cop_mode": spec.get("cop_mode", "hip_reference"), "methods": methods, "sweep": sweep, "cop_scale": spec["cop_scale"],
                               "agreement": agreement_on, "kinematics": kin})
     return tasks
 

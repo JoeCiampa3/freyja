@@ -88,3 +88,27 @@ def test_filtered_force_is_applied_only_where_the_dataset_has_stance():
     out = gaitloads.filter_measured(fp, T=1.0, cutoff_hz=6.0)
     assert np.all(out[0, 60:, 1] == 0.0) and np.all(out[0, :60, 6] == 1.0)
     assert out[0, 30, 1] == pytest.approx(700.0 * np.sin(np.pi * 0.5), rel=0.03)
+
+
+def test_cop_in_the_foot_frame_maps_to_the_same_normalised_place_on_freyjas_foot():
+    # subject foot: heel at lab (0.5, 0, -1.0), toe tip 0.25 m ahead (forward = -z); CoP at mid-foot, 20 mm to the LEFT (lab -x)
+    heel, toe = np.array([0.5, 0.05, -1.0]), np.array([0.5, 0.05, -1.25])
+    cop = np.array([0.48, 0.0, -1.125])
+    out = gaitloads.cop_to_freyja_foot(cop, heel, toe, np.array([0.0, 0.0]), np.array([0.2, 0.0]))
+    assert out == pytest.approx([0.1, 0.02 * 0.8])  # half way along; the lateral offset scales with the foot length ratio 0.2 / 0.25
+    # a rotated subject foot (pointing to the subject's right, lab +x) with the same place on it gives the same answer
+    heel2, toe2 = np.array([0.0, 0.0, 0.0]), np.array([0.25, 0.0, 0.0])
+    cop2 = np.array([0.125, 0.0, -0.02])  # 20 mm toward the walking direction; that is the LEFT of a foot pointing to the subject's right
+    out2 = gaitloads.cop_to_freyja_foot(cop2, heel2, toe2, np.array([0.0, 0.0]), np.array([0.2, 0.0]))
+    assert out2 == pytest.approx([0.1, 0.016])
+    # and the frame is Freyja's: the same place on a foot lying elsewhere and turned
+    heel_f, toe_f = np.array([1.0, 2.0]), np.array([1.0, 2.2])  # Freyja's foot turned to point along +y
+    out3 = gaitloads.cop_to_freyja_foot(cop, heel, toe, heel_f, toe_f)
+    assert out3 == pytest.approx([1.0 - 0.016, 2.1])  # left of a foot pointing +y is -x
+
+
+def test_a_cop_at_the_heel_and_the_toe_lands_on_the_heel_and_the_toe_of_freyjas_foot():
+    heel, toe = np.array([0.0, 0.0, 0.0]), np.array([0.0, 0.0, -0.24])
+    h_f, t_f = np.array([0.3, -0.1]), np.array([0.5, -0.1])
+    assert gaitloads.cop_to_freyja_foot(heel, heel, toe, h_f, t_f) == pytest.approx(h_f)
+    assert gaitloads.cop_to_freyja_foot(toe, heel, toe, h_f, t_f) == pytest.approx(t_f)

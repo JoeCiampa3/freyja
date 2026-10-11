@@ -267,3 +267,15 @@ def cop_decomposition(model, qpos, qfrc):
     com = d.subtree_com[0]
     pm = np.array([com[0] - com[2] * F[0] / F[2], com[1] - com[2] * F[1] / F[2], 0.0])
     return full, pm, full - pm
+
+
+def foot_floor_segments(model, qpos, feet=FEET):
+    """Foot -> (rear, front) points of its box's long axis projected on the floor, for the pose qpos (model xy)."""
+    d = mujoco.MjData(model)
+    d.qpos[:] = qpos
+    mujoco.mj_kinematics(model, d)
+    out = {}
+    for n in feet:
+        _, (centre, half, _) = _foot_boxes(model, d, mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, n))
+        out[n] = (centre[:2] - half[:2], centre[:2] + half[:2])
+    return out

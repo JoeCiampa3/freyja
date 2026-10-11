@@ -33,8 +33,8 @@ def _rows(spec, methods, cap, speed, workers, **overrides):
 def a_agreement(args):
     spec = gait.load_spec("walk_treadmill")
     spec["root_reference"] = args.root_reference
-    rows = _rows(spec, ["A_native", "A_filtered"], args.cap, args.speed, args.workers)
-    print(f"A agreement with the dataset moments; root reference {args.root_reference}; {len(rows)} strides at {args.speed} m/s")
+    rows = _rows(spec, ["A_native", "A_filtered"], args.cap, args.speed, args.workers, cop_mode=args.cop_mode)
+    print(f"A agreement with the dataset moments; root reference {args.root_reference}; CoP mode {args.cop_mode}; {len(rows)} strides at {args.speed} m/s")
     print("joint (both limbs pooled)   method       corr   rms % ptp   peak diff N m/kg")
     for stem in SAGITTAL:
         for m in ("A_native", "A_filtered"):
@@ -150,13 +150,17 @@ def cop_steps(args):
             cyc = retarget.Cycle(m, c.mapping, c.stand, ik, T, ratio, hip_in_pelvis_os=hip, trunk_compensation=args.trunk_compensation)
             q, qd, qdd = cyc.grid()
             ref_lab = retarget.dataset_hip_mid_lab(ik, hip)
+            fmk = z[f"{args.speed}_foot_markers"][i]
             for k in range(100):
                 stance = tuple(f for j, f in enumerate(gait.FEET) if fp[j, k, 6] >= gaitloads.STANCE_FLAG)
                 if not stance:
                     continue
                 key = "single" if len(stance) == 1 else "double"
                 qfrc = dyn.inverse_frame(m, q[k], qd[k], qdd[k])
-                mf, mc = gaitloads.measured_to_model(fp[:, k, :], ref_lab[k], retarget.model_hip_mid(m, q[k])[:2], c.mass / d["mass_kg"], ratio)
+                if args.cop_mode == "foot_frame":
+                    mf, mc = gaitloads.measured_to_model_foot(fp[:, k, :], fmk[k], dyn.foot_floor_segments(m, q[k]), c.mass / d["mass_kg"])
+                else:
+                    mf, mc = gaitloads.measured_to_model(fp[:, k, :], ref_lab[k], retarget.model_hip_mid(m, q[k])[:2], c.mass / d["mass_kg"], ratio)
                 fz = np.array([mf[f][2] for f in stance])
                 meas = sum(w * mc[f][:2] for w, f in zip(fz, stance)) / fz.sum()
                 full, pm, amt = dyn.cop_decomposition(m, q[k], qfrc)
@@ -182,7 +186,7 @@ def cop_steps(args):
                             poly[vname + name][key][0] += 1; poly[vname + name][key][1] += not mg >= 0
                             if not mg >= 0:
                                 poly[vname + name][key][2].append(-mg)
-    print(f"=== {args.speed} m/s, {args.cap} strides per subject, trunk compensation {args.trunk_compensation} ===")
+    print(f"=== {args.speed} m/s, {args.cap} strides per subject, trunk compensation {args.trunk_compensation}, measured CoP mapping {args.cop_mode} ===")
     print("Step 2: whole-body CoP against the measured one (model axes: x fore-aft, y lateral), rms mm over stance frames")
     for key in ("single", "double"):
         ef, ep, a = (np.array(x[key]) for x in (e_full, e_pm, am))
@@ -208,6 +212,7 @@ def main(argv=None):
     sub = ap.add_subparsers(dest="cmd", required=True)
     a = sub.add_parser("a-agreement")
     a.add_argument("--root-reference", default="hip_midpoint", choices=["hip_midpoint", "pelvis_origin"])
+    a.add_argument("--cop-mode", default="hip_reference", choices=["hip_reference", "foot_frame"])
     a.add_argument("--cap", type=int, default=3)
     a.add_argument("--speed", default="1.4")
     a.add_argument("--workers", type=int, default=5)
@@ -217,6 +222,7 @@ def main(argv=None):
     f.add_argument("--trunk-compensation", action="store_true")
     cp = sub.add_parser("cop")
     cp.add_argument("--cap", type=int, default=4)
+    cp.add_argument("--cop-mode", default="foot_frame", choices=["hip_reference", "foot_frame"])
     cp.add_argument("--speed", default="1.4")
     cp.add_argument("--trunk-compensation", action="store_true")
     la = sub.add_parser("lateral")

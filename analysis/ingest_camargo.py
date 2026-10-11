@@ -41,9 +41,10 @@ ID_CHANNELS = ([f"{j}_{s}_moment" for j in ("hip_flexion", "hip_adduction", "hip
                 for s in ("r", "l")]
                + ["pelvis_tilt_moment", "pelvis_list_moment", "pelvis_rotation_moment",
                   "pelvis_tx_force", "pelvis_ty_force", "pelvis_tz_force"])
+FOOT_MARKERS = ("R_Heel", "R_Toe_Tip", "L_Heel", "L_Toe_Tip")  # mm in the file; stored per stride as (foot R/L, heel/toe, xyz) metres
 FP_CHANNELS = ["Fx", "Fy", "Fz", "CoPx", "CoPy", "CoPz", "stance"]
 FEET = ("R", "L")
-SENSORS = ("conditions", "ik", "id", "fp")
+SENSORS = ("conditions", "ik", "id", "fp", "markers")
 
 
 # ------------------------------------------------------------------ locations and tables
@@ -182,7 +183,7 @@ def ingest_subject(raw: Path, subject: str, spec: dict) -> dict:
     trials = sorted({Path(n).stem for n in names if re.search(r"/treadmill/conditions/.*\.mat$", n)})
     thr, min_c = spec["contact_force_n"], spec["min_contact_s"]
     n_ph = spec["n_phase"]
-    acc = {s: {k: [] for k in ("ik", "id", "fp", "t0", "duration_s", "toe_off_phase", "contra_hs_phase", "contra_to_phase", "trial")}
+    acc = {s: {k: [] for k in ("ik", "id", "fp", "foot_markers", "t0", "duration_s", "toe_off_phase", "contra_hs_phase", "contra_to_phase", "trial")}
            for s in spec["speeds_mps"]}
     rejects = {s: {} for s in spec["speeds_mps"]}
     files = {}
@@ -208,12 +209,12 @@ def ingest_subject(raw: Path, subject: str, spec: dict) -> dict:
             continue
         blobs = {"conditions": cblob}
         tables = {"conditions": cond}
-        for sensor in ("ik", "id", "fp"):
+        for sensor in ("ik", "id", "fp", "markers"):
             blobs[sensor] = zf.read(_find(names, names, sensor, trial))
             tables[sensor] = read_table(blobs[sensor])
         for sensor, b in blobs.items():
             files[f"{subject}/{trial}/{sensor}"] = hashlib.sha256(b).hexdigest()
-        fp, ik, idt = tables["fp"], tables["ik"], tables["id"]
+        fp, ik, idt, mk = tables["fp"], tables["ik"], tables["id"], tables["markers"]
         tf = fp["Header"]
         con = {"R": contacts(tf, fp["Treadmill_R_vy"], thr, min_c), "L": contacts(tf, fp["Treadmill_L_vy"], thr, min_c)}
         speed_at = np.interp(tf, cond["Header"], cond["Speed"])
@@ -255,7 +256,14 @@ def ingest_subject(raw: Path, subject: str, spec: dict) -> dict:
                         stance = fpv[k, :, 1] > thr
                         fpv[k, :, 6] = stance
                         fpv[k, ~stance, 3:6] = np.nan  # the CoP of an unloaded plate is not defined
-                    acc[s]["ik"].append(ikv); acc[s]["id"].append(idv); acc[s]["fp"].append(fpv)
+                    fmv = np.empty((n_ph, 2, 2, 3))
+                    for fi, foot in enumerate(("R", "L")):
+                        for mi, mname in enumerate(("Heel", "Toe_Tip")):
+                            for ci, comp in enumerate("xyz"):
+                                fmv[:, fi, mi, ci] = phase_normalise(mk["Header"], mk[f"{foot}_{mname}_{comp}"], t0, t1, n_ph) / 1000.0
+                    if np.isnan(fmv).any():
+                        reject(s, "nan_markers"); continue
+                    acc[s]["ik"].append(ikv); acc[s]["id"].append(idv); acc[s]["fp"].append(fpv); acc[s]["foot_markers"].append(fmv)
                     acc[s]["t0"].append(t0); acc[s]["duration_s"].append(T); acc[s]["toe_off_phase"].append(to_ph)
                     acc[s]["contra_hs_phase"].append(hs_ph); acc[s]["contra_to_phase"].append(lto_ph)
                     acc[s]["trial"].append(int(re.search(r"treadmill_(\d+)_", trial).group(1)))
@@ -266,6 +274,7 @@ def ingest_subject(raw: Path, subject: str, spec: dict) -> dict:
                       "ik": np.array(d["ik"]).reshape(n, n_ph, len(IK_CHANNELS)),
                       "id": np.array(d["id"]).reshape(n, n_ph, len(ID_CHANNELS)),
                       "fp": np.array(d["fp"]).reshape(n, 2, n_ph, len(FP_CHANNELS)),
+                      "foot_markers": np.array(d["foot_markers"]).reshape(n, n_ph, 2, 2, 3),
                       **{k: np.array(d[k]) for k in ("t0", "duration_s", "toe_off_phase", "contra_hs_phase", "contra_to_phase", "trial")}}
     return {"subject": subject, "mass_kg": info["mass_kg"], "height_m": info["height_m"], "sex": info["sex"], "age": info["age"],
             "strides": strides, "rejects": rejects, "files": files,

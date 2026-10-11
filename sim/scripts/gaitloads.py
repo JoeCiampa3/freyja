@@ -56,3 +56,34 @@ def filter_measured(fp, T, cutoff_hz):
         f[~stance] = 0.0
         out[k, :, 0:3] = f
     return out
+
+
+def cop_to_freyja_foot(cop_lab, heel_lab, toe_lab, heel_model_xy, toe_model_xy):
+    """A measured CoP placed on Freyja's foot at the same normalised place: along the foot as a fraction of heel-to-toe, and
+    sideways by the same fraction of the foot length ratio. The subject's foot is the line from the heel marker to the toe-tip
+    marker (lab frame), Freyja's the line from the rear to the front of her foot box on the floor (model frame). Returns the
+    CoP's floor position in the model's horizontal plane (x anterior, y left)."""
+    to_plane = lambda p: np.array([-p[2], -p[0]])  # lab (x right, z backward) -> model (x anterior, y left)
+    h, t, c = to_plane(heel_lab), to_plane(toe_lab), to_plane(cop_lab)
+    length = np.linalg.norm(t - h)
+    u = (t - h) / length
+    v = np.array([-u[1], u[0]])
+    s, lat = float(np.dot(c - h, u)), float(np.dot(c - h, v))
+    hf, tf = np.asarray(heel_model_xy, float), np.asarray(toe_model_xy, float)
+    lf = np.linalg.norm(tf - hf)
+    uf = (tf - hf) / lf
+    vf = np.array([-uf[1], uf[0]])
+    return hf + (s / length) * lf * uf + (lat * lf / length) * vf
+
+
+def measured_to_model_foot(fp_frame, markers_frame, foot_segments, mass_ratio):
+    """Like measured_to_model, but each CoP is placed on Freyja's own foot with cop_to_freyja_foot. markers_frame is (2, 2, 3):
+    foot R/L, heel/toe tip, lab frame metres. foot_segments maps a foot body to its (rear, front) floor points in the model."""
+    forces, cops = {}, {}
+    for k, foot in enumerate(FEET):
+        if fp_frame[k, 6] < STANCE_FLAG:
+            continue
+        forces[foot] = mass_ratio * (LAB_TO_MODEL @ np.asarray(fp_frame[k, 0:3], float))
+        xy = cop_to_freyja_foot(fp_frame[k, 3:6], markers_frame[k, 0], markers_frame[k, 1], *foot_segments[foot])
+        cops[foot] = np.array([xy[0], xy[1], 0.0])
+    return forces, cops

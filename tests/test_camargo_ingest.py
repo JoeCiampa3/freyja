@@ -200,3 +200,14 @@ def test_hip_centre_in_the_dataset_pelvis_frame_is_read(ab06):
     h = ab06["hip_in_pelvis_os_m"]
     # AB06's scaled gait2392 pelvis: hips 73.7 mm behind and 68.9 mm below the pelvis origin, 87.1 mm to each side
     assert h == pytest.approx([-0.0737266, -0.0689296, 0.0870745], abs=1e-6)
+
+
+@data_needed
+def test_foot_markers_give_a_foot_pointing_forward_with_a_plausible_length(ab06):
+    fm = ab06["strides"][1.4]["foot_markers"]  # (strides, 101, foot R/L, heel/toe, xyz) in the lab frame, metres
+    n = ab06["strides"][1.4]["n"]
+    assert fm.shape == (n, 101, 2, 2, 3) and not np.isnan(fm).any()
+    forward = -(fm[:, :, :, 1, 2] - fm[:, :, :, 0, 2])  # lab z points backward
+    length = np.linalg.norm((fm[:, :, :, 1] - fm[:, :, :, 0])[..., [0, 2]], axis=-1)
+    assert forward.mean() > 0.10 and 0.12 < length.mean() < 0.30  # metres: heel-to-toe-tip marker distance in the horizontal plane
+    assert 0.0 < fm[:, :, :, 0, 1].mean() < 0.15  # heel marker height above the floor, metres
