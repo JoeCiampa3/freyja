@@ -50,7 +50,8 @@ N_FRAMES = 100  # unique phase points of a stride (the 101st repeats the first)
 N_BINS = 10  # phase bins for the feasibility fractions
 ROUND = 6
 FEET = ("foot_right", "foot_left")
-EXTRA_JOINTS = ("lsj_fe", "tj_fe", "cj_fe")
+EXTRA_JOINTS = ("lsj_fe", "lsj_lat", "lsj_ax", "tj_fe", "cj_fe")
+TRUNK_ANGLE_JOINTS = ("lsj_lat", "lsj_ax")  # unlimited today: their peak angles are a finding for the Joint ROM sheet, never clipped
 STANDING_FEET = {"foot_right": "ankle_pdflex_right", "foot_left": "ankle_pdflex_left"}
 ATTRIBUTION = ("Data: Camargo, Ramanathan, Flanagan & Young (2021), J. Biomech. 119:110320, Mendeley Data v2 "
                "(10.17632/fcgm3chfff.2, k9kvm5tn3f.2, jj3r5f9pnf.2), CC BY 4.0. Processed here; the authors have not endorsed this work.")
@@ -95,6 +96,15 @@ def agreement(model_per_kg, data_per_kg) -> dict:
     rms = 100.0 * float(np.sqrt(np.mean((m - d) ** 2))) / ptp if ptp > 0 else float("nan")
     corr = float(np.corrcoef(m, d)[0, 1]) if m.std() > 0 and d.std() > 0 else float("nan")
     return {"rms_pct_ptp": rms, "peak_diff": float(np.abs(m).max() - np.abs(d).max()), "corr": corr}
+
+
+def force_metrics(fb, fm) -> dict:
+    """Freyja's total ground force fb against the measured one fm (both (n, 3), model axes x anterior, y left, z up): the vertical
+    peak ratio and correlation, and the peak-to-peak ratio and correlation of the fore-aft and lateral components."""
+    c = lambda a, b: float(np.corrcoef(a, b)[0, 1])
+    return {"vert_peak_ratio": float(fb[:, 2].max() / fm[:, 2].max()), "vert_corr": c(fb[:, 2], fm[:, 2]),
+            "ap_ptp_ratio": float(np.ptp(fb[:, 0]) / np.ptp(fm[:, 0])), "ap_corr": c(fb[:, 0], fm[:, 0]),
+            "lat_ptp_ratio": float(np.ptp(fb[:, 1]) / np.ptp(fm[:, 1])), "lat_corr": c(fb[:, 1], fm[:, 1])}
 
 
 def hybrid_methods(spec: dict) -> list:
@@ -199,6 +209,7 @@ def run_stride(task: dict) -> dict:
         if cop_mode == "foot_frame":
             return gaitloads.measured_to_model_foot(frame, markers[k], dynamics.foot_floor_segments(model, q[k]), mass_ratio)
         return gaitloads.measured_to_model(frame, ref_lab[k], ref_xy[k], mass_ratio, ratio, task["cop_scale"])
+    ftot = np.zeros((nf, 3))  # Freyja's own total ground force, m (a + g): the same for B and H
     tor = {m: np.zeros((nf, len(joints))) for m in methods}
     bound = np.zeros((nf, len(joints)))
     dof = [c.hinge[j][1] for j in joints]
@@ -216,6 +227,7 @@ def run_stride(task: dict) -> dict:
     for k in range(nf):
         stance = tuple(f for j, f in enumerate(FEET) if fp[j, k, 6] >= gaitloads.STANCE_FLAG)
         qfrc = dynamics.inverse_frame(model, q[k], qd[k], qdd[k])
+        ftot[k] = qfrc[:3]
         if "B" in methods:
             r = dynamics.solve_frame(model, q[k], qd[k], qdd[k], stance=stance, sweep=task["sweep"], qfrc=qfrc)
             tor["B"][k] = [r.torque[j] for j in joints]
@@ -269,6 +281,9 @@ def run_stride(task: dict) -> dict:
                        "cop_margin_min_m": float(cop_margin_min) if np.isfinite(cop_margin_min) else None,
                        "by_support": by_support, "hull_degenerate": degenerate_n, "miss_bins": miss.tolist(),
                        "cop_err_single": np.array(cop_err).reshape(-1, 2).tolist(), "share_err_double": share_err}
+    fm_total = mass_ratio * ((fp[0, :, 0:3] + fp[1, :, 0:3]) @ gaitloads.LAB_TO_MODEL.T)
+    out["force"] = force_metrics(ftot, retarget.filter_cycle(fm_total, T, cut)[:nf])  # like for like: the measured force filtered the same way
+    out["trunk_peak_deg"] = {j: float(np.degrees(np.abs(q[:nf, c.hinge[j][0]]).max())) for j in TRUNK_ANGLE_JOINTS}
     hips = [q[:nf, c.hinge[j][0]] for j in ("hip_fe_right", "hip_fe_left")]
     out["hip_extension_deg"] = float(-np.degrees(min(h.min() for h in hips)))
     if task["kinematics"]:
@@ -358,6 +373,8 @@ def build_results(rows, c: Context, spec) -> dict:
             if len(se):
                 d["feasibility"]["double_support_share_error_mean"] = float(se.mean())
                 d["feasibility"]["double_support_share_error_rms"] = float(np.sqrt((se ** 2).mean()))
+        d["force"] = {k: _agg_over(R, lambda r, k=k: r["force"][k], off) for k in R[0]["force"]}
+        d["trunk_peak_deg"] = {j: _agg_over(R, lambda r, j=j: r["trunk_peak_deg"][j], off) for j in TRUNK_ANGLE_JOINTS}
         ext = np.array([r["hip_extension_deg"] for r in R])
         d["hip_extension"] = {"median_deg": float(np.median(ext)), "p95_deg": float(np.percentile(ext, 95)), "max_deg": float(ext.max()),
                               "stop_deg": -c.hip_stop_deg, "fraction_beyond_stop": float(np.mean(ext > -c.hip_stop_deg))}
@@ -586,6 +603,13 @@ def render_md(rec: dict) -> str:
                 for m in ("B", "A_native", "H"):
                     a = d["agreement"][m][j]
                     L.append(f"| {j} | {m} | {a['rms_pct_ptp']:.1f} | {a['peak_diff']:.3f} | {a['corr']:.3f} | {a['rms_pct_ptp_without_offset']:.1f} | {a['corr_without_offset']:.3f} |")
+        fo = d["force"]
+        L += ["", "### Freyja's total ground force against the measured one (like for like; mean over strides)", "",
+              "vertical peak ratio {:.2f}, corr {:.2f}; fore-aft peak-to-peak ratio {:.2f}, corr {:.2f}; lateral peak-to-peak ratio {:.2f}, corr {:.2f}.".format(
+                  *(fo[k]["all"]["mean"] for k in ("vert_peak_ratio", "vert_corr", "ap_ptp_ratio", "ap_corr", "lat_ptp_ratio", "lat_corr")))]
+        tp = d["trunk_peak_deg"]
+        L += ["", "Peak lumbosacral angle per stride, degrees (mean / p95 / max): " + "; ".join(f"{j} {_cell(tp[j]['all'])}" for j in TRUNK_ANGLE_JOINTS)
+              + " (unlimited joints, not clipped)."]
         h = d["hip_extension"]
         L += ["", f"### Peak hip extension against the model's {h['stop_deg']:.1f} deg stop", "",
               f"median {h['median_deg']:.1f}, 95th percentile {h['p95_deg']:.1f}, maximum {h['max_deg']:.1f} deg; {100 * h['fraction_beyond_stop']:.0f}% of strides go beyond the stop "

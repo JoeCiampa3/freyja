@@ -49,6 +49,17 @@ def test_agreement_metrics():
     assert gait.agreement(-d, d)["corr"] == pytest.approx(-1.0)
 
 
+def test_force_metrics_on_synthetic_forces():
+    ph = np.linspace(0, 1, 101)
+    meas = np.stack([100 * np.sin(2 * np.pi * ph), 50 * np.sin(2 * np.pi * ph), 700 + 200 * np.sin(4 * np.pi * ph)], axis=1)  # fore-aft, lateral, vertical
+    same = gait.force_metrics(meas, meas)
+    assert same["lat_ptp_ratio"] == pytest.approx(1.0) and same["lat_corr"] == pytest.approx(1.0) and same["vert_peak_ratio"] == pytest.approx(1.0)
+    twice_flipped = meas.copy()
+    twice_flipped[:, 1] *= -2.0  # lateral force with twice the amplitude and the wrong sign
+    m = gait.force_metrics(twice_flipped, meas)
+    assert m["lat_ptp_ratio"] == pytest.approx(2.0) and m["lat_corr"] == pytest.approx(-1.0) and m["ap_corr"] == pytest.approx(1.0)
+
+
 def test_a_numeric_pitch_mean_flags_methods_a_and_h_as_hybrid():
     spec = {"methods": ["B", "A_native", "A_filtered", "H"], "pitch_mean": "measured"}
     assert gait.hybrid_methods(spec) == []

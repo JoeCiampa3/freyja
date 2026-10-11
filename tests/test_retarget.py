@@ -294,3 +294,88 @@ def test_counter_rotate_keeps_the_thorax_upright_while_the_pelvis_rolls_and_yaws
         return worst
     assert thorax_tilt(False) > np.deg2rad(3.0)
     assert thorax_tilt(True) < np.deg2rad(0.3)
+
+
+# ======================================================================== T3c.1 trunk modes
+
+def roll_yaw_ik(roll_deg=4.0, yaw_deg=5.0, pitch_deg=2.0):
+    ph = np.linspace(0, 1, 101)
+    ik = standing_ik()
+    ik[:, ic.IK_CHANNELS.index("pelvis_tilt")] = roll_deg * np.sin(2 * np.pi * ph)          # roll
+    ik[:, ic.IK_CHANNELS.index("pelvis_rotation")] = 90.0 + yaw_deg * np.cos(2 * np.pi * ph)  # yaw about the baseline
+    ik[:, ic.IK_CHANNELS.index("pelvis_list")] = -pitch_deg * np.sin(4 * np.pi * ph + 0.4)  # anterior pitch = minus list
+    return ik
+
+
+def world_rotvec(model, q, stand, body):
+    """Rotation vector (model axes) of `body` in the world for pose q, relative to the same body in the standing pose."""
+    d, ref = mujoco.MjData(model), mujoco.MjData(model)
+    d.qpos[:], ref.qpos[:] = q, stand
+    mujoco.mj_kinematics(model, d); mujoco.mj_kinematics(model, ref)
+    b = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, body)
+    q1, q2, r = np.zeros(4), np.zeros(4), np.zeros(3)
+    mujoco.mju_mat2Quat(q1, d.xmat[b]); mujoco.mju_mat2Quat(q2, ref.xmat[b])
+    mujoco.mju_subQuat(r, q1, q2)
+    return r
+
+
+def phase_points(c):
+    return [c.eval(c.T * k / 100)[0] for k in range(100)]
+
+
+@pytest.mark.parametrize("body", ["abdomen", "thorax", "head_and_neck"])
+def test_counter_rotate_holds_roll_and_yaw_at_the_standing_values_and_pitch_follows_the_pelvis(model, stand, body):
+    c = retarget.Cycle(model, MAPPING, stand, roll_yaw_ik(), 1.0, 1.0, trunk="counter_rotate")
+    for q in phase_points(c):
+        r = world_rotvec(model, q, stand, body)
+        assert abs(r[0]) < 1e-9 and abs(r[2]) < 1e-9, (body, r)  # roll (x) and yaw (z) in the world: constant at the standing value
+    pitch_trunk = [world_rotvec(model, q, stand, "abdomen")[1] for q in phase_points(c)]
+    pitch_pelvis = [world_rotvec(model, q, stand, "pelvis")[1] for q in phase_points(c)]
+    assert np.ptp(pitch_trunk) > np.deg2rad(2.0)  # it moves ...
+    # ... as the pelvis's sagittal pitch does (the pelvis's own y rotation differs from the Y-Z-X pitch by second-order roll/yaw terms)
+    assert np.abs(np.array(pitch_trunk) - np.array(pitch_pelvis)).max() < np.deg2rad(0.1)
+
+
+def test_counter_rotate_off_the_grid_stays_within_the_spline_error(model, stand):
+    c = retarget.Cycle(model, MAPPING, stand, roll_yaw_ik(), 1.0, 1.0, trunk="counter_rotate")
+    worst = max(max(abs(world_rotvec(model, c.eval(t)[0], stand, "thorax")[[0, 2]])) for t in np.linspace(0.003, 0.997, 57))
+    assert worst < np.deg2rad(0.02)  # between phase points the cancellation is a cubic spline of exact values
+
+
+def test_counter_rotate_is_zero_when_the_pelvis_does_not_roll_or_yaw(model, stand):
+    ik = roll_yaw_ik(roll_deg=0.0, yaw_deg=0.0, pitch_deg=3.0)
+    c = retarget.Cycle(model, MAPPING, stand, ik, 1.0, 1.0, trunk="counter_rotate")
+    lat = model.jnt_qposadr[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "lsj_lat")]
+    ax = model.jnt_qposadr[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "lsj_ax")]
+    for q in phase_points(c):
+        assert abs(q[lat]) < 1e-12 and abs(q[ax]) < 1e-12
+    standing = retarget.Cycle(model, MAPPING, stand, standing_ik(), 1.0, 1.0, trunk="counter_rotate").eval(0.3)
+    assert np.abs(standing[1]).max() < 1e-9 and np.abs(standing[0][7:] - retarget.Cycle(model, MAPPING, stand, standing_ik(), 1.0, 1.0).eval(0.3)[0][7:]).max() < 1e-12
+
+
+def test_counter_rotate_qvel_integrates_back_to_qpos(model, stand):
+    c = retarget.Cycle(model, MAPPING, stand, roll_yaw_ik(), 1.0, 1.0, trunk="counter_rotate")
+    for t1 in (0.3, 1.0):
+        got = integrate(model, c, 0.0, t1)
+        ref, _, _ = c.eval(t1)
+        assert np.abs(got[:3] - ref[:3]).max() < 1e-9 and rot_diff_rad(got[3:7], ref[3:7]) < 1e-9
+        assert np.abs(got[7:] - ref[7:]).max() < 1e-9  # includes lsj_lat and lsj_ax
+
+
+def test_mutation_flipping_the_compensation_sign_breaks_world_constancy(model, stand, monkeypatch):
+    orig = retarget.Cycle._counter_rotation
+    monkeypatch.setattr(retarget.Cycle, "_counter_rotation", lambda self, Xf: -orig(self, Xf))
+    c = retarget.Cycle(model, MAPPING, stand, roll_yaw_ik(), 1.0, 1.0, trunk="counter_rotate")
+    worst = max(max(abs(world_rotvec(model, q, stand, "thorax")[[0, 2]])) for q in phase_points(c))
+    assert worst > np.deg2rad(1.0)
+
+
+@data_needed
+def test_rigid_trunk_output_is_unchanged_from_before_the_trunk_modes(model, stand):
+    import hashlib
+    z = np.load(PROCESSED)
+    c = retarget.Cycle(model, MAPPING, stand, z["1.4_ik"][3], float(z["1.4_duration_s"][3]), 0.92, hip_in_pelvis_os=HIP)
+    g = np.concatenate([a.ravel() for a in c.grid()])
+    assert hashlib.sha256((np.round(g, 9) + 0.0).tobytes()).hexdigest()[:16] == "6b81fb135022033b"  # recorded at cf658f5, before T3c.1
+    same = retarget.Cycle(model, MAPPING, stand, z["1.4_ik"][3], float(z["1.4_duration_s"][3]), 0.92, hip_in_pelvis_os=HIP, trunk="rigid")
+    assert all(np.array_equal(a, b) for a, b in zip(c.grid(), same.grid()))

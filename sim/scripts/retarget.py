@@ -204,20 +204,6 @@ class Cycle:
             eul[pi] = eul[pi] + pitch["sign"] * np.deg2rad(pitch_offset_deg)
         else:
             eul[pi] = eul[pi] - eul[pi][:N_UNIQUE].mean() + pitch["sign"] * np.deg2rad(pitch_mean + pitch_offset_deg)
-        if trunk == "counter_rotate":
-            # Diagnostic variant (not the default): the lumbosacral lateral and axial joints cancel the pelvis's roll and yaw so the
-            # trunk stays upright in the world, as a real trunk largely does; flexion is left to follow the pelvis. Computed from the
-            # same pelvis angles the root uses, then filtered and splined with every other signal.
-            from scipy.spatial.transform import Rotation
-            comp = []
-            for k in range(len(eul[0])):
-                E, _, _ = euler_zxy([e[k] for e in eul], np.zeros(3), np.zeros(3))
-                _, lat, ax = Rotation.from_matrix((self.lab_to_model @ E @ self.B.T).T).as_euler("YXZ")
-                comp.append((lat, ax))
-            comp = np.array(comp)
-            for name, values in (("lsj_lat", comp[:, 0]), ("lsj_ax", comp[:, 1])):
-                self.joint_adr.append(_hinge_adr(model, name))
-                series.append(values)
         self.R_stand = np.zeros(9)
         mujoco.mju_quat2Mat(self.R_stand, self.stand[3:7])
         self.R_stand = self.R_stand.reshape(3, 3)
@@ -231,6 +217,12 @@ class Cycle:
         Xf = _lowpass_periodic(Xd, fs, cutoff_hz)
         self._nj, self._ne = len(series), 3
         self._t_grid = np.linspace(0.0, self.T, N_UNIQUE + 1)
+        self._comp_adr = []
+        if trunk == "counter_rotate":
+            # appended unfiltered: they are exact functions of the filtered pelvis angles, so they cancel the root's roll and yaw at
+            # the phase points to round-off (a filter would not commute with the nonlinear decomposition)
+            Xf = np.column_stack([Xf, self._counter_rotation(Xf)])
+            self._comp_adr = [_hinge_adr(model, "lsj_lat"), _hinge_adr(model, "lsj_ax")]
         self._spl = self._spline(Xf)
         # root height from the minimum rule on the filtered kinematics, then filtered like the rest
         if root_rule == "foot_min":
@@ -243,6 +235,19 @@ class Cycle:
             self._zspl = self._spline(zs)
             lows = np.array([self._lowest_z_at(self._t_grid[k]) for k in range(N_UNIQUE)])  # with the unshifted height
             self._zspl = self._spline(zs - lows.min())
+
+    def _counter_rotation(self, Xf):
+        """(N, 2) lumbosacral lateral-bending and axial-rotation angles that cancel the pelvis's roll and yaw. With the pelvis rotation
+        Rp = Ry(theta) Rz(a) Rx(l) (intrinsic Y-Z-X: pitch about the lateral axis first, then yaw, then roll), the trunk joints
+        Rx(-l) Rz(-a) leave the abdomen at Rp Rx(-l) Rz(-a) = Ry(theta): the pelvis's pitch only. Flexion stays zero, so the trunk
+        follows the pitch rigidly."""
+        from scipy.spatial.transform import Rotation
+        out = np.zeros((Xf.shape[0], 2))
+        for k in range(Xf.shape[0]):
+            E, _, _ = euler_zxy(Xf[k, self._nj:self._nj + 3], np.zeros(3), np.zeros(3))
+            _, a, l = Rotation.from_matrix(self.lab_to_model @ E @ self.B.T).as_euler("YZX")
+            out[k] = (-l, -a)
+        return out
 
     def _spline(self, X):
         Xc = np.vstack([X, X[:1]])
@@ -261,6 +266,10 @@ class Cycle:
         for i, adr in enumerate(self.joint_adr):
             dof = int(m.jnt_dofadr[np.searchsorted(m.jnt_qposadr, adr)])
             q[adr], qd[dof], qdd[dof] = v[i], d1[i], d2[i]
+        for idx, adr in enumerate(self._comp_adr):
+            col = len(v) - len(self._comp_adr) + idx
+            dof = int(m.jnt_dofadr[np.searchsorted(m.jnt_qposadr, adr)])
+            q[adr], qd[dof], qdd[dof] = v[col], d1[col], d2[col]
         nj = self._nj
         E, dE, ddE = euler_zxy(v[nj:nj + 3], d1[nj:nj + 3], d2[nj:nj + 3])
         Rm = self.R_stand @ self.lab_to_model @ E @ self.B.T

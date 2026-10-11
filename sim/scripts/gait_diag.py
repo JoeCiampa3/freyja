@@ -146,6 +146,36 @@ def foot_report(args):
               f"swing clearance minimum {1000 * np.mean(met['swing_clearance_min_m']):.1f} mm, stance slip rms {np.mean(met['stance_slip_rms_mps']):.2f} m/s")
 
 
+def trunk_report(args):
+    """T3c.1: the two trunk modes side by side for B, H and A: total lateral force (like for like), agreement with the dataset's moments
+    for hip ab/adduction, hip rotation and ankle inversion, A's root-row residual, and the lumbosacral lateral and axial joints' loads."""
+    spec = gait.load_spec("walk_treadmill")
+    c = gait._ctx(str(gait.simrun.MODEL_FILE))
+    for speed in args.speeds:
+        for trunk in ("rigid", "counter_rotate"):
+            rows = _rows(spec, ["B", "A_native", "A_filtered", "H"], args.cap, speed, args.workers, trunk=trunk, pitch_mean="measured")
+            res = gait.build_results(rows, c, {**spec, "speeds_mps": [float(speed)]})[speed]
+            mean = lambda stat: stat["all"]["mean"]
+            f = res["force"]
+            print(f"=== {speed} m/s, trunk {trunk}, {len(rows)} strides, pitch mean measured ===")
+            print("Freyja's total force (B and H use it; A uses the measured one), like for like: vertical peak ratio {:.2f} corr {:.2f} | fore-aft ptp ratio {:.2f} corr {:.2f} | "
+                  "lateral ptp ratio {:.2f} corr {:.2f}".format(*(mean(f[k]) for k in ("vert_peak_ratio", "vert_corr", "ap_ptp_ratio", "ap_corr", "lat_ptp_ratio", "lat_corr"))))
+            print("A root-row residual (mean over strides): " + "; ".join(
+                f"{m}: force {mean(res['residual'][m]['force_rms_pct_bw']):.1f}% BW rms, horizontal moment {mean(res['residual'][m]['moment_h_rms_nm']):.1f} N m rms, vertical moment {mean(res['residual'][m]['yaw_rms_nm']):.1f}"
+                for m in ("A_native", "A_filtered", "H", "B")))
+            print("agreement with the dataset's moments (both limbs pooled): joint, method, corr, rms % of ptp, peak diff N m/kg")
+            for stem in ("hip_aa", "hip_ier", "ankle_ie"):
+                for m in ("B", "H", "A_native", "A_filtered"):
+                    a = [res["agreement"][m][f"{stem}_{s}"] for s in ("right", "left")]
+                    print(f"   {stem:9s} {m:10s} {np.mean([x['corr'] for x in a]):+.2f} {np.mean([x['rms_pct_ptp'] for x in a]):6.1f} {np.mean([x['peak_diff'] for x in a]):+.2f}")
+            for j in gait.TRUNK_ANGLE_JOINTS:
+                ang = np.array([r["trunk_peak_deg"][j] for r in rows])
+                jd = res["joints"][j]["B"]
+                print(f"   {j}: peak angle deg median {np.median(ang):.2f} p95 {np.percentile(ang, 95):.2f} max {ang.max():.2f} | peak torque N m mean/p95/max "
+                      f"{jd['peak_torque_nm']['all']['mean']:.1f}/{jd['peak_torque_nm']['all']['p95']:.1f}/{jd['peak_torque_nm']['all']['max']:.1f} | peak speed rad/s p95 {jd['peak_speed_rad_s']['all']['p95']:.2f} "
+                      f"| power W p95 {jd['peak_power_pos_w']['all']['p95']:.0f} / regen {jd['peak_regeneration_w']['all']['p95']:.0f}")
+
+
 BINS_MM = (10, 30, 100)
 
 
@@ -260,13 +290,17 @@ def main(argv=None):
     fo.add_argument("--speed", default="1.4")
     fo.add_argument("--pitch-mean", default="measured")
     fo.add_argument("--trunk", default="rigid", choices=["rigid", "counter_rotate"])
+    tr = sub.add_parser("trunk")
+    tr.add_argument("--cap", type=int, default=4)
+    tr.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
+    tr.add_argument("--workers", type=int, default=5)
     la = sub.add_parser("lateral")
     la.add_argument("--cap", type=int, default=3)
     la.add_argument("--subjects", type=int, default=6)
     la.add_argument("--speed", default="1.4")
     la.add_argument("--trunk", default="rigid", choices=["rigid", "counter_rotate"])
     args = ap.parse_args(argv)
-    {"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report}[args.cmd](args)
+    {"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report}[args.cmd](args)
 
 
 if __name__ == "__main__":
