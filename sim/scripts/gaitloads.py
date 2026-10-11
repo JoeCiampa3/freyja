@@ -5,7 +5,7 @@ The dataset's lab frame is x right, y up, z backward; the model's is x anterior,
 sim/scenarios/gait/camargo_mapping.yaml). Scaling, all documented in the gait record:
   force   times mass_ratio = Freyja's mass / the subject's mass (the force scales with weight)
   CoP     relative to the subject's pelvis (lab), times length_ratio (Freyja's leg length / the subject's) and cop_scale (a
-          sensitivity knob, default 1), rotated to the model axes and added to the model's root position
+          sensitivity knob, default 1), rotated to the model axes and added to the model's hip-centre midpoint
 Method A applies the scaled force and CoP as measured. Method H keeps the measured CoPs and the measured share of the
 vertical force between the feet but takes the total force from Freyja's own CoM motion (the root force rows of inverse
 dynamics), so the force rows close by construction and only the moments leave a residual.
@@ -22,7 +22,7 @@ LAB_TO_MODEL = np.array([[0.0, 0.0, -1.0], [-1.0, 0.0, 0.0], [0.0, 1.0, 0.0]])
 STANCE_FLAG = 0.5  # the ingested stance channel is 0 or 1
 
 
-def measured_to_model(fp_frame, pelvis_lab, root_xy, mass_ratio, length_ratio, cop_scale=1.0):
+def measured_to_model(fp_frame, ref_lab, ref_xy, mass_ratio, length_ratio, cop_scale=1.0):
     """fp_frame (2, 7) [Fx Fy Fz CoPx CoPy CoPz stance] for the right and left plate in the lab frame; pelvis_lab (3,) the
     subject's pelvis position in the lab; root_xy (2,) the model root's horizontal position. Returns (forces, cops) dicts for
     the loaded feet, in the model frame."""
@@ -31,10 +31,10 @@ def measured_to_model(fp_frame, pelvis_lab, root_xy, mass_ratio, length_ratio, c
         if fp_frame[k, 6] < STANCE_FLAG:
             continue
         forces[foot] = mass_ratio * (LAB_TO_MODEL @ np.asarray(fp_frame[k, 0:3], float))
-        rel = np.asarray(fp_frame[k, 3:6], float) - np.asarray(pelvis_lab, float)
+        rel = np.asarray(fp_frame[k, 3:6], float) - np.asarray(ref_lab, float)
         rel_model = LAB_TO_MODEL @ np.array([rel[0], 0.0, rel[2]])
-        cops[foot] = np.array([root_xy[0] + length_ratio * cop_scale * rel_model[0],
-                               root_xy[1] + length_ratio * cop_scale * rel_model[1], 0.0])
+        cops[foot] = np.array([ref_xy[0] + length_ratio * cop_scale * rel_model[0],
+                               ref_xy[1] + length_ratio * cop_scale * rel_model[1], 0.0])
     return forces, cops
 
 

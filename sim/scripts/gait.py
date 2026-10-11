@@ -173,18 +173,22 @@ def run_stride(task: dict) -> dict:
     ratio = retarget.leg_length_ratio(model, sub["height_m"])
     mass_ratio = c.mass / sub["mass_kg"]
     cut = task["cutoff_hz"]
+    hip = sub.get("hip_in_pelvis_os_m")
+    ref = task["root_reference"] if hip is not None else "pelvis_origin"
     cyc = retarget.Cycle(model, mapping, c.stand, ik, T, ratio, cutoff_hz=cut, tilt_offset_deg=task["tilt_offset_deg"],
-                         root_rule=task["root_rule"])
+                         root_rule=task["root_rule"], hip_in_pelvis_os=hip, root_ref=ref)
     q, qd, qdd = cyc.grid()
     methods = task["methods"]
     joints = c.joints
     nf = N_FRAMES
+    ref_xy = np.array([retarget.model_hip_mid(model, q[k])[:2] if ref == "hip_midpoint" else q[k, :2] for k in range(nf)])
     tor = {m: np.zeros((nf, len(joints))) for m in methods}
     bound = np.zeros((nf, len(joints)))
     dof = [c.hinge[j][1] for j in joints]
     resid = {m: np.zeros((nf, 6)) for m in methods}
     fpf = gaitloads.filter_measured(fp, T, cut) if "A_filtered" in methods else None
-    pelvis = ik[:, 3:6]  # pelvis_tx, ty, tz in the lab, unfiltered
+    # reference point of the measured CoP: the midpoint of the dataset model's hip joint centres (or the pelvis origin), unfiltered
+    ref_lab = retarget.dataset_hip_mid_lab(ik, hip) if ref == "hip_midpoint" else ik[:, 3:6]
     stance_n = np.zeros(N_BINS); cop_out = np.zeros(N_BINS); fric_out = np.zeros(N_BINS)
     cop_margin_min = np.inf
     by_support = {"single": [0, 0], "double": [0, 0]}  # stance-foot frames, CoP outside
@@ -212,7 +216,7 @@ def run_stride(task: dict) -> dict:
                 key = "single" if len(stance) == 1 else "double"
                 by_support[key][0] += 1
                 by_support[key][1] += not r.cop_margin_m[foot] >= 0
-            mf, mc = gaitloads.measured_to_model(fp[:, k, :], pelvis[k], q[k, :2], mass_ratio, ratio, task["cop_scale"])
+            mf, mc = gaitloads.measured_to_model(fp[:, k, :], ref_lab[k], ref_xy[k], mass_ratio, ratio, task["cop_scale"])
             if len(stance) == 1 and stance[0] in mc:
                 cop_err.append((r.cop[stance[0]] - mc[stance[0]])[:2])
             if len(stance) == 2 and len(mf) == 2 and mf["foot_right"][2] + mf["foot_left"][2] > 0:
@@ -221,7 +225,7 @@ def run_stride(task: dict) -> dict:
             for m, frame in (("A_native", fp[:, k, :]), ("A_filtered", None if fpf is None else fpf[:, k, :]), ("H", fp[:, k, :])):
                 if m not in methods:
                     continue
-                forces, cops = gaitloads.measured_to_model(frame, pelvis[k], q[k, :2], mass_ratio, ratio, task["cop_scale"])
+                forces, cops = gaitloads.measured_to_model(frame, ref_lab[k], ref_xy[k], mass_ratio, ratio, task["cop_scale"])
                 if m == "H":
                     forces = gaitloads.method_h_forces(qfrc, forces)
                 t, res, _ = dynamics.solve_given(model, q[k], qfrc, forces, cops)
@@ -269,7 +273,7 @@ def _tasks(spec, manifest, model_path, processed, methods, cutoff, tilt, cap, sw
             for i in idx:
                 tasks.append({"model_path": str(model_path), "processed": str(processed), "subject": s, "speed": str(speed), "index": i,
                               "subject_info": manifest["subjects"][s], "cutoff_hz": cutoff, "tilt_offset_deg": tilt,
-                              "root_rule": spec["root_rule"], "methods": methods, "sweep": sweep, "cop_scale": spec["cop_scale"],
+                              "root_rule": spec["root_rule"], "root_reference": spec.get("root_reference", "hip_midpoint"), "methods": methods, "sweep": sweep, "cop_scale": spec["cop_scale"],
                               "agreement": agreement_on, "kinematics": kin})
     return tasks
 

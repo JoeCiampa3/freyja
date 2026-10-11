@@ -9,6 +9,7 @@ stride_cap_per_subject: null    # null = all strides; otherwise the first N of e
 methods: [B, A_native, A_filtered, H]
 smoothing: {cutoff_hz: 6.0}     # zero-lag Butterworth on the kinematics (and on the measured force for A_filtered)
 root_rule: pelvis_dataset       # retargeting rule (foot_min is a diagnostic only)
+root_reference: hip_midpoint    # the dataset's translation and the measured CoP are referenced to the midpoint of the hip joint centres (pelvis_origin = the earlier behaviour)
 pelvis_tilt_offset_deg: 0.0     # design parameter: mean pelvis tilt relative to the standing pose in stand_static
 cop_scale: 1.0                  # scales the measured CoP relative to the pelvis (methods A and H)
 offset_subjects: [AB13, AB15]   # subject-level ankle offsets (T0): every statistic is also given without them

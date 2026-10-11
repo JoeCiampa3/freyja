@@ -212,3 +212,40 @@ def test_filter_cycle_passes_slow_content_and_removes_fast_content():
     assert np.abs(retarget.filter_cycle(fast, T)[:, 0]).max() < 0.01
     out = retarget.filter_cycle(np.full(101, 3.0), T)
     assert np.allclose(out, 3.0) and out.shape == (101, 1)
+
+
+# ---------- reference to the midpoint of the hip joint centres
+
+HIP = [-0.0737, -0.0689, 0.0871]  # AB06: hip centre in the OpenSim pelvis frame (x forward, y up, half separation)
+
+
+def test_hip_midpoint_of_the_model_follows_the_dataset_hip_midpoint_scaled(model, stand):
+    ik = standing_ik()
+    ik[:, ic.IK_CHANNELS.index("pelvis_tilt")] = 5.0  # the pelvis origin and the hip midpoint differ more when the pelvis is tilted
+    ik[:, ic.IK_CHANNELS.index("pelvis_tx")] = 0.3
+    ik[:, ic.IK_CHANNELS.index("pelvis_tz")] = -0.8
+    c = retarget.Cycle(model, MAPPING, stand, ik, 1.0, scale=0.9, hip_in_pelvis_os=HIP)
+    q = c.eval(0.3)[0]
+    hm_lab = retarget.dataset_hip_mid_lab(ik, HIP)[0]
+    expected = 0.9 * (np.array(MAPPING["frame"]["lab_to_model"]) @ hm_lab)
+    got = retarget.model_hip_mid(model, q)
+    assert got[:2] == pytest.approx(expected[:2], abs=1e-9)
+    # an offset between the two origins really exists: 74 mm and 69 mm in the dataset, 57 mm and 98 mm in Freyja
+    assert retarget.model_hip_offset(model) == pytest.approx([0.0566, 0.0, -0.0975], abs=2e-4)
+
+
+@data_needed
+def test_hip_reference_derivatives_match_finite_differences_and_integrate_back(model, stand, stride):
+    c = retarget.Cycle(model, MAPPING, stand, stride["ik"], stride["T"], scale=0.9, hip_in_pelvis_os=HIP)
+    eps = 1e-5
+    for t in (0.1, 0.4 * c.T, 0.8):
+        q, qd, qdd = c.eval(t)
+        qp, qdp, _ = c.eval(t + eps)
+        qm, qdm, _ = c.eval(t - eps)
+        fd = np.zeros(model.nv)
+        mujoco.mj_differentiatePos(model, fd, 2 * eps, qm, qp)
+        assert np.abs(fd - qd).max() < 1e-5 * max(1.0, np.abs(qd).max())
+        assert np.abs((qdp - qdm) / (2 * eps) - qdd).max() < 1e-4 * max(1.0, np.abs(qdd).max())
+    got = integrate(model, c, 0.0, 0.5 * c.T)
+    ref, _, _ = c.eval(0.5 * c.T)
+    assert np.abs(got[:3] - ref[:3]).max() < 1e-9 and rot_diff_rad(got[3:7], ref[3:7]) < 1e-9

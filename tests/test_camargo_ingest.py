@@ -193,3 +193,10 @@ def test_static_standing_pelvis_tilt_is_read(ab06):
     assert tilt is not None and -15 < tilt < 15  # degrees; the T-pose tilt of a standing subject
     walking = ab06["strides"][1.4]["ik"][:, :, ic.IK_CHANNELS.index("pelvis_tilt")].mean()
     assert abs(walking - tilt) < 10
+
+
+@data_needed
+def test_hip_centre_in_the_dataset_pelvis_frame_is_read(ab06):
+    h = ab06["hip_in_pelvis_os_m"]
+    # AB06's scaled gait2392 pelvis: hips 73.7 mm behind and 68.9 mm below the pelvis origin, 87.1 mm to each side
+    assert h == pytest.approx([-0.0737266, -0.0689296, 0.0870745], abs=1e-6)

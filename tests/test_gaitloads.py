@@ -43,16 +43,16 @@ def fp_frame(fz_r, fz_l, cop_r=(0.6, 0, -0.8), cop_l=(0.4, 0, -0.7), fx=0.0, fzl
 
 def test_force_is_rotated_to_model_axes_and_scaled_by_the_mass_ratio():
     fp = fp_frame(700.0, 0.0, fx=10.0, fzlab=-20.0)  # lab: 10 N to the right, 20 N backward-negative = forward 20 N
-    forces, _ = gaitloads.measured_to_model(fp, pelvis_lab=np.array([0.5, 1.0, -0.7]), root_xy=np.zeros(2), mass_ratio=0.5, length_ratio=1.0)
+    forces, _ = gaitloads.measured_to_model(fp, ref_lab=np.array([0.5, 1.0, -0.7]), ref_xy=np.zeros(2), mass_ratio=0.5, length_ratio=1.0)
     # model x anterior = -lab z, y left = -lab x, z up = lab y
     assert forces["foot_right"] == pytest.approx(0.5 * np.array([20.0, -10.0, 700.0]))
     assert "foot_left" not in forces  # an unloaded plate carries nothing
 
 
-def test_cop_is_taken_relative_to_the_pelvis_scaled_by_the_length_ratio_and_placed_at_the_model_root():
+def test_cop_is_taken_relative_to_the_reference_point_scaled_by_the_length_ratio_and_placed_at_the_model_reference():
     fp = fp_frame(700.0, 0.0, cop_r=(1.0, 0.0, -2.0))
     pelvis = np.array([0.5, 1.0, -1.5])  # relative CoP in the lab: (+0.5 right, -0.5 z) = (0.5 right, 0.5 forward)
-    _, cops = gaitloads.measured_to_model(fp, pelvis, root_xy=np.array([0.1, 0.2]), mass_ratio=1.0, length_ratio=0.8)
+    _, cops = gaitloads.measured_to_model(fp, pelvis, ref_xy=np.array([0.1, 0.2]), mass_ratio=1.0, length_ratio=0.8)
     assert cops["foot_right"] == pytest.approx([0.1 + 0.8 * 0.5, 0.2 + 0.8 * -0.5, 0.0])
     _, cops2 = gaitloads.measured_to_model(fp, pelvis, np.array([0.1, 0.2]), 1.0, 0.8, cop_scale=1.1)
     assert cops2["foot_right"] - np.array([0.1, 0.2, 0.0]) == pytest.approx(1.1 * (cops["foot_right"] - np.array([0.1, 0.2, 0.0])))

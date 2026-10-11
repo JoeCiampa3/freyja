@@ -50,6 +50,39 @@ def _hinge_adr(model, name):
 
 
 ROOT_RULES = ("foot_min", "pelvis_dataset")
+ROOT_REFS = ("hip_midpoint", "pelvis_origin")
+
+
+def dataset_hip_mid_lab(ik, hip_in_pelvis):
+    """(n, 3) midpoint of the dataset model's hip joint centres in the lab frame (x right, y up, z backward), from the pelvis
+    position and orientation (OpenSim body-fixed order Rz Rx Ry of tilt, list, rotation) and the hip centre in the pelvis
+    frame ([x forward, y up, half separation], metres). Unfiltered, as measured."""
+    names = _channels()
+    col = lambda n: ik[:, names.index(n)]
+    h = np.array([hip_in_pelvis[0], hip_in_pelvis[1], 0.0])
+    out = np.zeros((ik.shape[0], 3))
+    for k in range(ik.shape[0]):
+        a = np.deg2rad([col("pelvis_tilt")[k], col("pelvis_list")[k], col("pelvis_rotation")[k]])
+        E, _, _ = euler_zxy(a, np.zeros(3), np.zeros(3))
+        out[k] = np.array([col("pelvis_tx")[k], col("pelvis_ty")[k], col("pelvis_tz")[k]]) + E @ h
+    return out
+
+
+def model_hip_mid(model, q):
+    """Midpoint of Freyja's hip joint centres in the world for the pose q, and its offset from the root origin in the root frame
+    at the neutral pose (the lumbosacral origin: 56.6 mm anterior, 97.5 mm below in this model)."""
+    d = mujoco.MjData(model)
+    d.qpos[:] = q
+    mujoco.mj_kinematics(model, d)
+    ids = [mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, n) for n in ("thigh_right", "thigh_left")]
+    return 0.5 * (d.xpos[ids[0]] + d.xpos[ids[1]])
+
+
+def model_hip_offset(model):
+    """Hip-midpoint minus root origin, in the root frame, at the neutral pose."""
+    d = mujoco.MjData(model)
+    mujoco.mj_forward(model, d)
+    return model_hip_mid(model, d.qpos) - d.xpos[int(model.jnt_bodyid[0])]
 
 
 def leg_length_ratio(model, height_m: float) -> float:
@@ -124,10 +157,15 @@ class Cycle:
     stride duration in seconds, `scale` the leg-length ratio applied to the pelvis translation."""
 
     def __init__(self, model, mapping, stand_qpos, ik, T, scale, cutoff_hz=CUTOFF_HZ,
-                 tilt_offset_deg=0.0, root_rule="pelvis_dataset"):
+                 tilt_offset_deg=0.0, root_rule="pelvis_dataset", hip_in_pelvis_os=None, root_ref=None):
         if root_rule not in ROOT_RULES:
             raise ValueError(f"root_rule must be one of {ROOT_RULES}")
         self.root_rule = root_rule
+        if root_ref is None:
+            root_ref = "hip_midpoint" if hip_in_pelvis_os is not None else "pelvis_origin"
+        if root_ref not in ROOT_REFS or (root_ref == "hip_midpoint" and hip_in_pelvis_os is None):
+            raise ValueError("root_ref hip_midpoint needs the dataset hip centre (hip_in_pelvis_os)")
+        self.root_ref = root_ref
         self.model, self.T, self.scale, self.cutoff_hz = model, float(T), float(scale), float(cutoff_hz)
         self._work = mujoco.MjData(model)
         self.stand = np.asarray(stand_qpos, float).copy()
@@ -140,6 +178,11 @@ class Cycle:
             self.joint_adr.append(_hinge_adr(model, joint))
             series.append(np.deg2rad(spec["sign"] * col(spec["dataset"])))
         eul = [np.deg2rad(col(n)) for n in mapping["frame"]["pelvis_euler"]]
+        self.h_f = model_hip_offset(model)
+        if root_ref == "hip_midpoint":
+            hm = dataset_hip_mid_lab(ik, hip_in_pelvis_os)  # from the measured (unadjusted) pelvis orientation
+        else:
+            hm = np.stack([col("pelvis_tx"), col("pelvis_ty"), col("pelvis_tz")], axis=1)
         # Pelvis tilt: the dataset supplies only the oscillation. The cycle-mean tilt is removed and the mean is set to the
         # design parameter tilt_offset_deg (default 0 = the standing pose's pelvis orientation from stand_static). The model's
         # zero and OpenSim's zero need not coincide, and the subject's static tilt is standing posture, not an offset.
@@ -147,10 +190,9 @@ class Cycle:
         self.R_stand = np.zeros(9)
         mujoco.mju_quat2Mat(self.R_stand, self.stand[3:7])
         self.R_stand = self.R_stand.reshape(3, 3)
-        tx, tz = col("pelvis_tx"), col("pelvis_tz")
-        pos_model = (self.lab_to_model @ np.stack([tx, col("pelvis_ty"), tz])).T  # lab -> model axes
+        pos_model = (self.lab_to_model @ hm.T).T  # lab -> model axes
         xy = scale * pos_model[:, :2]
-        X = np.column_stack(series + eul + [xy, scale * col("pelvis_ty")])
+        X = np.column_stack(series + eul + [xy, scale * hm[:, 1]])
         Xd, self.wrap_gap = _detrend_periodic(X)
         fs = N_UNIQUE / self.T
         if cutoff_hz >= fs / 2:
@@ -195,11 +237,22 @@ class Cycle:
         mujoco.mju_mat2Quat(quat, Rm.ravel())
         w_os = _vee(E.T @ dE)
         a_os = _vee(dE.T @ dE + E.T @ ddE)
-        q[:3] = [v[nj + 3], v[nj + 4], z[0]]
+        if self.root_ref == "hip_midpoint":
+            dRm = self.R_stand @ self.lab_to_model @ dE @ self.B.T
+            ddRm = self.R_stand @ self.lab_to_model @ ddE @ self.B.T
+            off, doff, ddoff = Rm @ self.h_f, dRm @ self.h_f, ddRm @ self.h_f
+            pos = np.array([v[nj + 3] - off[0], v[nj + 4] - off[1], z[0] - off[2]])
+            vel = np.array([d1[nj + 3] - doff[0], d1[nj + 4] - doff[1], z[1] - doff[2]])
+            acc = np.array([d2[nj + 3] - ddoff[0], d2[nj + 4] - ddoff[1], z[2] - ddoff[2]])
+            if self.root_rule == "foot_min":  # the diagnostic rule sets the root height directly
+                pos[2], vel[2], acc[2] = z
+        else:
+            pos, vel, acc = np.array([v[nj + 3], v[nj + 4], z[0]]), np.array([d1[nj + 3], d1[nj + 4], z[1]]), np.array([d2[nj + 3], d2[nj + 4], z[2]])
+        q[:3] = pos
         q[3:7] = quat
-        qd[:3] = [d1[nj + 3], d1[nj + 4], z[1]]
+        qd[:3] = vel
         qd[3:6] = self.B @ w_os
-        qdd[:3] = [d2[nj + 3], d2[nj + 4], z[2]]
+        qdd[:3] = acc
         qdd[3:6] = self.B @ a_os
         return q, qd, qdd
 

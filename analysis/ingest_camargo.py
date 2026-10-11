@@ -84,6 +84,24 @@ def read_table(blob: bytes) -> dict:
     return out
 
 
+def hip_centre_in_pelvis(zf, subject: str) -> list:
+    """Hip joint centre in the subject's OpenSim pelvis frame (x forward, y up, z right), metres: [x, y, half the hip separation].
+    From the right and left hip joints' pelvis offset frames in osimxml/<subject>.osim; the left must mirror the right."""
+    import xml.etree.ElementTree as ET
+    name = next(n for n in zf.namelist() if n.lower() == f"osimxml/{subject.lower()}.osim")  # AB07's file is ab07.osim
+    root = ET.fromstring(zf.read(name))
+    found = {}
+    for joint in root.iter("CustomJoint"):
+        if joint.get("name") in ("hip_r", "hip_l"):
+            for frame in joint.iter("PhysicalOffsetFrame"):
+                if frame.findtext("socket_parent") == "/bodyset/pelvis":
+                    found[joint.get("name")] = [float(v) for v in frame.findtext("translation").split()]
+    r, l = found["hip_r"], found["hip_l"]
+    if abs(r[0] - l[0]) > 1e-9 or abs(r[1] - l[1]) > 1e-9 or abs(r[2] + l[2]) > 1e-9:
+        raise ValueError(f"{subject}: the left hip centre does not mirror the right")
+    return [r[0], r[1], abs(r[2])]
+
+
 def subject_info(path: Path) -> dict:
     t = read_table(path.read_bytes())
     first = lambda v: str(np.asarray(v).ravel()[0])
@@ -175,6 +193,7 @@ def ingest_subject(raw: Path, subject: str, spec: dict) -> dict:
         files[f"{subject}/{Path(n).stem}/ik"] = hashlib.sha256(blob).hexdigest()
         static_tilts.append(float(np.mean(read_table(blob)["pelvis_tilt"])))
     static_tilt = float(np.mean(static_tilts)) if static_tilts else None
+    hip_in_pelvis = hip_centre_in_pelvis(zf, subject)
 
     def reject(s, why):
         rejects[s][why] = rejects[s].get(why, 0) + 1
@@ -250,7 +269,7 @@ def ingest_subject(raw: Path, subject: str, spec: dict) -> dict:
                       **{k: np.array(d[k]) for k in ("t0", "duration_s", "toe_off_phase", "contra_hs_phase", "contra_to_phase", "trial")}}
     return {"subject": subject, "mass_kg": info["mass_kg"], "height_m": info["height_m"], "sex": info["sex"], "age": info["age"],
             "strides": strides, "rejects": rejects, "files": files,
-            "static_pelvis_tilt_deg": static_tilt}
+            "static_pelvis_tilt_deg": static_tilt, "hip_in_pelvis_os_m": hip_in_pelvis}
 
 
 def model_angles(strides: dict, mapping: dict) -> dict:
@@ -280,11 +299,12 @@ def main(argv=None) -> int:
             for k, v in d.items():
                 if k != "n":
                     arrays[f"{s}_{k}"] = v
+        arrays["hip_in_pelvis_os_m"] = np.array(res["hip_in_pelvis_os_m"])
         arrays["static_pelvis_tilt_deg"] = np.array(np.nan if res["static_pelvis_tilt_deg"] is None else res["static_pelvis_tilt_deg"])
         np.savez(out_dir / f"{subject}.npz", **arrays)
         manifest["subjects"][subject] = {
             "mass_kg": res["mass_kg"], "height_m": res["height_m"], "sex": res["sex"], "age": res["age"],
-            "static_pelvis_tilt_deg": res["static_pelvis_tilt_deg"],
+            "static_pelvis_tilt_deg": res["static_pelvis_tilt_deg"], "hip_in_pelvis_os_m": res["hip_in_pelvis_os_m"],
             "strides": {str(s): d["n"] for s, d in res["strides"].items()},
             "rejected": {str(s): res["rejects"][s] for s in res["rejects"]}}
         manifest["files_sha256"].update(res["files"])
