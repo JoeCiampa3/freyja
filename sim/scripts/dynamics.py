@@ -66,6 +66,7 @@ class FrameResult:
     weight_n: float
     cop_margin_m: dict  # signed distance of the CoP to its foot's contact polygon, positive inside
     friction_ratio: dict
+    hull_degenerate: dict  # stance foot -> True when its contact polygon is a segment or a point (foot rolling on an edge)
     feasible: bool
     reasons: list = field(default_factory=list)
     feasible_split: tuple | None = None  # (lowest, highest) feasible right-foot share in double support
@@ -101,11 +102,12 @@ def _hinges(model):
 
 
 def solve_frame(model, qpos, qvel, qacc, stance=FEET, feet=FEET, sweep=False, band_m=HULL_BAND_M, n_sweep=N_SWEEP,
-                _ground_sign: float = 1.0) -> FrameResult:
+                _ground_sign: float = 1.0, qfrc=None) -> FrameResult:
     """Ground wrench, CoPs, joint torques and feasibility for one frame. `stance` lists the feet on the ground. With `sweep` and
     two stance feet, the right-foot force share is swept over its feasible range and the worst case per joint is kept in
     `torque_range`. `_ground_sign` exists for the mutation test only."""
-    qfrc = inverse_frame(model, qpos, qvel, qacc)
+    if qfrc is None:
+        qfrc = inverse_frame(model, qpos, qvel, qacc)
     d = mujoco.MjData(model)
     d.qpos[:] = qpos
     mujoco.mj_kinematics(model, d)
@@ -135,11 +137,12 @@ def solve_frame(model, qpos, qvel, qacc, stance=FEET, feet=FEET, sweep=False, ba
         return net, np.r_[net[:3], R @ net[3:6]]
 
     def feasibility(forces, cops):
-        reasons, margin, fric = [], {}, {}
+        reasons, margin, fric, degenerate = [], {}, {}, {}
         for n in stance:
             corners, (_, _, mu) = geo[n]
             pts = corners[corners[:, 2] <= corners[:, 2].min() + band_m][:, :2]
             margin[n] = float(metrics.support_margin(pts, cops[n][:2]))
+            degenerate[n] = len(metrics.convex_hull(pts)) < 3
             fz = forces[n][2]
             fric[n] = float(np.hypot(forces[n][0], forces[n][1]) / fz) if fz > 0 else float("inf")
             if not fz > 0:
@@ -148,7 +151,7 @@ def solve_frame(model, qpos, qvel, qacc, stance=FEET, feet=FEET, sweep=False, ba
                 reasons.append(f"{n}: CoP outside the contact polygon by {-margin[n] * 1000:.1f} mm")
             if not fric[n] <= mu:
                 reasons.append(f"{n}: friction ratio {fric[n]:.2f} above mu {mu:.2f}")
-        return margin, fric, reasons
+        return margin, fric, reasons, degenerate
 
     ey = np.array([0.0, 1.0, 0.0])
 
@@ -184,7 +187,7 @@ def solve_frame(model, qpos, qvel, qacc, stance=FEET, feet=FEET, sweep=False, ba
         split_right = 1.0 - s
         forces, cops = double(split_right)
     net, residual = assemble(forces, cops)
-    margin, fric, reasons = feasibility(forces, cops)
+    margin, fric, reasons, degenerate = feasibility(forces, cops)
     torque = {n: float(net[dof]) for n, dof in hinges}
     rng = {n: (v, v) for n, v in torque.items()}
     feasible_split = None
@@ -202,4 +205,22 @@ def solve_frame(model, qpos, qvel, qacc, stance=FEET, feet=FEET, sweep=False, ba
             feasible_split = (min(ok), max(ok))
     return FrameResult(torque=torque, torque_range=rng, force=forces, cop=cops, support=support, split_right=split_right,
                        residual=residual, yaw_moment_nm=float(residual[5]), weight_n=weight, cop_margin_m=margin,
-                       friction_ratio=fric, feasible=not reasons, reasons=reasons, feasible_split=feasible_split, qfrc_net=net)
+                       friction_ratio=fric, hull_degenerate=degenerate, feasible=not reasons, reasons=reasons, feasible_split=feasible_split, qfrc_net=net)
+
+
+def solve_given(model, qpos, qfrc, forces, cops, feet=FEET):
+    """Joint torques and the root residual when the ground wrench is GIVEN (methods A and H) instead of solved: `forces` and
+    `cops` map the loaded feet to a world force and a point on the floor. `qfrc` is the frame's qfrc_inverse. Returns
+    (torque dict, residual [force xyz, moment xyz in the world frame about the root origin], net generalized force)."""
+    d = mujoco.MjData(model)
+    d.qpos[:] = qpos
+    mujoco.mj_kinematics(model, d)
+    mujoco.mj_comPos(model, d)
+    R = d.xmat[int(model.jnt_bodyid[0])].reshape(3, 3)
+    g = np.zeros(model.nv)
+    jp = np.zeros((3, model.nv))
+    for n, f in forces.items():
+        mujoco.mj_jac(model, d, jp, None, np.asarray(cops[n], float), mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, n))
+        g += jp.T @ np.asarray(f, float)
+    net = qfrc - g
+    return {n: float(net[dof]) for n, dof in _hinges(model)}, np.r_[net[:3], R @ net[3:6]], net

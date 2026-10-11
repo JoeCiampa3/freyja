@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gait-summary/1",
+  "title": "gait-summary/1",
+  "description": "One run of `fy gait <spec>`: joint loads for level treadmill walking on Freyja's mass distribution, computed three ways (B own dynamics, A measured force scaled, H own total force at the measured CoP) from the Camargo et al. 2021 kinematics. Stamped like a run record. Statistics are across subject-strides as {mean, p95, max}, with an `all` and a `without_offset` variant (the spec's offset_subjects removed). Torques are N m about the model's hinge axes, speeds rad/s, powers W, forces % of Freyja's body weight, angles degrees. Written by sim/scripts/gait.py; CONVENTIONS section 6.",
+  "type": "object",
+  "required": ["schema", "gait_id", "git_commit", "git_dirty", "diff_sha256", "snapshot_sha256", "model_sha256", "spec_sha256",
+               "dataset_manifest_sha256", "env", "spec", "assumptions", "attribution", "subjects", "results", "sensitivity"],
+  "properties": {
+    "schema": {"const": "gait-summary/1"},
+    "gait_id": {"type": "string", "pattern": "^gait[.][0-9]{8}-[0-9]{4}-[a-z0-9_-]+$"},
+    "git_commit": {"type": "string"},
+    "git_dirty": {"type": "boolean"},
+    "diff_sha256": {"type": ["string", "null"]},
+    "snapshot_sha256": {"type": "string"},
+    "model_sha256": {"type": "string"},
+    "spec_sha256": {"type": "string", "description": "sha256 of the canonical JSON of the spec"},
+    "dataset_manifest_sha256": {"type": "string", "description": "sha256 of data/camargo2021/manifest.json"},
+    "env": {"type": "object"},
+    "retarget_version": {"type": "string"},
+    "dynamics_version": {"type": "string"},
+    "gait_version": {"type": "string"},
+    "spec": {"type": "object"},
+    "assumptions": {"type": "array", "items": {"type": "string"}},
+    "attribution": {"type": "string"},
+    "subjects": {"type": "object", "additionalProperties": {"type": "object", "required": ["mass_kg", "height_m", "sex", "leg_length_ratio", "strides"]}},
+    "results": {
+      "type": "object",
+      "description": "Per speed (key '1.4'): n_strides, joints{joint{method{metric{all,without_offset{mean,p95,max}}}}}, bound (worst case over the feasible double-support splits), residual, agreement, feasibility (CoP outside / friction exceeded, by phase bin), hip_extension, kinematics.",
+      "additionalProperties": {"type": "object", "required": ["n_strides", "n_strides_without_offset", "joints", "residual", "hip_extension"]}
+    },
+    "sensitivity": {"type": "object", "description": "95th-percentile peak torque of method B per joint and speed at each smoothing cutoff and pelvis-tilt offset, on stride_cap_per_subject strides per subject."}
+  }
+}

@@ -1,0 +1,25 @@
+# walk_treadmill: level treadmill walking at 1.4 and 1.6 m/s from the Camargo et al. 2021 dataset, loads computed on Freyja's own
+# mass distribution three ways (B, A, H; see docs/briefs/stage2-brief.md). Authored. `fy gait walk_treadmill` runs every
+# subject-stride and writes sim/gait/<id>/gait.json (untracked) and GAIT.md.
+name: walk_treadmill
+dataset: {manifest: data/camargo2021/manifest.json, processed: data/camargo2021/processed}
+speeds_mps: [1.4, 1.6]
+subjects: null                  # null = every subject in the manifest
+stride_cap_per_subject: null    # null = all strides; otherwise the first N of each subject
+methods: [B, A_native, A_filtered, H]
+smoothing: {cutoff_hz: 6.0}     # zero-lag Butterworth on the kinematics (and on the measured force for A_filtered)
+root_rule: pelvis_dataset       # retargeting rule (foot_min is a diagnostic only)
+pelvis_tilt_offset_deg: 0.0     # design parameter: mean pelvis tilt relative to the standing pose in stand_static
+cop_scale: 1.0                  # scales the measured CoP relative to the pelvis (methods A and H)
+offset_subjects: [AB13, AB15]   # subject-level ankle offsets (T0): every statistic is also given without them
+wrap_gap_flag_deg: 10.0         # strides with a joint's drift above this are flagged, never dropped
+upper_body: "rigid at the standing pose from stand_static, arms at the sides; arm swing is not modelled"
+double_support:
+  rule: force split proportional to the CoM's position between the feet; CoPs at a common normalised offset along each box with a shared lateral shift
+  bound: sweep the right-foot share over its feasible range and keep the worst case per joint
+  sweep_points: 21
+  hull_band_m: 0.025
+sensitivity:
+  cutoffs_hz: [4, 6, 10, 15]
+  tilt_offsets_deg: [-5, 0, 5]
+  stride_cap_per_subject: 4     # the sensitivity runs use method B on this many strides per subject

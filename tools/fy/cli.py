@@ -9,6 +9,7 @@ CONVENTIONS.md, so it works from any directory.
     fy check [--tier gate|advisory]      the model checks on the committed model and snapshot
     fy run <scenario>                    run sim/scenarios/<scenario>.yaml and write its run record
     fy sweep <spec>                      sweep pose parameters and record the static standing torques
+    fy gait <spec>                       walking joint loads from the Camargo dataset (sim/scenarios/gait/)
     fy view <scenario> [--set k=v] [--speed x]   watch a scenario live in the MuJoCo viewer
     fy runs list|show|compare|digest|envelope   read run records; digest and envelope write sim/runs/*.md
 """
@@ -76,6 +77,12 @@ def run_sweep(root: Path, args: list):
     return sweep.main(args)
 
 
+def run_gait(root: Path, args: list):
+    _use(root, "sim/scripts")
+    import gait
+    return gait.main(args)
+
+
 def run_view(root: Path, args: list):
     _use(root, "sim/scripts")
     import viewscenario
@@ -112,6 +119,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("test", help="run the tests and checks under pytest", add_help=False)
     sub.add_parser("run", help="run a scenario and write its run record", add_help=False)
     sub.add_parser("sweep", help="sweep pose parameters (static standing torques)", add_help=False)
+    sub.add_parser("gait", help="walking joint loads from the Camargo dataset", add_help=False)
     sub.add_parser("view", help="watch a scenario in the MuJoCo viewer", add_help=False)
     sub.add_parser("runs", help="list, show and compare run records; write the digest and envelope", add_help=False)
     chk = sub.add_parser("check", help="run the model checks")
@@ -123,7 +131,7 @@ def main(argv=None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     ap = build_parser()
     # build, watch, test, run and runs hand everything after the command to the tool that owns the options
-    if argv[:1] and argv[0] in ("build", "watch", "test", "run", "runs", "view", "sweep"):
+    if argv[:1] and argv[0] in ("build", "watch", "test", "run", "runs", "view", "sweep", "gait"):
         command, rest = argv[0], argv[1:]
         tier = None
     else:
@@ -146,4 +154,6 @@ def main(argv=None) -> int:
         return run_view(root, rest)
     if command == "sweep":
         return run_sweep(root, rest)
+    if command == "gait":
+        return run_gait(root, rest)
     return run_check(root, tier)
