@@ -272,7 +272,7 @@ def double_report(args):
                         p_meas = (w[0] * mc["foot_right"][:2] + w[1] * mc["foot_left"][:2]) / w.sum()
                         dd = mujoco_data(m, q[k])
                         polys = tuple(dyn.contact_polygon(dyn._foot_boxes(m, dd, mujoco_body(m, f))[0]) for f in gait.FEET)
-                        out = dyn.double_support_set(polys[0], polys[1], p_meas, n_alpha=3)
+                        out = dyn.double_support_set(polys[0], polys[1], p_meas, n_alpha=2)
                         base_n += 1
                         if not out["feasible"]:
                             base_out.append(out["outside_m"])
@@ -306,6 +306,31 @@ def mujoco_data(model, q):
 def mujoco_body(model, name):
     import mujoco
     return mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, name)
+
+
+def polygon_report(args):
+    """T3c.4: the polygon test for B beside the measured CoP placed on Freyja's feet, single and double support, at polygon bands of 10, 25
+    and 40 mm; and B's median outside distance at the measured pitch and plus and minus 5 degrees (a diagnostic, not a design choice)."""
+    spec = gait.load_spec("walk_treadmill")
+    c = gait._ctx(str(gait.simrun.MODEL_FILE))
+    ms = lambda v: "-" if v is None else f"{1000 * v:.0f}"
+    for speed in args.speeds:
+        for trunk in ("rigid", "counter_rotate"):
+            print(f"=== {speed} m/s, trunk {trunk}, {args.cap} strides per subject, pitch mean measured ===")
+            for off in (0.0, -5.0, 5.0):
+                rows = _rows(spec, ["B"], args.cap, speed, args.workers, trunk=trunk, pitch_mean="measured", pelvis_pitch_offset_deg=off)
+                res = gait.build_results(rows, c, {**spec, "speeds_mps": [float(speed)], "pelvis_pitch_offset_deg": off})[speed]["feasibility"]
+                pg = res["polygon"]
+                if off == 0.0:
+                    print("band mm | support | B outside % | B median / p95 mm | measured outside % | measured median / p95 mm")
+                    for b in pg["B"]:
+                        for key in ("single", "double"):
+                            x, y = pg["B"][b][key], pg["measured"][b][key]
+                            r = lambda z: "-" if z["outside_fraction"] is None else f"{100 * z['outside_fraction']:.1f}"
+                            print(f"  {1000 * float(b):4.0f}   {key:7s}  {r(x):>6s}   {ms(x['median_outside_m']):>4s} / {ms(x['p95_outside_m']):>4s}      {r(y):>6s}   {ms(y['median_outside_m']):>4s} / {ms(y['p95_outside_m']):>4s}")
+                b25 = pg["B"]["0.025"]
+                print(f"  pitch offset {off:+.0f} deg: B median outside distance at 25 mm: single {ms(b25['single']['median_outside_m'])} mm "
+                      f"(outside {100 * b25['single']['outside_fraction']:.1f}%), double {ms(b25['double']['median_outside_m'])} mm (outside {100 * b25['double']['outside_fraction']:.1f}%)")
 
 
 BINS_MM = (10, 30, 100)
@@ -434,13 +459,17 @@ def main(argv=None):
     ds.add_argument("--cap", type=int, default=4)
     ds.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
     ds.add_argument("--workers", type=int, default=5)
+    pgn = sub.add_parser("polygon")
+    pgn.add_argument("--cap", type=int, default=4)
+    pgn.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
+    pgn.add_argument("--workers", type=int, default=5)
     la = sub.add_parser("lateral")
     la.add_argument("--cap", type=int, default=3)
     la.add_argument("--subjects", type=int, default=6)
     la.add_argument("--speed", default="1.4")
     la.add_argument("--trunk", default="rigid", choices=["rigid", "counter_rotate"])
     args = ap.parse_args(argv)
-    {"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "double": double_report}[args.cmd](args)
+    {"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "double": double_report, "polygon": polygon_report}[args.cmd](args)
 
 
 if __name__ == "__main__":
