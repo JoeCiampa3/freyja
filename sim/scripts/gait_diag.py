@@ -202,12 +202,15 @@ def trunk_imu_report(args):
             prep[s][sp] = rows
     summary = {sp: {a: {"amplitude_ratio": [], "phase_lag_deg": [], "cancelled_fraction": [], "pelvis_amp_deg": [], "trunk_amp_deg": []} for a in names} for sp in args.speeds}
     quality, gains = [], {a: [] for a in names}
+    within = {sp: {a: {k: [] for k in ("amplitude_ratio", "phase_lag_deg")} for a in names} for sp in args.speeds}  # stride-to-stride IQR inside each kept subject
+    kept = []
     for s in manifest["subjects"]:
         allrows = [r for sp in args.speeds for r in prep[s][sp]]
         R, q = trunkimu.align_sensor_to_pelvis(np.concatenate([r["acc"] for r in allrows]), np.concatenate([r["f_p"] for r in allrows]))
         quality.append(q)
         if q.min() < args.min_quality:
             continue  # the IMU could not be aligned to the pelvis frame well enough for this subject
+        kept.append((s, q))
         for sp in args.speeds:
             per = {a: {k: [] for k in summary[sp][a]} for a in names}
             for r in prep[s][sp]:
@@ -224,6 +227,8 @@ def trunk_imu_report(args):
             for a in names:
                 for k in per[a]:
                     summary[sp][a][k].append(float(np.median(per[a][k])))
+                for k in within[sp][a]:
+                    within[sp][a][k].append(float(np.subtract(*np.percentile(per[a][k], [75, 25]))))
     q = np.array(quality)
     print(f"alignment of the IMU to the pelvis frame: accelerometer correlation per pelvis axis (x fwd, y up, z right), median over {len(q)} subjects "
           f"{np.median(q[:, 0]):.2f} / {np.median(q[:, 1]):.2f} / {np.median(q[:, 2]):.2f}, worst {q[:, 0].min():.2f} / {q[:, 1].min():.2f} / {q[:, 2].min():.2f}")
@@ -236,6 +241,7 @@ def trunk_imu_report(args):
                 return f"{np.median(v):.{nd}f} [{np.percentile(v, 25):.{nd}f}, {np.percentile(v, 75):.{nd}f}] ({v.min():.{nd}f}..{v.max():.{nd}f})"
             print(f"  {a:5s} pelvis amplitude {f('pelvis_amp_deg', 1)} deg | trunk amplitude {f('trunk_amp_deg', 1)} deg | ratio {f('amplitude_ratio')} | "
                   f"phase lag {f('phase_lag_deg', 0)} deg | cancelled fraction {f('cancelled_fraction')}")
+    return {"summary": summary, "within": within, "kept": [k[0] for k in kept], "quality": np.array([k[1] for k in kept])}
 
 
 def double_report(args):
@@ -581,6 +587,138 @@ def cop_steps(args):
             print(f"   {name:30s} {key:7s} {n:7d} {100 * o / n:9.1f} {med:15.0f}   " + " / ".join(f"{x:5.1f}" for x in b))
 
 
+# ------------------------------------------------------------------------------ T9.1 the human-like trunk reference point
+
+def joint_metrics(angle_rad, qvel, tau) -> dict:
+    """Peak angle (deg), torque, speed and the positive and regenerative (magnitude of the most negative) power over one stride."""
+    angle_rad, qvel, tau = (np.asarray(v, float) for v in (angle_rad, qvel, tau))
+    p = tau * qvel
+    return {"peak_angle_deg": float(np.degrees(np.abs(angle_rad).max())), "peak_torque_nm": float(np.abs(tau).max()), "peak_speed_rad_s": float(np.abs(qvel).max()),
+            "peak_power_pos_w": float(p.max()), "peak_regen_w": float(max(0.0, -p.min()))}
+
+
+def distribution(values) -> dict:
+    v = np.asarray(values, float)
+    return {"median": float(np.median(v)), "p95": float(np.percentile(v, 95)), "max": float(v.max())}
+
+
+def joint_over_pelvis(gain, lag_deg) -> float:
+    """|1 - r e^(-i phi)|: how much of the pelvis's first-harmonic amplitude the lumbosacral joint must supply when the trunk's harmonic is r e^(-i phi) times the pelvis's."""
+    return float(abs(1.0 - gain * np.exp(-1j * np.deg2rad(lag_deg))))
+
+
+def quartile_corners(d) -> list:
+    """The four (gain, lag) pairs that pair each gain quartile with each lag quartile of one axis's {median, q1, q3}."""
+    return [(d[g][0], d[l][1]) for g in ("q1", "q3") for l in ("q1", "q3")]
+
+
+LSJ = ("lsj_lat", "lsj_ax")
+VARIANTS = ("rigid", "counter_rotate", "first_harmonic median", "first_harmonic q1 gain, q1 lag", "first_harmonic q1 gain, q3 lag",
+            "first_harmonic q3 gain, q1 lag", "first_harmonic q3 gain, q3 lag")
+
+
+def _variant_kwargs(variant: str, speed: str) -> dict:
+    """Cycle keyword arguments for a variant name: rigid, counter_rotate, "first_harmonic median" or "first_harmonic q1 gain, q3 lag"."""
+    import re
+    import retarget
+    if variant in ("rigid", "counter_rotate"):
+        return {"trunk": variant}
+    d = retarget.FIRST_HARMONIC_DEFAULTS[speed]
+    if variant.endswith("median"):
+        gq = lq = "median"
+    else:
+        gq, lq = re.fullmatch(r"first_harmonic (q[13]) gain, (q[13]) lag", variant).groups()
+    return {"trunk": "first_harmonic", "trunk_gain": tuple(d[ax][gq][0] for ax in ("roll", "yaw")), "trunk_lag_deg": tuple(d[ax][lq][1] for ax in ("roll", "yaw"))}
+
+
+def _pool(fn, tasks, workers):
+    if workers <= 1 or len(tasks) < 8:
+        return [fn(t) for t in tasks]
+    from concurrent.futures import ProcessPoolExecutor
+    with ProcessPoolExecutor(max_workers=workers) as ex:
+        return list(ex.map(fn, tasks, chunksize=8))
+
+
+def _lsj_task(task: dict) -> dict:
+    """One subject-stride, one trunk variant: the lumbosacral lateral and axial joints' metrics. The joint torque is the joint row of
+    qfrc_inverse: the ground wrench has no columns above the pelvis, so it is the same for every method."""
+    import dynamics
+    import retarget
+    c = gait._ctx(task["model_path"])
+    z = gait._subject_arrays(task["processed"], task["subject"])
+    sp, i = task["speed"], task["index"]
+    sub = task["subject_info"]
+    hip = sub.get("hip_in_pelvis_os_m")
+    cyc = retarget.Cycle(c.model, c.mapping, c.stand, z[f"{sp}_ik"][i], float(z[f"{sp}_duration_s"][i]), retarget.leg_length_ratio(c.model, sub["height_m"]),
+                         cutoff_hz=6.0, root_rule="pelvis_dataset", hip_in_pelvis_os=hip, root_ref="hip_midpoint" if hip is not None else "pelvis_origin",
+                         pitch_mean="measured", **_variant_kwargs(task["variant"], sp))
+    q, qd, qdd = cyc.grid()
+    nf = gait.N_FRAMES
+    qfrc = np.array([dynamics.inverse_frame(c.model, q[k], qd[k], qdd[k]) for k in range(nf)])
+    out = {}
+    for j in LSJ:
+        adr, dof = c.hinge[j]
+        out[j] = joint_metrics(q[:nf, adr], qd[:nf, dof], qfrc[:, dof])
+    return {"subject": task["subject"], "speed": sp, "variant": task["variant"], "metrics": out}
+
+
+def harmonic_report(args):
+    """T9.1: the lumbosacral lateral and axial rows for a human-like trunk (first_harmonic at the T3c.2 medians and at the quartile corners)
+    beside rigid and counter_rotate, per speed, over every subject-stride; and how much of the quartile spread is the subjects and how much is
+    the IMU estimate."""
+    import retarget
+    manifest = json.loads((REPO / "data/camargo2021/manifest.json").read_text(encoding="utf-8"))
+    print("joint rotation needed per unit of pelvis first-harmonic amplitude, |1 - r e^(-i phi)| (the brief's arithmetic: about 1.2 to 1.4 roll, 1.0 to 1.1 yaw):")
+    for sp, d in retarget.FIRST_HARMONIC_DEFAULTS.items():
+        for ax in ("roll", "yaw"):
+            cs = [joint_over_pelvis(*x) for x in quartile_corners(d[ax])]
+            print(f"  {sp} m/s {ax}: median ({d[ax]['median'][0]}, {d[ax]['median'][1]:.0f} deg) -> {joint_over_pelvis(*d[ax]['median']):.2f}; quartile corners {min(cs):.2f} to {max(cs):.2f}")
+    subjects = [s for s in manifest["subjects"]]
+    tasks = []
+    for sp in args.speeds:
+        for s in subjects:
+            for i in range(manifest["subjects"][s]["strides"][sp]):
+                for v in VARIANTS:
+                    tasks.append({"model_path": str(gait.simrun.MODEL_FILE), "processed": str(REPO / "data/camargo2021/processed"), "subject": s, "speed": sp,
+                                  "index": i, "subject_info": manifest["subjects"][s], "variant": v})
+    if args.cap:
+        tasks = [t for t in tasks if t["index"] < args.cap]
+    print(f"{len(tasks)} subject-stride x variant cycles, {len({(t['subject'], t['speed'], t['index']) for t in tasks})} subject-strides")
+    rows = _pool(_lsj_task, tasks, args.workers)
+    for sp in args.speeds:
+        for j in LSJ:
+            print(f"=== {sp} m/s, {j}: median / 95th percentile / maximum across subject-strides ===")
+            print(f"{'variant':36s} {'peak angle deg':>22s} {'peak torque N m':>24s} {'peak speed rad/s':>22s} {'power+ W (p95 / max)':>22s} {'regen W (p95 / max)':>22s}")
+            by = {}
+            for v in VARIANTS:
+                R = [r["metrics"][j] for r in rows if r["speed"] == sp and r["variant"] == v]
+                by[v] = {k: distribution([x[k] for x in R]) for k in R[0]}
+                m = by[v]
+                f3 = lambda k, nd: f"{m[k]['median']:.{nd}f} / {m[k]['p95']:.{nd}f} / {m[k]['max']:.{nd}f}"
+                z0 = lambda x: f"{x + 0.0:.0f}" if round(x) != 0 else "0"  # no "-0"
+                print(f"{v:36s} {f3('peak_angle_deg', 1):>22s} {f3('peak_torque_nm', 1):>24s} {f3('peak_speed_rad_s', 2):>22s} "
+                      + f"{z0(m['peak_power_pos_w']['p95'])} / {z0(m['peak_power_pos_w']['max'])}".rjust(22) + f" {z0(m['peak_regen_w']['p95'])} / {z0(m['peak_regen_w']['max'])}".rjust(23))
+            corners = [by[v] for v in VARIANTS if v.startswith("first_harmonic q")]
+            print("  spread over the four quartile corners (min to max): " + "; ".join(
+                f"{k.replace('peak_', '')} p95 {min(c[k]['p95'] for c in corners):.1f} to {max(c[k]['p95'] for c in corners):.1f}" for k in ("peak_angle_deg", "peak_torque_nm", "peak_speed_rad_s", "peak_power_pos_w", "peak_regen_w")))
+    # how far the quartile spread is the subjects and how far the estimate
+    from scipy.stats import spearmanr
+    args2 = argparse.Namespace(speeds=args.speeds, min_quality=0.0, gyro_unit=1.0)
+    imu = trunk_imu_report(args2)
+    q = imu["quality"]
+    ok = (q >= 0.6).all(axis=1)
+    iqr = lambda v: float(np.subtract(*np.percentile(v, [75, 25])))
+    print(f"=== subjects against estimate ({len(q)} subjects; {int(ok.sum())} with the IMU alignment correlation at least 0.6 on every axis; lateral (z) axis: median {np.median(q[:, 2]):.2f}, worst {q[:, 2].min():.2f}) ===")
+    for sp in args.speeds:
+        for ax in ("roll", "yaw"):
+            for k, label in (("amplitude_ratio", "ratio"), ("phase_lag_deg", "lag deg")):
+                v = np.array(imu["summary"][sp][ax][k])
+                w = np.array(imu["within"][sp][ax][k])
+                rho_x = spearmanr(v, q[:, 0])[0]
+                rho_z = spearmanr(v, q[:, 2])[0]
+                print(f"  {sp} {ax:4s} {label:8s}: IQR across all subjects {iqr(v):.2f}, across the {int(ok.sum())} well-aligned {iqr(v[ok]):.2f}; "
+                      f"median within-subject stride IQR {np.median(w):.2f}; Spearman with alignment (forward {rho_x:+.2f}, lateral {rho_z:+.2f})")
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="gait_diag")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -614,6 +752,10 @@ def main(argv=None):
     ti.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
     ti.add_argument("--min-quality", type=float, default=0.0, help="drop subjects whose accelerometer alignment correlation is below this on any axis")
     ti.add_argument("--gyro-unit", type=float, default=1.0, help="multiplier from the file's gyroscope unit to rad/s")
+    hr = sub.add_parser("harmonic")
+    hr.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
+    hr.add_argument("--cap", type=int, default=0, help="strides per subject (0 = all)")
+    hr.add_argument("--workers", type=int, default=5)
     ds = sub.add_parser("double")
     ds.add_argument("--cap", type=int, default=4)
     ds.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
@@ -636,7 +778,7 @@ def main(argv=None):
     la.add_argument("--speed", default="1.4")
     la.add_argument("--trunk", default="rigid", choices=["rigid", "counter_rotate"])
     args = ap.parse_args(argv)
-    {"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "double": double_report, "polygon": polygon_report, "swing": swing_report, "masses": masses_report, "placement": placement_report, "pushoff": pushoff_report}[args.cmd](args)
+    {"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "harmonic": harmonic_report, "double": double_report, "polygon": polygon_report, "swing": swing_report, "masses": masses_report, "placement": placement_report, "pushoff": pushoff_report}[args.cmd](args)
 
 
 if __name__ == "__main__":
