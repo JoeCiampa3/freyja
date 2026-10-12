@@ -192,3 +192,24 @@ def test_the_baseline_stores_the_reproduction_metrics_unrounded(tmp_path, monkey
     import json
     got = json.loads(path.read_text(encoding="utf-8"))["reproduction"]["metrics"]["rigid/A_filtered"]["hip_fe_right"]["peak_diff"]
     assert got == 0.0189675043
+
+
+@pytest.mark.skipif(not PROCESSED.exists(), reason="processed Camargo arrays not present")
+@pytest.mark.parametrize("mode", gait.TRUNK_MODES)
+def test_torques_above_the_pelvis_are_identical_across_methods_in_each_trunk_mode(mode):
+    """The foot Jacobians have no columns above the pelvis, so the ground wrench cannot reach those rows: they depend on the kinematics and the
+    trunk mode alone. If this fails the envelope's above-the-pelvis rows must not be added (brief T7)."""
+    import json as _json
+    spec = gait.load_spec("walk_treadmill")
+    spec.update({"subjects": ["AB06", "AB12"], "stride_cap_per_subject": 1, "speeds_mps": [1.4, 1.6]})
+    manifest = _json.loads((REPO / spec["dataset"]["manifest"]).read_text(encoding="utf-8"))
+    tasks = gait._tasks(spec, manifest, gait.simrun.MODEL_FILE, REPO / spec["dataset"]["processed"], list(spec["methods"]), 6.0, 0.0, 1, False, False, False, trunk=mode)
+    assert len(tasks) == 4
+    for t in tasks:
+        t["keep_torque"] = True
+        tor = gait.run_stride(t)["torque"]
+        for j in gait.EXTRA_JOINTS:
+            ref = np.array(tor["B"][j])
+            assert np.abs(ref).max() > 1e-3  # the rows are not trivially zero
+            for m in ("A_native", "A_filtered", "H"):
+                assert np.abs(np.array(tor[m][j]) - ref).max() <= 1e-9 * max(1.0, np.abs(ref).max()), (mode, t["subject"], t["speed"], m, j)

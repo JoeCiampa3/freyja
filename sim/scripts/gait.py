@@ -340,6 +340,8 @@ def run_stride(task: dict) -> dict:
                 resid[m][k] = res
     qdj = np.stack([qd[:nf, d] for d in dof], axis=1)
     out = {"subject": task["subject"], "speed": sp, "trunk": task["trunk"], "index": i, "duration_s": T, "peaks": {}, "resid": {}, "agree": {}}
+    if task.get("keep_torque"):  # tests only: the per-frame joint torques, never written to a record
+        out["torque"] = {m: {j: tor[m][:, a].tolist() for a, j in enumerate(joints)} for m in methods}
     for m in methods:
         out["peaks"][m] = {j: peak_metrics(tor[m][:, a], qdj[:, a]) for a, j in enumerate(joints)}
         r = resid[m]

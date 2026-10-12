@@ -58,6 +58,146 @@ def write_all(d, records):
         rr.write_summary(r, d)
 
 
+LEG_STEMS = ("hip_fe", "hip_aa", "hip_ier", "knee", "ankle_pdflex", "ankle_ie")
+LEG_JOINTS = [f"{s}_{side}" for s in LEG_STEMS for side in ("right", "left")]
+EXTRA = ("lsj_fe", "lsj_lat", "lsj_ax", "tj_fe", "cj_fe")
+MODES = ("rigid", "counter_rotate")
+GAIT_METHODS = ("B", "A_native", "A_filtered", "H")
+
+
+def _stats(p95):
+    return {"all": {"mean": 0.8 * p95, "p95": p95, "max": 1.2 * p95}, "without_offset": {"mean": 0.8 * p95, "p95": 0.99 * p95, "max": 1.1 * p95}}
+
+
+def _verdict(corr, rms, meets=None):
+    ok = corr >= 0.9 and rms <= 15.0 if meets is None else meets
+    return {"meets": ok, "joints": {s: {"corr": corr, "rms_pct_ptp": rms, "meets": ok} for s in ("hip_fe", "knee", "ankle_pdflex")}}
+
+
+def gait_record(model_sha=None, a_filtered_meets=True, h_meets=False, ids="gait.20261012-0900-walk_treadmill"):
+    """A synthetic gait-summary: B p95 100, A_native 50, A_filtered 40, H 70 N m at every leg joint (x1.1 at 1.6 m/s); spine rows differ by trunk mode."""
+    base = {"B": 100.0, "A_native": 50.0, "A_filtered": 40.0, "H": 70.0}
+    results = {}
+    for sp in ("1.4", "1.6"):
+        results[sp] = {}
+        for mode in MODES:
+            f = 1.0 if mode == "rigid" else 0.5
+            joints = {j: {m: {"peak_torque_nm": _stats(base[m] * (1.1 if sp == "1.6" else 1.0)), "peak_speed_rad_s": _stats(3.0), "peak_power_pos_w": _stats(200.0),
+                              "peak_regeneration_w": _stats(120.0)} for m in GAIT_METHODS} for j in LEG_JOINTS}
+            for j in EXTRA:
+                joints[j] = {m: {"peak_torque_nm": _stats(60.0 * f), "peak_speed_rad_s": _stats(1.5 * f), "peak_power_pos_w": _stats(30.0 * f),
+                                 "peak_regeneration_w": _stats(20.0 * f)} for m in GAIT_METHODS}
+            agree = {m: {j: {"corr": c, "rms_pct_ptp": r, "peak_diff": 0.0, "corr_without_offset": c, "rms_pct_ptp_without_offset": r} for j in LEG_JOINTS}
+                     for m, (c, r) in {"B": (0.3, 60.0), "A_native": (0.88, 17.0), "A_filtered": (0.95, 12.0), "H": (0.95 if h_meets else 0.7, 10.0 if h_meets else 30.0)}.items()}
+            for j in LEG_JOINTS:  # the off-band stems of A_filtered, as measured: hip ab/adduction 0.97 / 18%, hip rotation 0.86 / 18%, ankle inversion -0.12 / 108%
+                c, r = {"hip_aa": (0.97, 18.0), "hip_ier": (0.86, 18.0), "ankle_ie": (-0.12, 108.0)}.get(j[:-6] if j.endswith("_right") else j[:-5], (0.95, 12.0))
+                agree["A_filtered"][j].update(corr=c, rms_pct_ptp=r, corr_without_offset=c, rms_pct_ptp_without_offset=r)
+            results[sp][mode] = {
+                "n_strides": 10, "n_strides_without_offset": 9, "joints": joints, "agreement": agree,
+                "band": {"B": {"all": _verdict(0.3, 60.0), "without_offset": _verdict(0.3, 60.0)}, "A_native": {"all": _verdict(0.88, 17.0), "without_offset": _verdict(0.88, 17.0)},
+                         "A_filtered": {"all": _verdict(0.95, 12.0, a_filtered_meets), "without_offset": _verdict(0.95, 12.0, a_filtered_meets)},
+                         "H": {"all": _verdict(0.95, 10.0) if h_meets else _verdict(0.7, 30.0), "without_offset": _verdict(0.7, 30.0)}},
+                "trunk_peak_deg": {"lsj_lat": _stats(7.4 * f), "lsj_ax": _stats(11.9 * f)},
+                "hip_extension": {"median_deg": 23.0, "p95_deg": 36.0, "max_deg": 39.0, "stop_deg": -18.1, "fraction_beyond_stop": 0.85}}
+    results = {sp: dict(sorted(by.items())) for sp, by in results.items()}  # written records have sorted keys: the spec's order is rec["trunk"]
+    return {"schema": "gait-summary/1", "gait_id": ids, "git_commit": "b" * 40, "git_dirty": False, "snapshot_sha256": sha("snap1"),
+            "model_sha256": model_sha or sha("model1"), "trunk": list(MODES), "hybrid_methods": [],
+            "spec": {"name": "walk_treadmill", "offset_subjects": ["AB13", "AB15"], "speeds_mps": [1.4, 1.6]},
+            "assumptions": ["rigid at the standing pose, arms at the sides; arm swing is not modelled"],
+            "subjects": {f"AB{i}": {"strides": {"1.4": 1, "1.6": 1}} for i in range(10)}, "results": results}
+
+
+class GaitEnvelope(unittest.TestCase):
+    def rows(self, text, prefix):
+        return [l for l in text.splitlines() if l.startswith(prefix)]
+
+    def text(self, **kw):
+        return rp.envelope([summary("run.20261002-0900-sweep", "sweep")], gait=gait_record(**kw))
+
+    def test_the_sagittal_rows_come_from_a_filtered_with_p95_and_max_flagged_provisional_naming_method_and_mode(self):
+        text = self.text()
+        row = next(l for l in self.rows(text, "| gait ") if "knee_right" in l and "| 1.4 |" in l)
+        self.assertIn("A_filtered", row)
+        self.assertIn("rigid", row)  # the trunk mode is named (A's leg rows do not depend on it)
+        self.assertIn("provisional", row)
+        cells = [c.strip() for c in row.strip("|").split("|")]
+        self.assertIn("40.0", cells)  # 95th percentile
+        self.assertIn("48.0", cells)  # maximum beside it
+        self.assertIn("60.0", cells)  # A_native's maximum beside, the with-impact bound (1.2 x 50)
+        self.assertNotIn("100.0", row)  # B misses the band and does not enter
+
+    def test_a_method_enters_only_if_it_meets_the_band(self):
+        text = self.text(h_meets=False)
+        self.assertEqual([l for l in self.rows(text, "| gait ") if "| H " in l and "knee_right" in l], [])
+        text = self.text(h_meets=True)
+        h = [l for l in self.rows(text, "| gait ") if "knee_right" in l and "| H " in l]
+        self.assertTrue(h and "70.0" in h[0] and "1.4" in h[0])
+
+    def test_mutation_when_a_filtered_misses_the_band_its_rows_are_not_entered(self):
+        text = self.text(a_filtered_meets=False)
+        self.assertEqual([l for l in self.rows(text, "| gait ") if "knee_right" in l and "A_filtered" in l], [])
+        self.assertIn("no method meets the band", text)
+
+    def test_hip_ab_adduction_and_rotation_are_listed_outside_band_with_their_numbers(self):
+        text = self.text()
+        aa = next(l for l in self.rows(text, "| gait ") if "hip_aa_right" in l and "| 1.4 |" in l)
+        self.assertIn("outside band", aa)
+        self.assertIn("0.97", aa)
+        self.assertIn("18", aa)
+        ier = next(l for l in self.rows(text, "| gait ") if "hip_ier_left" in l and "| 1.6 |" in l)
+        self.assertIn("outside band", ier)
+        self.assertIn("0.86", ier)
+
+    def test_ankle_inversion_is_a_load_from_a_b_and_h_flagged_unverified_and_not_comparable(self):
+        text = self.text()
+        row = next(l for l in self.rows(text, "| gait ") if "ankle_ie_right" in l and "| 1.4 |" in l)
+        self.assertIn("unverified", row)
+        self.assertIn("not comparable with the dataset", row)
+        for v in ("40.0", "100.0", "70.0"):  # A_filtered, B and H p95
+            self.assertIn(v, row)
+        self.assertNotIn("-0.12", row)  # it is not in the agreement table
+
+    def test_joints_above_the_pelvis_are_the_bracket_across_trunk_modes_and_arms_are_excluded(self):
+        text = self.text()
+        row = next(l for l in self.rows(text, "| gait ") if "lsj_lat" in l and "| 1.4 |" in l)
+        self.assertIn("30.0 .. 60.0", row)  # the p95 torque of counter_rotate and rigid
+        self.assertIn("72.0", row)  # the larger maximum
+        self.assertIn("kinematics only", row)
+        self.assertIn("arm", text.lower())
+        self.assertIn("arm swing is not modelled", text)
+
+    def test_every_joint_has_a_speed_and_the_functional_demand_findings_are_there(self):
+        text = self.text()
+        for j in LEG_JOINTS + list(EXTRA):
+            self.assertTrue([l for l in self.rows(text, "| gait ") if f" {j} " in l and "| 1.4 |" in l], j)
+        self.assertIn("lsj_lat", text)
+        self.assertIn("7.4", text)  # peak lumbosacral lateral angle p95 in the rigid mode (counter_rotate: 3.7)
+        self.assertIn("beyond", text)  # peak hip extension against the model's stop
+        self.assertIn("85%", text)
+
+    def test_the_lists_of_covered_and_uncovered_scenario_classes_are_updated(self):
+        head = "\n".join(self.text().splitlines()[:14])
+        self.assertIn("walk_treadmill", head)
+        self.assertRegex(head, r"Not yet included: [^.]*stairs")
+        self.assertIn("overground walking", head)
+        self.assertNotRegex(head, r"Not yet included: gait")
+
+    def test_a_gait_record_for_another_model_is_stale_and_contributes_nothing(self):
+        text = rp.envelope([summary("run.20261002-0900-sweep", "sweep")], current_model_sha=sha("model1"), gait=gait_record(model_sha=sha("other")))
+        self.assertIn("stale", text.lower())
+        self.assertEqual(self.rows(text, "| gait "), [])
+
+    def test_no_gait_record_changes_nothing_about_the_run_envelope(self):
+        recs = [summary("run.20261002-0900-sweep", "sweep")]
+        self.assertEqual(rp.envelope(recs), rp.envelope(recs, gait=None))
+        self.assertEqual(self.rows(rp.envelope(recs), "| gait "), [])
+
+    def test_byte_identical_and_within_the_line_cap(self):
+        a, b = self.text(), self.text()
+        self.assertEqual(a, b)
+        self.assertLessEqual(len(a.splitlines()), 399)
+
+
 class Envelope(unittest.TestCase):
     def test_selects_the_driving_run_per_quantity_from_the_latest_run_of_each_scenario(self):
         recs = [
@@ -307,7 +447,7 @@ class Query(unittest.TestCase):
     def run_main(self, *argv):
         out = io.StringIO()
         with redirect_stdout(out):
-            code = rp.main([*argv, "--runs-dir", self.tmp.name])
+            code = rp.main([*argv, "--runs-dir", self.tmp.name, "--gait-dir", self.tmp.name])
         return code, out.getvalue()
 
     def test_list_in_run_id_order_and_filtered_by_scenario(self):
@@ -346,6 +486,21 @@ class Query(unittest.TestCase):
             first = path.read_bytes()
             self.run_main(command)
             self.assertEqual(path.read_bytes(), first)  # byte-identical on a second run
+
+    def test_the_band_constants_mirror_the_gait_module_and_the_newest_gait_record_is_read(self):
+        import gait
+        self.assertEqual((rp.GAIT_BAND_CORR, rp.GAIT_BAND_RMS_PCT, rp.GAIT_SAGITTAL), (gait.BAND_CORR, gait.BAND_RMS_PCT, gait.BAND_STEMS))
+        with tempfile.TemporaryDirectory() as d:
+            self.assertIsNone(rp.load_latest_gait(d))
+            for i in ("20261011-2232-walk_treadmill", "20261012-0900-walk_treadmill"):
+                (Path(d) / i).mkdir()
+                (Path(d) / i / "gait.json").write_text(json.dumps({"gait_id": "gait." + i}), encoding="utf-8")
+            self.assertEqual(rp.load_latest_gait(d)["gait_id"], "gait.20261012-0900-walk_treadmill")
+            (Path(self.tmp.name) / "unused").mkdir(exist_ok=True)
+            with redirect_stdout(io.StringIO()):
+                (Path(d) / "20261012-0900-walk_treadmill" / "gait.json").write_text(json.dumps(gait_record(model_sha=json.loads(rp.META_FILE.read_text(encoding="utf-8"))["model_sha256"])), encoding="utf-8")
+                self.assertEqual(rp.main(["envelope", "--runs-dir", self.tmp.name, "--gait-dir", d]), 0)
+            self.assertIn("## Gait: walk_treadmill", (Path(self.tmp.name) / "ENVELOPE.md").read_text(encoding="utf-8"))
 
     def test_nothing_is_written_when_there_are_no_runs(self):
         with tempfile.TemporaryDirectory() as empty:

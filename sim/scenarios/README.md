@@ -15,6 +15,7 @@ into the run record.
 - `stand_static.yaml` the gain-independent static solve for the same pose (`drive: static_equilibrium`,
   `support: ground_wrench`, zero-width window): contacts disabled, ground reaction supplied explicitly. Use this for standing loads
 - `sweeps/*.yaml` posture sweeps for `fy sweep`: a base scenario, a grid of up to three pose parameters and constraints
+- `gait/walk_treadmill.yaml` the spec for `fy gait walk_treadmill` (Stage 2): the dataset, speeds, subjects, methods B / A_native / A_filtered / H, smoothing, `pitch_mean`, `trunk` (a mode or a list: `rigid`, `counter_rotate`) and the double-support rule; `gait/camargo_mapping.yaml` maps the dataset's joints to the model's with signs. Gait specs are not run scenarios: they write `sim/gait/<id>/` and the envelope's gait rows, not `sim/runs/`
 
 `pose` block (hold_pose, stand_static): `com_x_rel_ankle_m` (required) and sagittal offsets `lsj_fe_deg`, `tj_fe_deg`,
 `cj_fe_deg`, `pelvic_tilt_deg` (default 0, positive in the model's flexion direction), solved by `sim/scripts/leanpose.py`.

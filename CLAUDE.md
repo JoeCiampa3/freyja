@@ -11,7 +11,7 @@ Run everything as `python tools/fy <command>` from anywhere in the repo.
 - Test: `python tools/fy test` (offline, same as `python -m pytest` from the root). Model checks: `python tools/fy check`.
 - Build and sheet: `python tools/fy build [--dry-run | --xlsx FILE]`.
 - Runs: `python tools/fy run <scenario>`, `python tools/fy sweep <spec>`, `python tools/fy gait <spec>`, `python tools/fy view <scenario>`.
-- Read results, not raw arrays: `sim/runs/DIGEST.md` (latest run per scenario), `sim/runs/ENVELOPE.md` (worst case per joint), `sim/gait/<id>/GAIT.md`. Regenerate with `python tools/fy runs digest` and `python tools/fy runs envelope`. Standing loads come from `stand_static`, not `hold_pose`.
+- Read results, not raw arrays: `sim/runs/DIGEST.md` (latest run per scenario), `sim/runs/ENVELOPE.md` (worst case per joint; its gait section reads the latest, untracked `sim/gait/<id>/gait.json`, so run `fy gait walk_treadmill` before regenerating it), `sim/gait/<id>/GAIT.md`, `sim/benchmarks/walk_reference.json` (the baseline that `check.sim.walk_reference` reproduces). Regenerate with `python tools/fy runs digest` and `python tools/fy runs envelope`. Standing loads come from `stand_static`, not `hold_pose`.
 - State: `python tools/fy state` before the final commit of each task group. Open every memo and final message with its STATE line.
 
 ## Rules for every session
