@@ -711,9 +711,15 @@ def _pooled(d, m, stem, key="all"):
     return float(np.mean([x["corr" + suf] for x in a])), float(np.mean([x["rms_pct_ptp" + suf] for x in a]))
 
 
+def _in_model_order(names):
+    """`names` in the order of the mapping's joints then EXTRA_JOINTS (Context.joints); a stored record has sorted keys."""
+    order = list(yaml.safe_load(MAPPING_FILE.read_text(encoding="utf-8"))["joints"]) + list(EXTRA_JOINTS)
+    return sorted(names, key=lambda j: order.index(j) if j in order else len(order))
+
+
 def render_md(rec: dict) -> str:
     sp = rec["spec"]
-    modes = rec["trunk"]
+    modes = trunk_modes(sp)  # the spec's order, not the stored key order (a stored record has sorted keys)
     L = [f"<!-- {GENERATED.format(snap=rec['snapshot_sha256'][:12], name=sp['name'])} -->", "",
          f"# Gait loads: {sp['name']}", "", rec["attribution"], "",
          f"Run `{rec['gait_id']}`, commit `{rec['git_commit'][:12]}`{' (dirty)' if rec['git_dirty'] else ''}, model `{rec['model_sha256'][:12]}`, "
@@ -728,10 +734,11 @@ def render_md(rec: dict) -> str:
     items = [f"{n} {d['mass_kg']:.0f} {d['height_m']:.2f} {d['leg_length_ratio']:.2f} " + "/".join(str(d["strides"][str(x)]) for x in sp["speeds_mps"]) for n, d in rec["subjects"].items()]
     L += ["; ".join(items[i:i + 4]) for i in range(0, len(items), 4)]
     for speed, by_mode in rec["results"].items():
+        by_mode = {m: by_mode[m] for m in modes}
         d0 = by_mode[modes[0]]
-        methods = list(next(iter(d0["joints"].values())))
+        methods = [m for m in METHODS_ALL if m in next(iter(d0["joints"].values()))]  # a stored record has sorted keys
         cols = _method_cols(list(by_mode), methods)
-        leg = [j for j in d0["joints"] if j not in EXTRA_JOINTS]
+        leg = [j for j in _in_model_order(d0["joints"]) if j not in EXTRA_JOINTS]
         hdr = "| joint | " + " | ".join(c[0] for c in cols) + " |"
         sep = "|---|" + "---|" * len(cols)
         L += ["", f"## {speed} m/s ({d0['n_strides']} strides per trunk mode, {d0['n_strides_without_offset']} without the offset subjects)", "",
@@ -763,7 +770,7 @@ def render_md(rec: dict) -> str:
                 g = lambda k: f"{rd[k]['all']['mean']:.2f}"
                 L.append(f"| {m} {_short(x)} | {g('force_rms_pct_bw')} | {g('force_peak_pct_bw')} | {g('moment_h_rms_nm')} | {g('moment_h_peak_nm')} | {g('yaw_rms_nm')} | {g('yaw_peak_nm')} |")
         if d0["agreement"]:
-            stems = [j[:-6] for j in d0["agreement"]["B"] if j.endswith("_right")]
+            stems = [j[:-6] for j in _in_model_order(d0["agreement"]["B"]) if j.endswith("_right")]
             L += ["", "### Agreement with the dataset's joint moments: correlation / RMS % of peak-to-peak, both limbs pooled, mean over strides", "", hdr.replace("joint", "stem"), sep]
             for stem in stems:
                 L.append(f"| {stem}{' (band)' if stem in BAND_STEMS else ''} | " + " | ".join("{:.2f} / {:.0f}%".format(*_pooled(by_mode[x], m, stem)) for _, m, x in cols) + " |")
@@ -815,15 +822,15 @@ def render_md(rec: dict) -> str:
             L += ["", f"Kinematics: strides with a wrap gap above {k['wrap_gap_flag_deg']:.0f} deg in any joint: {k['wrap_gap_flagged_strides']} (flagged, kept). "
                   f"Stance penetration {1000 * f['stance_penetration_max_m']['all']['mean']:.1f} mm mean, float {1000 * f['stance_float_max_m']['all']['mean']:.1f} mm, "
                   f"swing clearance minimum {1000 * f['swing_clearance_min_m']['all']['mean']:.1f} mm, stance slip rms {f['stance_slip_rms_mps']['all']['mean']:.2f} m/s. "
-                  "Mean fraction of frames outside the model limit: " + ", ".join(f"{j} {100 * v:.1f}%" for j, v in k["limit_fraction_mean"].items() if v > 0) + "."]
+                  "Mean fraction of frames outside the model limit: " + ", ".join(f"{j} {100 * v:.1f}%" for j, v in ((j, k["limit_fraction_mean"][j]) for j in _in_model_order(k["limit_fraction_mean"])) if v > 0) + "."]
     s = rec["sensitivity"]
     L += ["", f"## Sensitivity: 95th-percentile peak torque of method B, N m ({s['stride_cap_per_subject']} strides per subject)"]
     for speed in rec["results"]:
         for kind, label in (("cutoff_hz", "smoothing cutoff Hz"), ("pitch_offset_deg", "pelvis-pitch offset deg")):
-            vs = list(s[kind])
-            ms = list(next(iter(s[kind].values())))
+            vs = [str(v) for v in sp["sensitivity"]["cutoffs_hz" if kind == "cutoff_hz" else "pitch_offsets_deg"]]  # the spec's order (a stored record has sorted keys)
+            ms = modes
             L += ["", f"{speed} m/s, {label} (columns: value, trunk mode):", "", "| joint | " + " | ".join(f"{v} {_short(x)}" for v in vs for x in ms) + " |", "|---|" + "---|" * (len(vs) * len(ms))]
-            for j in next(iter(next(iter(s[kind].values())).values()))[speed]:
+            for j in _in_model_order(next(iter(next(iter(s[kind].values())).values()))[speed]):
                 if j in EXTRA_JOINTS:
                     continue
                 L.append(f"| {j} | " + " | ".join(f"{s[kind][v][x][speed][j]:.1f}" for v in vs for x in ms) + " |")

@@ -14,7 +14,7 @@ Assumptions:
 - methods A and H take the CoP relative to the subject's pelvis, scaled by leg-length ratio
 - joint limits and contacts are disabled in inverse dynamics; frames past a limit are not clipped
 
-Cells are mean / 95th percentile / maximum across subject-strides, offset subjects AB13, AB15 included unless a table says otherwise. B = Freyja's own dynamics, A = measured force and CoP scaled (native / filtered like the kinematics), H = own total force at the measured CoP. Trunk mode columns: rig = rigid, cr = counter_rotate. A's leg rows do not depend on the trunk mode (tested), so A shows one column. Joints above the pelvis are the same for every method and are listed by mode. The band pools both limbs: correlation >= 0.9 and RMS <= 15% of the dataset's peak-to-peak for the sagittal hip, knee and ankle. No other pass or fail.
+Cells are mean / 95th percentile / maximum across subject-strides, offset subjects AB13, AB15 included unless a table says otherwise. B = Freyja's own dynamics, A = measured force and CoP scaled (native / filtered like the kinematics), H = own total force at the measured CoP. Trunk mode columns: rig = rigid, cr = counter_rotate (`rigid` is a locked spine; `counter_rotate` is an actuated lumbosacral roll and yaw cancelling the pelvis's roll and yaw by feed-forward; `first_harmonic` is a human-like reference point from the trunk IMU, a diagnostic and never a record mode; no mode is the v1 headline, so every row that depends on the trunk names its mode). A's leg rows do not depend on the trunk mode (tested), so A shows one column. Joints above the pelvis are the same for every method and are listed by mode. The band pools both limbs: correlation >= 0.9 and RMS <= 15% of the dataset's peak-to-peak for the sagittal hip, knee and ankle. No other pass or fail.
 
 ## Subjects (mass kg, height m, leg-length ratio, strides at 1.4 / 1.6)
 
@@ -160,7 +160,7 @@ Total ground force against the measured one, like for like, cr: vertical peak ra
 
 Peak hip extension against the model's 18.1 deg stop: median 23.1, 95th percentile 36.8, maximum 39.5 deg; 85% of strides go beyond it (a finding for the Joint ROM sheet's functional-demand column, not clipped).
 
-Kinematics: strides with a wrap gap above 10 deg in any joint: 11 (flagged, kept). Stance penetration 0.0 mm mean, float 44.1 mm, swing clearance minimum 5.8 mm, stance slip rms 0.34 m/s. Mean fraction of frames outside the model limit: hip_fe_right 14.7%, ankle_pdflex_right 1.3%, ankle_ie_right 3.0%, hip_fe_left 15.1%, ankle_pdflex_left 0.9%, ankle_ie_left 4.1%.
+Kinematics: strides with a wrap gap above 10 deg in any joint: 11 (flagged, kept). Stance penetration 0.0 mm mean, float 44.1 mm, swing clearance minimum 5.8 mm, stance slip rms 0.34 m/s. Mean fraction of frames outside the model limit: hip_fe_right 14.7%, hip_fe_left 15.1%, ankle_pdflex_right 1.3%, ankle_pdflex_left 0.9%, ankle_ie_right 3.0%, ankle_ie_left 4.1%.
 
 ## 1.6 m/s (519 strides per trunk mode, 454 without the offset subjects)
 
@@ -298,7 +298,7 @@ Total ground force against the measured one, like for like, cr: vertical peak ra
 
 Peak hip extension against the model's 18.1 deg stop: median 24.2, 95th percentile 36.2, maximum 41.4 deg; 98% of strides go beyond it (a finding for the Joint ROM sheet's functional-demand column, not clipped).
 
-Kinematics: strides with a wrap gap above 10 deg in any joint: 27 (flagged, kept). Stance penetration 0.0 mm mean, float 46.4 mm, swing clearance minimum 6.8 mm, stance slip rms 0.34 m/s. Mean fraction of frames outside the model limit: hip_fe_right 17.9%, ankle_pdflex_right 0.5%, ankle_ie_right 1.8%, hip_fe_left 16.6%, knee_left 0.1%, ankle_pdflex_left 0.6%, ankle_ie_left 3.2%.
+Kinematics: strides with a wrap gap above 10 deg in any joint: 27 (flagged, kept). Stance penetration 0.0 mm mean, float 46.4 mm, swing clearance minimum 6.8 mm, stance slip rms 0.34 m/s. Mean fraction of frames outside the model limit: hip_fe_right 17.9%, hip_fe_left 16.6%, knee_left 0.1%, ankle_pdflex_right 0.5%, ankle_pdflex_left 0.6%, ankle_ie_right 1.8%, ankle_ie_left 3.2%.
 
 ## Sensitivity: 95th-percentile peak torque of method B, N m (4 strides per subject)
 

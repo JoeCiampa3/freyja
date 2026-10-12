@@ -177,6 +177,40 @@ def test_one_record_holds_every_trunk_mode_and_is_byte_identical_on_a_second_run
     assert out[0][1].count(b"\n") <= gait.MAX_LINES and b"counter_rotate" in out[0][1]
 
 
+NEWEST_RECORD = REPO / "sim" / "gait" / "20261011-2317-walk_treadmill" / "gait.json"
+
+
+@pytest.mark.skipif(not NEWEST_RECORD.exists(), reason="gait.json is untracked and absent on a clean clone")
+def test_render_md_takes_the_trunk_mode_order_from_the_spec_not_from_the_stored_key_order():
+    """Stage 2b T5b(a): a record stored with sorted keys (modes in alphabetical order) renders as a fresh one (modes in the spec's order)."""
+    import json
+    stored = json.loads(NEWEST_RECORD.read_text(encoding="utf-8"))
+    order = gait.trunk_modes(stored["spec"])
+    assert len(order) > 1
+    assert list(stored["results"][next(iter(stored["results"]))]) != order  # the stored order differs, so the test can fail
+    fresh = json.loads(json.dumps(stored))
+    joints = list(gait.yaml.safe_load(gait.MAPPING_FILE.read_text(encoding="utf-8"))["joints"]) + list(gait.EXTRA_JOINTS)  # the model's order
+    ordered = lambda d: {j: d[j] for j in joints if j in d}
+    by_method = lambda d: {m: d[m] for m in gait.METHODS_ALL if m in d}
+
+    def fresh_cell(d):
+        d = dict(d, joints={j: by_method(v) for j, v in ordered(d["joints"]).items()}, residual=by_method(d["residual"]),
+                 agreement={m: ordered(v) for m, v in by_method(d["agreement"]).items()})
+        if d["kinematics"]:
+            d["kinematics"] = dict(d["kinematics"], limit_fraction_mean=ordered(d["kinematics"]["limit_fraction_mean"]))
+        return d
+
+    fresh["results"] = {sp: {m: fresh_cell(by[m]) for m in order} for sp, by in stored["results"].items()}
+    assert list(stored["results"]["1.4"]["rigid"]["joints"]) != list(fresh["results"]["1.4"]["rigid"]["joints"])  # sorted vs the model's order
+    for kind, key in (("cutoff_hz", "cutoffs_hz"), ("pitch_offset_deg", "pitch_offsets_deg")):  # a fresh record: the spec's order of values, modes and joints
+        fresh["sensitivity"][kind] = {str(v): {m: {sp: ordered(d) for sp, d in stored["sensitivity"][kind][str(v)][m].items()} for m in order}
+                                      for v in stored["spec"]["sensitivity"][key]}
+    assert list(stored["sensitivity"]["cutoff_hz"]) != list(fresh["sensitivity"]["cutoff_hz"])  # sorted as strings: '10' before '4'
+    assert gait.render_md(stored) == gait.render_md(fresh)
+    cols = next(l for l in gait.render_md(stored).splitlines() if l.startswith("| joint | B "))
+    assert cols.index("B " + gait.TRUNK_SHORT[order[0]]) < cols.index("B " + gait.TRUNK_SHORT[order[1]])
+
+
 def test_stride_count_counts_each_stride_once_whatever_the_number_of_trunk_modes():
     rec = {"results": {"1.4": {"rigid": {"n_strides": 5}, "counter_rotate": {"n_strides": 5}}, "1.6": {"rigid": {"n_strides": 7}, "counter_rotate": {"n_strides": 7}}}}
     assert gait.stride_count(rec) == 12
