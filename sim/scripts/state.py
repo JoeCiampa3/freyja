@@ -47,11 +47,14 @@ def brief_hash(root) -> str:
 
 
 def tree_state(root) -> tuple:
-    """(dirty, diff hash or None). Dirty is any modified, staged or untracked file other than docs/STATE.md; the hash is of
+    """(dirty, diff hash or None). Dirty is any file other than docs/STATE.md that is untracked or that the working tree differs on (a file merely staged for the commit is clean); the hash is of
     `git diff HEAD` with docs/STATE.md excluded and is None when no tracked file differs (CONVENTIONS section 6)."""
     status = _git(root, "status", "--porcelain", "--untracked-files=all", "--", ".", EXCLUDE)
     diff = _git_bytes(root, "diff", "HEAD", "--", ".", EXCLUDE)
-    return bool(status.strip()), (hashlib.sha256(diff).hexdigest()[:12] if diff else None)
+    # Porcelain "XY path": X is the index, Y the working tree. A file staged for the commit (Y blank) is clean; anything the working tree
+    # still differs on (Y set) and every untracked file ("??") makes the tree dirty.
+    dirty = any(l.startswith("??") or l[1:2] != " " for l in status.splitlines() if l.strip())
+    return dirty, (hashlib.sha256(diff).hexdigest()[:12] if diff else None)
 
 
 def default_runner(root) -> dict:

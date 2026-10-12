@@ -61,6 +61,10 @@ POLYGON_BANDS_M = (0.010, 0.025, 0.040)  # polygon band sensitivity (which verti
 METHODS_ALL = ("B", "B_bound", "A_native", "A_filtered", "H")
 TRUNK_MODES = ("rigid", "counter_rotate")  # the headline modes; T9.1's first_harmonic is a reference point reported by gait_diag, never a record mode
 TRUNK_SHORT = {"rigid": "rig", "counter_rotate": "cr"}
+# The trunk modes named for what they model (stage 2b Decisions, "Spine plan"). One home: runs_report.py mirrors it (a test asserts the equality).
+TRUNK_WORDING = ("`rigid` is a locked spine; `counter_rotate` is an actuated lumbosacral roll and yaw cancelling the pelvis's roll and yaw by feed-forward; "
+                 "`first_harmonic` is a human-like reference point from the trunk IMU, a diagnostic and never a record mode; no mode is the v1 headline, "
+                 "so every row that depends on the trunk names its mode")
 # The envelope band (brief, "Decided after dee54b0 and f84571f"): a method's torque rows enter the envelope only if, for the sagittal hip,
 # knee and ankle moments pooled over both limbs and averaged over subject-strides, the correlation with the dataset's own inverse-dynamics
 # moment is at least BAND_CORR and the RMS difference is at most BAND_RMS_PCT of the dataset's peak-to-peak range. Joe's numbers (taken from
@@ -717,7 +721,7 @@ def render_md(rec: dict) -> str:
          "Assumptions:"] + [f"- {a}" for a in rec["assumptions"]] + [""]
     L += [f"Cells are mean / 95th percentile / maximum across subject-strides, offset subjects {', '.join(sp['offset_subjects'])} included "
           "unless a table says otherwise. B = Freyja's own dynamics, A = measured force and CoP scaled (native / filtered like the kinematics), "
-          "H = own total force at the measured CoP. Trunk mode columns: " + ", ".join(f"{_short(m)} = {m}" for m in modes) + ". A's leg rows do not depend on the "
+          "H = own total force at the measured CoP. Trunk mode columns: " + ", ".join(f"{_short(m)} = {m}" for m in modes) + f" ({TRUNK_WORDING}). A's leg rows do not depend on the "
           "trunk mode (tested), so A shows one column. Joints above the pelvis are the same for every method and are listed by mode. The band pools both limbs: "
           f"correlation >= {BAND_CORR} and RMS <= {BAND_RMS_PCT:.0f}% of the dataset's peak-to-peak for the sagittal hip, knee and ankle. No other pass or fail.", ""]
     L += ["## Subjects (mass kg, height m, leg-length ratio, strides at " + " / ".join(str(x) for x in sp["speeds_mps"]) + ")", ""]

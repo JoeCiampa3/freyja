@@ -116,3 +116,23 @@ def test_a_runner_supplies_test_and_check_results(repo):
     ls = lines(text)
     assert "tests 5/8" in ls[2]
     assert any("check.a.b" in l and "gate" in l and "PASS" in l for l in ls) and any("check.c.d" in l and "FAIL" in l for l in ls)
+
+
+def test_a_staged_file_is_clean_and_an_unstaged_or_untracked_one_is_dirty(repo):
+    """Stage 2b: `fy state` run after `git add` of the memo reads `dirty no`; anything not staged still makes the tree dirty."""
+    memo = repo / "docs" / "memos" / "memo2-y.md"
+    memo.write_text("new memo\n")
+    assert "dirty yes" in lines(state.generate(repo, run=False))[2]  # untracked
+    git(repo, "add", "docs/memos/memo2-y.md")
+    assert "dirty no" in lines(state.generate(repo, run=False))[2]  # staged new file
+    memo.write_text("edited after staging\n")
+    assert "dirty yes" in lines(state.generate(repo, run=False))[2]  # staged, then modified again: the working tree differs from what would be committed
+    git(repo, "add", "docs/memos/memo2-y.md")
+    assert "dirty no" in lines(state.generate(repo, run=False))[2]
+    tracked = repo / "docs" / "memos" / "memo1-x.md"
+    tracked.write_text("modified, not staged\n")
+    assert "dirty yes" in lines(state.generate(repo, run=False))[2]  # unstaged modification of a tracked file
+    git(repo, "add", "docs/memos/memo1-x.md")
+    assert "dirty no" in lines(state.generate(repo, run=False))[2]  # staged modification
+    (repo / "stray.txt").write_text("x")
+    assert "dirty yes" in lines(state.generate(repo, run=False))[2]  # an untracked file beside staged ones

@@ -1,3 +1,4 @@
+* text=auto eol=lf
 params/** text eol=lf
 sim/models/freyja.xml text eol=lf
 sim/runs/**/summary.json text eol=lf

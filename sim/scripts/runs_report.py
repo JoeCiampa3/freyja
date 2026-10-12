@@ -294,7 +294,7 @@ NOT_INCLUDED_GAIT = ("stairs", "sit-to-stand", "overground walking", "ramps")
 # The trunk modes named for what they model (stage 2b Decisions, "Spine plan"). No mode is the v1 headline until Joe decides.
 TRUNK_WORDING = ("`rigid` is a locked spine; `counter_rotate` is an actuated lumbosacral roll and yaw cancelling the pelvis's roll and yaw by feed-forward; "
                  "`first_harmonic` is a human-like reference point from the trunk IMU, a diagnostic and never a record mode; no mode is the v1 headline, "
-                 "so every row that depends on the trunk names its mode")
+                 "so every row that depends on the trunk names its mode")  # mirrors gait.TRUNK_WORDING (tests/test_stage2b_housekeeping.py asserts the equality)
 
 
 def _g(x, nd=1):

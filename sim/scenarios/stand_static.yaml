@@ -1,7 +1,8 @@
 # stand_static: the joint torques that hold the same standing pose as hold_pose, from statics alone (sim/scripts/statics.py):
 # mj_inverse at zero velocity and acceleration with contacts disabled, the ground reaction supplied explicitly as a vertical
 # force at the CoM's ground projection. No controller, so no gain enters the numbers; use this, not hold_pose, for standing loads.
-# The pose block must stay identical to hold_pose's (a test checks it).
+# The pose block must stay identical to hold_pose's (a test checks it). Its 0.0 is a design choice, not a measurement
+# (ankle torque near zero, heel margin 41 mm, no cited quiet-standing value): see hold_pose.yaml.
 name: stand_static
 model: sim/models/freyja.xml
 seed: 0
