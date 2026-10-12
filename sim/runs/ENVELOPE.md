@@ -4,7 +4,7 @@
 
 Worst case per joint across the latest run of every scenario, with the run that drives it. Joint torque is about the model's own hinge axes (the decoupled hip architecture), not actuator torque.
 
-Scenario classes included: rom_sweep (run.20261010-1913-rom_sweep), stand_static (run.20261010-2017-stand_static), walk_treadmill (gait.20261011-2232-walk_treadmill, gait rows below).
+Scenario classes included: rom_sweep (run.20261010-1913-rom_sweep), stand_static (run.20261010-2017-stand_static), walk_treadmill (gait.20261011-2317-walk_treadmill, gait rows below).
 Not yet included: stairs, sit-to-stand, overground walking, ramps (they need reference kinematics with citable provenance; running is out of scope).
 This is not a complete sizing basis: do not size an actuator from it.
 Excluded latest runs: run.20261010-2017-hold_pose (hold_pose): verification only (envelope: false), so it never drives a row.
@@ -45,7 +45,7 @@ Excluded latest runs: run.20261010-2017-hold_pose (hold_pose): verification only
 
 Joints with no ROM data (unlimited, so never swept; each row reflects the static standing solve only, or no data): cj_ax, cj_fe, cj_lat, lsj_ax, lsj_fe, lsj_lat, shoulder_aa_left, shoulder_aa_right, shoulder_ier_left, shoulder_ier_right, tj_ax, tj_fe, tj_lat.
 
-## Gait: walk_treadmill (gait.20261011-2232-walk_treadmill)
+## Gait: walk_treadmill (gait.20261011-2317-walk_treadmill)
 
 Level treadmill walking at 1.4 and 1.6 m/s from the Camargo et al. 2021 kinematics (CC BY 4.0) on Freyja's mass distribution, 17 subjects; each cell is the 95th percentile across subject-strides with the maximum beside it (offset subjects AB13, AB15 included; the record has both). Rigid at the standing pose from stand_static, arms at the sides; arm swing is not modelled; the arms are excluded. Trunk modes: rigid, counter_rotate. Gait torque is about the model's hinge axes and is a different statistic from the worst-case rows above; the two are not merged.
 
