@@ -914,6 +914,186 @@ def toe_report(args):
     print(f"  largest |mtp moment| per subject, N m: median {np.median(mm):.2f}, range {mm.min():.2f} to {mm.max():.2f} (the same channel's hip, knee and ankle moments are tens to hundreds of N m)")
 
 
+# ------------------------------------------------------------------------------ Stage 2b T2 and T4: A_filtered's peak torques and gain-or-shape
+
+def peak_stats(values) -> dict:
+    v = np.asarray(values, float)
+    return {"mean": float(v.mean()), "median": float(np.median(v)), "p95": float(np.percentile(v, 95)), "max": float(v.max())}
+
+
+def ols(x, y):
+    """Ordinary-least-squares slope and intercept of y on x."""
+    x, y = np.asarray(x, float), np.asarray(y, float)
+    slope = float(np.cov(x, y, bias=True)[0, 1] / x.var())
+    return slope, float(y.mean() - slope * x.mean())
+
+
+def stem_fit(model, data) -> dict:
+    """Model moment against the dataset's, one array per stride and limb (both per kg of their own body). The slope and intercept are the
+    OLS fit of the model on the data pooled over every frame; `gain` is the least-squares gain through the origin. RMS and peak difference
+    use gait.agreement's conventions (RMS as a percentage of the stride's own dataset peak-to-peak range, then averaged over strides), the
+    gain-removed ones with the model divided by the gain; `corr` is the mean of the per-stride correlations (the band's statistic)."""
+    xs, ys = np.concatenate(data), np.concatenate(model)
+    slope, icpt = ols(xs, ys)
+    gain = float((xs * ys).sum() / (xs * xs).sum())
+    raw = [gait.agreement(m, d) for m, d in zip(model, data)]
+    fixed = [gait.agreement(np.asarray(m) / gain, d) for m, d in zip(model, data)]
+    return {"slope": slope, "intercept": icpt, "gain": gain, "corr": float(np.mean([a["corr"] for a in raw])), "corr_pooled": float(np.corrcoef(xs, ys)[0, 1]),
+            "rms_pct_ptp": float(np.mean([a["rms_pct_ptp"] for a in raw])), "rms_gain_removed_pct_ptp": float(np.mean([a["rms_pct_ptp"] for a in fixed])),
+            "peak_diff": float(np.mean([a["peak_diff"] for a in raw])), "peak_diff_gain_removed": float(np.mean([a["peak_diff"] for a in fixed]))}
+
+
+A_SAGITTAL = ("hip_fe", "knee", "ankle_pdflex")
+A_OFF_BAND = ("hip_aa", "hip_ier")
+
+
+def _a_filtered_strides(speed, workers):
+    """Every subject-stride at one speed through method A_filtered (rigid trunk: A's leg torques do not depend on the mode) with the per-frame
+    joint torques kept, the dataset's own moment per kg of the subject, and the scaling factors of the stride."""
+    import retarget
+    spec = gait.load_spec("walk_treadmill")
+    processed = REPO / spec["dataset"]["processed"]
+    manifest = json.loads((REPO / spec["dataset"]["manifest"]).read_text(encoding="utf-8"))
+    tasks = gait._tasks(spec, manifest, gait.simrun.MODEL_FILE, processed, ["A_filtered"], float(spec["smoothing"]["cutoff_hz"]),
+                        float(spec["pelvis_pitch_offset_deg"]), None, False, False, False, trunk="rigid")
+    tasks = [dict(t, keep_torque=True) for t in tasks if t["speed"] == speed]
+    rows = gait._run_tasks(tasks, workers)
+    c = gait._ctx(gait.simrun.MODEL_FILE)
+    out = []
+    for r in rows:
+        info = manifest["subjects"][r["subject"]]
+        idm = gait._subject_arrays(processed, r["subject"])[f"{speed}_id"][r["index"]]
+        d = {"subject": r["subject"], "leg_ratio": retarget.leg_length_ratio(c.model, info["height_m"]), "tau": r["torque"]["A_filtered"], "data": {}}
+        for j, spec_j in c.mapping["joints"].items():
+            d["data"][j] = spec_j["sign"] * idm[:gait.N_FRAMES, gait.ic.ID_CHANNELS.index(spec_j["dataset"] + "_moment")] / info["mass_kg"]
+        out.append(d)
+    return out, c.mass, spec
+
+
+def a_torque_report(args):
+    for speed in args.speeds:
+        S, mass, spec = _a_filtered_strides(speed, args.workers)
+        off = set(spec["offset_subjects"])
+        print(f"\n=== {speed} m/s: {len(S)} subject-strides, {len({s['subject'] for s in S})} subjects; Freyja mass {mass:.2f} kg ===")
+        print("T2  peak |torque| per stride, statistics over subject-strides: mean / median / p95 / max.")
+        print("    A: A_filtered in N m, then in N m/kg of Freyja's mass; data: the dataset's peak moment in N m/kg of the subject; ratio: A's per-kg figure over the data's;")
+        print("    scaled: the data's per-kg peak x Freyja's mass x leg-length ratio, N m (force by the mass ratio, lever arms by the leg-length ratio)")
+        for label, keep in (("all subjects", lambda u: True), ("without offset subjects " + "/".join(sorted(off)), lambda u: u not in off)):
+            print(f"  [{label}]")
+            for stem in A_SAGITTAL:
+                for side in ("right", "left"):
+                    j = f"{stem}_{side}"
+                    sel = [s for s in S if keep(s["subject"])]
+                    a = np.array([np.abs(s["tau"][j]).max() for s in sel])
+                    dk = np.array([np.abs(s["data"][j]).max() for s in sel])
+                    pred = dk * mass * np.array([s["leg_ratio"] for s in sel])
+                    sa, sak, sd, sp_ = peak_stats(a), peak_stats(a / mass), peak_stats(dk), peak_stats(pred)
+                    k4 = ("mean", "median", "p95", "max")
+                    fmt = lambda st, nd: " ".join(f"{st[k]:{5 + nd}.{nd}f}" for k in k4)
+                    print(f"   {j:20s} A {fmt(sa, 1)} | {fmt(sak, 3)} | data {fmt(sd, 3)} | ratio " + " ".join(f"{sak[k] / sd[k]:5.2f}" for k in k4) + f" | scaled {fmt(sp_, 1)}")
+        print("T4  A_filtered against the dataset, both limbs and every subject-stride pooled (per kg of each body); slope = A on data")
+        print("    stem          slope  intercept   gain    corr  corr_pooled | rms % ptp  after gain | peak diff N m/kg  after gain | per-subject slope median [min, max]")
+        subs = sorted({s["subject"] for s in S})
+        for stem in A_SAGITTAL + A_OFF_BAND:
+            model = [np.asarray(s["tau"][f"{stem}_{side}"]) / mass for s in S for side in ("right", "left")]
+            data = [s["data"][f"{stem}_{side}"] for s in S for side in ("right", "left")]
+            f = stem_fit(model, data)
+            per = []
+            for u in subs:
+                ix = [2 * k + m for k, s in enumerate(S) if s["subject"] == u for m in (0, 1)]  # one entry per (stride, limb), in the order of `model`
+                per.append(ols(np.concatenate([data[k] for k in ix]), np.concatenate([model[k] for k in ix]))[0])
+            print(f"    {stem:12s} {f['slope']:6.3f} {f['intercept']:9.4f} {f['gain']:7.3f} {f['corr']:7.3f} {f['corr_pooled']:7.3f}   | {f['rms_pct_ptp']:6.1f} {f['rms_gain_removed_pct_ptp']:9.1f}"
+                  f"   | {f['peak_diff']:8.3f} {f['peak_diff_gain_removed']:12.3f}   | {np.median(per):.3f} [{min(per):.3f}, {max(per):.3f}]")
+
+
+# ------------------------------------------------------------------------------ Stage 2b T1: hip extension, raw against retargeted
+
+def thigh_world_deg(hip_flexion_deg, pelvis_list_deg):
+    """Thigh angle from the vertical, flexion positive (planar): the hip angle minus the pelvis's anterior pitch, and anterior pitch is minus `pelvis_list`."""
+    return np.asarray(hip_flexion_deg, float) + np.asarray(pelvis_list_deg, float)
+
+
+def peak_extension_deg(right, left) -> float:
+    """Peak hip extension of one stride in degrees, extension positive: minus the minimum hip flexion over both limbs (negative if never extended)."""
+    return float(-min(np.min(right), np.min(left)))
+
+
+def hip_extension_report(args):
+    """T1: per-stride peak hip extension (and the knee flexion, ankle plantarflexion peaks) from the processed dataset kinematics (the
+    phase-normalised inverse kinematics, before any retargeting) and from the retargeted joint angles of the cycles the gait record uses."""
+    import re
+    import zipfile
+    import retarget
+    spec = gait.load_spec("walk_treadmill")
+    processed = REPO / spec["dataset"]["processed"]
+    manifest = json.loads((REPO / spec["dataset"]["manifest"]).read_text(encoding="utf-8"))
+    c = gait._ctx(gait.simrun.MODEL_FILE)
+    nm = gait.ic.IK_CHANNELS
+    adr = lambda j: c.hinge[j][0]
+    q4 = lambda a: f"{np.median(a):5.1f} {np.percentile(a, 95):5.1f} {np.max(a):5.1f}"
+    print(f"Freyja stand_static hip_fe {np.degrees(c.stand[adr('hip_fe_right')]):.2f} deg (right), knee {np.degrees(c.stand[adr('knee_right')]):.2f}, ankle {np.degrees(c.stand[adr('ankle_pdflex_right')]):.2f}; "
+          f"hip range {np.degrees(c.model.jnt_range[c.model.joint('hip_fe_right').id]).round(1).tolist()} deg")
+    raw_dir = None
+    try:
+        raw_dir = gait.ic.raw_dir()
+        raw_dir = raw_dir if raw_dir.exists() else None
+    except Exception:
+        pass
+    static = {}
+    for s in manifest["subjects"]:
+        if raw_dir is None:
+            break
+        zf = zipfile.ZipFile(raw_dir / f"{s}.zip")
+        tabs = [gait.ic.read_table(zf.read(n)) for n in sorted(x for x in zf.namelist() if re.search(r"/static/ik/.*\.mat$", x))]
+        static[s] = {k: float(np.mean([np.mean(t[k]) for t in tabs])) for k in ("hip_flexion_r", "hip_flexion_l", "knee_angle_r", "ankle_angle_r", "pelvis_list")}
+    for speed in args.speeds:
+        rows = []
+        for s, info in manifest["subjects"].items():
+            z = gait._subject_arrays(processed, s)
+            ik, T = z[f"{speed}_ik"], z[f"{speed}_duration_s"]
+            ratio = retarget.leg_length_ratio(c.model, info["height_m"])
+            for i in range(len(ik)):
+                cyc = retarget.Cycle(c.model, c.mapping, c.stand, ik[i], float(T[i]), ratio, cutoff_hz=float(spec["smoothing"]["cutoff_hz"]), root_rule=spec["root_rule"],
+                                     hip_in_pelvis_os=info.get("hip_in_pelvis_os_m"), root_ref=spec["root_reference"], pitch_mean=spec["pitch_mean"], trunk="rigid")
+                q = cyc.grid()[0][:gait.N_FRAMES]
+                ch = lambda n: ik[i][:, nm.index(n)]
+                deg = lambda j: np.degrees(q[:, adr(j)])
+                row = {"subject": s, "pitch": float(ch("pelvis_list").mean())}
+                row["hip_raw"] = peak_extension_deg(ch("hip_flexion_r"), ch("hip_flexion_l"))
+                row["hip_rt"] = peak_extension_deg(deg("hip_fe_right"), deg("hip_fe_left"))
+                row["hip_flex_raw"] = float(max(ch("hip_flexion_r").max(), ch("hip_flexion_l").max()))
+                row["hip_flex_rt"] = float(max(deg("hip_fe_right").max(), deg("hip_fe_left").max()))
+                row["knee_raw"] = float(-min(ch("knee_angle_r").min(), ch("knee_angle_l").min()))
+                row["knee_rt"] = float(max(deg("knee_right").max(), deg("knee_left").max()))
+                row["ankle_raw"] = float(-min(ch("ankle_angle_r").min(), ch("ankle_angle_l").min()))
+                row["ankle_rt"] = float(-min(deg("ankle_pdflex_right").min(), deg("ankle_pdflex_left").min()))
+                row["thigh_world"] = peak_extension_deg(*(thigh_world_deg(ch(f"hip_flexion_{x}"), ch("pelvis_list")) for x in "rl"))
+                row["hip_mean"] = float(ch("hip_flexion_r").mean())
+                rows.append(row)
+        print(f"\n=== {speed} m/s, {len(rows)} subject-strides (extension, flexion, plantarflexion positive; degrees; median / p95 / max; per stride the larger of the two limbs) ===")
+        for key, label in (("hip", "hip extension"), ("hip_flex", "hip flexion"), ("knee", "knee flexion"), ("ankle", "ankle plantarflexion")):
+            raw, rt = np.array([r[key + "_raw"] for r in rows]), np.array([r[key + "_rt"] for r in rows])
+            d = rt - raw
+            print(f" {label:21s} dataset IK {q4(raw)} | retargeted {q4(rt)} | retargeted - dataset: mean {d.mean():+.2f} sd {d.std():.2f} min {d.min():+.2f} max {d.max():+.2f}")
+        raw = np.array([r["hip_raw"] for r in rows])
+        print(f" hip extension beyond the model's {-np.degrees(c.model.jnt_range[c.model.joint('hip_fe_right').id][0]):.1f} deg stop: dataset IK {np.mean(raw > 18.1):.2f} of strides")
+        subs = sorted({r["subject"] for r in rows})
+        print(" per subject, hip extension: median dataset / median retargeted / mean (sd) of the stride difference; mean pelvis_list; mean hip angle; static hip / pelvis_list")
+        for u in subs:
+            rr = [r for r in rows if r["subject"] == u]
+            a, b = np.array([r["hip_raw"] for r in rr]), np.array([r["hip_rt"] for r in rr])
+            st = static.get(u)
+            print(f"  {u}  {np.median(a):5.1f} {np.median(b):5.1f} {np.mean(b - a):+5.2f} ({np.std(b - a):.2f})  list {np.mean([r['pitch'] for r in rr]):5.1f}  hip {np.mean([r['hip_mean'] for r in rr]):5.1f}"
+                  + (f"  static hip R {st['hip_flexion_r']:5.1f} L {st['hip_flexion_l']:5.1f} list {st['pelvis_list']:5.1f}" if st else "  static: raw dir unavailable"))
+        pl = np.array([r["pitch"] for r in rows])
+        b, a = np.polyfit(pl, raw, 1)
+        tw = np.array([r["thigh_world"] for r in rows])
+        print(f" hip extension on the stride's mean pelvis_list: slope {b:.2f} intercept {a:.1f} deg, r {np.corrcoef(pl, raw)[0, 1]:.2f}; mean pelvis_list median {np.median(pl):.1f} deg (range {pl.min():.1f} to {pl.max():.1f}); "
+              f"strides with it above 5 deg: {np.mean(pl > 5):.2f}")
+        print(f" thigh extension from the vertical (hip angle + pelvis_list, planar): {q4(tw)}")
+        print(f" hip extension, strides with mean pelvis_list below 5 deg: {q4(raw[pl < 5])}; at or above 5 deg: {q4(raw[pl >= 5])}")
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="gait_diag")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -980,8 +1160,13 @@ def main(argv=None):
     la.add_argument("--subjects", type=int, default=6)
     la.add_argument("--speed", default="1.4")
     la.add_argument("--trunk", default="rigid", choices=["rigid", "counter_rotate"])
+    at = sub.add_parser("a-torque")
+    at.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
+    at.add_argument("--workers", type=int, default=5)
+    he = sub.add_parser("hipext")
+    he.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
     args = ap.parse_args(argv)
-    {"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "harmonic": harmonic_report, "pitch": pitch_report, "trunkcom": trunkcom_report, "standing": standing_data_report, "toe": toe_report, "double": double_report, "polygon": polygon_report, "swing": swing_report, "masses": masses_report, "placement": placement_report, "pushoff": pushoff_report}[args.cmd](args)
+    {"hipext": hip_extension_report, "a-torque": a_torque_report,"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "harmonic": harmonic_report, "pitch": pitch_report, "trunkcom": trunkcom_report, "standing": standing_data_report, "toe": toe_report, "double": double_report, "polygon": polygon_report, "swing": swing_report, "masses": masses_report, "placement": placement_report, "pushoff": pushoff_report}[args.cmd](args)
 
 
 if __name__ == "__main__":
