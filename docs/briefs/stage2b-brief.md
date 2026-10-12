@@ -6,7 +6,7 @@ Read `CLAUDE.md`, `CONVENTIONS.md`, `docs/OVERVIEW.md`, `docs/memos/memo5-stage2
 
 CONVENTIONS section 9 and `CLAUDE.md` apply. Tests first, one commit per task, files staged by explicit path, every multi-line edit made with the editor tool and confirmed from the file before committing. While iterating run only the affected test file; run the full suite once before each commit. Stop and ask before changing the model, the sheet, the template, any default, the retargeting or a band. Report numbers that contradict this brief and stop.
 
-The work is two sessions. **Session 1: T1, T2, T4, then `docs/memos/memo7-stage2b-checks.md`, `fy state`, stop.** Joe reads the memo and starts **session 2: T3, T5, then `docs/memos/memo8-stage2b-close.md`, `fy state`, stop.** If T1 finds a mapping or offset error, stop after T1 and report it, because T2 and T3 would then rest on it.
+The work is three sessions. **Session 1 (done at `ef9946c`, report `docs/memos/memo7-stage2b-checks.md`):** T1, T2, T4. **Session 2: T3, T5, then `docs/memos/memo8-stage2b-close.md`, `fy state`, stop.** **Session 3: T6, then `docs/memos/memo9-ankle-gain.md`, `fy state`, stop.** Joe starts each session after reading the memo before it.
 
 ## Decisions (Joe confirms by committing this brief; each line is a one-line revert if he disagrees)
 
@@ -16,27 +16,13 @@ The work is two sessions. **Session 1: T1, T2, T4, then `docs/memos/memo7-stage2
 - **Band, flags, schema.** The envelope band is not widened. The pitch-flag rule (5 degrees, either speed) stays. `gait-summary/1` may be amended in place only while no instance of it is tracked; the extract in T3 is the first tracked instance and has its own schema from the start.
 - **`pose.com_x_rel_ankle_m`.** No dataset carries a quiet-standing CoP. The default 0.0 stays and is described as a design choice (ankle torque near zero, heel margin 41 mm), not as an uncited measurement. A comment changes; the value does not.
 
-## T1. Hip extension sanity (report only)
+- **Hip extension requirement.** The 36 degree figure in `memo6` is the dataset's own: its IK hip angle is relative to a pelvis tilted back by a median 7 degrees, and extension relative to the pelvis is extension from the vertical plus the posterior pelvic tilt. From the vertical, peak thigh extension is 22.0 and 24.1 degrees at the 95th percentile (maximum 25 to 28), which is the expected size. The functional demand is therefore recorded as the vertical-referenced figure plus whatever posterior pelvic tilt the gait policy allows; 36 degrees is a finding about the IK pitch, not a ROM requirement. The model's 18.1 degree stop is below even the median extension from the vertical (16.9 and 20.3), so it will bind on any pelvis policy. The stop and the design pelvis pitch (`pitch_mean`) are Joe's decisions and are not changed here.
+- **A verifies shape, not amplitude.** The band (correlation and RMS) cannot see a gain. `A_filtered` against the dataset per kg has slopes of 0.68 (hip flexion), 0.95 (knee), 1.19 (ankle, every subject above 1.05) and 1.17 (hip ab/adduction), and its mean peak is 1.24 times the dataset's at the ankle. The band is not changed. Until the ankle gain is explained (T6), the sizing basis for the sagittal hip, knee and ankle is the dataset's own peak moment scaled to Freyja (mass ratio for the force, leg-length ratio for the lever): ankle mean 102.5 to 108.9, 95th percentile 123 to 138, maximum 135 to 151 N m, which supports the frozen spec of about 103 N m at the mean. `A_filtered`'s ankle row (149 to 169 N m at the 95th percentile) carries a gain of about 1.23 and must not be used for sizing. The envelope shows both, with slopes and peak ratios beside, and no new threshold or flag.
+- **`fy state` and staging.** `fy state` treats files that are staged for the commit as clean, so that `STATE.md` generated after `git add` of the memo reads `dirty no`; an unstaged or untracked file still makes it dirty. (`ef9946c`'s committed `STATE.md` reads `dirty yes` because the memo was untracked when it was generated.)
 
-`memo6` reports peak hip extension beyond the model's 18.1 degree stop in 85% and 98% of strides, with a 95th percentile of 36.8 and 36.2 degrees. From memory, level walking at these speeds is about 15 to 25 degrees, so this is about double what I expect, and it must not go into the Joint ROM sheet until it is explained. Report, per speed:
+## Session 1 (done at `ef9946c`; `docs/memos/memo7-stage2b-checks.md`)
 
-(a) from the raw dataset's inverse kinematics, before any retargeting, the per-stride peak hip extension (state the sign convention) as median, 95th percentile and maximum;
-(b) the same quantity from the retargeted joint angles in the cycles the gait record uses;
-(c) the difference per subject, and whether it is a constant offset;
-(d) the hip angle in the dataset's static trial against Freyja's `stand_static` hip angle;
-(e) the same extremes for knee flexion and ankle plantarflexion, to see whether the offset is hip-specific.
-
-If (c) shows a constant offset or a mapping error, stop and report the number; change nothing.
-
-## T2. The ankle number
-
-`A_filtered` gives a 95th-percentile peak ankle torque of 149 to 164 N m at 1.4 m/s and 158 to 169 N m at 1.6 (maxima up to 202 N m). Joe's frozen ankle spec is about 103 N m, a Winter mean of 1.58 N m/kg times 65 kg, lever-corrected; it lives in the sizing documents and not in this repo, so do not look for it. The two are different statistics at different speeds. For `A_filtered`'s sagittal hip, knee and ankle rows, per speed and limb, report the peak torque as mean, median, 95th percentile and maximum, in N m and in N m per kg of Freyja's mass. Beside it report the dataset's own peak moment in N m per kg of subject mass (mean, median, 95th percentile, maximum, all 17 subjects). State the ratio of the two per kg figures and the scaling rule used (force by the mass ratio, lever arms by the leg-length ratio), so Joe can see whether any excess over the dataset is scaling.
-
-## T4. Gain or shape for the off-band stems
-
-Hip ab/adduction and hip rotation sit just outside the band for `A_filtered` (0.97 / 18% and 0.86 to 0.88 / 16 to 17%). Report, per speed, the ordinary-least-squares slope and intercept of A's moment against the dataset's (pooled over limbs and subject-strides), the RMS after removing the best-fit gain, and the peak difference in N m per kg. A slope away from 1 with a high correlation is a gain error; a slope near 1 is a shape error. Do not change the band and do not admit the rows.
-
-After T4: write `docs/memos/memo7-stage2b-checks.md` (T1, T2, T4, with every tolerance and every question for Joe), run `fy state`, and stop.
+T1, T2 and T4 are done and reported; their outcomes are in the Decisions above. `gait_diag.py hipext` and `gait_diag.py a-torque` regenerate the numbers. Hip rotation is a shape error and hip ab/adduction a gain error (gain 1.27, RMS 18% falling to 10.3% when removed); both stay outside the band. The sagittal hip has a slope of 0.68, with peak ratios of 0.88 to 0.96 (mean and median) to the dataset.
 
 ## T3. A tracked gait extract (session 2)
 
@@ -44,12 +30,27 @@ After T4: write `docs/memos/memo7-stage2b-checks.md` (T1, T2, T4, with every tol
 
 Tests first: a synthetic extract produces the expected envelope text; the extract is byte-identical on a second run; changing one value in the extract changes the envelope (mutation); the harmonic rows equal the diagnostic's numbers to 1e-9 (lateral torque 95th percentile 32.1 and 40.7 N m at 1.4 and 1.6 m/s in `memo6`); the extract validates against its schema. Then verify from a clean clone that `fy runs envelope` reproduces the tracked `ENVELOPE.md` byte for byte, and say so in the memo. The envelope's lumbosacral rows show all three modes.
 
+Add to the extract and the envelope, beside `A_filtered`'s sagittal rows, per speed and limb: the dataset-direct scaled peak torque (mean, 95th percentile, maximum, N m; the code is `gait_diag.py a-torque`'s), the OLS slope against the dataset per kg, and the ratio of A's mean peak per kg to the dataset's; and in the functional-demand rows the hip extension from the vertical (median, 95th percentile, maximum) and relative to the pelvis, with the median posterior pelvic tilt. No threshold and no flag on any of them; the envelope text says what each column is.
+
 ## T5. Wording and housekeeping (session 2)
 
-(a) Find every generated or authored text that attributes B's failure to Freyja's mass distribution, her foot or the controller project (search the generators in `gait.py` and `runs_report.py`, `GAIT.md`, `ENVELOPE.md`, the READMEs and `decisions/0001-toe-joint.md`) and reword it to the Decisions' statement. Change the generators, not the generated files. (b) Describe the three trunk modes as in the Decisions where `rigid` and `counter_rotate` are first explained in generated text. (c) Change the comment on `pose.com_x_rel_ankle_m` as the Decisions say; not the value. (d) Add a `.gitattributes` with `* text=auto eol=lf`. Do not run a renormalisation; report how many tracked files it would change (`git add --renormalize --dry-run .`) and let Joe decide. (e) Update `CLAUDE.md`'s "Current brief" line to this brief.
+(a) Find every generated or authored text that attributes B's failure to Freyja's mass distribution, her foot or the controller project (search the generators in `gait.py` and `runs_report.py`, `GAIT.md`, `ENVELOPE.md`, the READMEs and `decisions/0001-toe-joint.md`) and reword it to the Decisions' statement. Change the generators, not the generated files. (b) Describe the three trunk modes as in the Decisions where `rigid` and `counter_rotate` are first explained in generated text. (c) Change the comment on `pose.com_x_rel_ankle_m` as the Decisions say; not the value. (d) Add a `.gitattributes` with `* text=auto eol=lf`. Do not run a renormalisation; report how many tracked files it would change (`git add --renormalize --dry-run .`) and let Joe decide. (e) `CLAUDE.md`'s "Current brief" line already names this brief; check it does. (f) Make `fy state` treat staged files as clean (Decisions), with tests: a staged memo gives `dirty no`, an untracked file `dirty yes`, an unstaged modification `dirty yes`.
 
 After T5: write `docs/memos/memo8-stage2b-close.md`, run `fy state`, and stop.
 
+## T6. Where does the ankle gain come from? (session 3; report only)
+
+`A_filtered`'s ankle moment per kg is 1.23 times the dataset's at correlation 0.994, in every subject (slopes 1.05 to 1.37), and hip ab/adduction is 1.27 times, so the pipeline reproduces the waveform and not the amplitude. Change nothing; report, per speed:
+
+(a) **Force.** A's vertical and horizontal ground force per kg against the dataset's measured force per kg at the same strides (they should be equal; say how close, and the stride-peak ratio).
+(b) **Lever.** The ankle-to-CoP lever in A (horizontal distance and ankle height above the floor at the peak-torque frame) against the same quantity from the dataset: the lateral malleolus marker's position relative to the CoP in the foot frame if the marker set has one (name the markers; if none, say so and use the heel and toe-tip markers with a stated assumption about the ankle's place in the foot).
+(c) **Terms.** The share of the ankle moment from the ground force and from the foot and shank inertial terms in A.
+(d) **Path.** The T4 table for the foot-frame CoP variant (T3b step 0c): does the ankle gain persist when the CoP is not referenced through the hip midpoint?
+(e) **Across subjects.** The correlation of each subject's ankle slope with leg-length ratio, foot length, mean pelvis pitch, mass ratio and the ankle lever of (b), with the n = 17 caveat.
+(f) The same decomposition, if cheap, for hip ab/adduction (gain 1.27) and the sagittal hip (0.68).
+
+State which of force, lever, inertia or reference path carries the gain, or that none does. Then write `docs/memos/memo9-ankle-gain.md`, run `fy state`, and stop.
+
 ## Done when
 
-Session 1 ends with `memo7`, session 2 with `memo8`; each opens with the STATE line, names every tolerance chosen and why, owns every mistake, and lists the questions for Joe. All suites green offline, `git status` clean, no raw data tracked.
+Session 2 ends with `memo8` and session 3 with `memo9`; each opens with the STATE line, names every tolerance chosen and why, owns every mistake, and lists the questions for Joe. All suites green offline, `git status` clean, no raw data tracked.
