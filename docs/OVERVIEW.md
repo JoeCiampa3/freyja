@@ -4,7 +4,7 @@ Authored. Owner: Joe. Written 2026-10-11 for a Claude session that has never see
 
 ## 1. What Freyja is
 
-Freyja is a biomimetic humanoid android, 170 cm and 65 kg, built by one person (Joe) over a multi-decade horizon. The long-term aim is a machine that is hard to tell from a person. Version 1 is a reduced scope: a non-rigid spine during gait, facial actuators and actuated hands are deferred to v2, but their mass, volume and routing budgets are reserved now. **(confirm: v1 gait is therefore a rigid-spine design.)**
+Freyja is a biomimetic humanoid android, 170 cm and 65 kg, built by one person (Joe) over a multi-decade horizon. The long-term aim is a machine that is hard to tell from a person. Version 1 is a reduced scope: facial actuators and actuated hands are deferred to v2, but their mass, volume and routing budgets are reserved now. The spine plan is not final: v1 builds a multi-DOF spine for articulation and locks it during gait, with the lumbosacral joint possibly left unlocked and actuated for basic balance, and a fully rigid torso as the fallback if control complexity balloons. Stage 2's trunk modes bracket exactly these options (section 7).
 
 Two things shape every engineering decision:
 
@@ -87,7 +87,8 @@ Full table: `CONVENTIONS.md` section 2. Where you will spend time:
 
 - **Stage 0** (memo 2): the sheet-to-MJCF pipeline made reproducible, tracked and checked; the snapshot and the gate checks; the `fy` CLI.
 - **Stage 1, 1b, 1c** (memo 3): every sim run leaves a stamped machine-readable record; a standing pose that actually balances; a gain-independent static solve; posture sweeps; the digest and the envelope.
-- **Stage 2** (memos 4 and 5, `docs/briefs/stage2-brief.md`): walking loads at 1.4 and 1.6 m/s on Freyja's mass distribution, driven by measured human kinematics from the Camargo et al. 2021 dataset, computed three ways (B Freyja's own dynamics, A measured ground force, H a hybrid) and compared with the dataset's own joint moments. The brief and the memos are the record of what worked and what did not; read them rather than trusting any summary here.
+- **Stage 2** (memos 4 to 6, `docs/briefs/stage2-brief.md`, closed): walking loads at 1.4 and 1.6 m/s on Freyja's mass distribution, driven by measured human kinematics from the Camargo et al. 2021 dataset, computed three ways (B Freyja's own dynamics, A measured ground force, H a hybrid) and compared with the dataset's own joint moments. Only A with the filtered force meets the agreement band, so the envelope's gait rows rest on it, flagged provisional. B's failure stands as a finding whose cause is unattributed. The brief and the memos are the record of what worked and what did not; read them rather than trusting any summary here.
+- **Stage 2b** (`docs/briefs/stage2b-brief.md`): two checks on numbers from memo 6 that are not yet believed (hip extension, the ankle torque), a tracked gait extract so the envelope reproduces from a clean clone, and wording clean-up.
 
 ## 7. Hard-won lessons
 
@@ -99,6 +100,8 @@ Each of these cost real time. Do not relearn them.
 - **Dataset names are not model names.** In the Camargo lab frame the ground z axis is the walking direction, so `pelvis_tilt` is roll, `pelvis_list` is sagittal pitch, `pelvis_rotation` is yaw. Model-side code uses anatomical names; dataset names appear only in ingestion and `camargo_mapping.yaml`.
 - **Reference the root to the hip-centre midpoint, not the pelvis origin.** Freyja's pelvis origin is the lumbosacral joint; her hip centres sit about 57 mm ahead of it and 97.5 mm below. The dataset's sit behind its pelvis origin. Mixing the two silently wrecks the sagittal moments.
 - **The foot is a rigid, flat, toeless box.** It cannot represent late-stance push-off, so some failures of a contact-polygon test are the foot model, not the dynamics.
+- **Trunk modes bracket the spine options.** `rigid` is a locked spine; `counter_rotate` is an actuated lumbosacral roll and yaw cancelling the pelvis's by feed-forward; `first_harmonic` is a human-like reference from the trunk IMU (diagnostic only). Joints above the pelvis depend only on kinematics and the mode, not on the method. Balance feedback through the trunk is the controller project's. No mode is the v1 headline until Joe decides.
+- **The dataset's foot is toeless and B's failure is unattributed.** `mtp_angle` is exactly 0 in the dataset, so it carries no toe loads, and a force-plate proxy would be dominated by an assumed joint position. B's 66 mm backward CoP offset is explained only in part (masses about 18 mm, trunk placement none); do not attribute it to Freyja's mass distribution, foot or the controller project.
 - **Freyja's mass data is human-based for now.** Agreement between methods is a soft check on the pipeline; once CAD masses replace the anthropometry, disagreement will be legitimate.
 - **Units:** SI in the snapshot and the records (the sheet gives some lengths in mm). Torques N m, speeds rad/s, powers W.
 - **Missing data are flagged, not invented.** Seven sheet range-of-motion values are still missing, so those joints are unlimited and every build warns. Do not make up a limit.
@@ -117,6 +120,7 @@ Blunt, technically dense, peer to peer. Findings first, with the measured number
 - **QDD:** quasi-direct-drive actuator. The hip uses a pair of AKH70 modules in a differential; the knee a frameless motor with a ballscrew.
 - **Snapshot:** the parameter set a model was built from, hashed. **Envelope:** the worst-case load per joint across scenarios.
 - **Gate / advisory check, waiver:** a gate check blocks a build; an advisory prints; a waiver records a known deviation and takes effect only when `confirmed: true`.
+- **rigid / counter_rotate / first_harmonic:** the three trunk modes of Stage 2, modelling a locked spine, an actuated lumbosacral roll and yaw, and a human-like reference.
 - **Method A / B / H:** the three Stage 2 ways of computing gait joint loads (measured force at measured CoP; Freyja's own dynamics with a solved CoP; Freyja's force at the measured CoP).
 - **Brief, memo, STATE, ADR:** a task spec for Code; a checkpoint report; the generated repo snapshot; a decision record.
 
