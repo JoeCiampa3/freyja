@@ -237,9 +237,9 @@ def test_the_tracked_extract_exists_validates_and_has_memo6s_lateral_lumbosacral
     ge.validate(e)
     assert ge.dumps(e) == TRACKED.read_text(encoding="utf-8")  # canonical form: sorted keys, LF
     p95 = lambda sp, v: e["lumbosacral"][sp]["lsj_lat"][v]["peak_torque_nm"]["p95"]
-    assert (round(p95("1.4", "first_harmonic median"), 1), round(p95("1.6", "first_harmonic median"), 1)) == (32.1, 40.7)  # memo6, T9.1
-    assert (round(p95("1.4", "counter_rotate"), 1), round(p95("1.6", "counter_rotate"), 1)) == (23.5, 27.6)
-    assert (round(p95("1.4", "rigid"), 1), round(p95("1.6", "rigid"), 1)) == (93.0, 110.4)
+    assert (round(p95("1.4", "first_harmonic median"), 1), round(p95("1.6", "first_harmonic median"), 1)) == (31.8, 40.0)  # memo6, T9.1 gave 32.1 and 40.7; Stage 2c (retargeting without the standing lean) moved them by about 1%
+    assert (round(p95("1.4", "counter_rotate"), 1), round(p95("1.6", "counter_rotate"), 1)) == (23.3, 26.9)  # Stage 2c; was (23.5, 27.6)
+    assert (round(p95("1.4", "rigid"), 1), round(p95("1.6", "rigid"), 1)) == (92.7, 110.5)  # Stage 2c; was (93.0, 110.4)
     assert e["results"]["1.4"]["rigid"]["n_strides"] == 469 and e["results"]["1.6"]["rigid"]["n_strides"] == 519
 
 
