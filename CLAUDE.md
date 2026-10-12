@@ -2,7 +2,7 @@
 
 Read in this order at the start of a session: `CONVENTIONS.md` (the contract for this repo), `docs/STATE.md` (where the repo is now), `docs/OVERVIEW.md` (what the project is, once per fresh account or session), the newest file in `docs/memos/`, then the current brief. You have no memory of earlier sessions; the repo is all there is. If something is not in a file, ask Joe; do not guess.
 
-Current brief: `docs/briefs/stage2b-brief.md`. If the prompt gives a hash prefix, check `sha256sum` of the brief against it before starting; on a mismatch look for CRLF line endings, report the actual hash, and stop if it still differs. Never edit a brief; Joe overwrites them.
+Current brief: `docs/briefs/stage2c-brief.md`. If the prompt gives a hash prefix, check `sha256sum` of the brief against it before starting; on a mismatch look for CRLF line endings, report the actual hash, and stop if it still differs. Never edit a brief; Joe overwrites them.
 
 ## Commands
 
@@ -21,7 +21,7 @@ Run everything as `python tools/fy <command>` from anywhere in the repo.
 3. Stop and ask before: changing the model, the template, `pre_processor` or the meaning of any placeholder; clipping or silently dropping a frame; adding a dependency; changing a check tolerance or a geometry value because a result looks wrong; choosing any tolerance by tuning toward a result.
 4. A check or result that contradicts the brief, the memos or `CONVENTIONS.md` is a finding. Report the measured number and stop; do not quietly follow either side or make it pass.
 5. A checkpoint named in the brief ends the session: write the memo, run `fy state`, and stop. Joe starts the next session. Do not print raw arrays or whole directory trees into the session. Summarise: counts, shapes, a few names.
-6. Reports live in the repo: write each checkpoint report to the next free `docs/memos/memoN-<slug>.md`, committed, with findings first, the numbers behind every claim, every tolerance you chose and why, your own mistakes stated plainly, and the questions that need Joe. Joe should never have to paste it into chat.
+6. Reports live in the repo: write each checkpoint report to the next free `docs/memos/memoN-<slug>.md`, committed, with findings first, the numbers behind every claim, every tolerance you chose and why, your own mistakes stated plainly, and the questions that need Joe. Joe should never have to paste it into chat. Open every memo and final message, after the STATE line, with a decision summary of about 15 lines in plain language for a reader who will not read the code: what the result means for Freyja; the five or six numbers that matter, each beside a reference value (literature, spec or the previous result); the decisions Joe must make, each with your recommended option; and what finding would change the conclusion. The detail follows below it.
 7. If a change to a schema or a convention is needed, edit `CONVENTIONS.md` in the same commit as the change and say so. Joe owns that file.
 8. Environment: Windows, LF line endings, the repo `.venv` if it exists. Tests are offline and deterministic. Raw datasets stay outside the repo (`CAMARGO_RAW_DIR` or `camargo_raw_dir` in `sim/local_config.json`, which only Joe edits).
 9. Register: blunt, technically dense, no padding. State uncertainty with a number where you can. Do not soften a bad result or re-argue a recommendation Joe has declined.

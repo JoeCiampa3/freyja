@@ -59,4 +59,21 @@ def test_gitattributes_fixes_line_endings_to_lf():
 
 def test_claude_md_names_the_current_brief_and_it_exists():
     m = re.search(r"Current brief:\s*`([^`]+)`", (REPO / "CLAUDE.md").read_text(encoding="utf-8"))
-    assert m and m.group(1) == "docs/briefs/stage2b-brief.md" and (REPO / m.group(1)).is_file()
+    assert m, "CLAUDE.md has no 'Current brief:' line"
+    path = m.group(1)
+    assert path.startswith("docs/briefs/") and path.endswith("-brief.md")  # no per-stage edit of this test
+    assert (REPO / path).is_file()
+
+
+DECISION_SUMMARY_RULE = (
+    "Open every memo and final message, after the STATE line, with a decision summary of about 15 lines in plain "
+    "language for a reader who will not read the code: what the result means for Freyja; the five or six numbers "
+    "that matter, each beside a reference value (literature, spec or the previous result); the decisions Joe must "
+    "make, each with your recommended option; and what finding would change the conclusion. The detail follows below it."
+)
+
+
+def test_claude_md_rule_6_requires_the_decision_summary():
+    text = (REPO / "CLAUDE.md").read_text(encoding="utf-8")
+    rule6 = next(l for l in text.splitlines() if l.startswith("6. "))
+    assert DECISION_SUMMARY_RULE in rule6
