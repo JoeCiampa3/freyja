@@ -4,7 +4,7 @@
 
 Worst case per joint across the latest run of every scenario, with the run that drives it. Joint torque is about the model's own hinge axes (the decoupled hip architecture), not actuator torque.
 
-Scenario classes included: rom_sweep (run.20261010-1913-rom_sweep), stand_static (run.20261010-2017-stand_static), walk_treadmill (gait.20261011-2317-walk_treadmill, gait rows below).
+Scenario classes included: rom_sweep (run.20261010-1913-rom_sweep), stand_static (run.20261010-2017-stand_static), walk_treadmill (gait.20261012-1614-walk_treadmill, gait rows below).
 Not yet included: stairs, sit-to-stand, overground walking, ramps (they need reference kinematics with citable provenance; running is out of scope).
 This is not a complete sizing basis: do not size an actuator from it.
 Excluded latest runs: run.20261010-2017-hold_pose (hold_pose): verification only (envelope: false), so it never drives a row.
@@ -45,7 +45,7 @@ Excluded latest runs: run.20261010-2017-hold_pose (hold_pose): verification only
 
 Joints with no ROM data (unlimited, so never swept; each row reflects the static standing solve only, or no data): cj_ax, cj_fe, cj_lat, lsj_ax, lsj_fe, lsj_lat, shoulder_aa_left, shoulder_aa_right, shoulder_ier_left, shoulder_ier_right, tj_ax, tj_fe, tj_lat.
 
-## Gait: walk_treadmill (gait.20261011-2317-walk_treadmill)
+## Gait: walk_treadmill (gait.20261012-1614-walk_treadmill)
 
 Level treadmill walking at 1.4 and 1.6 m/s from the Camargo et al. 2021 kinematics (CC BY 4.0) on Freyja's mass distribution, 17 subjects; each cell is the 95th percentile across subject-strides with the maximum beside it (offset subjects AB13, AB15 included; `sim/benchmarks/gait_extract.json` also keeps the statistics without them and without the pitch-flagged subjects). Rigid at the standing pose from stand_static, arms at the sides; arm swing is not modelled; the arms are excluded. Trunk modes of the record: rigid, counter_rotate (`rigid` is a locked spine; `counter_rotate` is an actuated lumbosacral roll and yaw cancelling the pelvis's roll and yaw by feed-forward; `first_harmonic` is a human-like reference point from the trunk IMU, a diagnostic and never a record mode; no mode is the v1 headline, so every row that depends on the trunk names its mode). Gait torque is about the model's hinge axes and is a different statistic from the worst-case rows above; the two are not merged.
 
@@ -55,26 +55,26 @@ Band for a torque or power row to enter: correlation >= 0.9 and RMS <= 15% of th
 
 | source | joint | m/s | method | trunk mode | torque p95 Nm | torque max Nm | A_native max Nm | power+ p95 W | power+ max W | regen p95 W | regen max W | speed p95 rad/s | speed max rad/s | corr | rms % ptp | flags |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| gait | hip_fe_right | 1.4 | A_filtered | rigid | 70.2 | 111.7 | 237.5 | 151 | 275 | 50 | 69 | 4.50 | 4.88 | 0.91 | 14 | provisional |
-| gait | hip_fe_left | 1.4 | A_filtered | rigid | 77.5 | 135.7 | 222.4 | 195 | 405 | 77 | 148 | 4.68 | 5.33 | 0.91 | 14 | provisional |
-| gait | knee_right | 1.4 | A_filtered | rigid | 71.9 | 118.7 | 101.8 | 121 | 204 | 199 | 440 | 7.01 | 7.83 | 0.92 | 12 | provisional |
-| gait | knee_left | 1.4 | A_filtered | rigid | 88.7 | 155.0 | 119.0 | 137 | 195 | 238 | 553 | 7.28 | 7.86 | 0.92 | 12 | provisional |
-| gait | ankle_pdflex_right | 1.4 | A_filtered | rigid | 149.3 | 162.9 | 165.3 | 505 | 603 | 150 | 231 | 6.38 | 7.57 | 0.99 | 11 | provisional |
-| gait | ankle_pdflex_left | 1.4 | A_filtered | rigid | 163.8 | 186.1 | 183.9 | 503 | 571 | 150 | 266 | 6.33 | 7.52 | 0.99 | 11 | provisional |
-| gait | hip_aa_right | 1.4 | A_filtered | rigid | 87.3 | 105.2 | 159.8 | 108 | 148 | 81 | 101 | 2.46 | 2.79 | 0.97 | 18 | provisional, outside band |
-| gait | hip_aa_left | 1.4 | A_filtered | rigid | 88.0 | 124.0 | 159.8 | 114 | 144 | 79 | 113 | 2.51 | 2.87 | 0.97 | 18 | provisional, outside band |
-| gait | hip_ier_right | 1.4 | A_filtered | rigid | 20.6 | 55.6 | 52.2 | 11 | 54 | 16 | 50 | 2.75 | 3.33 | 0.86 | 17 | provisional, outside band |
-| gait | hip_ier_left | 1.4 | A_filtered | rigid | 20.0 | 49.9 | 55.1 | 10 | 28 | 23 | 75 | 3.07 | 4.24 | 0.86 | 17 | provisional, outside band |
-| gait | hip_fe_right | 1.6 | A_filtered | rigid | 77.4 | 98.1 | 232.5 | 228 | 376 | 75 | 245 | 5.10 | 6.19 | 0.93 | 13 | provisional |
-| gait | hip_fe_left | 1.6 | A_filtered | rigid | 88.1 | 128.6 | 266.4 | 211 | 399 | 96 | 164 | 5.06 | 6.11 | 0.93 | 13 | provisional |
-| gait | knee_right | 1.6 | A_filtered | rigid | 92.6 | 115.1 | 132.4 | 155 | 309 | 283 | 576 | 7.42 | 8.75 | 0.92 | 12 | provisional |
-| gait | knee_left | 1.6 | A_filtered | rigid | 97.3 | 157.5 | 151.3 | 167 | 245 | 278 | 550 | 7.57 | 8.25 | 0.92 | 12 | provisional |
-| gait | ankle_pdflex_right | 1.6 | A_filtered | rigid | 157.6 | 172.6 | 176.8 | 582 | 692 | 147 | 230 | 6.11 | 6.70 | 0.99 | 11 | provisional |
-| gait | ankle_pdflex_left | 1.6 | A_filtered | rigid | 169.4 | 202.5 | 207.2 | 577 | 729 | 148 | 206 | 6.17 | 6.66 | 0.99 | 11 | provisional |
-| gait | hip_aa_right | 1.6 | A_filtered | rigid | 86.8 | 111.5 | 194.7 | 109 | 125 | 102 | 166 | 2.50 | 2.99 | 0.97 | 17 | provisional, outside band |
-| gait | hip_aa_left | 1.6 | A_filtered | rigid | 90.5 | 117.5 | 181.2 | 118 | 153 | 100 | 144 | 2.47 | 4.54 | 0.97 | 17 | provisional, outside band |
-| gait | hip_ier_right | 1.6 | A_filtered | rigid | 24.6 | 40.8 | 44.2 | 14 | 38 | 22 | 136 | 2.86 | 4.58 | 0.88 | 16 | provisional, outside band |
-| gait | hip_ier_left | 1.6 | A_filtered | rigid | 22.4 | 31.3 | 50.3 | 12 | 24 | 20 | 65 | 3.12 | 4.87 | 0.88 | 16 | provisional, outside band |
+| gait | hip_fe_right | 1.4 | A_filtered | rigid | 68.8 | 114.0 | 235.0 | 157 | 281 | 54 | 71 | 4.50 | 4.88 | 0.91 | 14 | provisional |
+| gait | hip_fe_left | 1.4 | A_filtered | rigid | 75.8 | 137.7 | 220.1 | 202 | 412 | 80 | 152 | 4.68 | 5.33 | 0.91 | 14 | provisional |
+| gait | knee_right | 1.4 | A_filtered | rigid | 86.4 | 120.2 | 115.9 | 112 | 152 | 211 | 447 | 7.01 | 7.83 | 0.93 | 13 | provisional |
+| gait | knee_left | 1.4 | A_filtered | rigid | 102.8 | 157.8 | 132.0 | 126 | 240 | 249 | 562 | 7.28 | 7.86 | 0.93 | 13 | provisional |
+| gait | ankle_pdflex_right | 1.4 | A_filtered | rigid | 124.3 | 138.9 | 140.8 | 413 | 486 | 121 | 245 | 6.38 | 7.57 | 0.98 | 8 | provisional |
+| gait | ankle_pdflex_left | 1.4 | A_filtered | rigid | 139.3 | 180.5 | 156.5 | 413 | 475 | 125 | 272 | 6.33 | 7.52 | 0.98 | 8 | provisional |
+| gait | hip_aa_right | 1.4 | A_filtered | rigid | 87.2 | 105.5 | 159.3 | 108 | 148 | 80 | 100 | 2.46 | 2.79 | 0.97 | 18 | provisional, outside band |
+| gait | hip_aa_left | 1.4 | A_filtered | rigid | 88.3 | 122.0 | 159.2 | 114 | 145 | 78 | 111 | 2.51 | 2.87 | 0.97 | 18 | provisional, outside band |
+| gait | hip_ier_right | 1.4 | A_filtered | rigid | 24.2 | 56.5 | 51.7 | 14 | 54 | 19 | 51 | 2.75 | 3.33 | 0.91 | 16 | provisional, outside band |
+| gait | hip_ier_left | 1.4 | A_filtered | rigid | 22.7 | 50.5 | 54.9 | 10 | 27 | 24 | 81 | 3.07 | 4.24 | 0.91 | 16 | provisional, outside band |
+| gait | hip_fe_right | 1.6 | A_filtered | rigid | 76.0 | 99.7 | 230.3 | 231 | 383 | 78 | 241 | 5.10 | 6.19 | 0.93 | 13 | provisional |
+| gait | hip_fe_left | 1.6 | A_filtered | rigid | 87.0 | 126.6 | 262.8 | 216 | 406 | 98 | 169 | 5.06 | 6.11 | 0.93 | 13 | provisional |
+| gait | knee_right | 1.6 | A_filtered | rigid | 108.0 | 131.1 | 148.9 | 163 | 358 | 295 | 589 | 7.42 | 8.75 | 0.93 | 13 | provisional |
+| gait | knee_left | 1.6 | A_filtered | rigid | 112.0 | 171.1 | 164.9 | 161 | 270 | 307 | 559 | 7.57 | 8.25 | 0.93 | 13 | provisional |
+| gait | ankle_pdflex_right | 1.6 | A_filtered | rigid | 132.1 | 146.9 | 150.7 | 476 | 584 | 118 | 239 | 6.11 | 6.70 | 0.98 | 8 | provisional |
+| gait | ankle_pdflex_left | 1.6 | A_filtered | rigid | 143.3 | 172.3 | 177.3 | 483 | 611 | 119 | 215 | 6.17 | 6.66 | 0.98 | 8 | provisional |
+| gait | hip_aa_right | 1.6 | A_filtered | rigid | 86.2 | 109.1 | 190.7 | 109 | 126 | 101 | 167 | 2.50 | 2.99 | 0.97 | 17 | provisional, outside band |
+| gait | hip_aa_left | 1.6 | A_filtered | rigid | 90.2 | 116.8 | 179.9 | 119 | 155 | 100 | 143 | 2.47 | 4.54 | 0.97 | 17 | provisional, outside band |
+| gait | hip_ier_right | 1.6 | A_filtered | rigid | 27.8 | 44.3 | 48.0 | 17 | 39 | 24 | 147 | 2.86 | 4.58 | 0.92 | 16 | provisional, outside band |
+| gait | hip_ier_left | 1.6 | A_filtered | rigid | 25.4 | 37.3 | 51.7 | 15 | 25 | 21 | 70 | 3.12 | 4.87 | 0.92 | 16 | provisional, outside band |
 
 ### A_filtered's sagittal rows against the dataset's own moment (dataset-direct)
 
@@ -82,18 +82,18 @@ No threshold and no flag. `dataset-direct scaled peak` is the dataset's own peak
 
 | source | joint | m/s | dataset-direct scaled peak mean / p95 / max Nm | OLS slope | peak ratio |
 |---|---|---|---|---|---|
-| gait dataset-direct | hip_fe_right | 1.4 | 51.1 / 66.7 / 75.6 | 0.685 | 0.89 |
-| gait dataset-direct | hip_fe_left | 1.4 | 52.5 / 66.2 / 81.6 | 0.675 | 0.95 |
-| gait dataset-direct | knee_right | 1.4 | 48.0 / 67.2 / 79.3 | 0.942 | 1.08 |
-| gait dataset-direct | knee_left | 1.4 | 47.1 / 66.6 / 82.4 | 0.954 | 1.14 |
-| gait dataset-direct | ankle_pdflex_right | 1.4 | 102.5 / 123.2 / 135.2 | 1.187 | 1.24 |
-| gait dataset-direct | ankle_pdflex_left | 1.4 | 106.4 / 135.8 / 149.1 | 1.183 | 1.25 |
-| gait dataset-direct | hip_fe_right | 1.6 | 62.2 / 77.7 / 91.2 | 0.695 | 0.89 |
-| gait dataset-direct | hip_fe_left | 1.6 | 64.3 / 80.9 / 92.6 | 0.684 | 0.92 |
-| gait dataset-direct | knee_right | 1.6 | 56.8 / 81.4 / 94.2 | 0.958 | 1.08 |
-| gait dataset-direct | knee_left | 1.6 | 55.7 / 78.6 / 96.0 | 0.961 | 1.11 |
-| gait dataset-direct | ankle_pdflex_right | 1.6 | 104.9 / 130.8 / 140.9 | 1.189 | 1.24 |
-| gait dataset-direct | ankle_pdflex_left | 1.6 | 108.9 / 138.4 / 150.8 | 1.187 | 1.25 |
+| gait dataset-direct | hip_fe_right | 1.4 | 51.1 / 66.7 / 75.6 | 0.681 | 0.86 |
+| gait dataset-direct | hip_fe_left | 1.4 | 52.5 / 66.2 / 81.6 | 0.672 | 0.94 |
+| gait dataset-direct | knee_right | 1.4 | 48.0 / 67.2 / 79.3 | 1.038 | 1.31 |
+| gait dataset-direct | knee_left | 1.4 | 47.1 / 66.6 / 82.4 | 1.024 | 1.31 |
+| gait dataset-direct | ankle_pdflex_right | 1.4 | 102.5 / 123.2 / 135.2 | 0.990 | 1.00 |
+| gait dataset-direct | ankle_pdflex_left | 1.4 | 106.4 / 135.8 / 149.1 | 0.992 | 1.03 |
+| gait dataset-direct | hip_fe_right | 1.6 | 62.2 / 77.7 / 91.2 | 0.690 | 0.87 |
+| gait dataset-direct | hip_fe_left | 1.6 | 64.3 / 80.9 / 92.6 | 0.678 | 0.90 |
+| gait dataset-direct | knee_right | 1.6 | 56.8 / 81.4 / 94.2 | 1.053 | 1.29 |
+| gait dataset-direct | knee_left | 1.6 | 55.7 / 78.6 / 96.0 | 1.039 | 1.28 |
+| gait dataset-direct | ankle_pdflex_right | 1.6 | 104.9 / 130.8 / 140.9 | 1.000 | 1.02 |
+| gait dataset-direct | ankle_pdflex_left | 1.6 | 108.9 / 138.4 / 150.8 | 0.999 | 1.03 |
 
 ### Ankle inversion (unverified)
 
@@ -101,10 +101,10 @@ The dataset's moment is about an oblique subtalar axis and Freyja's `ankle_ie` i
 
 | source | joint | m/s | A_filtered | B rigid | B counter_rotate | H rigid | H counter_rotate | flags |
 |---|---|---|---|---|---|---|---|---|
-| gait | ankle_ie_right | 1.4 | 55.9 / 112.3 | 312.1 / 431.9 | 137.1 / 231.5 | 47.6 / 74.3 | 55.9 / 80.0 | unverified, not comparable with the dataset |
-| gait | ankle_ie_left | 1.4 | 55.3 / 95.3 | 298.6 / 378.2 | 137.2 / 205.8 | 51.6 / 101.8 | 61.6 / 108.6 | unverified, not comparable with the dataset |
-| gait | ankle_ie_right | 1.6 | 58.2 / 80.0 | 364.0 / 495.8 | 181.4 / 403.0 | 52.6 / 84.4 | 61.1 / 88.8 | unverified, not comparable with the dataset |
-| gait | ankle_ie_left | 1.6 | 55.3 / 87.4 | 370.7 / 605.2 | 180.4 / 290.3 | 56.3 / 97.7 | 62.0 / 105.4 | unverified, not comparable with the dataset |
+| gait | ankle_ie_right | 1.4 | 47.1 / 115.2 | 306.3 / 425.7 | 132.0 / 226.5 | 40.7 / 65.7 | 48.3 / 71.8 | unverified, not comparable with the dataset |
+| gait | ankle_ie_left | 1.4 | 47.8 / 96.7 | 295.2 / 370.4 | 132.3 / 202.3 | 43.0 / 85.8 | 50.4 / 91.8 | unverified, not comparable with the dataset |
+| gait | ankle_ie_right | 1.6 | 50.6 / 72.3 | 360.3 / 498.5 | 175.3 / 393.0 | 44.6 / 80.4 | 54.1 / 84.5 | unverified, not comparable with the dataset |
+| gait | ankle_ie_left | 1.6 | 48.4 / 79.3 | 368.5 / 587.6 | 175.0 / 284.2 | 47.7 / 83.0 | 54.1 / 90.3 | unverified, not comparable with the dataset |
 
 ### Joints above the pelvis (kinematics only: the bracket across trunk modes)
 
@@ -112,16 +112,16 @@ The torques depend on the kinematics and the trunk mode alone (the foot Jacobian
 
 | source | joint | m/s | torque p95 Nm (min .. max over modes) | torque max Nm | power+ p95 W | speed p95 rad/s | speed max rad/s | flags |
 |---|---|---|---|---|---|---|---|---|
-| gait | cj_fe | 1.4 | 8.2 .. 8.5 | 11.3 | 0 .. 0 | 0.00 .. 0.00 | 0.00 | kinematics only, bracket |
+| gait | cj_fe | 1.4 | 8.6 .. 8.9 | 11.6 | 0 .. 0 | 0.00 .. 0.00 | 0.00 | kinematics only, bracket |
 | gait | lsj_ax | 1.4 | 0.6 .. 8.2 | 20.0 | 0 .. 0 | 0.00 .. 1.37 | 1.81 | kinematics only, bracket |
-| gait | lsj_fe | 1.4 | 78.5 .. 79.6 | 101.0 | 0 .. 0 | 0.00 .. 0.00 | 0.00 | kinematics only, bracket |
-| gait | lsj_lat | 1.4 | 23.5 .. 93.0 | 112.9 | 0 .. 16 | 0.00 .. 1.43 | 1.75 | kinematics only, bracket |
-| gait | tj_fe | 1.4 | 50.2 .. 51.9 | 66.7 | 0 .. 0 | 0.00 .. 0.00 | 0.00 | kinematics only, bracket |
-| gait | cj_fe | 1.6 | 12.1 .. 12.1 | 18.7 | 0 .. 0 | 0.00 .. 0.00 | 0.00 | kinematics only, bracket |
-| gait | lsj_ax | 1.6 | 0.7 .. 14.0 | 40.8 | 0 .. 1 | 0.00 .. 1.68 | 3.17 | kinematics only, bracket |
-| gait | lsj_fe | 1.6 | 104.5 .. 104.9 | 152.2 | 0 .. 0 | 0.00 .. 0.00 | 0.00 | kinematics only, bracket |
-| gait | lsj_lat | 1.6 | 27.6 .. 110.4 | 176.3 | 0 .. 12 | 0.00 .. 1.62 | 2.68 | kinematics only, bracket |
-| gait | tj_fe | 1.6 | 71.1 .. 71.2 | 106.0 | 0 .. 0 | 0.00 .. 0.00 | 0.00 | kinematics only, bracket |
+| gait | lsj_fe | 1.4 | 83.0 .. 84.1 | 105.8 | 0 .. 0 | 0.00 .. 0.00 | 0.00 | kinematics only, bracket |
+| gait | lsj_lat | 1.4 | 23.3 .. 92.7 | 112.3 | 0 .. 16 | 0.00 .. 1.43 | 1.75 | kinematics only, bracket |
+| gait | tj_fe | 1.4 | 52.8 .. 54.2 | 69.5 | 0 .. 0 | 0.00 .. 0.00 | 0.00 | kinematics only, bracket |
+| gait | cj_fe | 1.6 | 12.3 .. 12.3 | 18.1 | 0 .. 0 | 0.00 .. 0.00 | 0.00 | kinematics only, bracket |
+| gait | lsj_ax | 1.6 | 0.7 .. 14.0 | 40.9 | 0 .. 1 | 0.00 .. 1.68 | 3.17 | kinematics only, bracket |
+| gait | lsj_fe | 1.6 | 106.4 .. 107.0 | 145.4 | 0 .. 0 | 0.00 .. 0.00 | 0.00 | kinematics only, bracket |
+| gait | lsj_lat | 1.6 | 26.9 .. 110.5 | 177.2 | 0 .. 13 | 0.00 .. 1.62 | 2.68 | kinematics only, bracket |
+| gait | tj_fe | 1.6 | 70.1 .. 71.8 | 102.1 | 0 .. 0 | 0.00 .. 0.00 | 0.00 | kinematics only, bracket |
 
 ### Lumbosacral lateral and axial joints, three trunk modes
 
@@ -129,18 +129,18 @@ Over every subject-stride, from the trunk-mode diagnostic's code (`gait_diag.py 
 
 | source | joint | m/s | trunk mode | angle med / p95 / max deg | torque med / p95 / max Nm | speed p95 rad/s | power+ p95 W | regen p95 W | quartile-corner spread (p95): angle deg; torque Nm |
 |---|---|---|---|---|---|---|---|---|---|
-| gait | lsj_lat | 1.4 | rigid | 0.0 / 0.0 / 0.0 | 69.9 / 93.0 / 112.9 | 0.00 | 0 | 0 | - |
-| gait | lsj_lat | 1.4 | counter_rotate | 5.7 / 7.8 / 8.9 | 16.2 / 23.5 / 31.9 | 1.43 | 16 | 16 | - |
-| gait | lsj_lat | 1.4 | first_harmonic | 6.7 / 8.9 / 10.4 | 21.1 / 32.1 / 38.9 | 1.55 | 16 | 31 | angle 7.2 .. 10.0; torque 26.1 .. 36.1 |
+| gait | lsj_lat | 1.4 | rigid | 0.0 / 0.0 / 0.0 | 70.0 / 92.7 / 112.3 | 0.00 | 0 | 0 | - |
+| gait | lsj_lat | 1.4 | counter_rotate | 5.7 / 7.8 / 8.9 | 16.1 / 23.3 / 31.6 | 1.43 | 16 | 16 | - |
+| gait | lsj_lat | 1.4 | first_harmonic | 6.7 / 8.9 / 10.4 | 20.8 / 31.8 / 38.6 | 1.55 | 15 | 30 | angle 7.2 .. 10.0; torque 25.8 .. 35.8 |
 | gait | lsj_ax | 1.4 | rigid | 0.0 / 0.0 / 0.0 | 5.2 / 8.2 / 20.0 | 0.00 | 0 | 0 | - |
 | gait | lsj_ax | 1.4 | counter_rotate | 7.5 / 12.7 / 16.4 | 0.5 / 0.6 / 1.0 | 1.37 | 0 | 0 | - |
 | gait | lsj_ax | 1.4 | first_harmonic | 8.0 / 13.9 / 19.2 | 1.4 / 2.4 / 3.1 | 1.39 | 1 | 3 | angle 11.8 .. 17.0; torque 1.7 .. 3.7 |
-| gait | lsj_lat | 1.6 | rigid | 0.0 / 0.0 / 0.0 | 82.4 / 110.4 / 176.3 | 0.00 | 0 | 0 | - |
-| gait | lsj_lat | 1.6 | counter_rotate | 6.0 / 8.6 / 10.7 | 16.8 / 27.6 / 83.3 | 1.62 | 12 | 29 | - |
-| gait | lsj_lat | 1.6 | first_harmonic | 7.6 / 10.2 / 12.6 | 25.0 / 40.7 / 90.7 | 1.87 | 20 | 52 | angle 8.7 .. 11.1; torque 35.8 .. 44.8 |
-| gait | lsj_ax | 1.6 | rigid | 0.0 / 0.0 / 0.0 | 6.2 / 14.0 / 40.8 | 0.00 | 0 | 0 | - |
+| gait | lsj_lat | 1.6 | rigid | 0.0 / 0.0 / 0.0 | 82.4 / 110.5 / 177.2 | 0.00 | 0 | 0 | - |
+| gait | lsj_lat | 1.6 | counter_rotate | 6.0 / 8.6 / 10.7 | 16.6 / 26.9 / 82.6 | 1.62 | 13 | 28 | - |
+| gait | lsj_lat | 1.6 | first_harmonic | 7.6 / 10.2 / 12.6 | 24.6 / 40.0 / 89.9 | 1.87 | 20 | 51 | angle 8.7 .. 11.1; torque 35.3 .. 43.9 |
+| gait | lsj_ax | 1.6 | rigid | 0.0 / 0.0 / 0.0 | 6.2 / 14.0 / 40.9 | 0.00 | 0 | 0 | - |
 | gait | lsj_ax | 1.6 | counter_rotate | 7.8 / 13.6 / 20.7 | 0.5 / 0.7 / 1.8 | 1.68 | 1 | 1 | - |
-| gait | lsj_ax | 1.6 | first_harmonic | 7.9 / 14.3 / 18.7 | 1.4 / 2.3 / 2.9 | 1.46 | 1 | 3 | angle 13.0 .. 18.8; torque 2.0 .. 4.4 |
+| gait | lsj_ax | 1.6 | first_harmonic | 7.9 / 14.3 / 18.7 | 1.4 / 2.4 / 2.9 | 1.46 | 1 | 3 | angle 13.0 .. 18.8; torque 2.0 .. 4.4 |
 
 ### Findings for the Joint ROM sheet's functional-demand column (not clipped; the lumbosacral joints are unlimited today)
 
