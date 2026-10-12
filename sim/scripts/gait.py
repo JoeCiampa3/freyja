@@ -264,15 +264,18 @@ def run_stride(task: dict) -> dict:
                 by_support[key][0] += 1
                 by_support[key][1] += dist > 0
             mf, mc = measured(fp[:, k, :], k)
-            if stance and all(f in mc for f in stance):
+            # the polygon baseline always places the measured CoP at the same normalised place on Freyja's own foot (heel and toe-tip
+            # markers), whatever CoP mapping methods A and H use: a rigid box is tested with a CoP that already respects the foot's geometry
+            mf_ff, mc_ff = gaitloads.measured_to_model_foot(fp[:, k, :], foot_markers[k], dynamics.foot_floor_segments(model, q[k]), mass_ratio)
+            if stance and all(f in mc_ff for f in stance):
                 # the polygon test for B and for the measured CoP placed on Freyja's feet, at each band (which vertices form a polygon)
                 key = "single" if len(stance) == 1 else "double"
                 pb = r.cop[stance[0]][:2] if len(stance) == 1 else r.total_cop[:2]
                 if len(stance) == 1:
-                    pm = mc[stance[0]][:2]
+                    pm = mc_ff[stance[0]][:2]
                 else:
-                    w = np.array([mf[f][2] for f in stance])
-                    pm = sum(wi * mc[f][:2] for wi, f in zip(w, stance)) / w.sum()
+                    w = np.array([mf_ff[f][2] for f in stance])
+                    pm = sum(wi * mc_ff[f][:2] for wi, f in zip(w, stance)) / w.sum()
                 for b in bands:
                     poly["B"][str(b)][key].append(float(dynamics.polygon_outside_m(model, q[k], stance, pb, b)) if np.all(np.isfinite(pb)) else float("nan"))
                     poly["measured"][str(b)][key].append(float(dynamics.polygon_outside_m(model, q[k], stance, pm, b)))

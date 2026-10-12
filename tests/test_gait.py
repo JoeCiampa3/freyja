@@ -91,3 +91,18 @@ def test_two_runs_are_byte_identical_and_md_is_under_the_line_cap(tmp_path):
     assert b"Polygon test, B beside the measured CoP" in out[0][1]
     assert out[0][1].count(b"\n") <= gait.MAX_LINES
     assert b"Camargo" in out[0][1].split(b"\n", 6)[2] or b"Camargo" in out[0][1][:1500]  # attribution in the header
+
+
+@pytest.mark.skipif(not PROCESSED.exists(), reason="processed Camargo arrays not present")
+def test_the_polygon_baseline_uses_the_foot_frame_cop_whatever_the_methods_mapping():
+    import json as _json
+    spec = gait.load_spec("walk_treadmill")
+    spec.update({"subjects": ["AB06"], "stride_cap_per_subject": 1, "speeds_mps": [1.4]})
+    manifest = _json.loads((REPO / spec["dataset"]["manifest"]).read_text(encoding="utf-8"))
+    got = {}
+    for mode in ("hip_reference", "foot_frame"):
+        spec["cop_mode"] = mode
+        task = gait._tasks(spec, manifest, gait.simrun.MODEL_FILE, REPO / spec["dataset"]["processed"], ["B"], 6.0, 0.0, 1, False, False, False)[0]
+        got[mode] = gait.run_stride(task)["feas"]["polygon"]["measured"]["0.025"]
+    assert got["hip_reference"] == got["foot_frame"]
+    assert len(got["foot_frame"]["single"]) > 10 and len(got["foot_frame"]["double"]) > 5
