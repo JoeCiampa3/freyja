@@ -1,4 +1,4 @@
-STATE: base a909996 | brief sha256:443430528993 | snapshot sha256:4db751576eb9 | tests 618/618 | dirty no
+STATE: base 37b0232ee8c7 | brief sha256:443430528993 | snapshot sha256:4db751576eb9 | tests 618/618 | dirty no
 
 **Decision summary (Stage 2c, session 1).** The retargeting added the model's standing lean (2.608 degrees) to every dataset pelvis pitch. It was an oversight, not a recorded decision. I removed it and regenerated everything.
 - **What it means for Freyja.** The ankle load no longer carries a 20% lever excess: A's ankle torque now agrees with the dataset scaled to Freyja. The knee load got worse, and B's centre-of-pressure offset did not move. The fix is correct (the legs now match the dataset's), but it removes a flattering error in one place and exposes a larger knee gap.
