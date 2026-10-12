@@ -235,9 +235,12 @@ class Cycle:
         if trunk == "first_harmonic" and (trunk_gain is None or trunk_lag_deg is None):
             raise ValueError("trunk first_harmonic needs trunk_gain and trunk_lag_deg, each (roll, yaw)")
         self.trunk_gain, self.trunk_lag_deg = trunk_gain, trunk_lag_deg
-        # 'measured' keeps the dataset's absolute pitch (plus any offset). The leg angles are relative to the dataset's pelvis, so the
-        # legs' position in the world, and with it every lever arm of a measured ground reaction, is only consistent with the data
-        # when the measured pitch is kept; the verification of the loads against the dataset's own moments uses it.
+        # 'measured' keeps the dataset's absolute pitch (plus any offset) and nothing else: the root orientation is the dataset's pelvis
+        # rotation in the model's axes, so the model's pelvis pitch is the dataset's. The leg angles are relative to the dataset's
+        # pelvis, so the legs' world position, and with it every lever arm of a measured ground reaction, is consistent with the data
+        # only when the pelvis keeps the measured pitch; the model's standing lean (R_stand, a pure pitch of 2.608 degrees at the time
+        # of writing, solved from the anthropometry) is not added. A number sets the cycle mean relative to the standing pose, so
+        # there the rotation is composed with R_stand. Before Stage 2c the composition was applied to 'measured' as well (memo9).
         if pitch_mean == "measured":
             eul[pi] = eul[pi] + pitch["sign"] * np.deg2rad(pitch_offset_deg)
         else:
@@ -245,6 +248,7 @@ class Cycle:
         self.R_stand = np.zeros(9)
         mujoco.mju_quat2Mat(self.R_stand, self.stand[3:7])
         self.R_stand = self.R_stand.reshape(3, 3)
+        self._R_world = np.eye(3) if pitch_mean == "measured" else self.R_stand  # applied on the world side of the pelvis rotation
         pos_model = (self.lab_to_model @ hm.T).T  # lab -> model axes
         xy = scale * pos_model[:, :2]
         X = np.column_stack(series + eul + [xy, scale * hm[:, 1]])
@@ -327,14 +331,14 @@ class Cycle:
             q[adr], qd[dof], qdd[dof] = v[col], d1[col], d2[col]
         nj = self._nj
         E, dE, ddE = euler_zxy(v[nj:nj + 3], d1[nj:nj + 3], d2[nj:nj + 3])
-        Rm = self.R_stand @ self.lab_to_model @ E @ self.B.T
+        Rm = self._R_world @ self.lab_to_model @ E @ self.B.T
         quat = np.zeros(4)
         mujoco.mju_mat2Quat(quat, Rm.ravel())
         w_os = _vee(E.T @ dE)
         a_os = _vee(dE.T @ dE + E.T @ ddE)
         if self.root_ref == "hip_midpoint":
-            dRm = self.R_stand @ self.lab_to_model @ dE @ self.B.T
-            ddRm = self.R_stand @ self.lab_to_model @ ddE @ self.B.T
+            dRm = self._R_world @ self.lab_to_model @ dE @ self.B.T
+            ddRm = self._R_world @ self.lab_to_model @ ddE @ self.B.T
             off, doff, ddoff = Rm @ self.h_f, dRm @ self.h_f, ddRm @ self.h_f
             pos = np.array([v[nj + 3] - off[0], v[nj + 4] - off[1], z[0] - off[2]])
             vel = np.array([d1[nj + 3] - doff[0], d1[nj + 4] - doff[1], z[1] - doff[2]])

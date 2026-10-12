@@ -72,8 +72,10 @@ def test_standing_input_gives_zero_velocity_and_flat_feet(model, stand):
     assert np.abs(qd).max() < 1e-9 and np.abs(qdd).max() < 1e-7
     low = c.lowest_foot_z(q)
     assert abs(low) < 1e-9  # the root rule puts the lowest foot point on the floor
-    # the dataset's 90 degree lab baseline maps to a forward-facing pelvis, i.e. exactly the model's standing orientation
-    assert rot_diff_rad(q[3:7], stand[3:7]) < 1e-9
+    # the dataset's 90 degree lab baseline (pelvis_list 0) maps to an upright, forward-facing pelvis. Stage 2c: before it, this
+    # asserted the model's standing orientation (a 2.608 degree forward lean), which is what the composition with R_stand added.
+    assert rot_diff_rad(q[3:7], np.array([1.0, 0, 0, 0])) < 1e-9
+    assert rot_diff_rad(q[3:7], stand[3:7]) == pytest.approx(np.deg2rad(2.6076927), abs=1e-6)  # the lean it no longer carries
 
 
 @pytest.mark.parametrize("rule", retarget.ROOT_RULES)
@@ -375,8 +377,16 @@ def test_rigid_trunk_output_is_unchanged_from_before_the_trunk_modes(model, stan
     import hashlib
     z = np.load(PROCESSED)
     c = retarget.Cycle(model, MAPPING, stand, z["1.4_ik"][3], float(z["1.4_duration_s"][3]), 0.92, hip_in_pelvis_os=HIP)
-    g = np.concatenate([a.ravel() for a in c.grid()])
-    assert hashlib.sha256((np.round(g, 9) + 0.0).tobytes()).hexdigest()[:16] == "6b81fb135022033b"  # recorded at cf658f5, before T3c.1
+    q, qd, qdd = c.grid()
+    h = lambda a: hashlib.sha256((np.round(a, 9) + 0.0).tobytes()).hexdigest()[:16]
+    # Stage 2c: the root pose changed (the standing lean R_stand is no longer composed with a measured pitch), so the hash of the whole
+    # grid was re-recorded: "6b81fb135022033b" at cf658f5 became the value below. The parts the change must not touch keep the hashes
+    # recorded at 8285c6a, before it: the joint positions, velocities and accelerations, the root's body-frame angular velocity and
+    # acceleration, and the horizontal path of the hip midpoint.
+    assert h(np.concatenate([q.ravel(), qd.ravel(), qdd.ravel()])) == "0414050b96c62295"
+    assert h(np.concatenate([q[:, 7:].ravel(), qd[:, 6:].ravel(), qdd[:, 6:].ravel()])) == "464519a942ec31d9"
+    assert h(np.concatenate([qd[:, 3:6].ravel(), qdd[:, 3:6].ravel()])) == "87062236a9c39767"
+    assert h(np.array([retarget.model_hip_mid(model, k)[:2] for k in q])) == "afb38100df5e7d71"
     same = retarget.Cycle(model, MAPPING, stand, z["1.4_ik"][3], float(z["1.4_duration_s"][3]), 0.92, hip_in_pelvis_os=HIP, trunk="rigid")
     assert all(np.array_equal(a, b) for a, b in zip(c.grid(), same.grid()))
 
