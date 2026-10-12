@@ -107,12 +107,41 @@ def gait_record(model_sha=None, a_filtered_meets=True, h_meets=False, ids="gait.
             "subjects": {f"AB{i}": {"strides": {"1.4": 1, "1.6": 1}} for i in range(10)}, "results": results}
 
 
+def gait_extras():
+    """Synthetic lumbosacral, A_filtered-sagittal and hip-demand tables in the shapes `gait_extract` computes (known numbers, no MuJoCo)."""
+    import gait_extract as ge
+    dist = lambda med, p95, mx: {"median": med, "p95": p95, "max": mx}
+    # p95 torque by variant at 1.4 m/s: rigid 93.0, counter_rotate 23.5, first_harmonic median 32.1, the four corners 28.0 to 36.0
+    p95 = {"rigid": 93.0, "counter_rotate": 23.5, "first_harmonic median": 32.1, "first_harmonic q1 gain, q1 lag": 28.0, "first_harmonic q1 gain, q3 lag": 30.0,
+           "first_harmonic q3 gain, q1 lag": 34.0, "first_harmonic q3 gain, q3 lag": 36.0}
+    lsj = {}
+    for sp, k in (("1.4", 1.0), ("1.6", 1.2)):
+        lsj[sp] = {j: {v: {"peak_angle_deg": dist(5.0, 8.9 * (0.0 if v == "rigid" else 1.0), 11.0), "peak_torque_nm": dist(0.5 * x * k * s, x * k * s, 1.5 * x * k * s),
+                            "peak_speed_rad_s": dist(1.0, 1.8, 2.5), "peak_power_pos_w": dist(5.0, 31.0, 60.0), "peak_regen_w": dist(4.0, 20.0, 40.0)}
+                       for v, x in p95.items()} for j, s in (("lsj_lat", 1.0), ("lsj_ax", 0.1))}
+    a = {}
+    for sp, k in (("1.4", 1.0), ("1.6", 1.02)):
+        a[sp] = {}
+        for stem, base in (("hip_fe", 50.0), ("knee", 48.0), ("ankle_pdflex", 102.5)):
+            for side in ("right", "left"):
+                a[sp][f"{stem}_{side}"] = {"scaled_peak_nm": {"mean": base * k, "p95": 1.2 * base * k, "max": 1.32 * base * k}, "ols_slope": 1.185 if stem == "ankle_pdflex" else 0.68, "peak_ratio": 1.24 if stem == "ankle_pdflex" else 0.9}
+            a[sp][stem] = {"scaled_peak_nm": {"mean": base * k, "p95": 1.2 * base * k, "max": 1.32 * base * k}, "ols_slope": 1.185 if stem == "ankle_pdflex" else 0.68, "peak_ratio": 1.24 if stem == "ankle_pdflex" else 0.9}
+    demand = {sp: {"vertical_deg": dist(16.9, 22.0, 25.3), "pelvis_relative_deg": dist(23.3, 37.3, 39.4), "posterior_pelvic_tilt_median_deg": 7.6} for sp in ("1.4", "1.6")}
+    assert tuple(lsj["1.4"]["lsj_lat"]) == ge.VARIANTS
+    return lsj, a, demand
+
+
+def gait_extract_fixture(**kw):
+    import gait_extract as ge
+    return ge.assemble(gait_record(**kw), *gait_extras())
+
+
 class GaitEnvelope(unittest.TestCase):
     def rows(self, text, prefix):
         return [l for l in text.splitlines() if l.startswith(prefix)]
 
     def text(self, **kw):
-        return rp.envelope([summary("run.20261002-0900-sweep", "sweep")], gait=gait_record(**kw))
+        return rp.envelope([summary("run.20261002-0900-sweep", "sweep")], gait=gait_extract_fixture(**kw))
 
     def test_the_sagittal_rows_come_from_a_filtered_with_p95_and_max_flagged_provisional_naming_method_and_mode(self):
         text = self.text()
@@ -183,7 +212,7 @@ class GaitEnvelope(unittest.TestCase):
         self.assertNotRegex(head, r"Not yet included: gait")
 
     def test_a_gait_record_for_another_model_is_stale_and_contributes_nothing(self):
-        text = rp.envelope([summary("run.20261002-0900-sweep", "sweep")], current_model_sha=sha("model1"), gait=gait_record(model_sha=sha("other")))
+        text = rp.envelope([summary("run.20261002-0900-sweep", "sweep")], current_model_sha=sha("model1"), gait=gait_extract_fixture(model_sha=sha("other")))
         self.assertIn("stale", text.lower())
         self.assertEqual(self.rows(text, "| gait "), [])
 
@@ -447,7 +476,7 @@ class Query(unittest.TestCase):
     def run_main(self, *argv):
         out = io.StringIO()
         with redirect_stdout(out):
-            code = rp.main([*argv, "--runs-dir", self.tmp.name, "--gait-dir", self.tmp.name])
+            code = rp.main([*argv, "--runs-dir", self.tmp.name, "--extract", str(Path(self.tmp.name) / "no_extract.json")])
         return code, out.getvalue()
 
     def test_list_in_run_id_order_and_filtered_by_scenario(self):
@@ -487,19 +516,16 @@ class Query(unittest.TestCase):
             self.run_main(command)
             self.assertEqual(path.read_bytes(), first)  # byte-identical on a second run
 
-    def test_the_band_constants_mirror_the_gait_module_and_the_newest_gait_record_is_read(self):
+    def test_the_band_constants_mirror_the_gait_module_and_the_extract_is_read(self):
         import gait
         self.assertEqual((rp.GAIT_BAND_CORR, rp.GAIT_BAND_RMS_PCT, rp.GAIT_SAGITTAL), (gait.BAND_CORR, gait.BAND_RMS_PCT, gait.BAND_STEMS))
         with tempfile.TemporaryDirectory() as d:
-            self.assertIsNone(rp.load_latest_gait(d))
-            for i in ("20261011-2232-walk_treadmill", "20261012-0900-walk_treadmill"):
-                (Path(d) / i).mkdir()
-                (Path(d) / i / "gait.json").write_text(json.dumps({"gait_id": "gait." + i}), encoding="utf-8")
-            self.assertEqual(rp.load_latest_gait(d)["gait_id"], "gait.20261012-0900-walk_treadmill")
-            (Path(self.tmp.name) / "unused").mkdir(exist_ok=True)
+            path = Path(d) / "gait_extract.json"
+            self.assertIsNone(rp.load_gait_extract(path))  # no extract: the envelope has no gait rows
+            path.write_text(json.dumps(gait_extract_fixture(model_sha=json.loads(rp.META_FILE.read_text(encoding="utf-8"))["model_sha256"])), encoding="utf-8")
+            self.assertEqual(rp.load_gait_extract(path)["gait_id"], "gait.20261012-0900-walk_treadmill")
             with redirect_stdout(io.StringIO()):
-                (Path(d) / "20261012-0900-walk_treadmill" / "gait.json").write_text(json.dumps(gait_record(model_sha=json.loads(rp.META_FILE.read_text(encoding="utf-8"))["model_sha256"])), encoding="utf-8")
-                self.assertEqual(rp.main(["envelope", "--runs-dir", self.tmp.name, "--gait-dir", d]), 0)
+                self.assertEqual(rp.main(["envelope", "--runs-dir", self.tmp.name, "--extract", str(path)]), 0)
             self.assertIn("## Gait: walk_treadmill", (Path(self.tmp.name) / "ENVELOPE.md").read_text(encoding="utf-8"))
 
     def test_nothing_is_written_when_there_are_no_runs(self):

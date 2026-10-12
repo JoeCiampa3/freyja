@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gait-extract/1",
+  "title": "gait-extract/1",
+  "description": "The tracked extract of one gait record (sim/benchmarks/gait_extract.json): exactly what sim/runs/ENVELOPE.md prints in its gait section, stamped like sim/benchmarks/walk_reference.json, so the envelope can be regenerated from a clean clone. Written by `fy gait <spec> --write-extract` (sim/scripts/gait_extract.py); CONVENTIONS section 6. Torques are N m about the model's hinge axes, speeds rad/s, powers W, angles degrees. `results` is keyed by speed and trunk mode and holds, per joint, method and metric, the 95th percentile and maximum across subject-strides under each exclusion set the source record has (all, without_offset, without_pitch_flagged). `lumbosacral` holds the lumbosacral lateral and axial joints for rigid, counter_rotate and first_harmonic (the T3c.2 median gain and lag, and the four quartile corners) as {median, p95, max} over every subject-stride. `a_filtered_sagittal` holds, per speed and limb (and per stem with both limbs pooled), the dataset's own peak moment scaled to Freyja ({mean, p95, max} N m), the OLS slope of A_filtered against the dataset per kg, and the ratio of A's mean peak per kg to the dataset's. `hip_demand` holds peak hip extension from the vertical and relative to the pelvis (the dataset's inverse kinematics) and the median posterior pelvic tilt. No row carries a threshold or a flag.",
+  "type": "object",
+  "required": ["generated_by", "inputs", "schema", "gait_id", "git_commit", "git_dirty", "diff_sha256", "snapshot_sha256", "model_sha256", "spec_sha256",
+               "dataset_manifest_sha256", "attribution", "spec", "assumption", "trunk", "subjects", "results", "lumbosacral", "a_filtered_sagittal", "hip_demand"],
+  "additionalProperties": false,
+  "properties": {
+    "generated_by": {"type": "string"},
+    "inputs": {"type": "array", "items": {"type": "string"}},
+    "schema": {"const": "gait-extract/1"},
+    "gait_id": {"type": "string", "pattern": "^gait[.][0-9]{8}-[0-9]{4}-[a-z0-9_-]+$", "description": "the source record; its gait.json is untracked"},
+    "gait_version": {"type": ["string", "null"]},
+    "git_commit": {"type": "string"},
+    "git_dirty": {"type": "boolean"},
+    "diff_sha256": {"type": ["string", "null"]},
+    "snapshot_sha256": {"type": "string"},
+    "model_sha256": {"type": "string"},
+    "spec_sha256": {"type": "string"},
+    "dataset_manifest_sha256": {"type": "string"},
+    "attribution": {"type": "string"},
+    "spec": {"type": "object", "required": ["name", "offset_subjects", "pitch_flag_subjects", "speeds_mps"],
+             "properties": {"name": {"type": "string"}, "offset_subjects": {"type": "array", "items": {"type": "string"}},
+                            "pitch_flag_subjects": {"type": "array", "items": {"type": "string"}}, "speeds_mps": {"type": "array", "items": {"type": "number"}}}},
+    "assumption": {"type": "string"},
+    "trunk": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["rigid", "counter_rotate"]}, "description": "the record's trunk modes in spec order; first_harmonic appears only in `lumbosacral`"},
+    "subjects": {"type": "object", "required": ["count", "ids"], "properties": {"count": {"type": "integer"}, "ids": {"type": "array", "items": {"type": "string"}}}},
+    "results": {
+      "type": "object", "minProperties": 1,
+      "additionalProperties": {
+        "type": "object", "minProperties": 1,
+        "additionalProperties": {
+          "type": "object",
+          "required": ["n_strides", "n_strides_without_offset", "band", "agreement", "joints", "trunk_peak_deg", "hip_extension"],
+          "properties": {
+            "n_strides": {"type": "integer"}, "n_strides_without_offset": {"type": "integer"}, "n_strides_without_pitch_flagged": {"type": "integer"},
+            "band": {"type": "object", "description": "per method and exclusion set: the envelope band verdict {meets, joints{stem{corr, rms_pct_ptp, meets}}}"},
+            "agreement": {"type": "object", "description": "per method, stem (both limbs pooled) and exclusion set: {corr, rms_pct_ptp}"},
+            "joints": {"type": "object", "description": "joint -> method -> metric -> exclusion set -> {p95, max}; joints above the pelvis carry method B only"},
+            "trunk_peak_deg": {"type": "object"},
+            "hip_extension": {"type": "object", "required": ["median_deg", "p95_deg", "max_deg", "stop_deg", "fraction_beyond_stop"]}
+          }
+        }
+      }
+    },
+    "lumbosacral": {"type": "object", "minProperties": 1, "description": "speed -> joint (lsj_lat, lsj_ax) -> variant -> metric -> {median, p95, max}"},
+    "a_filtered_sagittal": {"type": "object", "minProperties": 1, "description": "speed -> joint or stem -> {scaled_peak_nm{mean, p95, max}, ols_slope, peak_ratio}"},
+    "hip_demand": {"type": "object", "minProperties": 1, "description": "speed -> {vertical_deg{median, p95, max}, pelvis_relative_deg{median, p95, max}, posterior_pelvic_tilt_median_deg}",
+                   "additionalProperties": {"type": "object", "required": ["vertical_deg", "pelvis_relative_deg", "posterior_pelvic_tilt_median_deg"]}}
+  }
+}

@@ -15,6 +15,9 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gait  # noqa: E402
+import gait_extract  # noqa: E402
+from gait_extract import (LSJ, VARIANTS, _lsj_task, _pool, _variant_kwargs, distribution, joint_metrics, ols, peak_extension_deg, peak_stats,  # noqa: E402,F401
+                          quartile_corners, thigh_world_deg)
 
 REPO = gait.REPO
 SAGITTAL = ("hip_fe", "knee", "ankle_pdflex")
@@ -589,77 +592,9 @@ def cop_steps(args):
 
 # ------------------------------------------------------------------------------ T9.1 the human-like trunk reference point
 
-def joint_metrics(angle_rad, qvel, tau) -> dict:
-    """Peak angle (deg), torque, speed and the positive and regenerative (magnitude of the most negative) power over one stride."""
-    angle_rad, qvel, tau = (np.asarray(v, float) for v in (angle_rad, qvel, tau))
-    p = tau * qvel
-    return {"peak_angle_deg": float(np.degrees(np.abs(angle_rad).max())), "peak_torque_nm": float(np.abs(tau).max()), "peak_speed_rad_s": float(np.abs(qvel).max()),
-            "peak_power_pos_w": float(p.max()), "peak_regen_w": float(max(0.0, -p.min()))}
-
-
-def distribution(values) -> dict:
-    v = np.asarray(values, float)
-    return {"median": float(np.median(v)), "p95": float(np.percentile(v, 95)), "max": float(v.max())}
-
-
 def joint_over_pelvis(gain, lag_deg) -> float:
     """|1 - r e^(-i phi)|: how much of the pelvis's first-harmonic amplitude the lumbosacral joint must supply when the trunk's harmonic is r e^(-i phi) times the pelvis's."""
     return float(abs(1.0 - gain * np.exp(-1j * np.deg2rad(lag_deg))))
-
-
-def quartile_corners(d) -> list:
-    """The four (gain, lag) pairs that pair each gain quartile with each lag quartile of one axis's {median, q1, q3}."""
-    return [(d[g][0], d[l][1]) for g in ("q1", "q3") for l in ("q1", "q3")]
-
-
-LSJ = ("lsj_lat", "lsj_ax")
-VARIANTS = ("rigid", "counter_rotate", "first_harmonic median", "first_harmonic q1 gain, q1 lag", "first_harmonic q1 gain, q3 lag",
-            "first_harmonic q3 gain, q1 lag", "first_harmonic q3 gain, q3 lag")
-
-
-def _variant_kwargs(variant: str, speed: str) -> dict:
-    """Cycle keyword arguments for a variant name: rigid, counter_rotate, "first_harmonic median" or "first_harmonic q1 gain, q3 lag"."""
-    import re
-    import retarget
-    if variant in ("rigid", "counter_rotate"):
-        return {"trunk": variant}
-    d = retarget.FIRST_HARMONIC_DEFAULTS[speed]
-    if variant.endswith("median"):
-        gq = lq = "median"
-    else:
-        gq, lq = re.fullmatch(r"first_harmonic (q[13]) gain, (q[13]) lag", variant).groups()
-    return {"trunk": "first_harmonic", "trunk_gain": tuple(d[ax][gq][0] for ax in ("roll", "yaw")), "trunk_lag_deg": tuple(d[ax][lq][1] for ax in ("roll", "yaw"))}
-
-
-def _pool(fn, tasks, workers):
-    if workers <= 1 or len(tasks) < 8:
-        return [fn(t) for t in tasks]
-    from concurrent.futures import ProcessPoolExecutor
-    with ProcessPoolExecutor(max_workers=workers) as ex:
-        return list(ex.map(fn, tasks, chunksize=8))
-
-
-def _lsj_task(task: dict) -> dict:
-    """One subject-stride, one trunk variant: the lumbosacral lateral and axial joints' metrics. The joint torque is the joint row of
-    qfrc_inverse: the ground wrench has no columns above the pelvis, so it is the same for every method."""
-    import dynamics
-    import retarget
-    c = gait._ctx(task["model_path"])
-    z = gait._subject_arrays(task["processed"], task["subject"])
-    sp, i = task["speed"], task["index"]
-    sub = task["subject_info"]
-    hip = sub.get("hip_in_pelvis_os_m")
-    cyc = retarget.Cycle(c.model, c.mapping, c.stand, z[f"{sp}_ik"][i], float(z[f"{sp}_duration_s"][i]), retarget.leg_length_ratio(c.model, sub["height_m"]),
-                         cutoff_hz=6.0, root_rule="pelvis_dataset", hip_in_pelvis_os=hip, root_ref="hip_midpoint" if hip is not None else "pelvis_origin",
-                         pitch_mean="measured", **_variant_kwargs(task["variant"], sp))
-    q, qd, qdd = cyc.grid()
-    nf = gait.N_FRAMES
-    qfrc = np.array([dynamics.inverse_frame(c.model, q[k], qd[k], qdd[k]) for k in range(nf)])
-    out = {}
-    for j in LSJ:
-        adr, dof = c.hinge[j]
-        out[j] = joint_metrics(q[:nf, adr], qd[:nf, dof], qfrc[:, dof])
-    return {"subject": task["subject"], "speed": sp, "variant": task["variant"], "metrics": out}
 
 
 def harmonic_report(args):
@@ -673,26 +608,16 @@ def harmonic_report(args):
         for ax in ("roll", "yaw"):
             cs = [joint_over_pelvis(*x) for x in quartile_corners(d[ax])]
             print(f"  {sp} m/s {ax}: median ({d[ax]['median'][0]}, {d[ax]['median'][1]:.0f} deg) -> {joint_over_pelvis(*d[ax]['median']):.2f}; quartile corners {min(cs):.2f} to {max(cs):.2f}")
-    subjects = [s for s in manifest["subjects"]]
-    tasks = []
-    for sp in args.speeds:
-        for s in subjects:
-            for i in range(manifest["subjects"][s]["strides"][sp]):
-                for v in VARIANTS:
-                    tasks.append({"model_path": str(gait.simrun.MODEL_FILE), "processed": str(REPO / "data/camargo2021/processed"), "subject": s, "speed": sp,
-                                  "index": i, "subject_info": manifest["subjects"][s], "variant": v})
-    if args.cap:
-        tasks = [t for t in tasks if t["index"] < args.cap]
+    tasks = gait_extract.lsj_tasks(args.speeds, args.cap, manifest)
     print(f"{len(tasks)} subject-stride x variant cycles, {len({(t['subject'], t['speed'], t['index']) for t in tasks})} subject-strides")
     rows = _pool(_lsj_task, tasks, args.workers)
+    table = gait_extract.lsj_table(rows, args.speeds)
     for sp in args.speeds:
         for j in LSJ:
             print(f"=== {sp} m/s, {j}: median / 95th percentile / maximum across subject-strides ===")
             print(f"{'variant':36s} {'peak angle deg':>22s} {'peak torque N m':>24s} {'peak speed rad/s':>22s} {'power+ W (p95 / max)':>22s} {'regen W (p95 / max)':>22s}")
-            by = {}
+            by = table[sp][j]
             for v in VARIANTS:
-                R = [r["metrics"][j] for r in rows if r["speed"] == sp and r["variant"] == v]
-                by[v] = {k: distribution([x[k] for x in R]) for k in R[0]}
                 m = by[v]
                 f3 = lambda k, nd: f"{m[k]['median']:.{nd}f} / {m[k]['p95']:.{nd}f} / {m[k]['max']:.{nd}f}"
                 z0 = lambda x: f"{x + 0.0:.0f}" if round(x) != 0 else "0"  # no "-0"
@@ -916,18 +841,6 @@ def toe_report(args):
 
 # ------------------------------------------------------------------------------ Stage 2b T2 and T4: A_filtered's peak torques and gain-or-shape
 
-def peak_stats(values) -> dict:
-    v = np.asarray(values, float)
-    return {"mean": float(v.mean()), "median": float(np.median(v)), "p95": float(np.percentile(v, 95)), "max": float(v.max())}
-
-
-def ols(x, y):
-    """Ordinary-least-squares slope and intercept of y on x."""
-    x, y = np.asarray(x, float), np.asarray(y, float)
-    slope = float(np.cov(x, y, bias=True)[0, 1] / x.var())
-    return slope, float(y.mean() - slope * x.mean())
-
-
 def stem_fit(model, data) -> dict:
     """Model moment against the dataset's, one array per stride and limb (both per kg of their own body). The slope and intercept are the
     OLS fit of the model on the data pooled over every frame; `gain` is the least-squares gain through the origin. RMS and peak difference
@@ -943,36 +856,13 @@ def stem_fit(model, data) -> dict:
             "peak_diff": float(np.mean([a["peak_diff"] for a in raw])), "peak_diff_gain_removed": float(np.mean([a["peak_diff"] for a in fixed]))}
 
 
-A_SAGITTAL = ("hip_fe", "knee", "ankle_pdflex")
+A_SAGITTAL = gait_extract.A_STEMS
 A_OFF_BAND = ("hip_aa", "hip_ier")
-
-
-def _a_filtered_strides(speed, workers):
-    """Every subject-stride at one speed through method A_filtered (rigid trunk: A's leg torques do not depend on the mode) with the per-frame
-    joint torques kept, the dataset's own moment per kg of the subject, and the scaling factors of the stride."""
-    import retarget
-    spec = gait.load_spec("walk_treadmill")
-    processed = REPO / spec["dataset"]["processed"]
-    manifest = json.loads((REPO / spec["dataset"]["manifest"]).read_text(encoding="utf-8"))
-    tasks = gait._tasks(spec, manifest, gait.simrun.MODEL_FILE, processed, ["A_filtered"], float(spec["smoothing"]["cutoff_hz"]),
-                        float(spec["pelvis_pitch_offset_deg"]), None, False, False, False, trunk="rigid")
-    tasks = [dict(t, keep_torque=True) for t in tasks if t["speed"] == speed]
-    rows = gait._run_tasks(tasks, workers)
-    c = gait._ctx(gait.simrun.MODEL_FILE)
-    out = []
-    for r in rows:
-        info = manifest["subjects"][r["subject"]]
-        idm = gait._subject_arrays(processed, r["subject"])[f"{speed}_id"][r["index"]]
-        d = {"subject": r["subject"], "leg_ratio": retarget.leg_length_ratio(c.model, info["height_m"]), "tau": r["torque"]["A_filtered"], "data": {}}
-        for j, spec_j in c.mapping["joints"].items():
-            d["data"][j] = spec_j["sign"] * idm[:gait.N_FRAMES, gait.ic.ID_CHANNELS.index(spec_j["dataset"] + "_moment")] / info["mass_kg"]
-        out.append(d)
-    return out, c.mass, spec
 
 
 def a_torque_report(args):
     for speed in args.speeds:
-        S, mass, spec = _a_filtered_strides(speed, args.workers)
+        S, mass, spec = gait_extract.a_filtered_strides(speed, args.workers)
         off = set(spec["offset_subjects"])
         print(f"\n=== {speed} m/s: {len(S)} subject-strides, {len({s['subject'] for s in S})} subjects; Freyja mass {mass:.2f} kg ===")
         print("T2  peak |torque| per stride, statistics over subject-strides: mean / median / p95 / max.")
@@ -1007,16 +897,6 @@ def a_torque_report(args):
 
 
 # ------------------------------------------------------------------------------ Stage 2b T1: hip extension, raw against retargeted
-
-def thigh_world_deg(hip_flexion_deg, pelvis_list_deg):
-    """Thigh angle from the vertical, flexion positive (planar): the hip angle minus the pelvis's anterior pitch, and anterior pitch is minus `pelvis_list`."""
-    return np.asarray(hip_flexion_deg, float) + np.asarray(pelvis_list_deg, float)
-
-
-def peak_extension_deg(right, left) -> float:
-    """Peak hip extension of one stride in degrees, extension positive: minus the minimum hip flexion over both limbs (negative if never extended)."""
-    return float(-min(np.min(right), np.min(left)))
-
 
 def hip_extension_report(args):
     """T1: per-stride peak hip extension (and the knee flexion, ankle plantarflexion peaks) from the processed dataset kinematics (the

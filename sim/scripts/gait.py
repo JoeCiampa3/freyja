@@ -835,15 +835,26 @@ def main(argv=None) -> int:
     ap.add_argument("spec", help="name of a file in sim/scenarios/gait/ (without .yaml)")
     ap.add_argument("--workers", type=int, default=max(1, (os.cpu_count() or 2) - 1))
     ap.add_argument("--write-baseline", action="store_true", help="also write sim/benchmarks/walk_reference.json from this run")
+    ap.add_argument("--write-extract", action="store_true", help="also write sim/benchmarks/gait_extract.json (the tracked extract `fy runs envelope` reads) from this run")
+    ap.add_argument("--extract-only", action="store_true", help="no run: write sim/benchmarks/gait_extract.json from the newest existing record of this spec")
     ap.add_argument("--gait-dir", help=argparse.SUPPRESS)
     args = ap.parse_args(argv)
     try:
+        if args.extract_only:
+            import gait_extract
+            rec = gait_extract.newest_record(args.spec, args.gait_dir)
+            print(f"{rec['gait_id']}: extract only")
+            print(f"  extract: {gait_extract.write_extract(rec, workers=args.workers)}")
+            return 0
         result = run_gait(load_spec(args.spec), gait_dir=args.gait_dir, workers=args.workers)
     except (GaitError, simrun.StaleModelError, runrecord.RecordError) as e:
         print(f"gait: {e}", file=sys.stderr)
         return 2
     if args.write_baseline:
         print(f"  baseline: {write_baseline(result.record)}")
+    if args.write_extract:
+        import gait_extract
+        print(f"  extract: {gait_extract.write_extract(result.record, workers=args.workers)}")
     n = stride_count(result.record)
     print(f"{result.record['gait_id']}: {n} subject-strides")
     print(f"  {result.md_path}")
