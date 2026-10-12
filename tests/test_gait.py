@@ -85,10 +85,10 @@ def test_two_runs_are_byte_identical_and_md_is_under_the_line_cap(tmp_path):
         out.append((res.json_path.read_bytes(), res.md_path.read_bytes()))
     assert out[0] == out[1]
     import json
-    fe = json.loads(out[0][0])["results"]["1.4"]["feasibility"]
+    fe = json.loads(out[0][0])["results"]["1.4"]["rigid"]["feasibility"]
     assert set(fe["polygon"]) == {"B", "measured"} and set(fe["polygon"]["B"]) == {"0.01", "0.025", "0.04"}  # the polygon test at the three bands
     assert set(fe["polygon"]["B"]["0.025"]) == {"single", "double"}
-    assert b"Polygon test, B beside the measured CoP" in out[0][1]
+    assert b"Polygon test by band" in out[0][1]
     assert out[0][1].count(b"\n") <= gait.MAX_LINES
     assert b"Camargo" in out[0][1].split(b"\n", 6)[2] or b"Camargo" in out[0][1][:1500]  # attribution in the header
 
@@ -106,3 +106,72 @@ def test_the_polygon_baseline_uses_the_foot_frame_cop_whatever_the_methods_mappi
         got[mode] = gait.run_stride(task)["feas"]["polygon"]["measured"]["0.025"]
     assert got["hip_reference"] == got["foot_frame"]
     assert len(got["foot_frame"]["single"]) > 10 and len(got["foot_frame"]["double"]) > 5
+
+
+# ------------------------------------------------------------------------------ T6: trunk modes in one record, the band, the baseline
+
+def test_trunk_modes_accepts_a_name_or_a_list_and_rejects_anything_else():
+    assert gait.trunk_modes({"trunk": "rigid"}) == ["rigid"]
+    assert gait.trunk_modes({"trunk": ["rigid", "counter_rotate"]}) == ["rigid", "counter_rotate"]
+    assert gait.trunk_modes({}) == ["rigid"]
+    for bad in ("first_harmonic_typo", [], ["rigid", "rigid"], ["rigid", "x"]):
+        with pytest.raises(gait.GaitError):
+            gait.trunk_modes({"trunk": bad})
+
+
+def _agree(corr, rms):
+    return {j: {"corr": corr, "rms_pct_ptp": rms} for j in ("hip_fe_right", "hip_fe_left", "knee_right", "knee_left", "ankle_pdflex_right", "ankle_pdflex_left")}
+
+
+def test_band_requires_correlation_at_least_0p9_and_rms_at_most_15_percent_for_every_sagittal_joint():
+    assert (gait.BAND_CORR, gait.BAND_RMS_PCT) == (0.9, 15.0)  # the Decisions block's numbers, named constants
+    ok = gait.band_verdict(_agree(0.91, 14.7))
+    assert ok["meets"] and set(ok["joints"]) == {"hip_fe", "knee", "ankle_pdflex"}
+    assert ok["joints"]["knee"] == {"corr": pytest.approx(0.91), "rms_pct_ptp": pytest.approx(14.7), "meets": True}
+    # the band is on the pooled mean of both limbs: one limb at 0.80 and one at 1.0 pool to 0.90, which meets it
+    mix = _agree(1.0, 10.0)
+    mix["hip_fe_left"]["corr"] = 0.80
+    assert gait.band_verdict(mix)["joints"]["hip_fe"]["corr"] == pytest.approx(0.90)
+
+
+def test_mutation_the_band_fails_on_either_edge():
+    assert not gait.band_verdict(_agree(0.8999, 10.0))["meets"]  # correlation just below
+    assert not gait.band_verdict(_agree(0.95, 15.0001))["meets"]  # rms just above
+    worse = _agree(0.95, 10.0)
+    worse["ankle_pdflex_right"]["rms_pct_ptp"] = 40.0  # one joint out is enough
+    v = gait.band_verdict(worse)
+    assert not v["meets"] and v["joints"]["ankle_pdflex"]["meets"] is False and v["joints"]["hip_fe"]["meets"] is True
+    assert not gait.band_verdict({})["meets"]  # no data is not a pass
+
+
+def test_the_baseline_methods_are_those_that_meet_the_band_at_every_speed_and_mode():
+    verdicts = {  # (speed, mode) -> method -> verdict
+        ("1.4", "rigid"): {"A_filtered": {"meets": True}, "A_native": {"meets": False}, "B": {"meets": False}, "H": {"meets": False}},
+        ("1.6", "rigid"): {"A_filtered": {"meets": True}, "A_native": {"meets": True}, "B": {"meets": False}, "H": {"meets": False}},
+    }
+    got = gait.baseline_methods(verdicts)
+    assert got["baselined"] == ["A_filtered"] and got["not_baselined"] == ["A_native", "B", "H"]
+    assert gait.baseline_methods({})["baselined"] == []
+
+
+@pytest.mark.skipif(not PROCESSED.exists(), reason="processed Camargo arrays not present")
+def test_one_record_holds_every_trunk_mode_and_is_byte_identical_on_a_second_run(tmp_path):
+    import json
+    spec = gait.load_spec("walk_treadmill")
+    spec.update({"subjects": ["AB06"], "stride_cap_per_subject": 2, "speeds_mps": [1.4], "trunk": ["rigid", "counter_rotate"]})
+    spec["sensitivity"] = {"cutoffs_hz": [4, 6], "pitch_offsets_deg": [0], "stride_cap_per_subject": 1}
+    out = []
+    for name in ("a", "b"):
+        res = gait.run_gait(spec, gait_dir=tmp_path / name, now=dt.datetime(2026, 10, 12, 10, 0))
+        out.append((res.json_path.read_bytes(), res.md_path.read_bytes()))
+    assert out[0] == out[1]
+    rec = json.loads(out[0][0])
+    assert rec["trunk"] == ["rigid", "counter_rotate"]
+    assert set(rec["results"]["1.4"]) == {"rigid", "counter_rotate"}
+    rig, cr = rec["results"]["1.4"]["rigid"], rec["results"]["1.4"]["counter_rotate"]
+    # the leg torques of A do not depend on the trunk; B's lateral rows do
+    assert rig["joints"]["knee_right"]["A_filtered"] == cr["joints"]["knee_right"]["A_filtered"]
+    assert rig["joints"]["hip_aa_right"]["B"] != cr["joints"]["hip_aa_right"]["B"]
+    assert set(rec["sensitivity"]["cutoff_hz"]["4"]) == {"rigid", "counter_rotate"}
+    assert set(rig["band"]) == {"B", "A_native", "A_filtered", "H"}
+    assert out[0][1].count(b"\n") <= gait.MAX_LINES and b"counter_rotate" in out[0][1]

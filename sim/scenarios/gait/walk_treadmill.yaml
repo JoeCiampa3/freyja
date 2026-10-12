@@ -12,7 +12,7 @@ root_rule: pelvis_dataset       # retargeting rule (foot_min is a diagnostic onl
 root_reference: hip_midpoint    # the dataset's translation and the measured CoP are referenced to the midpoint of the hip joint centres (pelvis_origin = the earlier behaviour)
 pitch_mean: measured            # mean sagittal pelvis pitch: "measured" (the subject's own) or a number of degrees (anterior positive, relative to the stand_static pose). A and H allow "measured" only; a number marks them hybrid
 pelvis_pitch_offset_deg: 0.0    # added to the pitch mean (anterior positive): the sensitivity knob
-trunk: rigid                    # rigid | counter_rotate (lumbosacral lateral and axial joints cancel the pelvis roll and yaw)
+trunk: [rigid, counter_rotate]  # a mode or a list of modes; the record keys every result by mode. rigid | counter_rotate (lumbosacral lateral and axial joints cancel the pelvis roll and yaw)
 cop_mode: hip_reference          # hip_reference: the measured CoP relative to the hip-centre midpoint, scaled; foot_frame: placed at the same normalised place on Freyja's foot (heel and toe-tip markers)
 cop_scale: 1.0                  # scales the measured CoP relative to the pelvis (methods A and H)
 offset_subjects: [AB13, AB15]   # subject-level ankle offsets (T0): every statistic is also given without them

@@ -21,7 +21,7 @@
     "dynamics_version": {"type": "string"},
     "gait_version": {"type": "string"},
     "pitch_mean": {"description": "'measured' or a number of degrees (anterior positive, relative to the standing pose)"},
-    "trunk": {"enum": ["rigid", "counter_rotate"], "description": "rigid: spine and neck at the standing pose relative to the pelvis; counter_rotate: the lumbosacral lateral and axial joints cancel the pelvis roll and yaw"},
+    "trunk": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["rigid", "counter_rotate"]}, "description": "The trunk modes run, in spec order (the spec's `trunk` is a name or a list). rigid: spine and neck at the standing pose relative to the pelvis; counter_rotate: the lumbosacral lateral and axial joints cancel the pelvis roll and yaw. Every result and sensitivity table is keyed by mode."},
     "hybrid_methods": {"type": "array", "items": {"type": "string"}, "description": "methods A and H run with a numeric pitch_mean: a measured force and CoP on a posture they do not belong to"},
     "spec": {"type": "object"},
     "assumptions": {"type": "array", "items": {"type": "string"}},
@@ -29,9 +29,9 @@
     "subjects": {"type": "object", "additionalProperties": {"type": "object", "required": ["mass_kg", "height_m", "sex", "leg_length_ratio", "strides"]}},
     "results": {
       "type": "object",
-      "description": "Per speed (key '1.4'): n_strides, joints{joint{method{metric{all,without_offset{mean,p95,max}}}}}, bound (worst case over the feasible double-support splits), residual, agreement, feasibility (CoP outside / friction exceeded, by phase bin), hip_extension, kinematics.",
-      "additionalProperties": {"type": "object", "required": ["n_strides", "n_strides_without_offset", "joints", "residual", "hip_extension"]}
+      "description": "Per speed (key '1.4') and then per trunk mode: n_strides, joints{joint{method{metric{all,without_offset{mean,p95,max}}}}}, bound (worst case over the feasible double-support splits), residual, agreement, band (per method, `all` and `without_offset`: the envelope band verdict, the sagittal stems pooled over both limbs), feasibility (CoP outside / friction exceeded, by phase bin), hip_extension, kinematics.",
+      "additionalProperties": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "object", "required": ["n_strides", "n_strides_without_offset", "joints", "residual", "hip_extension", "band"]}}
     },
-    "sensitivity": {"type": "object", "description": "95th-percentile peak torque of method B per joint and speed at each smoothing cutoff and pelvis-tilt offset, on stride_cap_per_subject strides per subject."}
+    "sensitivity": {"type": "object", "description": "95th-percentile peak torque of method B per joint, as sensitivity[kind][value][trunk mode][speed][joint], at each smoothing cutoff (cutoff_hz) and pelvis-pitch offset (pitch_offset_deg), on stride_cap_per_subject strides per subject."}
   }
 }
