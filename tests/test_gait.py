@@ -175,3 +175,20 @@ def test_one_record_holds_every_trunk_mode_and_is_byte_identical_on_a_second_run
     assert set(rec["sensitivity"]["cutoff_hz"]["4"]) == {"rigid", "counter_rotate"}
     assert set(rig["band"]) == {"B", "A_native", "A_filtered", "H"}
     assert out[0][1].count(b"\n") <= gait.MAX_LINES and b"counter_rotate" in out[0][1]
+
+
+def test_stride_count_counts_each_stride_once_whatever_the_number_of_trunk_modes():
+    rec = {"results": {"1.4": {"rigid": {"n_strides": 5}, "counter_rotate": {"n_strides": 5}}, "1.6": {"rigid": {"n_strides": 7}, "counter_rotate": {"n_strides": 7}}}}
+    assert gait.stride_count(rec) == 12
+
+
+def test_the_baseline_stores_the_reproduction_metrics_unrounded(tmp_path, monkeypatch):
+    # the record rounds to 6 decimals; the reproduction check compares at 1e-6 relative, so a rounded baseline would fail on small values
+    monkeypatch.setattr(gait, "reference_metrics", lambda *a, **k: {"rigid/A_filtered": {"hip_fe_right": {"peak_diff": 0.0189675043, "corr": 0.9, "rms_pct_ptp": 1.0}}})
+    ver = {"meets": True, "joints": {}}
+    rec = {"spec": {}, "snapshot_sha256": "s", "model_sha256": "m", "spec_sha256": "p", "git_commit": "c", "git_dirty": False, "gait_id": "gait.x",
+           "dataset_manifest_sha256": "d", "results": {"1.4": {"rigid": {"band": {"A_filtered": {"all": ver, "without_offset": ver}}}}}}
+    path = gait.write_baseline(rec, tmp_path / "w.json")
+    import json
+    got = json.loads(path.read_text(encoding="utf-8"))["reproduction"]["metrics"]["rigid/A_filtered"]["hip_fe_right"]["peak_diff"]
+    assert got == 0.0189675043

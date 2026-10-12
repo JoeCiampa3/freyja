@@ -148,6 +148,11 @@ def band_verdict(agree: dict) -> dict:
     return {"meets": all(j["meets"] for j in joints.values()), "joints": joints}
 
 
+def stride_count(record: dict) -> int:
+    """Subject-strides in a record: each counted once, not once per trunk mode."""
+    return sum(next(iter(by_mode.values()))["n_strides"] for by_mode in record["results"].values())
+
+
 def baseline_methods(verdicts: dict) -> dict:
     """verdicts: (speed, mode) -> method -> {meets}. A method is baselined when it meets the band at every speed and trunk mode; the rest
     are reported as findings and not baselined."""
@@ -637,12 +642,14 @@ def write_baseline(record: dict, path=None, *, model_path=None) -> Path:
         "band": {"corr_min": BAND_CORR, "rms_pct_ptp_max": BAND_RMS_PCT, "stems": list(BAND_STEMS)},
         "baselined_methods": split["baselined"], "not_baselined_methods": split["not_baselined"],
         "band_verdicts_full_run": table,
-        "reproduction": {"subset": REFERENCE_SUBSET, "tolerance_rel": REFERENCE_TOL,
-                         "metrics": reference_metrics(spec, methods=split["baselined"], model_path=model_path) if split["baselined"] else {}},
+        "reproduction": {"subset": REFERENCE_SUBSET, "tolerance_rel": REFERENCE_TOL, "metrics": None},
     }
+    body = _round(body)
+    # the reproduction metrics stay at full precision: the check compares at 1e-6 relative, finer than the record's 6 decimals
+    body["reproduction"]["metrics"] = reference_metrics(spec, methods=split["baselined"], model_path=model_path) if split["baselined"] else {}
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", encoding="utf-8", newline="\n") as f:
-        f.write(runrecord.dumps(_round(body)))
+        f.write(runrecord.dumps(body))
     return path
 
 
@@ -808,7 +815,7 @@ def main(argv=None) -> int:
         return 2
     if args.write_baseline:
         print(f"  baseline: {write_baseline(result.record)}")
-    n = sum(r["n_strides"] for r in result.record["results"].values())
+    n = stride_count(result.record)
     print(f"{result.record['gait_id']}: {n} subject-strides")
     print(f"  {result.md_path}")
     return 0
