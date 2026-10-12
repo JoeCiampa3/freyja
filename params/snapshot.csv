@@ -127,7 +127,7 @@ head_neck_pos_y,0,'MuJoCo Positions '!C8
 head_neck_pos_z,0,'MuJoCo Positions '!D8
 hip_abduction,40.5,'MuJoCo Reference'!G73
 hip_adduction,25.6,'MuJoCo Reference'!G74
-hip_extension,18.1,'MuJoCo Reference'!G72
+hip_extension,31,'MuJoCo Reference'!G72
 hip_external_rotation,44.2,'MuJoCo Reference'!G76
 hip_flexion,133.8,'MuJoCo Reference'!G71
 hip_internal_rotation,44.4,'MuJoCo Reference'!G75
