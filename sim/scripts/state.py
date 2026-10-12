@@ -90,11 +90,11 @@ def _latest_runs(root) -> list:
 
 
 def _latest_gait(root) -> str:
-    d = Path(root) / "sim" / "gait"
-    recs = sorted(d.glob("*/gait.json")) if d.exists() else []
-    if not recs:
-        return "none (sim/gait/*/gait.json is untracked and absent here)"
-    r = json.loads(recs[-1].read_text(encoding="utf-8"))
+    """The tracked extract's source record (gait.json is untracked, so a clean clone has none)."""
+    p = Path(root) / "sim" / "benchmarks" / "gait_extract.json"
+    if not p.exists():
+        return "none (sim/benchmarks/gait_extract.json is absent)"
+    r = json.loads(p.read_text(encoding="utf-8"))
     return f"{r['gait_id']} | spec sha256:{r['spec_sha256'][:12]} | dataset manifest sha256:{r['dataset_manifest_sha256'][:12]}"
 
 

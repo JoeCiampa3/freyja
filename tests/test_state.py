@@ -136,3 +136,15 @@ def test_a_staged_file_is_clean_and_an_unstaged_or_untracked_one_is_dirty(repo):
     assert "dirty no" in lines(state.generate(repo, run=False))[2]  # staged modification
     (repo / "stray.txt").write_text("x")
     assert "dirty yes" in lines(state.generate(repo, run=False))[2]  # an untracked file beside staged ones
+
+
+def test_the_latest_gait_record_reads_the_tracked_extract_and_not_the_untracked_gait_json(repo):
+    """Stage 2b T5b(b): a clean clone has the extract and no gait.json; it must not say `none`."""
+    assert "\nnone" in state.generate(repo, run=False).split("## Latest gait record")[1].split("## docs/memos")[0]  # no extract yet
+    bench = repo / "sim" / "benchmarks"
+    bench.mkdir(parents=True)
+    (bench / "gait_extract.json").write_text(json.dumps({"gait_id": "gait.20260101-0000-x", "spec_sha256": "c" * 64, "dataset_manifest_sha256": "d" * 64}))
+    git(repo, "add", "sim/benchmarks/gait_extract.json")
+    assert not (repo / "sim" / "gait").exists()  # no gait.json anywhere
+    text = state.generate(repo, run=False)
+    assert "gait.20260101-0000-x | spec sha256:cccccccccccc | dataset manifest sha256:dddddddddddd" in text
