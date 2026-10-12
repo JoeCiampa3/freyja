@@ -52,7 +52,41 @@ def _hinge_adr(model, name):
 
 ROOT_RULES = ("foot_min", "pelvis_dataset")
 ROOT_REFS = ("hip_midpoint", "pelvis_origin")
-TRUNK_MODES = ("rigid", "counter_rotate")
+TRUNK_MODES = ("rigid", "counter_rotate", "first_harmonic")  # first_harmonic is a reference point for the lumbosacral rows (T9.1), never a headline mode
+
+# T3c.2: the trunk IMU's first-harmonic trunk-to-pelvis amplitude ratio and phase lag (positive = the trunk follows later), median [lower, upper
+# quartile] across 17 subjects, each subject's value the median over its strides. Reproduce: `python sim/scripts/gait_diag.py trunk-imu`
+# (printed to two decimals and whole degrees; docs/memos/memo5-stage2-t3c.md has the table). The IMU alignment is weakest on the lateral axis
+# (the roll rows): median correlation 0.70, worst 0.10.
+FIRST_HARMONIC_DEFAULTS = {
+    "1.4": {"roll": {"median": (0.57, 101.0), "q1": (0.45, 52.0), "q3": (0.76, 122.0)},
+            "yaw": {"median": (0.93, 70.0), "q1": (0.67, 53.0), "q3": (1.42, 75.0)}},
+    "1.6": {"roll": {"median": (0.63, 116.0), "q1": (0.56, 68.0), "q3": (0.79, 123.0)},
+            "yaw": {"median": (0.76, 65.0), "q1": (0.62, 53.0), "q3": (1.30, 80.0)}},
+}
+
+
+def first_harmonic_target(x, gain, lag_deg):
+    """The trunk's world roll (or yaw) about its standing value for a pelvis angle series x (N unique samples of one periodic cycle): gain times the
+    pelvis's stride-frequency first harmonic delayed by lag_deg, nothing else (no mean, no other harmonic)."""
+    x = np.asarray(x, float)
+    k = np.arange(len(x))
+    c = 2.0 / len(x) * np.sum(x * np.exp(-2j * np.pi * k / len(x)))
+    return gain * np.real(c * np.exp(-1j * np.deg2rad(lag_deg)) * np.exp(2j * np.pi * k / len(x)))
+
+
+def trunk_joint_angles(theta, a, l, gains, lags_deg):
+    """(N, 2) lumbosacral lateral-bending and axial-rotation angles that put the trunk at Ry(theta) Rz(a_t) Rx(l_t), where the pelvis is
+    Rp = Ry(theta) Rz(a) Rx(l) (intrinsic Y-Z-X: pitch, yaw, roll) and (l_t, a_t) are the first-harmonic targets with gains and lags (roll, yaw).
+    The abdomen is Rp Rx(lat) Rz(ax), so Rx(lat) Rz(ax) Ry(g) = Rp^T Rt; two joints cannot make three degrees of freedom, so the small pitch term g
+    (second order in the roll and yaw) is dropped. Zero gains give (-l, -a) exactly: the full counter-rotation."""
+    from scipy.spatial.transform import Rotation
+    theta, a, l = (np.asarray(v, float) for v in (theta, a, l))
+    lt = first_harmonic_target(l, gains[0], lags_deg[0])
+    at = first_harmonic_target(a, gains[1], lags_deg[1])
+    m = Rotation.from_euler("YZX", np.column_stack([theta, a, l])).inv() * Rotation.from_euler("YZX", np.column_stack([theta, at, lt]))
+    ang = m.as_euler("XZY")
+    return ang[:, :2]
 
 
 def dataset_hip_mid_lab(ik, hip_in_pelvis):
@@ -159,7 +193,8 @@ class Cycle:
     stride duration in seconds, `scale` the leg-length ratio applied to the pelvis translation."""
 
     def __init__(self, model, mapping, stand_qpos, ik, T, scale, cutoff_hz=CUTOFF_HZ,
-                 pitch_offset_deg=0.0, root_rule="pelvis_dataset", hip_in_pelvis_os=None, root_ref=None, trunk="rigid", pitch_mean="measured"):
+                 pitch_offset_deg=0.0, root_rule="pelvis_dataset", hip_in_pelvis_os=None, root_ref=None, trunk="rigid", pitch_mean="measured",
+                 trunk_gain=None, trunk_lag_deg=None):
         if root_rule not in ROOT_RULES:
             raise ValueError(f"root_rule must be one of {ROOT_RULES}")
         self.root_rule = root_rule
@@ -197,6 +232,9 @@ class Cycle:
         if trunk not in TRUNK_MODES:
             raise ValueError(f"trunk must be one of {TRUNK_MODES}")
         self.pitch_mean, self.trunk = pitch_mean, trunk
+        if trunk == "first_harmonic" and (trunk_gain is None or trunk_lag_deg is None):
+            raise ValueError("trunk first_harmonic needs trunk_gain and trunk_lag_deg, each (roll, yaw)")
+        self.trunk_gain, self.trunk_lag_deg = trunk_gain, trunk_lag_deg
         # 'measured' keeps the dataset's absolute pitch (plus any offset). The leg angles are relative to the dataset's pelvis, so the
         # legs' position in the world, and with it every lever arm of a measured ground reaction, is only consistent with the data
         # when the measured pitch is kept; the verification of the loads against the dataset's own moments uses it.
@@ -223,6 +261,9 @@ class Cycle:
             # the phase points to round-off (a filter would not commute with the nonlinear decomposition)
             Xf = np.column_stack([Xf, self._counter_rotation(Xf)])
             self._comp_adr = [_hinge_adr(model, "lsj_lat"), _hinge_adr(model, "lsj_ax")]
+        elif trunk == "first_harmonic":
+            Xf = np.column_stack([Xf, self._first_harmonic_trunk(Xf)])
+            self._comp_adr = [_hinge_adr(model, "lsj_lat"), _hinge_adr(model, "lsj_ax")]
         self._spl = self._spline(Xf)
         # root height from the minimum rule on the filtered kinematics, then filtered like the rest
         if root_rule == "foot_min":
@@ -248,6 +289,20 @@ class Cycle:
             _, a, l = Rotation.from_matrix(self.lab_to_model @ E @ self.B.T).as_euler("YZX")
             out[k] = (-l, -a)
         return out
+
+    def _pelvis_pyr(self, Xf):
+        """(N, 3) the pelvis's pitch, yaw and roll (intrinsic Y-Z-X, model axes) at the phase points."""
+        from scipy.spatial.transform import Rotation
+        out = np.zeros((Xf.shape[0], 3))
+        for k in range(Xf.shape[0]):
+            E, _, _ = euler_zxy(Xf[k, self._nj:self._nj + 3], np.zeros(3), np.zeros(3))
+            out[k] = Rotation.from_matrix(self.lab_to_model @ E @ self.B.T).as_euler("YZX")
+        return out
+
+    def _first_harmonic_trunk(self, Xf):
+        """(N, 2) lumbosacral lateral and axial angles for the first-harmonic trunk reference (like _counter_rotation, appended unfiltered)."""
+        theta, a, l = self._pelvis_pyr(Xf).T
+        return trunk_joint_angles(theta, a, l, self.trunk_gain, self.trunk_lag_deg)
 
     def _spline(self, X):
         Xc = np.vstack([X, X[:1]])

@@ -379,3 +379,123 @@ def test_rigid_trunk_output_is_unchanged_from_before_the_trunk_modes(model, stan
     assert hashlib.sha256((np.round(g, 9) + 0.0).tobytes()).hexdigest()[:16] == "6b81fb135022033b"  # recorded at cf658f5, before T3c.1
     same = retarget.Cycle(model, MAPPING, stand, z["1.4_ik"][3], float(z["1.4_duration_s"][3]), 0.92, hip_in_pelvis_os=HIP, trunk="rigid")
     assert all(np.array_equal(a, b) for a, b in zip(c.grid(), same.grid()))
+
+
+# ======================================================================== T9.1 trunk: first_harmonic (a reference point, never a headline mode)
+
+import trunkimu  # noqa: E402
+from scipy.spatial.transform import Rotation  # noqa: E402
+
+
+def _pure_harmonics(n=100):
+    k = np.arange(n)
+    ph = 2 * np.pi * k / n
+    return 0.07 * np.cos(ph + 0.6), -0.09 * np.sin(ph - 0.3), 0.05 * np.sin(2 * ph)  # roll l, yaw a, pitch theta (rad)
+
+
+def test_first_harmonic_target_has_the_requested_gain_and_lag_to_1e_9():
+    k = np.arange(100)
+    x = 0.04 + 0.07 * np.cos(2 * np.pi * k / 100 + 0.6) + 0.03 * np.cos(4 * np.pi * k / 100) + 0.01 * np.sin(6 * np.pi * k / 100)  # a mean and other harmonics
+    for gain, lag in ((0.57, 101.0), (0.93, 70.0), (1.3, -40.0), (0.0, 0.0)):
+        t = retarget.first_harmonic_target(x, gain, lag)
+        assert abs(t.mean()) < 1e-12  # no mean: the trunk's world roll and yaw are the standing values plus the harmonic
+        if gain:
+            h = trunkimu.harmonic_ratio(t, x - x.mean())
+            assert abs(h["amplitude_ratio"] - gain) < 1e-9 and abs(h["phase_lag_deg"] - lag) < 1e-9
+        else:
+            assert np.abs(t).max() < 1e-15
+        hh = trunkimu.first_harmonic(t)  # and only the first harmonic: the other harmonics of the target vanish
+        assert np.abs(t - np.real(hh * np.exp(2j * np.pi * k / 100))).max() < 1e-12
+
+
+def test_trunk_joint_angles_with_zero_gain_are_the_counter_rotation():
+    l, a, th = _pure_harmonics()
+    j = retarget.trunk_joint_angles(th, a, l, (0.0, 0.0), (0.0, 0.0))
+    assert np.abs(j[:, 0] + l).max() < 1e-12 and np.abs(j[:, 1] + a).max() < 1e-12  # lsj_lat = -roll, lsj_ax = -yaw
+
+
+def test_trunk_joint_angles_with_unit_gain_and_no_lag_follow_a_pure_first_harmonic_pelvis_rigidly():
+    l, a, th = _pure_harmonics()
+    l, a = l - l.mean(), a - a.mean()
+    j = retarget.trunk_joint_angles(th, a, l, (1.0, 1.0), (0.0, 0.0))
+    assert np.abs(j).max() < 1e-12  # the trunk follows the pelvis, so the joints stay at zero
+
+
+def test_trunk_joint_angles_put_the_trunk_at_the_target_orientation_within_the_dropped_pitch_term():
+    l, a, th = _pure_harmonics()
+    gains, lags = (0.57, 0.93), (101.0, 70.0)
+    j = retarget.trunk_joint_angles(th, a, l, gains, lags)
+    lt, at = retarget.first_harmonic_target(l, gains[0], lags[0]), retarget.first_harmonic_target(a, gains[1], lags[1])
+    rp = Rotation.from_euler("YZX", np.column_stack([th, a, l]))
+    world = rp * Rotation.from_euler("XZ", j)  # abdomen = Rp Rx(lat) Rz(ax)
+    want = Rotation.from_euler("YZX", np.column_stack([th, at, lt]))
+    err = (want.inv() * world).as_rotvec()
+    assert np.abs(err[:, 1]).max() < np.deg2rad(0.5)  # the residual is a small rotation about the pitch axis (two joints cannot make three degrees of freedom): 0.23 deg here
+    assert np.abs(err[:, [0, 2]]).max() < 1e-9  # and none in roll and yaw
+
+
+def test_trunk_joint_angles_flipping_a_gain_changes_them():
+    l, a, th = _pure_harmonics()
+    j1 = retarget.trunk_joint_angles(th, a, l, (0.5, 0.5), (0.0, 0.0))
+    j2 = retarget.trunk_joint_angles(th, a, l, (-0.5, -0.5), (0.0, 0.0))
+    assert np.abs(j1 - j2).max() > 0.01
+
+
+def _first_harmonic_cycle(model, stand, gains=(0.57, 0.93), lags=(101.0, 70.0), ik=None):
+    return retarget.Cycle(model, MAPPING, stand, roll_yaw_ik() if ik is None else ik, 1.0, 1.0, trunk="first_harmonic", trunk_gain=gains, trunk_lag_deg=lags)
+
+
+def test_first_harmonic_with_zero_gain_reproduces_counter_rotate_to_1e_9(model, stand):
+    fh = _first_harmonic_cycle(model, stand, gains=(0.0, 0.0), lags=(0.0, 0.0))
+    cr = retarget.Cycle(model, MAPPING, stand, roll_yaw_ik(), 1.0, 1.0, trunk="counter_rotate")
+    for a, b in zip(fh.grid(), cr.grid()):
+        assert np.abs(a - b).max() < 1e-9
+
+
+def test_first_harmonic_qvel_integrates_back_to_qpos(model, stand):
+    c = _first_harmonic_cycle(model, stand)
+    for t1 in (0.3, 1.0):
+        got = integrate(model, c, 0.0, t1)
+        ref, _, _ = c.eval(t1)
+        assert np.abs(got[:3] - ref[:3]).max() < 1e-9 and rot_diff_rad(got[3:7], ref[3:7]) < 1e-9
+        assert np.abs(got[7:] - ref[7:]).max() < 1e-9  # includes lsj_lat and lsj_ax
+
+
+def test_first_harmonic_trunk_world_roll_and_yaw_have_the_requested_first_harmonic(model, stand):
+    gains, lags = (0.57, 0.93), (101.0, 70.0)
+    c = _first_harmonic_cycle(model, stand, gains, lags)
+    r0 = np.zeros(9)
+    mujoco.mju_quat2Mat(r0, stand[3:7])
+    R0 = Rotation.from_matrix(r0.reshape(3, 3))  # the standing pelvis orientation: roll and yaw are measured about the standing pelvis's axes
+    ref = mujoco.MjData(model)
+    ref.qpos[:] = stand
+    mujoco.mj_kinematics(model, ref)
+    b = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "thorax")
+    th0 = Rotation.from_matrix(ref.xmat[b].reshape(3, 3))
+    pel, tr = [], []
+    for t in c.T * np.arange(100) / 100:
+        q = c.eval(t)[0]
+        m = np.zeros(9)
+        mujoco.mju_quat2Mat(m, q[3:7])
+        pel.append((R0.inv() * Rotation.from_matrix(m.reshape(3, 3))).as_euler("YZX"))
+        d = mujoco.MjData(model)
+        d.qpos[:] = q
+        mujoco.mj_kinematics(model, d)
+        tr.append((R0.inv() * (Rotation.from_matrix(d.xmat[b].reshape(3, 3)) * th0.inv()) * R0).as_euler("YZX"))
+    pel, tr = np.array(pel), np.array(tr)
+    for col, gain, lag in ((2, gains[0], lags[0]), (1, gains[1], lags[1])):  # YZX angles: column 2 is roll, column 1 is yaw
+        h = trunkimu.harmonic_ratio(tr[:, col] - tr[:, col].mean(), pel[:, col] - pel[:, col].mean())
+        assert abs(h["amplitude_ratio"] - gain) < 0.02 * gain  # exact except for the dropped pitch term's second-order effect
+        assert abs(h["phase_lag_deg"] - lag) < 1.0
+        assert abs(tr[:, col].mean()) < 1e-3  # the mean is the standing value: the joints cancel the pelvis's mean roll and yaw
+
+
+def test_first_harmonic_needs_its_gains_and_lags(model, stand):
+    with pytest.raises(ValueError):
+        retarget.Cycle(model, MAPPING, stand, roll_yaw_ik(), 1.0, 1.0, trunk="first_harmonic")
+
+
+def test_the_defaults_are_the_t3c2_medians_at_each_speed():
+    d = retarget.FIRST_HARMONIC_DEFAULTS
+    assert d["1.4"]["roll"]["median"] == (0.57, 101.0) and d["1.4"]["yaw"]["median"] == (0.93, 70.0)
+    assert d["1.6"]["roll"]["median"] == (0.63, 116.0) and d["1.6"]["yaw"]["median"] == (0.76, 65.0)
