@@ -80,6 +80,13 @@ def ankle_jc_offsets(osim_xml: bytes) -> np.ndarray:
     return np.stack([jc["tibia_r_offset"] - mk["R_Ankle_Lat"], jc["tibia_l_offset"] - mk["L_Ankle_Lat"]])
 
 
+def segment_masses(osim_xml: bytes) -> dict:
+    """Right-leg segment masses of a subject's OpenSim model, kg: femur, tibia and foot (talus + calcn + toes)."""
+    import xml.etree.ElementTree as ET
+    m = {b.get("name"): float(b.findtext("mass")) for b in ET.fromstring(osim_xml).iter("Body")}
+    return {"femur": m["femur_r"], "tibia": m["tibia_r"], "foot": m["talus_r"] + m["calcn_r"] + m["toes_r"]}
+
+
 def ground_torque(axis, anchor, cop, force) -> float:
     """Torque of a ground force at `cop` about a hinge with unit `axis` through `anchor`: axis . ((cop - anchor) x force). Linear in the force, so the
     vertical force (force x lever) and the horizontal force (force x height of the joint above the floor) add."""
@@ -113,7 +120,9 @@ def extract_subject(subject: str, out_dir: Path) -> dict:
         counts[s] = d["n"]
     import zipfile
     zf = zipfile.ZipFile(ic.raw_dir() / f"{subject}.zip")
-    out["jc_minus_marker_tibia_m"] = ankle_jc_offsets(zf.read(next(n for n in zf.namelist() if n.lower() == f"osimxml/{subject.lower()}.osim")))
+    osim = zf.read(next(n for n in zf.namelist() if n.lower() == f"osimxml/{subject.lower()}.osim"))
+    out["jc_minus_marker_tibia_m"] = ankle_jc_offsets(osim)
+    out["segment_mass_kg"] = np.array([segment_masses(osim)[k] for k in ("femur", "tibia", "foot")])
     Path(out_dir).mkdir(parents=True, exist_ok=True)
     np.savez(Path(out_dir) / f"{subject}.npz", **out)
     return counts
@@ -430,6 +439,9 @@ def body_geometry(c, manifest, speed: str) -> dict:
         ratio = retarget.leg_length_ratio(m, info["height_m"])
         rows.append((float(np.median(-(fm[..., 2]) + am[..., 2])) - off[0], float(np.median(am[..., 1])) + off[1], info["hip_in_pelvis_os_m"][2], ratio))
     r = np.array(rows)
+    seg = np.array([_ankle_cache(sub, ANKLE_CACHE)["segment_mass_kg"] / info["mass_kg"] for sub, info in manifest["subjects"].items()])
+    ids = [mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, n) for n in ("thigh_right", "shank_right", "foot_right")]
+    out["segment_mass_fraction"] = {"freyja": [float(m.body_mass[i] / c.mass) for i in ids], "subjects": [float(v) for v in seg.mean(axis=0)]}
     out["subjects"] = {"ankle_to_toe": r[:, 0].mean(), "ankle_height": r[:, 1].mean(), "hip_half_separation": r[:, 2].mean(),
                        "ankle_to_toe_scaled": (r[:, 0] * r[:, 3]).mean(), "ankle_height_scaled": (r[:, 1] * r[:, 3]).mean(), "hip_half_separation_scaled": (r[:, 2] * r[:, 3]).mean()}
     return out
@@ -525,6 +537,9 @@ def ankle_gain_report(args):
         f_, s_ = bg["freyja"], bg["subjects"]
         print(f"    body geometry, mm: Freyja at stand_static: ankle {1000 * f_['ankle_height']:.1f} above the floor, {1000 * f_['ankle_to_front']:.1f} to the front of the foot box and {1000 * f_['ankle_to_rear']:.1f} to its rear, hip half separation {1000 * f_['hip_half_separation']:.1f}; "
               f"the {len(manifest['subjects'])} subjects, as measured and times their leg ratio: ankle height {1000 * s_['ankle_height']:.1f} / {1000 * s_['ankle_height_scaled']:.1f}, ankle to toe-tip marker {1000 * s_['ankle_to_toe']:.1f} / {1000 * s_['ankle_to_toe_scaled']:.1f}, hip half separation {1000 * s_['hip_half_separation']:.1f} / {1000 * s_['hip_half_separation_scaled']:.1f}")
+        sm = bg["segment_mass_fraction"]
+        print("    leg segment masses as a fraction of body mass (thigh or femur, shank or tibia, foot with talus and toes): Freyja "
+              + " ".join(f"{v:.4f}" for v in sm["freyja"]) + "; the subjects' OpenSim models (mean of 17) " + " ".join(f"{v:.4f}" for v in sm["subjects"]))
         print(f"(d2) THE STAND POSE'S PITCH: the model's root orientation is R_stand times the dataset's pelvis rotation (retarget.py), and stand_static's root pitch is {sp_deg:+.3f} deg (forward lean positive; its ankle joint is +2.608).")
         print(f"     A run with the existing pitch-offset knob at {-sp_deg:+.3f} deg (the spec's value is untouched), hip-reference mapping, everything else as above:")
         _print_fit_table("  cop_mode hip_reference, pitch offset cancelling the stand pose's pitch", _fit_rows(runs["stand_pitch_removed"], c, manifest, stems))

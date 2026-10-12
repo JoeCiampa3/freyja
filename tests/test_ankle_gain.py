@@ -121,3 +121,11 @@ def test_the_root_pitch_of_a_pose_is_the_rotation_about_the_lateral_axis_with_fo
     qpos[5] = -np.sin(h)
     assert ag.stand_pitch_deg(qpos) == pytest.approx(-3.0, abs=1e-9)
     assert ag.stand_pitch_deg(np.array([0, 0, 1.0, 1, 0, 0, 0])) == 0.0
+
+
+def test_the_segment_masses_are_read_from_the_subjects_opensim_bodies():
+    xml = ("<OpenSimDocument><Model><BodySet><objects>" + "".join(
+        f'<Body name="{n}_r"><mass>{m}</mass></Body>' for n, m in (("femur", 9.0), ("tibia", 3.5), ("talus", 0.1), ("calcn", 1.2), ("toes", 0.2), ("pelvis", 11.0)))
+        + "</objects></BodySet></Model></OpenSimDocument>")
+    got = ag.segment_masses(xml.encode())
+    assert got == {"femur": 9.0, "tibia": 3.5, "foot": pytest.approx(1.5)}  # talus + calcn + toes
