@@ -800,6 +800,120 @@ def pitch_report(args):
           f"range {diffs.min():+.1f} to {diffs.max():+.1f}, |difference| above {PITCH_FLAG_DEG:g} in {int(np.sum(np.abs(diffs) > PITCH_FLAG_DEG))} of {len(diffs)}")
 
 
+# ------------------------------------------------------------------------------ T9.2 where B's backward offset comes from
+
+TRUNKCOM_VARIANTS = ("freyja", "freyja + dataset trunk offset", "dataset masses", "dataset masses + dataset trunk offset")
+
+
+def trunkcom_report(args):
+    """T9.2a: the trunk group's centre of mass relative to the hip-centre midpoint in Freyja and in the dataset's OpenSim model, and B's single-support
+    CoP error against the measured CoP with the group's centre of mass moved (in-memory copies, never saved) to the dataset's torso offset, with and
+    without the dataset's other segment masses."""
+    import datasetmass
+    import gaitloads
+    import trunkcom
+    import zipfile
+    dyn = gait.dynamics
+    c = gait._ctx(str(gait.simrun.MODEL_FILE))
+    m = c.model
+    manifest = json.loads((REPO / "data/camargo2021/manifest.json").read_text(encoding="utf-8"))
+    raw = ic_raw()
+    off0 = trunkcom.trunk_offset(m)
+    ids = [trunkcom._ids(m, [n])[0] for n in datasetmass.TRUNK_GROUP]
+    print(f"Freyja: the trunk group (abdomen, thorax, head and neck, both arms) is {100 * m.body_mass[ids].sum() / m.body_mass.sum():.1f}% of the body; its centre of mass minus the "
+          f"hip-centre midpoint at the neutral pose: x {1000 * off0[0]:+.1f} mm (anterior), y {1000 * off0[1]:+.1f}, z {1000 * off0[2]:+.1f} mm (up)")
+    ds = {}
+    for s in manifest["subjects"]:
+        ds[s] = trunkcom.read_torso_offset(zipfile.ZipFile(raw / f"{s}.zip"), s)
+    arr = np.array([ds[s]["offset_xy"] for s in ds])
+    ratios = {s: gait.retarget.leg_length_ratio(m, manifest["subjects"][s]["height_m"]) for s in ds}
+    scaled = np.array([ratios[s] * ds[s]["offset_xy"] for s in ds])
+    frac = np.array([ds[s]["mass_fraction"] for s in ds])
+    pr = lambda a: f"median {1000 * np.median(a):+.1f}, range {1000 * a.min():+.1f} to {1000 * a.max():+.1f}"
+    print(f"dataset torso (trunk, head, arms; {100 * frac.mean():.1f}% of the body): centre of mass minus the hip-centre midpoint, pelvis frame, mm over {len(ds)} subjects: "
+          f"x {pr(arr[:, 0])}; up {pr(arr[:, 1])}")
+    print(f"  scaled by each subject's leg-length ratio ({min(ratios.values()):.2f} to {max(ratios.values()):.2f}), as the other segments are: x {pr(scaled[:, 0])}; up {pr(scaled[:, 1])}")
+    print(f"  the shift applied: x {1000 * (np.median(scaled[:, 0]) - off0[0]):+.1f} mm, up {1000 * (np.median(scaled[:, 1]) - off0[2]):+.1f} mm (median over subjects)")
+    for speed in args.speeds:
+        args.speed = speed
+        for trunk in ("rigid", "counter_rotate"):
+            models = {}
+            err = {v: [] for v in TRUNKCOM_VARIANTS}
+            for fr in _single_support_frames(args, trunk):
+                s = fr["subject"]
+                if s not in models:
+                    table = datasetmass.read_body_table(zipfile.ZipFile(raw / f"{s}.zip"), s)
+                    dm = datasetmass.with_dataset_masses(m, table, fr["ratio"], fr["d"]["hip_in_pelvis_os_m"][:2])
+                    target = ratios[s] * ds[s]["offset_xy"]
+                    models[s] = {"freyja": m, "freyja + dataset trunk offset": trunkcom.shift_to(m, target)[0], "dataset masses": dm,
+                                 "dataset masses + dataset trunk offset": trunkcom.shift_to(dm, target)[0]}
+                mf, mc = gaitloads.measured_to_model_foot(fr["fp"], fr["fmk"], dyn.foot_floor_segments(m, fr["q"]), c.mass / fr["d"]["mass_kg"])
+                for v in TRUNKCOM_VARIANTS:
+                    mod = models[s][v]
+                    full = dyn.cop_decomposition(mod, fr["q"], dyn.inverse_frame(mod, fr["q"], fr["qd"], fr["qdd"]))[0][:2]
+                    err[v].append(full - mc[fr["foot"]][:2])
+            print(f"=== {speed} m/s, trunk {trunk}, single support ({len(err['freyja'])} frames, first {args.cap} strides per subject): B CoP minus measured CoP, mm ===")
+            for v in TRUNKCOM_VARIANTS:
+                r = np.array(err[v])
+                print(f"  {v:40s} fore-aft mean {1000 * r[:, 0].mean():+6.1f}  rms {1000 * np.sqrt((r[:, 0] ** 2).mean()):5.1f}   lateral mean {1000 * r[:, 1].mean():+6.1f}  rms {1000 * np.sqrt((r[:, 1] ** 2).mean()):5.1f}")
+
+
+def standing_data_report(args):
+    """T9.2b: does any subject's static trial carry force-plate data (a quiet-standing CoP)? Lists what each subject's static folder holds."""
+    import re
+    import zipfile
+    import ingest_camargo as ic
+    manifest = json.loads((REPO / "data/camargo2021/manifest.json").read_text(encoding="utf-8"))
+    raw = ic.raw_dir()
+    kinds, plate = {}, 0
+    for s in manifest["subjects"]:
+        names = zipfile.ZipFile(raw / f"{s}.zip").namelist()
+        folders = sorted({m.group(1) for n in names if (m := re.search(r"/static/([^/]+)/", n))})
+        kinds[s] = folders
+        plate += any(f in ("fp", "forceplate", "force") for f in folders)
+    sets = {tuple(v) for v in kinds.values()}
+    print(f"static trial folders per subject ({len(kinds)} subjects): " + "; ".join(f"{list(k)} in {sum(1 for v in kinds.values() if tuple(v) == k)}" for k in sorted(sets)))
+    print(f"subjects whose static trial has force-plate data: {plate}")
+
+
+# ------------------------------------------------------------------------------ T9.4 toe evidence
+
+def toe_report(args):
+    """T9.4: what the dataset says about the metatarsophalangeal joint. The brief expects `mtp_angle` kinematics and an inverse-dynamics moment in
+    late stance; this reports the largest magnitude of each over every subject-stride and foot, which is the whole finding if the joint is locked."""
+    import re
+    import zipfile
+    import ingest_camargo as ic
+    manifest = json.loads((REPO / "data/camargo2021/manifest.json").read_text(encoding="utf-8"))
+    raw = ic.raw_dir()
+    rows, n_all = {}, 0
+    for s in manifest["subjects"]:
+        zf = zipfile.ZipFile(raw / f"{s}.zip")
+        names = zf.namelist()
+        z = np.load(REPO / "data/camargo2021/processed" / f"{s}.npz")
+        cache = {}
+        amax = mmax = 0.0
+        n = 0
+        for sp in args.speeds:
+            for i in range(len(z[f"{sp}_duration_s"])):
+                trial = int(z[f"{sp}_trial"][i])
+                if trial not in cache:
+                    get = lambda sensor: ic.read_table(zf.read(next(x for x in names if re.search(rf"/treadmill/{sensor}/treadmill_{trial:02d}_\d+\.mat$", x))))
+                    cache[trial] = (get("ik"), get("id"))
+                ik, idt = cache[trial]
+                t0, T = float(z[f"{sp}_t0"][i]), float(z[f"{sp}_duration_s"][i])
+                for foot in ("r", "l"):
+                    a = ic.phase_normalise(ik["Header"], ik[f"mtp_angle_{foot}"], t0, t0 + T, 101)
+                    mo = ic.phase_normalise(idt["Header"], idt[f"mtp_angle_{foot}_moment"], t0, t0 + T, 101)
+                    amax, mmax, n = max(amax, float(np.nanmax(np.abs(a)))), max(mmax, float(np.nanmax(np.abs(mo)))), n + 1
+        rows[s] = (amax, mmax, n)
+        n_all += n
+    print(f"dataset metatarsophalangeal (toe) joint over every subject-stride and foot at {', '.join(args.speeds)} m/s ({n_all} stride-feet, {len(rows)} subjects):")
+    print(f"  largest |mtp_angle| of any subject: {max(r[0] for r in rows.values()):.6g} deg (subjects with a non-zero angle: {sum(r[0] > 0 for r in rows.values())})")
+    mm = np.array([r[1] for r in rows.values()])
+    print(f"  largest |mtp moment| per subject, N m: median {np.median(mm):.2f}, range {mm.min():.2f} to {mm.max():.2f} (the same channel's hip, knee and ankle moments are tens to hundreds of N m)")
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="gait_diag")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -833,6 +947,12 @@ def main(argv=None):
     ti.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
     ti.add_argument("--min-quality", type=float, default=0.0, help="drop subjects whose accelerometer alignment correlation is below this on any axis")
     ti.add_argument("--gyro-unit", type=float, default=1.0, help="multiplier from the file's gyroscope unit to rad/s")
+    tc = sub.add_parser("trunkcom")
+    tc.add_argument("--cap", type=int, default=4)
+    tc.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
+    sub.add_parser("standing")
+    te = sub.add_parser("toe")
+    te.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
     pt = sub.add_parser("pitch")
     pt.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
     hr = sub.add_parser("harmonic")
@@ -861,7 +981,7 @@ def main(argv=None):
     la.add_argument("--speed", default="1.4")
     la.add_argument("--trunk", default="rigid", choices=["rigid", "counter_rotate"])
     args = ap.parse_args(argv)
-    {"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "harmonic": harmonic_report, "pitch": pitch_report, "double": double_report, "polygon": polygon_report, "swing": swing_report, "masses": masses_report, "placement": placement_report, "pushoff": pushoff_report}[args.cmd](args)
+    {"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "harmonic": harmonic_report, "pitch": pitch_report, "trunkcom": trunkcom_report, "standing": standing_data_report, "toe": toe_report, "double": double_report, "polygon": polygon_report, "swing": swing_report, "masses": masses_report, "placement": placement_report, "pushoff": pushoff_report}[args.cmd](args)
 
 
 if __name__ == "__main__":
