@@ -213,3 +213,50 @@ def test_torques_above_the_pelvis_are_identical_across_methods_in_each_trunk_mod
             assert np.abs(ref).max() > 1e-3  # the rows are not trivially zero
             for m in ("A_native", "A_filtered", "H"):
                 assert np.abs(np.array(tor[m][j]) - ref).max() <= 1e-9 * max(1.0, np.abs(ref).max()), (mode, t["subject"], t["speed"], m, j)
+
+
+# ------------------------------------------------------------------------------ T9.3: every statistic also without the pitch-flagged subjects
+
+def test_aggregate_adds_a_third_set_only_when_a_pitch_subset_is_given():
+    v = np.arange(1.0, 101.0)
+    keep = np.arange(100) >= 10
+    assert set(gait.aggregate(v, keep)) == {"all", "without_offset"}  # unchanged when no subject is pitch-flagged
+    keep_pitch = np.arange(100) >= 20
+    a = gait.aggregate(v, keep, keep_pitch)
+    assert set(a) == {"all", "without_offset", "without_pitch_flagged"}
+    assert a["without_pitch_flagged"]["mean"] == pytest.approx(60.5) and a["without_pitch_flagged"]["max"] == 100.0
+    assert a["without_pitch_flagged"]["p95"] == pytest.approx(np.percentile(v[20:], 95))
+    assert a["all"] == gait.aggregate(v, keep)["all"]  # the other sets are untouched
+
+
+def test_agg_over_drops_the_flagged_subjects_from_the_third_set_and_the_offset_subjects_from_the_second():
+    rows = [{"subject": s, "x": x} for s, x in (("AB06", 1.0), ("AB07", 2.0), ("AB13", 30.0), ("AB19", 50.0))]
+    ex = gait.Exclusions(offset={"AB13"}, pitch={"AB07", "AB19"})
+    a = gait._agg_over(rows, lambda r: r["x"], ex)
+    assert a["without_offset"]["max"] == 50.0 and a["without_pitch_flagged"]["max"] == 30.0 and a["all"]["max"] == 50.0
+    assert "without_pitch_flagged" not in gait._agg_over(rows, lambda r: r["x"], gait.Exclusions(offset={"AB13"}, pitch=set()))
+
+
+@pytest.mark.skipif(not PROCESSED.exists(), reason="processed Camargo arrays not present")
+def test_the_record_gives_every_statistic_and_the_band_without_the_pitch_flagged_subjects(tmp_path):
+    import json
+    spec = gait.load_spec("walk_treadmill")
+    spec.update({"subjects": ["AB06", "AB07"], "stride_cap_per_subject": 1, "speeds_mps": [1.4], "trunk": "rigid", "pitch_flag_subjects": ["AB07"]})
+    spec["sensitivity"] = {"cutoffs_hz": [6], "pitch_offsets_deg": [0], "stride_cap_per_subject": 1}
+    rec = json.loads(gait.run_gait(spec, gait_dir=tmp_path, now=dt.datetime(2026, 10, 12, 10, 0)).json_path.read_text(encoding="utf-8"))
+    d = rec["results"]["1.4"]["rigid"]
+    assert d["n_strides_without_pitch_flagged"] == 1 and d["n_strides"] == 2
+    st = d["joints"]["knee_right"]["A_filtered"]["peak_torque_nm"]
+    assert set(st) == {"all", "without_offset", "without_pitch_flagged"}
+    assert set(d["band"]["A_filtered"]) == {"all", "without_offset", "without_pitch_flagged"}
+    md = (tmp_path / next(p.name for p in tmp_path.iterdir()) / "GAIT.md").read_text(encoding="utf-8")
+    assert "Pitch-flagged subjects (kept" in md and "AB07" in md.split("Pitch-flagged subjects", 1)[1][:400]
+    assert "without pitch flagged" in md  # the band row has its third verdict
+
+
+def test_the_spec_lists_only_subjects_that_exist():
+    import json
+    spec = gait.load_spec("walk_treadmill")
+    manifest = json.loads((REPO / spec["dataset"]["manifest"]).read_text(encoding="utf-8"))
+    for key in ("offset_subjects", "pitch_flag_subjects"):
+        assert set(spec.get(key, [])) <= set(manifest["subjects"]), key

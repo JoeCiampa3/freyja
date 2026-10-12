@@ -719,6 +719,87 @@ def harmonic_report(args):
                 print(f"  {sp} {ax:4s} {label:8s}: IQR across all subjects {iqr(v):.2f}, across the {int(ok.sum())} well-aligned {iqr(v[ok]):.2f}; "
                       f"median within-subject stride IQR {np.median(w):.2f}; Spearman with alignment (forward {rho_x:+.2f}, lateral {rho_z:+.2f})")
 
+# ------------------------------------------------------------------------------ T9.3 pitch flags
+
+PITCH_FLAG_DEG = gait.PITCH_FLAG_DEG  # the brief's threshold (5 degrees) on |change of the IK pitch - change of the marker pitch| from static to walking; its home is gait.py
+
+
+def marker_pelvic_tilt_deg(asis_r, asis_l, psis_r, psis_l):
+    """Anterior-positive sagittal tilt of the line from the PSIS midpoint to the ASIS midpoint, from marker positions (N, 3) in a lab frame
+    with y up. Forward is taken from the pelvis itself (the vertical cross the left-to-right ASIS line), not from a lab axis: the static trials
+    are recorded facing another way than the treadmill trials. The line points forward and down for an anteriorly tilted pelvis. Only changes
+    of it are compared, so the anatomical offset between this line and the pelvic frame the IK uses does not matter."""
+    ar, al, pr, pl = (np.asarray(v, float) for v in (asis_r, asis_l, psis_r, psis_l))
+    lat = ar - al
+    lat[:, 1] = 0.0
+    lat /= np.linalg.norm(lat, axis=1, keepdims=True)
+    fwd = np.cross(np.array([0.0, 1.0, 0.0]), lat)
+    v = 0.5 * (ar + al) - 0.5 * (pr + pl)
+    return np.degrees(np.arctan2(-v[:, 1], np.sum(v * fwd, axis=1)))
+
+
+def pitch_flag(delta_ik, delta_marker, threshold=PITCH_FLAG_DEG) -> bool:
+    """True when the static-to-walking change of the IK pitch and of the marker pitch differ by more than the threshold (strictly)."""
+    return bool(abs(delta_ik - delta_marker) > threshold)
+
+
+def _tilt_from_table(t, mask=None):
+    cols = lambda name: np.stack([t[f"{name}_{c}"] for c in "xyz"], axis=1)
+    tilt = marker_pelvic_tilt_deg(cols("R_ASIS"), cols("L_ASIS"), cols("R_PSIS"), cols("L_PSIS"))
+    tilt = tilt if mask is None else tilt[mask]
+    return float(np.nanmean(tilt)) if np.isfinite(tilt).any() else float("nan"), int(np.isfinite(tilt).sum()), int(len(tilt))
+
+
+def pitch_report(args):
+    """T9.3: the IK pelvis pitch against the ASIS and PSIS markers for every subject: the static-to-walking change of each, their difference, and
+    the flag (a difference above PITCH_FLAG_DEG at either speed). Subjects are kept either way; the list goes in the spec (`pitch_flag_subjects`)."""
+    import re
+    import zipfile
+    sys.path.insert(0, str(REPO / "analysis"))
+    import ingest_camargo as ic
+    manifest = json.loads((REPO / "data/camargo2021/manifest.json").read_text(encoding="utf-8"))
+    raw = ic.raw_dir()
+    pl = ic.IK_CHANNELS.index("pelvis_list")
+    rows, flagged = [], []
+    print(f"IK pelvis pitch (anterior positive, minus pelvis_list) and ASIS/PSIS-marker pelvic tilt, degrees; a change is walking minus static; flag when the changes differ by more than {PITCH_FLAG_DEG:g} at either speed")
+    print(f"{'subject':8s} {'static IK':>9s} {'static mk':>9s} | " + " | ".join(f"{sp} m/s: walk IK, walk mk, dIK, dmk, diff" for sp in args.speeds) + " | flag")
+    for s, info in manifest["subjects"].items():
+        zf = zipfile.ZipFile(raw / f"{s}.zip")
+        names = zf.namelist()
+        static = [_tilt_from_table(ic.read_table(zf.read(n)))[0] for n in sorted(x for x in names if re.search(r"/static/markers/.*\.mat$", x))]
+        st_mk = float(np.mean(static))
+        st_ik = float(info["static_pelvis_pitch_deg"])
+        z = np.load(REPO / "data/camargo2021/processed" / f"{s}.npz")
+        cache, cells, flag = {}, [], False
+        for sp in args.speeds:
+            ik_w, mk_w, bad = [], [], 0
+            for i in range(len(z[f"{sp}_duration_s"])):
+                trial = int(z[f"{sp}_trial"][i])
+                if trial not in cache:
+                    n = next(x for x in names if re.search(rf"/treadmill/markers/treadmill_{trial:02d}_\d+\.mat$", x))
+                    cache[trial] = ic.read_table(zf.read(n))
+                t = cache[trial]
+                t0, T = float(z[f"{sp}_t0"][i]), float(z[f"{sp}_duration_s"][i])
+                tilt, n_ok, n_all = _tilt_from_table(t, (t["Header"] >= t0) & (t["Header"] < t0 + T))
+                if np.isfinite(tilt):
+                    mk_w.append(tilt)
+                else:
+                    bad += 1
+                ik_w.append(-float(np.mean(z[f"{sp}_ik"][i][:100, pl])))
+            ik_m, mk_m = float(np.mean(ik_w)), float(np.mean(mk_w))
+            d_ik, d_mk = ik_m - st_ik, mk_m - st_mk
+            f = pitch_flag(d_ik, d_mk)
+            flag = flag or f
+            cells.append(f"{ik_m:7.1f} {mk_m:7.1f} {d_ik:6.1f} {d_mk:6.1f} {d_ik - d_mk:6.1f}" + (f" ({bad} strides without markers)" if bad else ""))
+            rows.append((s, sp, d_ik, d_mk))
+        if flag:
+            flagged.append(s)
+        print(f"{s:8s} {st_ik:9.1f} {st_mk:9.1f} | " + " | ".join(cells) + f" | {'FLAG' if flag else ''}")
+    diffs = np.array([r[2] - r[3] for r in rows])
+    print(f"flagged ({len(flagged)} of {len(manifest['subjects'])}): {', '.join(flagged) if flagged else 'none'}; difference of changes over subject-speeds: median {np.median(diffs):+.1f}, "
+          f"range {diffs.min():+.1f} to {diffs.max():+.1f}, |difference| above {PITCH_FLAG_DEG:g} in {int(np.sum(np.abs(diffs) > PITCH_FLAG_DEG))} of {len(diffs)}")
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="gait_diag")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -752,6 +833,8 @@ def main(argv=None):
     ti.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
     ti.add_argument("--min-quality", type=float, default=0.0, help="drop subjects whose accelerometer alignment correlation is below this on any axis")
     ti.add_argument("--gyro-unit", type=float, default=1.0, help="multiplier from the file's gyroscope unit to rad/s")
+    pt = sub.add_parser("pitch")
+    pt.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
     hr = sub.add_parser("harmonic")
     hr.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
     hr.add_argument("--cap", type=int, default=0, help="strides per subject (0 = all)")
@@ -778,7 +861,7 @@ def main(argv=None):
     la.add_argument("--speed", default="1.4")
     la.add_argument("--trunk", default="rigid", choices=["rigid", "counter_rotate"])
     args = ap.parse_args(argv)
-    {"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "harmonic": harmonic_report, "double": double_report, "polygon": polygon_report, "swing": swing_report, "masses": masses_report, "placement": placement_report, "pushoff": pushoff_report}[args.cmd](args)
+    {"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "harmonic": harmonic_report, "pitch": pitch_report, "double": double_report, "polygon": polygon_report, "swing": swing_report, "masses": masses_report, "placement": placement_report, "pushoff": pushoff_report}[args.cmd](args)
 
 
 if __name__ == "__main__":

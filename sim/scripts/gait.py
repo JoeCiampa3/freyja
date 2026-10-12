@@ -22,6 +22,7 @@ import json
 import os
 import sys
 from concurrent.futures import ProcessPoolExecutor
+from collections import namedtuple
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -67,6 +68,7 @@ TRUNK_SHORT = {"rigid": "rig", "counter_rotate": "cr"}
 BAND_CORR = 0.9
 BAND_RMS_PCT = 15.0
 BAND_STEMS = ("hip_fe", "knee", "ankle_pdflex")
+PITCH_FLAG_DEG = 5.0  # degrees: a subject is pitch-flagged when the static-to-walking change of the IK pelvis pitch and of the ASIS/PSIS marker pitch differ by more than this (T9.3; `gait_diag.py pitch`)
 
 
 class GaitError(ValueError):
@@ -82,12 +84,16 @@ class GaitResult:
 
 # ------------------------------------------------------------------------------ pure arithmetic (tested on synthetic input)
 
-def aggregate(values, keep) -> dict:
-    """Mean, 95th percentile (linear interpolation) and maximum of `values` over all subject-strides and over the subset where
-    `keep` is true (the dataset's offset subjects removed)."""
+def aggregate(values, keep, keep_pitch=None) -> dict:
+    """Mean, 95th percentile (linear interpolation) and maximum of `values` over all subject-strides, over the subset where `keep` is true
+    (the dataset's offset subjects removed) and, when `keep_pitch` is given, over the subset where that is true (the subjects whose IK pelvis
+    pitch disagrees with the pelvic markers removed: T9.3). Without `keep_pitch` the result is what it was before T9.3."""
     v, k = np.asarray(values, float), np.asarray(keep, bool)
     stats = lambda x: {"mean": float(x.mean()), "p95": float(np.percentile(x, 95)), "max": float(x.max())}
-    return {"all": stats(v), "without_offset": stats(v[k])}
+    out = {"all": stats(v), "without_offset": stats(v[k])}
+    if keep_pitch is not None:
+        out["without_pitch_flagged"] = stats(v[np.asarray(keep_pitch, bool)])
+    return out
 
 
 def peak_metrics(torque, qvel) -> dict:
@@ -399,16 +405,24 @@ def _run_tasks(tasks, workers):
         return list(ex.map(run_stride, tasks, chunksize=4))
 
 
-def _agg_over(rows, getter, offset_subjects):
-    keep = [r["subject"] not in offset_subjects for r in rows]
-    return aggregate([getter(r) for r in rows], keep)
+Exclusions = namedtuple("Exclusions", "offset pitch")  # subject sets removed for `without_offset` and for `without_pitch_flagged`
+
+
+def _agg_over(rows, getter, ex):
+    if not isinstance(ex, Exclusions):
+        ex = Exclusions(set(ex), set())
+    keep = [r["subject"] not in ex.offset for r in rows]
+    keep_pitch = [r["subject"] not in ex.pitch for r in rows] if ex.pitch else None
+    return aggregate([getter(r) for r in rows], keep, keep_pitch)
 
 
 def _build_one(R, c: Context, spec, off) -> dict:
     """Every table of one (speed, trunk mode): R holds that cell's subject-strides."""
     methods = list(R[0]["peaks"])
-    d = {"n_strides": len(R), "n_strides_without_offset": sum(r["subject"] not in off for r in R), "joints": {}, "bound": {},
+    d = {"n_strides": len(R), "n_strides_without_offset": sum(r["subject"] not in off.offset for r in R), "joints": {}, "bound": {},
          "residual": {}, "agreement": {}, "feasibility": {}, "kinematics": {}}
+    if off.pitch:
+        d["n_strides_without_pitch_flagged"] = sum(r["subject"] not in off.pitch for r in R)
     for j in c.joints:
         # peak_regeneration_w is the magnitude of the most negative power, so mean / p95 / max read in the same direction
         d["joints"][j] = {m: {**{k: _agg_over(R, lambda r, m=m, j=j, k=k: r["peaks"][m][j][k], off)
@@ -425,9 +439,15 @@ def _build_one(R, c: Context, spec, off) -> dict:
                                         for k in ("rms_pct_ptp", "peak_diff", "corr")}
                 d["agreement"][m][j].update({k + "_without_offset": _agg_over(R, lambda r, m=m, j=j, k=k: r["agree"][m][j][k], off)["without_offset"]["mean"]
                                              for k in ("rms_pct_ptp", "peak_diff", "corr")})
+                if off.pitch:
+                    d["agreement"][m][j].update({k + "_without_pitch_flagged": _agg_over(R, lambda r, m=m, j=j, k=k: r["agree"][m][j][k], off)["without_pitch_flagged"]["mean"]
+                                                 for k in ("rms_pct_ptp", "peak_diff", "corr")})
     d["band"] = {m: {"all": band_verdict({j: {"corr": a["corr"], "rms_pct_ptp": a["rms_pct_ptp"]} for j, a in aj.items()}),
                      "without_offset": band_verdict({j: {"corr": a["corr_without_offset"], "rms_pct_ptp": a["rms_pct_ptp_without_offset"]} for j, a in aj.items()})}
                  for m, aj in d["agreement"].items()}
+    if off.pitch:
+        for m, aj in d["agreement"].items():
+            d["band"][m]["without_pitch_flagged"] = band_verdict({j: {"corr": a["corr_without_pitch_flagged"], "rms_pct_ptp": a["rms_pct_ptp_without_pitch_flagged"]} for j, a in aj.items()})
     if "feas" in R[0]:
         stance = np.sum([r["feas"]["stance"] for r in R], axis=0)
         cop = np.sum([r["feas"]["cop_out"] for r in R], axis=0)
@@ -485,7 +505,7 @@ def _build_one(R, c: Context, spec, off) -> dict:
 
 def build_results(rows, c: Context, spec) -> dict:
     """results[speed][trunk mode] -> the tables of _build_one."""
-    off = set(spec["offset_subjects"])
+    off = Exclusions(set(spec["offset_subjects"]), set(spec.get("pitch_flag_subjects", [])))
     res = {}
     for sp in [str(s) for s in spec["speeds_mps"]]:
         for mode in trunk_modes(spec):
@@ -743,8 +763,15 @@ def render_md(rec: dict) -> str:
             L += ["", "### Agreement with the dataset's joint moments: correlation / RMS % of peak-to-peak, both limbs pooled, mean over strides", "", hdr.replace("joint", "stem"), sep]
             for stem in stems:
                 L.append(f"| {stem}{' (band)' if stem in BAND_STEMS else ''} | " + " | ".join("{:.2f} / {:.0f}%".format(*_pooled(by_mode[x], m, stem)) for _, m, x in cols) + " |")
-            L.append("| meets the band (all / without offset subjects) | " + " | ".join(
-                " / ".join("yes" if by_mode[x]["band"][m][k]["meets"] else "no" for k in ("all", "without_offset")) for _, m, x in cols) + " |")
+            ks = ("all", "without_offset") + (("without_pitch_flagged",) if d0.get("n_strides_without_pitch_flagged") is not None else ())
+            L.append(f"| meets the band ({' / '.join(k.replace('_', ' ') for k in ks)}) | " + " | ".join(
+                " / ".join("yes" if by_mode[x]["band"][m][k]["meets"] else "no" for k in ks) for _, m, x in cols) + " |")
+            if len(ks) == 3:
+                flagged = ", ".join(sp["pitch_flag_subjects"])
+                worst = lambda m, x: max(((abs(by_mode[x]["joints"][j][m]["peak_torque_nm"]["without_pitch_flagged"]["p95"] - by_mode[x]["joints"][j][m]["peak_torque_nm"]["all"]["p95"]), j) for j in leg))
+                L += ["", f"Pitch-flagged subjects (kept; the IK pelvis pitch and the pelvic markers disagree on the static-to-walking change by more than {PITCH_FLAG_DEG:g} deg): {flagged}; "
+                      f"{d0['n_strides_without_pitch_flagged']} of {d0['n_strides']} strides remain without them. Largest change of a leg joint's 95th-percentile peak torque without them, N m: "
+                      + "; ".join(f"{lab} {worst(m, x)[0]:.1f} ({worst(m, x)[1]})" for lab, m, x in cols) + "."]
         if d0["feasibility"]:
             pc = lambda v: "-" if v is None else f"{100 * v:.1f}%"
             f1 = lambda v: "-" if v is None else f"{1000 * v:.0f}"

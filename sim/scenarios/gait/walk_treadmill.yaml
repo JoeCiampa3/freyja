@@ -16,6 +16,7 @@ trunk: [rigid, counter_rotate]  # a mode or a list of modes; the record keys eve
 cop_mode: hip_reference          # hip_reference: the measured CoP relative to the hip-centre midpoint, scaled; foot_frame: placed at the same normalised place on Freyja's foot (heel and toe-tip markers)
 cop_scale: 1.0                  # scales the measured CoP relative to the pelvis (methods A and H)
 offset_subjects: [AB13, AB15]   # subject-level ankle offsets (T0): every statistic is also given without them
+pitch_flag_subjects: [AB07, AB12, AB18, AB19]  # kept, and every statistic is also given without them (T9.3): the IK pelvis pitch and the pelvic markers disagree on the static-to-walking change by more than gait.PITCH_FLAG_DEG at either speed. Reproduce: python sim/scripts/gait_diag.py pitch
 wrap_gap_flag_deg: 10.0         # strides with a joint's drift above this are flagged, never dropped
 upper_body: "rigid at the standing pose from stand_static, arms at the sides; arm swing is not modelled"
 double_support:
