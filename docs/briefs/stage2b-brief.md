@@ -6,7 +6,7 @@ Read `CLAUDE.md`, `CONVENTIONS.md`, `docs/OVERVIEW.md`, `docs/memos/memo5-stage2
 
 CONVENTIONS section 9 and `CLAUDE.md` apply. Tests first, one commit per task, files staged by explicit path, every multi-line edit made with the editor tool and confirmed from the file before committing. While iterating run only the affected test file; run the full suite once before each commit. Stop and ask before changing the model, the sheet, the template, any default, the retargeting or a band. Report numbers that contradict this brief and stop.
 
-The work is three sessions. **Session 1 (done at `ef9946c`, report `docs/memos/memo7-stage2b-checks.md`):** T1, T2, T4. **Session 2: T3, T5, then `docs/memos/memo8-stage2b-close.md`, `fy state`, stop.** **Session 3: T6, then `docs/memos/memo9-ankle-gain.md`, `fy state`, stop.** Joe starts each session after reading the memo before it.
+The work is three sessions. **Session 1 (done at `ef9946c`, report `docs/memos/memo7-stage2b-checks.md`):** T1, T2, T4. **Session 2 (done at `89fd9e8`, report `docs/memos/memo8-stage2b-close.md`):** T3, T5. **Session 3: T5b, then T6, then `docs/memos/memo9-ankle-gain.md`, `fy state`, stop.** Joe starts each session after reading the memo before it.
 
 ## Decisions (Joe confirms by committing this brief; each line is a one-line revert if he disagrees)
 
@@ -37,6 +37,10 @@ Add to the extract and the envelope, beside `A_filtered`'s sagittal rows, per sp
 (a) Find every generated or authored text that attributes B's failure to Freyja's mass distribution, her foot or the controller project (search the generators in `gait.py` and `runs_report.py`, `GAIT.md`, `ENVELOPE.md`, the READMEs and `decisions/0001-toe-joint.md`) and reword it to the Decisions' statement. Change the generators, not the generated files. (b) Describe the three trunk modes as in the Decisions where `rigid` and `counter_rotate` are first explained in generated text. (c) Change the comment on `pose.com_x_rel_ankle_m` as the Decisions say; not the value. (d) Add a `.gitattributes` with `* text=auto eol=lf`. Do not run a renormalisation; report how many tracked files it would change (`git add --renormalize --dry-run .`) and let Joe decide. (e) `CLAUDE.md`'s "Current brief" line already names this brief; check it does. (f) Make `fy state` treat staged files as clean (Decisions), with tests: a staged memo gives `dirty no`, an untracked file `dirty yes`, an unstaged modification `dirty yes`.
 
 After T5: write `docs/memos/memo8-stage2b-close.md`, run `fy state`, and stop.
+
+## T5b. Three small fixes from `memo8` (session 3, first; each with a test written first)
+
+(a) `gait.render_md` takes the order of the trunk modes from the spec, not from the stored record's key order, so that a `GAIT.md` regenerated from a stored record equals a fresh one (CONVENTIONS: same inputs, byte-identical output). Test: a record round-tripped through JSON renders identically to the original. Then regenerate the tracked `GAIT.md` of the newest record only (`gait.20261011-2317-walk_treadmill`) so it carries the current wording; the older records' `GAIT.md` files are history and stay as they are. (b) `fy state`'s "Latest gait record" reads the tracked extract's `gait_id` (and its spec and dataset hashes) and not the untracked `gait.json`, so that a clean clone does not say `none`. Test: a throwaway repository with an extract and no `gait.json`. (c) Leave the envelope printing the `all` exclusion set only; the extract holds the other two. No other change.
 
 ## T6. Where does the ankle gain come from? (session 3; report only)
 
