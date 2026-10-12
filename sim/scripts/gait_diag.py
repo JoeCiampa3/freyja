@@ -974,6 +974,11 @@ def hip_extension_report(args):
         print(f" hip extension, strides with mean pelvis_list below 5 deg: {q4(raw[pl < 5])}; at or above 5 deg: {q4(raw[pl >= 5])}")
 
 
+def ankle_gain_command(args):
+    import ankle_gain
+    ankle_gain.ankle_gain_report(args)
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="gait_diag")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -1045,8 +1050,13 @@ def main(argv=None):
     at.add_argument("--workers", type=int, default=5)
     he = sub.add_parser("hipext")
     he.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
+    ag_ = sub.add_parser("ankle-gain")  # Stage 2b T6: report only; needs data/camargo2021/processed/ankle_lat (python sim/scripts/ankle_gain.py extract <subject>)
+    ag_.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
+    ag_.add_argument("--workers", type=int, default=5)
+    ag_.add_argument("--subjects", nargs="+", default=None)
+    ag_.add_argument("--cap", type=int, default=None)
     args = ap.parse_args(argv)
-    {"hipext": hip_extension_report, "a-torque": a_torque_report,"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "harmonic": harmonic_report, "pitch": pitch_report, "trunkcom": trunkcom_report, "standing": standing_data_report, "toe": toe_report, "double": double_report, "polygon": polygon_report, "swing": swing_report, "masses": masses_report, "placement": placement_report, "pushoff": pushoff_report}[args.cmd](args)
+    {"ankle-gain": ankle_gain_command, "hipext": hip_extension_report,"a-torque": a_torque_report,"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "harmonic": harmonic_report, "pitch": pitch_report, "trunkcom": trunkcom_report, "standing": standing_data_report, "toe": toe_report, "double": double_report, "polygon": polygon_report, "swing": swing_report, "masses": masses_report, "placement": placement_report, "pushoff": pushoff_report}[args.cmd](args)
 
 
 if __name__ == "__main__":
