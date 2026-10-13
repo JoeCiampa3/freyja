@@ -152,3 +152,36 @@ def test_peak_extension_is_the_larger_of_the_two_limbs_and_minus_the_minimum_ang
     right, left = np.array([10.0, -20.0, 5.0]), np.array([8.0, -25.0, 1.0])
     assert gd.peak_extension_deg(right, left) == pytest.approx(25.0)
     assert gd.peak_extension_deg(np.array([3.0, 4.0]), np.array([5.0, 6.0])) == pytest.approx(-3.0)  # never extended: negative, not clipped
+
+
+# ------------------------------------------------------------------------------ Stage 2d T3: the polygon subcommand
+
+def _fake_polygon_block(outside):
+    cell = lambda f: {"frames": 10, "outside_fraction": f, "median_outside_m": 0.01, "p95_outside_m": 0.02}
+    return {"0.025": {"single": cell(outside), "double": cell(outside)}}
+
+
+def test_the_polygon_subcommand_reads_the_result_of_the_trunk_mode_it_ran_not_the_speed_level(monkeypatch, capsys):
+    """build_results is keyed speed -> trunk mode -> tables; the subcommand used to index the speed level for `feasibility` (KeyError)."""
+    import gait
+    seen = []
+
+    def fake_rows(spec, methods, cap, speed, workers, **overrides):
+        seen.append(overrides["trunk"])
+        return [{"trunk": overrides["trunk"]}]
+
+    def fake_build(rows, c, spec):
+        mode = rows[0]["trunk"]
+        outside = {"rigid": 0.111, "counter_rotate": 0.777}[mode]  # distinguishable in the printout
+        poly = {"B": _fake_polygon_block(outside), "measured": _fake_polygon_block(0.5)}
+        return {"1.4": {mode: {"feasibility": {"polygon": poly}}}}
+
+    monkeypatch.setattr(gd, "_rows", fake_rows)
+    monkeypatch.setattr(gd.gait, "build_results", fake_build)
+    args = type("A", (), {"speeds": ["1.4"], "cap": 1, "workers": 1})()
+    gd.polygon_report(args)
+    out = capsys.readouterr().out
+    assert seen == ["rigid"] * 3 + ["counter_rotate"] * 3  # three pitch offsets per mode
+    rigid, counter = out.split("trunk counter_rotate")
+    assert "11.1" in rigid and "77.7" not in rigid
+    assert "77.7" in counter and "11.1" not in counter

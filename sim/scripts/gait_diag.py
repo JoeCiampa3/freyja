@@ -328,7 +328,7 @@ def polygon_report(args):
             print(f"=== {speed} m/s, trunk {trunk}, {args.cap} strides per subject, pitch mean measured ===")
             for off in (0.0, -5.0, 5.0):
                 rows = _rows(spec, ["B"], args.cap, speed, args.workers, trunk=trunk, pitch_mean="measured", pelvis_pitch_offset_deg=off)
-                res = gait.build_results(rows, c, {**spec, "speeds_mps": [float(speed)], "pelvis_pitch_offset_deg": off})[speed]["feasibility"]
+                res = gait.build_results(rows, c, {**spec, "speeds_mps": [float(speed)], "pelvis_pitch_offset_deg": off})[speed][trunk]["feasibility"]
                 pg = res["polygon"]
                 if off == 0.0:
                     print("band mm | support | B outside % | B median / p95 mm | measured outside % | measured median / p95 mm")
