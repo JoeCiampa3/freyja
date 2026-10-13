@@ -194,7 +194,7 @@ class PoseParameters(unittest.TestCase):
 
     def test_unreachable_combinations_are_errors_not_clipped_poses(self):
         with self.assertRaises(leanpose.LeanError) as cm:
-            leanpose.solve_pose(self.model, {"com_x_rel_ankle_m": 0.0, "pelvic_tilt_deg": -30.0}, self.feet)  # hip extension stops at 18.1 deg
+            leanpose.solve_pose(self.model, {"com_x_rel_ankle_m": 0.0, "pelvic_tilt_deg": -35.0}, self.feet)  # hip extension stops at 31 deg (sheet, Stage 2d); -35 is 4 deg past it
         self.assertIn("hip_fe", str(cm.exception))
         with self.assertRaises(leanpose.LeanError):
             leanpose.solve_pose(self.model, {"com_x_rel_ankle_m": 0.6}, self.feet)

@@ -209,7 +209,8 @@ class DefaultHookTests(unittest.TestCase):
             self.assertEqual(report.blocking, [])
             data = json.loads(last.read_text(encoding="utf-8"))
             self.assertIn("check.mjcf.mirror", [r["id"] for r in data["results"]])
-            self.assertTrue(any("check.mjcf.com_pct_stature" in w for w in data["warnings"]))  # the proposed waiver reminder
+            self.assertEqual([r["status"] for r in data["results"] if r["id"] == "check.mjcf.com_pct_stature"], ["WAIVED"])  # Joe confirmed the waiver (31b75ac)
+            self.assertEqual(data["warnings"], [])  # a confirmed waiver on a check that still fails raises no reminder
 
     def test_a_broken_copy_of_the_model_is_blocked_and_recorded(self):
         xml, snap = self.model_and_snapshot()
