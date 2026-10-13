@@ -259,9 +259,17 @@ def _dataset_side(S: dict, side: str, joint_stem: str, c, manifest, cache_dir=AN
     hip = info["hip_in_pelvis_os_m"]
     hip_mid = retarget.dataset_hip_mid_lab(ik, hip)
     hip_jc = _l2m(hip_mid + np.array([hip[2] if side == "right" else -hip[2], 0.0, 0.0]))
+    if joint_stem.startswith("ankle"):
+        anchor = ankle_jc
+    elif joint_stem == "knee":  # Stage 2d T4: the knee joint centre from the dataset's kinematics and the subject's OpenSim knee (sim/scripts/knee_gain.py)
+        import knee_gain
+        hip_jc = knee_gain.dataset_hip_jc(ik, hip, side)  # with the pelvis's yaw: the lateral offset swings fore-aft (memo9's planar hip centre ignored it)
+        anchor = knee_gain.dataset_knee_jc(sub, side, ik, hip_jc, c.mapping)
+    else:
+        anchor = hip_jc
     return {"force": _l2m(fp[limb, :, 0:3]), "cop": _l2m(np.c_[cop_lab[:, 0], np.zeros(nf), cop_lab[:, 2]]) * stance[:, None], "stance": stance,
             "tau": spec_j["sign"] * idm[:, gait.ic.ID_CHANNELS.index(spec_j["dataset"] + "_moment")], "ankle_jc": ankle_jc, "hip_jc": hip_jc,
-            "anchor": ankle_jc if joint_stem.startswith("ankle") else hip_jc, "hip_mid": hip_mid, "mass_kg": info["mass_kg"], "ik": ik}
+            "anchor": anchor, "hip_mid": hip_mid, "mass_kg": info["mass_kg"], "ik": ik}
 
 
 def limb_record(S: dict, side: str, joint_stem: str, c, manifest, cache_dir=ANKLE_CACHE) -> dict:

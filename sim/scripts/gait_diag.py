@@ -979,6 +979,12 @@ def ankle_gain_command(args):
     ankle_gain.ankle_gain_report(args)
 
 
+def knee_gain_command(args):
+    import knee_gain
+    knee_gain.report(args)
+
+
+
 def foot_pitch_command(args):
     import foot_pitch
     foot_pitch.report(args)
@@ -1068,8 +1074,12 @@ def main(argv=None):
     fpc.add_argument("--trunk", default="counter_rotate", choices=["rigid", "counter_rotate"])
     fpc.add_argument("--pitch-offset-deg", type=float, default=0.0, help="the existing pelvis pitch sensitivity knob; 0 = the spec's default")
     fpc.add_argument("--ankle-offset-deg", type=float, default=0.0, help="counterfactual: add this to both ankle angles of the input (what a constant mapping offset would do)")
+    kgn = sub.add_parser("knee-gain")  # Stage 2d T4 and T5: report only; needs data/camargo2021/processed/ankle_lat (ankle_gain.py extract) and the raw archives
+    kgn.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
+    kgn.add_argument("--workers", type=int, default=5)
+    kgn.add_argument("--part", nargs="+", default=["t4", "t5", "cf"], choices=["t4", "t5", "cf"], help="cf: the two counterfactuals (they rerun the gait pipeline four more times)")
     args = ap.parse_args(argv)
-    {"foot-pitch": foot_pitch_command, "ankle-gain": ankle_gain_command, "hipext": hip_extension_report,"a-torque": a_torque_report,"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "harmonic": harmonic_report, "pitch": pitch_report, "trunkcom": trunkcom_report, "standing": standing_data_report, "toe": toe_report, "double": double_report, "polygon": polygon_report, "swing": swing_report, "masses": masses_report, "placement": placement_report, "pushoff": pushoff_report}[args.cmd](args)
+    {"knee-gain": knee_gain_command, "foot-pitch": foot_pitch_command, "ankle-gain": ankle_gain_command, "hipext": hip_extension_report,"a-torque": a_torque_report,"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "harmonic": harmonic_report, "pitch": pitch_report, "trunkcom": trunkcom_report, "standing": standing_data_report, "toe": toe_report, "double": double_report, "polygon": polygon_report, "swing": swing_report, "masses": masses_report, "placement": placement_report, "pushoff": pushoff_report}[args.cmd](args)
 
 
 if __name__ == "__main__":
