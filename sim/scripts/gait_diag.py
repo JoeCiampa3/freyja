@@ -984,6 +984,10 @@ def knee_gain_command(args):
     knee_gain.report(args)
 
 
+def marker_hip_command(args):
+    import pelvis_tilt
+    pelvis_tilt.report(args)
+
 
 def foot_pitch_command(args):
     import foot_pitch
@@ -1078,8 +1082,11 @@ def main(argv=None):
     kgn.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
     kgn.add_argument("--workers", type=int, default=5)
     kgn.add_argument("--part", nargs="+", default=["t4", "t5", "cf"], choices=["t4", "t5", "cf"], help="cf: the two counterfactuals (they rerun the gait pipeline four more times)")
+    mh = sub.add_parser("marker-hip")  # Stage 2d T6: report only; reads the pelvis markers from the raw archives
+    mh.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
+    mh.add_argument("--workers", type=int, default=5)
     args = ap.parse_args(argv)
-    {"knee-gain": knee_gain_command, "foot-pitch": foot_pitch_command, "ankle-gain": ankle_gain_command, "hipext": hip_extension_report,"a-torque": a_torque_report,"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "harmonic": harmonic_report, "pitch": pitch_report, "trunkcom": trunkcom_report, "standing": standing_data_report, "toe": toe_report, "double": double_report, "polygon": polygon_report, "swing": swing_report, "masses": masses_report, "placement": placement_report, "pushoff": pushoff_report}[args.cmd](args)
+    {"marker-hip": marker_hip_command, "knee-gain": knee_gain_command, "foot-pitch": foot_pitch_command, "ankle-gain": ankle_gain_command, "hipext": hip_extension_report,"a-torque": a_torque_report,"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "harmonic": harmonic_report, "pitch": pitch_report, "trunkcom": trunkcom_report, "standing": standing_data_report, "toe": toe_report, "double": double_report, "polygon": polygon_report, "swing": swing_report, "masses": masses_report, "placement": placement_report, "pushoff": pushoff_report}[args.cmd](args)
 
 
 if __name__ == "__main__":
