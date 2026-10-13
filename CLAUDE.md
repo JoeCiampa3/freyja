@@ -2,7 +2,7 @@
 
 Read in this order at the start of a session: `CONVENTIONS.md` (the contract for this repo), `docs/STATE.md` (where the repo is now), `docs/OVERVIEW.md` (what the project is, once per fresh account or session), the newest file in `docs/memos/`, then the current brief. You have no memory of earlier sessions; the repo is all there is. If something is not in a file, ask Joe; do not guess.
 
-Current brief: `docs/briefs/stage2c-brief.md`. If the prompt gives a hash prefix, check `sha256sum` of the brief against it before starting; on a mismatch look for CRLF line endings, report the actual hash, and stop if it still differs. Never edit a brief; Joe overwrites them.
+Current brief: `docs/briefs/stage2d-brief.md`. If the prompt gives a hash prefix, check `sha256sum` of the brief against it before starting; on a mismatch look for CRLF line endings, report the actual hash, and stop if it still differs. Never edit a brief; Joe overwrites them.
 
 ## Commands
 
