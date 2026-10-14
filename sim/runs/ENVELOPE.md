@@ -4,48 +4,48 @@
 
 Worst case per joint across the latest run of every scenario, with the run that drives it. Joint torque is about the model's own hinge axes (the decoupled hip architecture), not actuator torque.
 
-Scenario classes included: rom_sweep (run.20261010-1913-rom_sweep), stand_static (run.20261010-2017-stand_static), walk_treadmill (gait.20261012-1614-walk_treadmill, gait rows below).
+Scenario classes included: rom_sweep (run.20261014-1955-rom_sweep), stand_static (run.20261014-1955-stand_static), walk_treadmill (gait.20261014-1929-walk_treadmill, gait rows below).
 Not yet included: stairs, sit-to-stand, overground walking, ramps (they need reference kinematics with citable provenance; running is out of scope).
 This is not a complete sizing basis: do not size an actuator from it.
-Excluded latest runs: run.20261010-2017-hold_pose (hold_pose): verification only (envelope: false), so it never drives a row.
+Excluded latest runs: run.20261014-1955-hold_pose (hold_pose): verification only (envelope: false), so it never drives a row.
 
 | joint | peak torque Nm | driving run | peak speed rad/s | driving run | peak power W | driving run | ROM used deg | limit deg |
 |---|---|---|---|---|---|---|---|---|
-| ankle_ie_left | 0.11 | run.20261010-1913-rom_sweep | 0.150 | run.20261010-1913-rom_sweep | 0.01 | run.20261010-1913-rom_sweep | -19.0..35.8 | -19.2..36.2 |
-| ankle_ie_right | 0.11 | run.20261010-1913-rom_sweep | 0.150 | run.20261010-1913-rom_sweep | 0.01 | run.20261010-1913-rom_sweep | -19.0..35.8 | -19.2..36.2 |
-| ankle_pdflex_left | 0.35 | run.20261010-1913-rom_sweep | 0.236 | run.20261010-1913-rom_sweep | 0.08 | run.20261010-1913-rom_sweep | -61.5..24.8 | -62.1..25.0 |
-| ankle_pdflex_right | 0.35 | run.20261010-1913-rom_sweep | 0.236 | run.20261010-1913-rom_sweep | 0.08 | run.20261010-1913-rom_sweep | -61.5..24.8 | -62.1..25.0 |
-| cj_ax | 0.00 | run.20261010-2017-stand_static | 0.000 | run.20261010-2017-stand_static | 0.00 | run.20261010-2017-stand_static | 0.0..0.0 | unlimited |
-| cj_fe | 0.48 | run.20261010-2017-stand_static | 0.000 | run.20261010-2017-stand_static | 0.00 | run.20261010-2017-stand_static | 0.0..0.0 | unlimited |
-| cj_lat | 0.01 | run.20261010-2017-stand_static | 0.000 | run.20261010-2017-stand_static | 0.00 | run.20261010-2017-stand_static | 0.0..0.0 | unlimited |
-| elbow_left | 1.80 | run.20261010-1913-rom_sweep | 0.420 | run.20261010-1913-rom_sweep | 0.75 | run.20261010-1913-rom_sweep | -4.7..148.5 | -4.7..150.0 |
-| elbow_right | 1.80 | run.20261010-1913-rom_sweep | 0.420 | run.20261010-1913-rom_sweep | 0.75 | run.20261010-1913-rom_sweep | -4.7..148.5 | -4.7..150.0 |
-| hip_aa_left | 23.29 | run.20261010-1913-rom_sweep | 0.179 | run.20261010-1913-rom_sweep | 2.85 | run.20261010-1913-rom_sweep | -40.1..25.3 | -40.5..25.6 |
-| hip_aa_right | 23.29 | run.20261010-1913-rom_sweep | 0.179 | run.20261010-1913-rom_sweep | 2.85 | run.20261010-1913-rom_sweep | -40.1..25.3 | -40.5..25.6 |
-| hip_fe_left | 35.46 | run.20261010-1913-rom_sweep | 0.412 | run.20261010-1913-rom_sweep | 13.85 | run.20261010-1913-rom_sweep | -17.9..132.5 | -18.1..133.8 |
-| hip_fe_right | 35.46 | run.20261010-1913-rom_sweep | 0.412 | run.20261010-1913-rom_sweep | 13.85 | run.20261010-1913-rom_sweep | -17.9..132.5 | -18.1..133.8 |
-| hip_ier_left | 0.03 | run.20261010-2017-stand_static | 0.241 | run.20261010-1913-rom_sweep | 0.00 | run.20261010-1913-rom_sweep | -43.8..44.0 | -44.2..44.4 |
-| hip_ier_right | 0.03 | run.20261010-2017-stand_static | 0.241 | run.20261010-1913-rom_sweep | 0.00 | run.20261010-1913-rom_sweep | -43.8..44.0 | -44.2..44.4 |
-| knee_left | 7.54 | run.20261010-1913-rom_sweep | 0.389 | run.20261010-1913-rom_sweep | 2.88 | run.20261010-1913-rom_sweep | -1.6..140.5 | -1.6..141.9 |
-| knee_right | 7.54 | run.20261010-1913-rom_sweep | 0.389 | run.20261010-1913-rom_sweep | 2.88 | run.20261010-1913-rom_sweep | -1.6..140.5 | -1.6..141.9 |
-| lsj_ax | 0.00 | run.20261010-2017-stand_static | 0.000 | run.20261010-2017-stand_static | 0.00 | run.20261010-2017-stand_static | 0.0..0.0 | unlimited |
-| lsj_fe | 6.21 | run.20261010-2017-stand_static | 0.000 | run.20261010-2017-stand_static | 0.00 | run.20261010-2017-stand_static | 0.0..0.0 | unlimited |
-| lsj_lat | 0.08 | run.20261010-2017-stand_static | 0.000 | run.20261010-2017-stand_static | 0.00 | run.20261010-2017-stand_static | 0.0..0.0 | unlimited |
-| shoulder_aa_left | 0.05 | run.20261010-2017-stand_static | 0.000 | run.20261010-2017-stand_static | 0.00 | run.20261010-2017-stand_static | 0.0..0.0 | unlimited |
-| shoulder_aa_right | 0.05 | run.20261010-2017-stand_static | 0.000 | run.20261010-2017-stand_static | 0.00 | run.20261010-2017-stand_static | 0.0..0.0 | unlimited |
-| shoulder_fe_left | 6.14 | run.20261010-1913-rom_sweep | 0.623 | run.20261010-1913-rom_sweep | 3.81 | run.20261010-1913-rom_sweep | -56.7..170.3 | -57.3..172.0 |
-| shoulder_fe_right | 6.14 | run.20261010-1913-rom_sweep | 0.623 | run.20261010-1913-rom_sweep | 3.81 | run.20261010-1913-rom_sweep | -56.7..170.3 | -57.3..172.0 |
-| shoulder_ier_left | 0.00 | run.20261010-2017-stand_static | 0.000 | run.20261010-2017-stand_static | 0.00 | run.20261010-2017-stand_static | 0.0..0.0 | unlimited |
-| shoulder_ier_right | 0.00 | run.20261010-2017-stand_static | 0.000 | run.20261010-2017-stand_static | 0.00 | run.20261010-2017-stand_static | 0.0..0.0 | unlimited |
-| tj_ax | 0.00 | run.20261010-2017-stand_static | 0.000 | run.20261010-2017-stand_static | 0.00 | run.20261010-2017-stand_static | 0.0..0.0 | unlimited |
-| tj_fe | 3.80 | run.20261010-2017-stand_static | 0.000 | run.20261010-2017-stand_static | 0.00 | run.20261010-2017-stand_static | 0.0..0.0 | unlimited |
-| tj_lat | 0.07 | run.20261010-2017-stand_static | 0.000 | run.20261010-2017-stand_static | 0.00 | run.20261010-2017-stand_static | 0.0..0.0 | unlimited |
-| wrist_left | 0.17 | run.20261010-1913-rom_sweep | 0.404 | run.20261010-1913-rom_sweep | 0.05 | run.20261010-1913-rom_sweep | -73.3..74.1 | -74.0..74.8 |
-| wrist_right | 0.17 | run.20261010-1913-rom_sweep | 0.404 | run.20261010-1913-rom_sweep | 0.05 | run.20261010-1913-rom_sweep | -73.3..74.1 | -74.0..74.8 |
+| ankle_ie_left | 0.11 | run.20261014-1955-rom_sweep | 0.150 | run.20261014-1955-rom_sweep | 0.01 | run.20261014-1955-rom_sweep | -19.0..35.8 | -19.2..36.2 |
+| ankle_ie_right | 0.11 | run.20261014-1955-rom_sweep | 0.150 | run.20261014-1955-rom_sweep | 0.01 | run.20261014-1955-rom_sweep | -19.0..35.8 | -19.2..36.2 |
+| ankle_pdflex_left | 0.35 | run.20261014-1955-rom_sweep | 0.236 | run.20261014-1955-rom_sweep | 0.08 | run.20261014-1955-rom_sweep | -61.5..24.8 | -62.1..25.0 |
+| ankle_pdflex_right | 0.35 | run.20261014-1955-rom_sweep | 0.236 | run.20261014-1955-rom_sweep | 0.08 | run.20261014-1955-rom_sweep | -61.5..24.8 | -62.1..25.0 |
+| cj_ax | 0.00 | run.20261014-1955-stand_static | 0.000 | run.20261014-1955-stand_static | 0.00 | run.20261014-1955-stand_static | 0.0..0.0 | unlimited |
+| cj_fe | 0.48 | run.20261014-1955-stand_static | 0.000 | run.20261014-1955-stand_static | 0.00 | run.20261014-1955-stand_static | 0.0..0.0 | unlimited |
+| cj_lat | 0.01 | run.20261014-1955-stand_static | 0.000 | run.20261014-1955-stand_static | 0.00 | run.20261014-1955-stand_static | 0.0..0.0 | unlimited |
+| elbow_left | 1.80 | run.20261014-1955-rom_sweep | 0.420 | run.20261014-1955-rom_sweep | 0.75 | run.20261014-1955-rom_sweep | -4.7..148.5 | -4.7..150.0 |
+| elbow_right | 1.80 | run.20261014-1955-rom_sweep | 0.420 | run.20261014-1955-rom_sweep | 0.75 | run.20261014-1955-rom_sweep | -4.7..148.5 | -4.7..150.0 |
+| hip_aa_left | 23.29 | run.20261014-1955-rom_sweep | 0.179 | run.20261014-1955-rom_sweep | 2.85 | run.20261014-1955-rom_sweep | -40.1..25.3 | -40.5..25.6 |
+| hip_aa_right | 23.29 | run.20261014-1955-rom_sweep | 0.179 | run.20261014-1955-rom_sweep | 2.85 | run.20261014-1955-rom_sweep | -40.1..25.3 | -40.5..25.6 |
+| hip_fe_left | 35.44 | run.20261014-1955-rom_sweep | 0.447 | run.20261014-1955-rom_sweep | 15.02 | run.20261014-1955-rom_sweep | -30.7..132.5 | -31.0..133.8 |
+| hip_fe_right | 35.44 | run.20261014-1955-rom_sweep | 0.447 | run.20261014-1955-rom_sweep | 15.02 | run.20261014-1955-rom_sweep | -30.7..132.5 | -31.0..133.8 |
+| hip_ier_left | 0.03 | run.20261014-1955-stand_static | 0.241 | run.20261014-1955-rom_sweep | 0.00 | run.20261014-1955-rom_sweep | -43.8..44.0 | -44.2..44.4 |
+| hip_ier_right | 0.03 | run.20261014-1955-stand_static | 0.241 | run.20261014-1955-rom_sweep | 0.00 | run.20261014-1955-rom_sweep | -43.8..44.0 | -44.2..44.4 |
+| knee_left | 7.54 | run.20261014-1955-rom_sweep | 0.389 | run.20261014-1955-rom_sweep | 2.88 | run.20261014-1955-rom_sweep | -1.6..140.5 | -1.6..141.9 |
+| knee_right | 7.54 | run.20261014-1955-rom_sweep | 0.389 | run.20261014-1955-rom_sweep | 2.88 | run.20261014-1955-rom_sweep | -1.6..140.5 | -1.6..141.9 |
+| lsj_ax | 0.00 | run.20261014-1955-stand_static | 0.000 | run.20261014-1955-stand_static | 0.00 | run.20261014-1955-stand_static | 0.0..0.0 | unlimited |
+| lsj_fe | 6.21 | run.20261014-1955-stand_static | 0.000 | run.20261014-1955-stand_static | 0.00 | run.20261014-1955-stand_static | 0.0..0.0 | unlimited |
+| lsj_lat | 0.08 | run.20261014-1955-stand_static | 0.000 | run.20261014-1955-stand_static | 0.00 | run.20261014-1955-stand_static | 0.0..0.0 | unlimited |
+| shoulder_aa_left | 0.05 | run.20261014-1955-stand_static | 0.000 | run.20261014-1955-stand_static | 0.00 | run.20261014-1955-stand_static | 0.0..0.0 | unlimited |
+| shoulder_aa_right | 0.05 | run.20261014-1955-stand_static | 0.000 | run.20261014-1955-stand_static | 0.00 | run.20261014-1955-stand_static | 0.0..0.0 | unlimited |
+| shoulder_fe_left | 6.14 | run.20261014-1955-rom_sweep | 0.623 | run.20261014-1955-rom_sweep | 3.81 | run.20261014-1955-rom_sweep | -56.7..170.3 | -57.3..172.0 |
+| shoulder_fe_right | 6.14 | run.20261014-1955-rom_sweep | 0.623 | run.20261014-1955-rom_sweep | 3.81 | run.20261014-1955-rom_sweep | -56.7..170.3 | -57.3..172.0 |
+| shoulder_ier_left | 0.00 | run.20261014-1955-stand_static | 0.000 | run.20261014-1955-stand_static | 0.00 | run.20261014-1955-stand_static | 0.0..0.0 | unlimited |
+| shoulder_ier_right | 0.00 | run.20261014-1955-stand_static | 0.000 | run.20261014-1955-stand_static | 0.00 | run.20261014-1955-stand_static | 0.0..0.0 | unlimited |
+| tj_ax | 0.00 | run.20261014-1955-stand_static | 0.000 | run.20261014-1955-stand_static | 0.00 | run.20261014-1955-stand_static | 0.0..0.0 | unlimited |
+| tj_fe | 3.80 | run.20261014-1955-stand_static | 0.000 | run.20261014-1955-stand_static | 0.00 | run.20261014-1955-stand_static | 0.0..0.0 | unlimited |
+| tj_lat | 0.07 | run.20261014-1955-stand_static | 0.000 | run.20261014-1955-stand_static | 0.00 | run.20261014-1955-stand_static | 0.0..0.0 | unlimited |
+| wrist_left | 0.17 | run.20261014-1955-rom_sweep | 0.404 | run.20261014-1955-rom_sweep | 0.05 | run.20261014-1955-rom_sweep | -73.3..74.1 | -74.0..74.8 |
+| wrist_right | 0.17 | run.20261014-1955-rom_sweep | 0.404 | run.20261014-1955-rom_sweep | 0.05 | run.20261014-1955-rom_sweep | -73.3..74.1 | -74.0..74.8 |
 
 Joints with no ROM data (unlimited, so never swept; each row reflects the static standing solve only, or no data): cj_ax, cj_fe, cj_lat, lsj_ax, lsj_fe, lsj_lat, shoulder_aa_left, shoulder_aa_right, shoulder_ier_left, shoulder_ier_right, tj_ax, tj_fe, tj_lat.
 
-## Gait: walk_treadmill (gait.20261012-1614-walk_treadmill)
+## Gait: walk_treadmill (gait.20261014-1929-walk_treadmill)
 
 Level treadmill walking at 1.4 and 1.6 m/s from the Camargo et al. 2021 kinematics (CC BY 4.0) on Freyja's mass distribution, 17 subjects; each cell is the 95th percentile across subject-strides with the maximum beside it (offset subjects AB13, AB15 included; `sim/benchmarks/gait_extract.json` also keeps the statistics without them and without the pitch-flagged subjects). Rigid at the standing pose from stand_static, arms at the sides; arm swing is not modelled; the arms are excluded. Trunk modes of the record: rigid, counter_rotate (`rigid` is a locked spine; `counter_rotate` is an actuated lumbosacral roll and yaw cancelling the pelvis's roll and yaw by feed-forward; `first_harmonic` is a human-like reference point from the trunk IMU, a diagnostic and never a record mode; no mode is the v1 headline, so every row that depends on the trunk names its mode). Gait torque is about the model's hinge axes and is a different statistic from the worst-case rows above; the two are not merged.
 
@@ -55,26 +55,26 @@ Band for a torque or power row to enter: correlation >= 0.9 and RMS <= 15% of th
 
 | source | joint | m/s | method | trunk mode | torque p95 Nm | torque max Nm | A_native max Nm | power+ p95 W | power+ max W | regen p95 W | regen max W | speed p95 rad/s | speed max rad/s | corr | rms % ptp | flags |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| gait | hip_fe_right | 1.4 | A_filtered | rigid | 68.8 | 114.0 | 235.0 | 157 | 281 | 54 | 71 | 4.50 | 4.88 | 0.91 | 14 | provisional |
-| gait | hip_fe_left | 1.4 | A_filtered | rigid | 75.8 | 137.7 | 220.1 | 202 | 412 | 80 | 152 | 4.68 | 5.33 | 0.91 | 14 | provisional |
-| gait | knee_right | 1.4 | A_filtered | rigid | 86.4 | 120.2 | 115.9 | 112 | 152 | 211 | 447 | 7.01 | 7.83 | 0.93 | 13 | provisional |
-| gait | knee_left | 1.4 | A_filtered | rigid | 102.8 | 157.8 | 132.0 | 126 | 240 | 249 | 562 | 7.28 | 7.86 | 0.93 | 13 | provisional |
-| gait | ankle_pdflex_right | 1.4 | A_filtered | rigid | 124.3 | 138.9 | 140.8 | 413 | 486 | 121 | 245 | 6.38 | 7.57 | 0.98 | 8 | provisional |
-| gait | ankle_pdflex_left | 1.4 | A_filtered | rigid | 139.3 | 180.5 | 156.5 | 413 | 475 | 125 | 272 | 6.33 | 7.52 | 0.98 | 8 | provisional |
-| gait | hip_aa_right | 1.4 | A_filtered | rigid | 87.2 | 105.5 | 159.3 | 108 | 148 | 80 | 100 | 2.46 | 2.79 | 0.97 | 18 | provisional, outside band |
-| gait | hip_aa_left | 1.4 | A_filtered | rigid | 88.3 | 122.0 | 159.2 | 114 | 145 | 78 | 111 | 2.51 | 2.87 | 0.97 | 18 | provisional, outside band |
-| gait | hip_ier_right | 1.4 | A_filtered | rigid | 24.2 | 56.5 | 51.7 | 14 | 54 | 19 | 51 | 2.75 | 3.33 | 0.91 | 16 | provisional, outside band |
-| gait | hip_ier_left | 1.4 | A_filtered | rigid | 22.7 | 50.5 | 54.9 | 10 | 27 | 24 | 81 | 3.07 | 4.24 | 0.91 | 16 | provisional, outside band |
-| gait | hip_fe_right | 1.6 | A_filtered | rigid | 76.0 | 99.7 | 230.3 | 231 | 383 | 78 | 241 | 5.10 | 6.19 | 0.93 | 13 | provisional |
-| gait | hip_fe_left | 1.6 | A_filtered | rigid | 87.0 | 126.6 | 262.8 | 216 | 406 | 98 | 169 | 5.06 | 6.11 | 0.93 | 13 | provisional |
-| gait | knee_right | 1.6 | A_filtered | rigid | 108.0 | 131.1 | 148.9 | 163 | 358 | 295 | 589 | 7.42 | 8.75 | 0.93 | 13 | provisional |
-| gait | knee_left | 1.6 | A_filtered | rigid | 112.0 | 171.1 | 164.9 | 161 | 270 | 307 | 559 | 7.57 | 8.25 | 0.93 | 13 | provisional |
-| gait | ankle_pdflex_right | 1.6 | A_filtered | rigid | 132.1 | 146.9 | 150.7 | 476 | 584 | 118 | 239 | 6.11 | 6.70 | 0.98 | 8 | provisional |
-| gait | ankle_pdflex_left | 1.6 | A_filtered | rigid | 143.3 | 172.3 | 177.3 | 483 | 611 | 119 | 215 | 6.17 | 6.66 | 0.98 | 8 | provisional |
-| gait | hip_aa_right | 1.6 | A_filtered | rigid | 86.2 | 109.1 | 190.7 | 109 | 126 | 101 | 167 | 2.50 | 2.99 | 0.97 | 17 | provisional, outside band |
-| gait | hip_aa_left | 1.6 | A_filtered | rigid | 90.2 | 116.8 | 179.9 | 119 | 155 | 100 | 143 | 2.47 | 4.54 | 0.97 | 17 | provisional, outside band |
-| gait | hip_ier_right | 1.6 | A_filtered | rigid | 27.8 | 44.3 | 48.0 | 17 | 39 | 24 | 147 | 2.86 | 4.58 | 0.92 | 16 | provisional, outside band |
-| gait | hip_ier_left | 1.6 | A_filtered | rigid | 25.4 | 37.3 | 51.7 | 15 | 25 | 21 | 70 | 3.12 | 4.87 | 0.92 | 16 | provisional, outside band |
+| gait | hip_fe_right | 1.4 | A_filtered | rigid | 68.3 | 113.9 | 235.3 | 157 | 280 | 52 | 71 | 4.50 | 4.88 | 0.91 | 14 | provisional |
+| gait | hip_fe_left | 1.4 | A_filtered | rigid | 75.4 | 137.7 | 220.4 | 202 | 412 | 79 | 152 | 4.68 | 5.33 | 0.91 | 14 | provisional |
+| gait | knee_right | 1.4 | A_filtered | rigid | 87.0 | 120.2 | 117.1 | 114 | 155 | 213 | 447 | 7.01 | 7.83 | 0.93 | 13 | provisional |
+| gait | knee_left | 1.4 | A_filtered | rigid | 103.4 | 157.8 | 132.7 | 127 | 243 | 250 | 562 | 7.28 | 7.86 | 0.93 | 13 | provisional |
+| gait | ankle_pdflex_right | 1.4 | A_filtered | rigid | 124.8 | 139.4 | 141.4 | 416 | 489 | 121 | 245 | 6.38 | 7.57 | 0.98 | 8 | provisional |
+| gait | ankle_pdflex_left | 1.4 | A_filtered | rigid | 140.0 | 180.6 | 157.3 | 417 | 478 | 126 | 272 | 6.33 | 7.52 | 0.98 | 8 | provisional |
+| gait | hip_aa_right | 1.4 | A_filtered | rigid | 87.8 | 106.1 | 159.9 | 109 | 149 | 81 | 101 | 2.46 | 2.79 | 0.97 | 18 | provisional, outside band |
+| gait | hip_aa_left | 1.4 | A_filtered | rigid | 88.8 | 123.4 | 160.0 | 115 | 146 | 79 | 111 | 2.51 | 2.87 | 0.97 | 18 | provisional, outside band |
+| gait | hip_ier_right | 1.4 | A_filtered | rigid | 24.4 | 56.5 | 51.8 | 14 | 54 | 19 | 51 | 2.75 | 3.33 | 0.91 | 16 | provisional, outside band |
+| gait | hip_ier_left | 1.4 | A_filtered | rigid | 22.8 | 50.6 | 55.0 | 10 | 27 | 24 | 81 | 3.07 | 4.24 | 0.91 | 16 | provisional, outside band |
+| gait | hip_fe_right | 1.6 | A_filtered | rigid | 75.4 | 99.6 | 230.3 | 228 | 383 | 77 | 240 | 5.10 | 6.19 | 0.93 | 13 | provisional |
+| gait | hip_fe_left | 1.6 | A_filtered | rigid | 86.4 | 126.8 | 264.0 | 215 | 406 | 98 | 170 | 5.06 | 6.11 | 0.93 | 13 | provisional |
+| gait | knee_right | 1.6 | A_filtered | rigid | 109.0 | 130.8 | 148.5 | 165 | 359 | 298 | 588 | 7.42 | 8.75 | 0.93 | 13 | provisional |
+| gait | knee_left | 1.6 | A_filtered | rigid | 113.0 | 171.4 | 165.2 | 163 | 271 | 307 | 558 | 7.57 | 8.25 | 0.93 | 13 | provisional |
+| gait | ankle_pdflex_right | 1.6 | A_filtered | rigid | 132.7 | 147.7 | 151.5 | 480 | 588 | 119 | 239 | 6.11 | 6.70 | 0.98 | 8 | provisional |
+| gait | ankle_pdflex_left | 1.6 | A_filtered | rigid | 144.6 | 174.1 | 178.4 | 486 | 616 | 119 | 214 | 6.17 | 6.66 | 0.98 | 8 | provisional |
+| gait | hip_aa_right | 1.6 | A_filtered | rigid | 86.6 | 109.6 | 192.4 | 110 | 127 | 102 | 168 | 2.50 | 2.99 | 0.96 | 18 | provisional, outside band |
+| gait | hip_aa_left | 1.6 | A_filtered | rigid | 90.7 | 117.2 | 180.8 | 119 | 156 | 101 | 144 | 2.47 | 4.54 | 0.96 | 18 | provisional, outside band |
+| gait | hip_ier_right | 1.6 | A_filtered | rigid | 28.0 | 44.6 | 48.4 | 17 | 39 | 24 | 148 | 2.86 | 4.58 | 0.92 | 16 | provisional, outside band |
+| gait | hip_ier_left | 1.6 | A_filtered | rigid | 25.5 | 37.6 | 51.7 | 15 | 25 | 21 | 69 | 3.12 | 4.87 | 0.92 | 16 | provisional, outside band |
 
 ### A_filtered's sagittal rows against the dataset's own moment (dataset-direct)
 
@@ -82,18 +82,18 @@ No threshold and no flag. `dataset-direct scaled peak` is the dataset's own peak
 
 | source | joint | m/s | dataset-direct scaled peak mean / p95 / max Nm | OLS slope | peak ratio |
 |---|---|---|---|---|---|
-| gait dataset-direct | hip_fe_right | 1.4 | 51.1 / 66.7 / 75.6 | 0.681 | 0.86 |
-| gait dataset-direct | hip_fe_left | 1.4 | 52.5 / 66.2 / 81.6 | 0.672 | 0.94 |
-| gait dataset-direct | knee_right | 1.4 | 48.0 / 67.2 / 79.3 | 1.038 | 1.31 |
-| gait dataset-direct | knee_left | 1.4 | 47.1 / 66.6 / 82.4 | 1.024 | 1.31 |
-| gait dataset-direct | ankle_pdflex_right | 1.4 | 102.5 / 123.2 / 135.2 | 0.990 | 1.00 |
-| gait dataset-direct | ankle_pdflex_left | 1.4 | 106.4 / 135.8 / 149.1 | 0.992 | 1.03 |
-| gait dataset-direct | hip_fe_right | 1.6 | 62.2 / 77.7 / 91.2 | 0.690 | 0.87 |
-| gait dataset-direct | hip_fe_left | 1.6 | 64.3 / 80.9 / 92.6 | 0.678 | 0.90 |
-| gait dataset-direct | knee_right | 1.6 | 56.8 / 81.4 / 94.2 | 1.053 | 1.29 |
-| gait dataset-direct | knee_left | 1.6 | 55.7 / 78.6 / 96.0 | 1.039 | 1.28 |
-| gait dataset-direct | ankle_pdflex_right | 1.6 | 104.9 / 130.8 / 140.9 | 1.000 | 1.02 |
-| gait dataset-direct | ankle_pdflex_left | 1.6 | 108.9 / 138.4 / 150.8 | 0.999 | 1.03 |
+| gait dataset-direct | hip_fe_right | 1.4 | 51.1 / 66.7 / 75.6 | 0.674 | 0.85 |
+| gait dataset-direct | hip_fe_left | 1.4 | 52.5 / 66.2 / 81.6 | 0.664 | 0.93 |
+| gait dataset-direct | knee_right | 1.4 | 48.0 / 67.2 / 79.3 | 1.047 | 1.32 |
+| gait dataset-direct | knee_left | 1.4 | 47.1 / 66.6 / 82.4 | 1.033 | 1.32 |
+| gait dataset-direct | ankle_pdflex_right | 1.4 | 102.5 / 123.2 / 135.2 | 0.994 | 1.01 |
+| gait dataset-direct | ankle_pdflex_left | 1.4 | 106.4 / 135.8 / 149.1 | 0.996 | 1.04 |
+| gait dataset-direct | hip_fe_right | 1.6 | 62.2 / 77.7 / 91.2 | 0.682 | 0.86 |
+| gait dataset-direct | hip_fe_left | 1.6 | 64.3 / 80.9 / 92.6 | 0.671 | 0.89 |
+| gait dataset-direct | knee_right | 1.6 | 56.8 / 81.4 / 94.2 | 1.063 | 1.30 |
+| gait dataset-direct | knee_left | 1.6 | 55.7 / 78.6 / 96.0 | 1.049 | 1.29 |
+| gait dataset-direct | ankle_pdflex_right | 1.6 | 104.9 / 130.8 / 140.9 | 1.005 | 1.02 |
+| gait dataset-direct | ankle_pdflex_left | 1.6 | 108.9 / 138.4 / 150.8 | 1.004 | 1.04 |
 
 ### Ankle inversion (unverified)
 
@@ -101,10 +101,10 @@ The dataset's moment is about an oblique subtalar axis and Freyja's `ankle_ie` i
 
 | source | joint | m/s | A_filtered | B rigid | B counter_rotate | H rigid | H counter_rotate | flags |
 |---|---|---|---|---|---|---|---|---|
-| gait | ankle_ie_right | 1.4 | 47.1 / 115.2 | 306.3 / 425.7 | 132.0 / 226.5 | 40.7 / 65.7 | 48.3 / 71.8 | unverified, not comparable with the dataset |
-| gait | ankle_ie_left | 1.4 | 47.8 / 96.7 | 295.2 / 370.4 | 132.3 / 202.3 | 43.0 / 85.8 | 50.4 / 91.8 | unverified, not comparable with the dataset |
-| gait | ankle_ie_right | 1.6 | 50.6 / 72.3 | 360.3 / 498.5 | 175.3 / 393.0 | 44.6 / 80.4 | 54.1 / 84.5 | unverified, not comparable with the dataset |
-| gait | ankle_ie_left | 1.6 | 48.4 / 79.3 | 368.5 / 587.6 | 175.0 / 284.2 | 47.7 / 83.0 | 54.1 / 90.3 | unverified, not comparable with the dataset |
+| gait | ankle_ie_right | 1.4 | 47.7 / 112.6 | 304.8 / 421.8 | 130.4 / 228.1 | 41.1 / 65.8 | 48.5 / 71.9 | unverified, not comparable with the dataset |
+| gait | ankle_ie_left | 1.4 | 48.0 / 95.3 | 294.3 / 369.9 | 131.6 / 199.9 | 44.1 / 88.6 | 51.2 / 94.1 | unverified, not comparable with the dataset |
+| gait | ankle_ie_right | 1.6 | 51.1 / 72.9 | 357.4 / 493.5 | 171.6 / 393.9 | 45.3 / 82.1 | 54.2 / 85.7 | unverified, not comparable with the dataset |
+| gait | ankle_ie_left | 1.6 | 48.5 / 77.7 | 367.5 / 586.1 | 173.7 / 280.8 | 48.2 / 85.5 | 53.8 / 92.0 | unverified, not comparable with the dataset |
 
 ### Joints above the pelvis (kinematics only: the bracket across trunk modes)
 
@@ -146,9 +146,9 @@ Over every subject-stride, from the trunk-mode diagnostic's code (`gait_diag.py 
 
 - 1.4 m/s, rigid: the lumbosacral lateral and axial joints are held at the standing pose (0 by construction).
 - 1.4 m/s, counter_rotate: peak lumbosacral lateral bending angle mean / p95 / max 5.8 / 7.8 / 8.9 deg; axial rotation 7.9 / 12.7 / 16.4 deg.
-- 1.4 m/s: peak hip extension median 23.1, p95 36.8, max 39.5 deg against the model's 18.1 deg stop; 85% of strides go beyond it.
+- 1.4 m/s: peak hip extension median 23.1, p95 36.8, max 39.5 deg against the model's 31.0 deg stop; 32% of strides go beyond it.
 - 1.4 m/s: the dataset's own peak hip extension (inverse kinematics, not retargeted) median / p95 / max, from the vertical 16.9 / 22.0 / 25.3 deg; relative to the pelvis 23.3 / 37.3 / 39.4 deg; median posterior pelvic tilt of the IK pelvis 7.6 deg. The pelvis-referenced figure is the vertical one plus that tilt: the functional demand is the vertical figure plus whatever posterior tilt the gait policy allows, and the pelvis-referenced figure is a finding about the IK pitch, not a ROM requirement.
 - 1.6 m/s, rigid: the lumbosacral lateral and axial joints are held at the standing pose (0 by construction).
 - 1.6 m/s, counter_rotate: peak lumbosacral lateral bending angle mean / p95 / max 6.1 / 8.6 / 10.7 deg; axial rotation 8.4 / 13.6 / 20.7 deg.
-- 1.6 m/s: peak hip extension median 24.2, p95 36.2, max 41.4 deg against the model's 18.1 deg stop; 98% of strides go beyond it.
+- 1.6 m/s: peak hip extension median 24.2, p95 36.2, max 41.4 deg against the model's 31.0 deg stop; 43% of strides go beyond it.
 - 1.6 m/s: the dataset's own peak hip extension (inverse kinematics, not retargeted) median / p95 / max, from the vertical 20.3 / 24.1 / 28.1 deg; relative to the pelvis 24.3 / 36.4 / 38.2 deg; median posterior pelvic tilt of the IK pelvis 6.9 deg. The pelvis-referenced figure is the vertical one plus that tilt: the functional demand is the vertical figure plus whatever posterior tilt the gait policy allows, and the pelvis-referenced figure is a finding about the IK pitch, not a ROM requirement.
