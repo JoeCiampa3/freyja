@@ -1,5 +1,5 @@
 import mujoco, numpy as np
-m = mujoco.MjModel.from_xml_path("models/thigh_check.xml")
+m = mujoco.MjModel.from_xml_path("sim/scripts/validation/sprint1/thigh_check.xml")
 i = m.body("thigh").id
 print(m.body_mass[i],m.body_ipos[i])
 print("mujoco principal:", m.body_inertia[i])

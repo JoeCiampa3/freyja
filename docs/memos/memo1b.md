@@ -125,6 +125,8 @@ We are initially using a "ramrod" posture in which all body segment lengths (wit
 Friction is initially hardcoded and uses ballpark values which will be tuned as the project progresses and material is selected for the feet. Condim is initially set to 3 and will eventuall be set to 4 or 6 to model rotation of the foot against the floor. 
 
 The shoulder architecture has not been started on, as a placeholder it is designed here as a 3dof serial gimbal like the hip, with the order of joints being FE->AA->IER. A comment has been left in the template to ensure this is eventually updated with the chosen configuration.
+
+We have checked the sign convention Dumas uses for product of inertia against what MuJoCo expects for off diagonal elements and have found no conflicts in convention. Dumas uses $r_{ij} = (1/L)·\sqrt{(I_{ij} / m)}$ or $I_{ij} = m·(r_{ij}·L)^2$. where I_ij are elements of the inertia tensor. Off diagonals are given by $\int -xy \cdot dm$. Dumas uses $i = \sqrt{-1}$ to denote a negative element. We have already applied this going from Dumas to the anthropometric reference sheet, so every value in the system denoted with an $i$ has been entered negative. MuJoCo natively supports the Dumas style product of inertia, a classical $P_{xy} = + \int xy dm$ would run into issues but our system holds. 
 $$
 \Large Validations
 $$
@@ -135,6 +137,10 @@ After returning to Dumas 2007, the spreadsheet mass closes to within 0.1% (64.93
 To validate our model and its underlying data, we used scripts\mass_checks.py to compute not only mass but whole body CoM. To compare vertical whole body CoM to adult female data we are using the reaction board study by Virmavirta and Isolehto. Whole body CoM is reported as a percentage of total stature. Virmavirta and Isolehto report a range of 55.88% +/- 0.52%. Our model's CoM is calculated at 9.34912976e^-01 meters , as a percentage of stature it is approximately 55.26%, about 0.1% outside the study's range. The discrepancy is likely explained by using ANSUR II data for floor to AJC and Dumas for every other quantity, effectively creating inter-individual variation by using numbers from two studies. Furthermore, the pose for Dumas' CoM data and Virmavirta and Isolehto's subjects cannot be independently cross checked. This check is not a rigourous or precise validation but aims to spot any major errors. We have concluded the discrepancy is not statistically significant and will proceed with the current data.
 
 The lateral CoM from our model was calculated to be -1.63073889e-04 meters or about -0.63mm. A value of 0mm would indicate a perfectly symmetric specimen, but humans are assymetric by nature. Dumas' data shows that the segments lateral CoM values are low but non-zero. This check is also not a fine-grained precision validation but rather a coarse check to ensure the model has been built correctly. Several mm would be a reason for concern, -0.16mm is low enough to be insignificant.
+
+As detailed in the assumptions, we have adopted the convention $P_{xy} = -\int xy \cdot dm$ for products of inertia as it is what MuJoCo natively supports. Confirmed via sim/scripts/validation/sprint1/check_thigh_inertia.py 
+
+To validate the CoM locations of our model, we used the script sim/scripts/validation/sprint1/thigh_com_check.py to compare the com of the thigh computed via MuJoCo to scaled data sourced directly from Dumas. The independent calculation agreed with the numerical to within 3.790286432769907e-07 meters, well within the 1mm tolerance specified within the briefing.
 
 $$
 \Large Deviations
@@ -154,11 +160,7 @@ The worksheet has been amended, the "mujoco" column (where the pre_processor pul
 Joint axes are hardcoded into the MJCF model as they are invariant. Axes use the MJC coordinate system. <geom> sizes are currently hardcoded. A future update will build out a table for them to live in within the sheet, linked to the pre_processor to make them parametric. As pure visual aids this is low priority but they should eventually be driven by segment lengths (e.g. the thigh capsule size depends on thigh length).
 
 
-FIXME: still need to execute: The product-of-inertia sign convention is resolved against the Dumas 2007 inertia-matrix equation and against MuJoCo's own off-diagonal convention; the memo states the convention adopted and the test that confirmed it.
-
-A world-frame quantity computed by MuJoCo (e.g. that segment's CoM position in a known pose) matches an independent calculation to within 1 mm.
-
-Test joint conventions using a script
+Still need to add:
 
 Static gravity check. With the pelvis held and all joint velocities and accelerations zero, the joint torques MuJoCo's inverse dynamics reports for at least two postures — neutral standing, and one with substantial hip and knee flexion — match an independent calculation that does not use MuJoCo, to within 1%.
 
