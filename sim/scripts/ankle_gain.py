@@ -242,6 +242,7 @@ def _dataset_side(S: dict, side: str, joint_stem: str, c, manifest, cache_dir=AN
     swing), the inverse-dynamics torque of the joint in the model's sign (N m), the joint's anchor (the ankle joint centre from the malleolus marker moved by the
     subject's OpenSim model with the tibia taken as upright, or the hip joint centre from the pelvis pose with the pelvis taken as not rolled or yawed), the
     hip midpoint, and the subject's mass."""
+    import gaitloads
     import retarget
     limb = 0 if side == "right" else 1
     spec_j = c.mapping["joints"][f"{joint_stem}_{side}"]
@@ -251,7 +252,7 @@ def _dataset_side(S: dict, side: str, joint_stem: str, c, manifest, cache_dir=AN
     sp, i = S["speed"], S["index"]
     nf = gait.N_FRAMES
     ik, fp, idm = z[f"{sp}_ik"][i][:nf], z[f"{sp}_fp"][i][:, :nf], z[f"{sp}_id"][i][:nf]
-    stance = fp[limb, :, 6] >= 0.5
+    stance = fp[limb, :, 6] >= gaitloads.STANCE_FLAG
     cop_lab = np.nan_to_num(fp[limb, :, 3:6])
     cache = _ankle_cache(sub, cache_dir)
     off = cache["jc_minus_marker_tibia_m"][limb]
@@ -497,6 +498,7 @@ def _chain_lines(recs, label):
 
 def ankle_gain_report(args):
     import json
+    import gaitloads
     c = gait._ctx(gait.simrun.MODEL_FILE)
     manifest = json.loads((REPO / "data" / "camargo2021" / "manifest.json").read_text(encoding="utf-8"))
     subs = args.subjects or None
@@ -570,7 +572,7 @@ def ankle_gain_report(args):
         for u in slope:
             z = gait._subject_arrays(REPO / "data" / "camargo2021" / "processed", u)
             fm = z[f"{speed}_foot_markers"][:, :gait.N_FRAMES]
-            st = z[f"{speed}_fp"][:, :, :gait.N_FRAMES, 6] >= 0.5
+            st = z[f"{speed}_fp"][:, :, :gait.N_FRAMES, 6] >= gaitloads.STANCE_FLAG
             foot_len[u] = float(np.mean([np.linalg.norm((fm[n, :, 0, 1] - fm[n, :, 0, 0])[:, [0, 2]], axis=-1)[st[n, 0]].mean() for n in range(len(fm))]))
         xs = {"leg-length ratio": {u: by[u]["leg_ratio"] for u in slope}, "mass ratio": {u: by[u]["mass_ratio"] for u in slope}, "foot length (heel to toe-tip marker, m)": foot_len,
               "mean pelvis pitch (deg, anterior +)": {u: manifest["subjects"][u]["walking_pelvis_pitch_deg"][speed] for u in slope},

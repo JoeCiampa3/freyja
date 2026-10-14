@@ -102,7 +102,7 @@ def _lsj_task(task: dict) -> dict:
     sub = task["subject_info"]
     hip = sub.get("hip_in_pelvis_os_m")
     cyc = retarget.Cycle(c.model, c.mapping, c.stand, z[f"{sp}_ik"][i], float(z[f"{sp}_duration_s"][i]), retarget.leg_length_ratio(c.model, sub["height_m"]),
-                         cutoff_hz=6.0, root_rule="pelvis_dataset", hip_in_pelvis_os=hip, root_ref="hip_midpoint" if hip is not None else "pelvis_origin",
+                         cutoff_hz=retarget.CUTOFF_HZ, root_rule="pelvis_dataset", hip_in_pelvis_os=hip, root_ref="hip_midpoint" if hip is not None else "pelvis_origin",
                          pitch_mean="measured", **_variant_kwargs(task["variant"], sp))
     q, qd, qdd = cyc.grid()
     nf = gait.N_FRAMES

@@ -21,7 +21,7 @@ from gait_extract import (LSJ, VARIANTS, _lsj_task, _pool, _variant_kwargs, dist
 
 REPO = gait.REPO
 SAGITTAL = ("hip_fe", "knee", "ankle_pdflex")
-TARGET_CORR, TARGET_RMS_PCT = 0.9, 15.0  # review targets from the brief, not acceptance limits
+TARGET_CORR, TARGET_RMS_PCT = gait.BAND_CORR, gait.BAND_RMS_PCT  # the band's numbers, from where they live; review targets here, not acceptance limits
 
 
 def _pitch(v):
@@ -73,7 +73,7 @@ def force_report(args):
                     q, qd, qdd = cyc.grid()
                     fb = np.array([gait.dynamics.inverse_frame(c.model, q[k], qd[k], qdd[k])[:3] for k in range(q.shape[0])])
                     fm = gfr.measured_force_model(z[f"{speed}_fp"][i], c.mass / d["mass_kg"])
-                    fmf = retarget.filter_cycle(fm, T, 6.0)
+                    fmf = retarget.filter_cycle(fm, T, retarget.CUTOFF_HZ)
                     rows.append(gfr.compare(fb, fmf))
             m = {k: float(np.mean([r[k] for r in rows])) for k in rows[0]}
             print(f"{speed} m/s, root reference {ref}, {len(rows)} strides, like for like at 6 Hz:")
@@ -130,6 +130,7 @@ def foot_report(args):
     """T3c.0(c): the retargeted root's stance float, penetration, swing clearance and slip, with the root referenced to the
     pelvis origin and to the midpoint of the hip joint centres. The same statistic as GAIT.md's kinematics diagnostics: the mean
     over subject-strides of each stride's maximum float / maximum penetration / minimum clearance / rms slip."""
+    import gaitloads
     import retarget
     c = gait._ctx(str(gait.simrun.MODEL_FILE))
     manifest = json.loads((REPO / "data/camargo2021/manifest.json").read_text(encoding="utf-8"))
@@ -141,7 +142,7 @@ def foot_report(args):
             for i in range(min(args.cap, d["strides"][args.speed])):
                 cyc = retarget.Cycle(c.model, c.mapping, c.stand, z[f"{args.speed}_ik"][i], float(z[f"{args.speed}_duration_s"][i]), ratio,
                                      hip_in_pelvis_os=d["hip_in_pelvis_os_m"], root_ref=ref, trunk=args.trunk, pitch_mean=_pitch(args.pitch_mean))
-                m = retarget.foot_metrics(c.model, cyc, z[f"{args.speed}_fp"][i][:, :, 6] >= 0.5, float(args.speed))
+                m = retarget.foot_metrics(c.model, cyc, z[f"{args.speed}_fp"][i][:, :, 6] >= gaitloads.STANCE_FLAG, float(args.speed))
                 for k, v in m.items():
                     met.setdefault(k, []).append(v)
         print(f"{args.speed} m/s, root reference {ref}, trunk {args.trunk}, pitch mean {args.pitch_mean}, {len(met['stance_float_max_m'])} strides: "
@@ -199,7 +200,7 @@ def trunk_imu_report(args):
                 drift = lambda x: (x - np.outer(np.linspace(0, 1, 101), x[-1] - x[0]))[:100]  # periodic: the stride's linear drift removed
                 ang = np.deg2rad(drift(ik[:, :3]))  # tilt, list, rotation
                 pos = drift(ik[:, 3:6])
-                lp = lambda x: retarget.filter_cycle(np.vstack([x, x[:1]]), T, 6.0)[:100]  # the same zero-lag 6 Hz as the kinematics, on both sides
+                lp = lambda x: retarget.filter_cycle(np.vstack([x, x[:1]]), T, retarget.CUTOFF_HZ)[:100]  # the same zero-lag 6 Hz as the kinematics, on both sides
                 rows.append({"T": T, "ang": ang, "w_p": trunkimu.pelvis_body_omega(ang, T), "f_p": lp(trunkimu.pelvis_specific_force(pos, ang, T)),
                              "acc": lp(z[f"{sp}_trunk_imu"][i][:100, :3]), "gyro": z[f"{sp}_trunk_imu"][i][:100, 3:6]})
             prep[s][sp] = rows
@@ -274,7 +275,7 @@ def double_report(args):
                                          hip_in_pelvis_os=d["hip_in_pelvis_os_m"], trunk=trunk, pitch_mean="measured")
                     q, qd, qdd = cyc.grid()
                     for k in range(100):
-                        if not (fp[0, k, 6] >= 0.5 and fp[1, k, 6] >= 0.5):
+                        if not (fp[0, k, 6] >= gaitloads.STANCE_FLAG and fp[1, k, 6] >= gaitloads.STANCE_FLAG):
                             continue
                         mf, mc = gaitloads.measured_to_model_foot(fp[:, k, :], fmk[k], dyn.foot_floor_segments(m, q[k]), c.mass / d["mass_kg"])
                         w = np.array([mf["foot_right"][2], mf["foot_left"][2]])
@@ -317,6 +318,11 @@ def mujoco_body(model, name):
     return mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, name)
 
 
+def polygon_pitch_offsets(spec) -> list:
+    """The pelvis pitch offsets of the polygon sensitivity, the spec's list with the measured pitch (0) first."""
+    return [0.0] + [float(o) for o in spec["sensitivity"]["pitch_offsets_deg"] if float(o) != 0.0]
+
+
 def polygon_report(args):
     """T3c.4: the polygon test for B beside the measured CoP placed on Freyja's feet, single and double support, at polygon bands of 10, 25
     and 40 mm; and B's median outside distance at the measured pitch and plus and minus 5 degrees (a diagnostic, not a design choice)."""
@@ -326,7 +332,7 @@ def polygon_report(args):
     for speed in args.speeds:
         for trunk in ("rigid", "counter_rotate"):
             print(f"=== {speed} m/s, trunk {trunk}, {args.cap} strides per subject, pitch mean measured ===")
-            for off in (0.0, -5.0, 5.0):
+            for off in polygon_pitch_offsets(spec):
                 rows = _rows(spec, ["B"], args.cap, speed, args.workers, trunk=trunk, pitch_mean="measured", pelvis_pitch_offset_deg=off)
                 res = gait.build_results(rows, c, {**spec, "speeds_mps": [float(speed)], "pelvis_pitch_offset_deg": off})[speed][trunk]["feasibility"]
                 pg = res["polygon"]
@@ -475,13 +481,13 @@ def pushoff_report(args):
                                  trunk=args.trunk, pitch_mean="measured")
             q, qd, qdd = cyc.grid()
             for fi, foot in enumerate(gait.FEET):
-                st = np.flatnonzero(fp[fi, :100, 6] >= 0.5)
+                st = np.flatnonzero(fp[fi, :100, 6] >= gaitloads.STANCE_FLAG)
                 if len(st) < 5:
                     continue
                 first, last = st[0], st[-1]
                 for k in st:
                     dec = min(9, int(10 * (k - first) / max(1, last - first + 1)))
-                    stance = tuple(f for j, f in enumerate(gait.FEET) if fp[j, k, 6] >= 0.5)
+                    stance = tuple(f for j, f in enumerate(gait.FEET) if fp[j, k, 6] >= gaitloads.STANCE_FLAG)
                     mf, mc = gaitloads.measured_to_model_foot(fp[:, k, :], fmk[k], dyn.foot_floor_segments(m, q[k]), c.mass / d["mass_kg"])
                     key = "single" if len(stance) == 1 else "double"
                     dist = dyn.polygon_outside_m(m, q[k], (foot,), mc[foot][:2]) if len(stance) == 1 else dyn.polygon_outside_m(m, q[k], (foot,), mc[foot][:2])
@@ -898,6 +904,16 @@ def a_torque_report(args):
 
 # ------------------------------------------------------------------------------ Stage 2b T1: hip extension, raw against retargeted
 
+def hip_extension_stop_deg(model) -> float:
+    """The hip extension stop, degrees (positive), read from the loaded model's right hip_fe range (the mirrored left hip has the same one)."""
+    return float(-np.degrees(model.jnt_range[model.joint("hip_fe_right").id][0]))
+
+
+def beyond_stop_line(model, raw_extension_deg) -> str:
+    stop = hip_extension_stop_deg(model)
+    return f" hip extension beyond the model's {stop:.1f} deg stop: dataset IK {np.mean(np.asarray(raw_extension_deg) > stop):.2f} of strides"
+
+
 def hip_extension_report(args):
     """T1: per-stride peak hip extension (and the knee flexion, ankle plantarflexion peaks) from the processed dataset kinematics (the
     phase-normalised inverse kinematics, before any retargeting) and from the retargeted joint angles of the cycles the gait record uses."""
@@ -956,7 +972,7 @@ def hip_extension_report(args):
             d = rt - raw
             print(f" {label:21s} dataset IK {q4(raw)} | retargeted {q4(rt)} | retargeted - dataset: mean {d.mean():+.2f} sd {d.std():.2f} min {d.min():+.2f} max {d.max():+.2f}")
         raw = np.array([r["hip_raw"] for r in rows])
-        print(f" hip extension beyond the model's {-np.degrees(c.model.jnt_range[c.model.joint('hip_fe_right').id][0]):.1f} deg stop: dataset IK {np.mean(raw > 18.1):.2f} of strides")
+        print(beyond_stop_line(c.model, raw))
         subs = sorted({r["subject"] for r in rows})
         print(" per subject, hip extension: median dataset / median retargeted / mean (sd) of the stride difference; mean pelvis_list; mean hip angle; static hip / pelvis_list")
         for u in subs:
