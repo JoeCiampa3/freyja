@@ -804,7 +804,7 @@ def render_md(rec: dict) -> str:
                 for key in ("single", "double"):
                     L.append(f"| {1000 * float(b):.0f} | {key} | " + " | ".join(rate(by_mode[x]["feasibility"]["polygon"]["B"][b][key]) for x in by_mode)
                              + f" | {rate(d0['feasibility']['polygon']['measured'][b][key])} |")
-            L += ["", "CoP outside % by phase bin (B), bins of 10% of stance-foot phase: 0-10 ... 90-100"]
+            L += ["", "CoP outside % by stride-phase bin (B), bins of 10% of the stride (frame k of 100, frames with either foot in stance), not of each foot's own stance: 0-10 ... 90-100"]
             for x in by_mode:
                 L.append(f"{_short(x)}: " + " | ".join(_f(None if v is None else 100 * v) for v in by_mode[x]["feasibility"]["cop_outside_by_phase_bin"]))
         L += [""]

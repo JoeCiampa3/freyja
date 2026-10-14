@@ -89,6 +89,8 @@ def test_two_runs_are_byte_identical_and_md_is_under_the_line_cap(tmp_path):
     assert set(fe["polygon"]) == {"B", "measured"} and set(fe["polygon"]["B"]) == {"0.01", "0.025", "0.04"}  # the polygon test at the three bands
     assert set(fe["polygon"]["B"]["0.025"]) == {"single", "double"}
     assert b"Polygon test by band" in out[0][1]
+    # Stage 2e T4: the feasibility bins are bins of the stride (frame k of 100), not of each foot's stance; the heading says so
+    assert b"by stride-phase bin" in out[0][1] and b"stance-foot phase" not in out[0][1]
     assert out[0][1].count(b"\n") <= gait.MAX_LINES
     assert b"Camargo" in out[0][1].split(b"\n", 6)[2] or b"Camargo" in out[0][1][:1500]  # attribution in the header
 

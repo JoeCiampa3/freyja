@@ -460,6 +460,15 @@ def placement_report(args):
         print(f"  Freyja's ankle-to-ankle width in single support: {mm(np.abs(width))}")
 
 
+def frame_stance_deciles(fp, fi) -> np.ndarray:
+    """Decile (0 to 9) of each of the 100 unique frames of foot `fi`'s stance, counted from that foot's own heel strike, -1 outside stance. The stance
+    may wrap the stride boundary and the force flag flickers after toe-off, so the longest circular run is the stance (foot_pitch.stance_deciles).
+    Before Stage 2e `pushoff` took the first and last flagged frame, which for a wrapping stance are frames 0 and 99."""
+    import foot_pitch
+    import gaitloads
+    return foot_pitch.stance_deciles(np.asarray(fp)[fi, :100, 6] >= gaitloads.STANCE_FLAG)
+
+
 def pushoff_report(args):
     """T3c.4 (toe question): can a rigid, toeless foot box represent push-off? The measured CoP, placed on Freyja's foot at the same
     normalised place, tested against that foot's contact polygon, by stance-phase decile of each foot's own stance (0 = heel strike of that
@@ -482,12 +491,11 @@ def pushoff_report(args):
                                  trunk=args.trunk, pitch_mean="measured")
             q, qd, qdd = cyc.grid()
             for fi, foot in enumerate(gait.FEET):
-                st = np.flatnonzero(fp[fi, :100, 6] >= gaitloads.STANCE_FLAG)
-                if len(st) < 5:
+                decs = frame_stance_deciles(fp, fi)
+                if (decs >= 0).sum() < 5:
                     continue
-                first, last = st[0], st[-1]
-                for k in st:
-                    dec = min(9, int(10 * (k - first) / max(1, last - first + 1)))
+                for k in np.flatnonzero(decs >= 0):
+                    dec = int(decs[k])
                     stance = tuple(f for j, f in enumerate(gait.FEET) if fp[j, k, 6] >= gaitloads.STANCE_FLAG)
                     mf, mc = gaitloads.measured_to_model_foot(fp[:, k, :], fmk[k], dyn.foot_floor_segments(m, q[k]), c.mass / d["mass_kg"])
                     key = "single" if len(stance) == 1 else "double"
