@@ -210,7 +210,7 @@ def knee_stride(task: dict) -> dict:
     return S
 
 
-def run_knee(speed, workers, cop_scale=None, subjects=None, cap=None):
+def run_knee(speed, workers, cop_scale=None, subjects=None, cap=None, native_force=False):
     """`knee_stride` for every subject-stride at one speed (the spec's smoothing, rigid trunk); `cop_scale` replaces the spec's existing knob."""
     import json
     from concurrent.futures import ProcessPoolExecutor
@@ -222,7 +222,7 @@ def run_knee(speed, workers, cop_scale=None, subjects=None, cap=None):
     manifest = json.loads((REPO / spec["dataset"]["manifest"]).read_text(encoding="utf-8"))
     tasks = gait._tasks(spec, manifest, gait.simrun.MODEL_FILE, REPO / spec["dataset"]["processed"], ["A_filtered"], float(spec["smoothing"]["cutoff_hz"]),
                         float(spec["pelvis_pitch_offset_deg"]), cap, False, False, False, trunk="rigid")
-    tasks = [t for t in tasks if t["speed"] == speed]
+    tasks = [dict(t, native_force=True) if native_force else t for t in tasks if t["speed"] == speed]
     if workers <= 1 or len(tasks) < 8:
         return [knee_stride(t) for t in tasks]
     with ProcessPoolExecutor(max_workers=workers) as ex:
@@ -252,7 +252,7 @@ def limb_series(S: dict, side: str, c, manifest) -> dict:
     foot = f"foot_{side}"
     fA, copA, kA, hA = S["force"][foot], S["cop"][foot], S["anchor"][j], S["anchor"][f"hip_fe_{side}"]
     fD, kD, hD = F * (mF / mS), anchor, D["hip_jc"]
-    return {"side": side, "subject": S["subject"], "tauA": S["tau"][j], "gvA": -S["g_vert"][j], "ghA": -S["g_horiz"][j], "inA": S["inertial"][j],
+    return {"side": side, "subject": S["subject"], "index": S["index"], "tauA": S["tau"][j], "gvA": -S["g_vert"][j], "ghA": -S["g_horiz"][j], "inA": S["inertial"][j],
             "tauD": tauD, "gvD": gvD, "ghD": ghD, "inD": tauD - gvD - ghD, "dec": dec, "angle": S["knee_angle_deg"][side], "speed": S["knee_speed_rad_s"][side],
             "stance_a": S["force"][foot][:, 2] > 0, "stance_d": D["stance"], "ratio": ratio,
             # the planar picture of the two force terms: vertical force x (CoP minus knee, forward) and horizontal force x (knee height), D scaled to Freyja

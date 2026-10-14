@@ -1036,6 +1036,11 @@ def knee_gain_command(args):
     knee_gain.report(args)
 
 
+def knee_tails_command(args):
+    import knee_tails
+    knee_tails.report(args)
+
+
 def marker_hip_command(args):
     import pelvis_tilt
     pelvis_tilt.report(args)
@@ -1136,6 +1141,9 @@ def main(argv=None):
     oe = sub.add_parser("offset-effect")  # Stage 2e T3: A_filtered torques with and without the mapping's ankle offset, every stride
     oe.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
     oe.add_argument("--workers", type=int, default=5)
+    kt_ = sub.add_parser("knee-tails")  # Stage 2e T5: report only; needs data/camargo2021/processed/ankle_lat and the raw archives
+    kt_.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
+    kt_.add_argument("--workers", type=int, default=5)
     kgn = sub.add_parser("knee-gain")  # Stage 2d T4 and T5: report only; needs data/camargo2021/processed/ankle_lat (ankle_gain.py extract) and the raw archives
     kgn.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
     kgn.add_argument("--workers", type=int, default=5)
@@ -1144,7 +1152,7 @@ def main(argv=None):
     mh.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
     mh.add_argument("--workers", type=int, default=5)
     args = ap.parse_args(argv)
-    {"offset-effect": offset_effect_report, "marker-hip": marker_hip_command, "knee-gain": knee_gain_command, "foot-pitch": foot_pitch_command, "ankle-gain": ankle_gain_command, "hipext": hip_extension_report,"a-torque": a_torque_report,"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "harmonic": harmonic_report, "pitch": pitch_report, "trunkcom": trunkcom_report, "standing": standing_data_report, "toe": toe_report, "double": double_report, "polygon": polygon_report, "swing": swing_report, "masses": masses_report, "placement": placement_report, "pushoff": pushoff_report}[args.cmd](args)
+    {"knee-tails": knee_tails_command, "offset-effect": offset_effect_report, "marker-hip": marker_hip_command, "knee-gain": knee_gain_command, "foot-pitch": foot_pitch_command, "ankle-gain": ankle_gain_command, "hipext": hip_extension_report,"a-torque": a_torque_report,"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "harmonic": harmonic_report, "pitch": pitch_report, "trunkcom": trunkcom_report, "standing": standing_data_report, "toe": toe_report, "double": double_report, "polygon": polygon_report, "swing": swing_report, "masses": masses_report, "placement": placement_report, "pushoff": pushoff_report}[args.cmd](args)
 
 
 if __name__ == "__main__":

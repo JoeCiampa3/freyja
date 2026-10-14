@@ -162,7 +162,7 @@ def stride_terms(task: dict) -> dict:
     ref_lab = retarget.dataset_hip_mid_lab(ik, hip) if ref == "hip_midpoint" else ik[:, 3:6]
     cop_mode = task.get("cop_mode", "hip_reference")
     markers = z[f"{sp}_foot_markers"][i] if cop_mode == "foot_frame" else None
-    fpf = gaitloads.filter_measured(fp, T, task["cutoff_hz"])
+    fpf = fp if task.get("native_force") else gaitloads.filter_measured(fp, T, task["cutoff_hz"])  # native_force: A_native's unfiltered force (diagnostic)
     nv = model.nv
     jid = {j: mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, j) for j in TERM_JOINTS}
     dof = {j: c.hinge[j][1] for j in TERM_JOINTS}

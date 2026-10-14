@@ -51,19 +51,17 @@ def relative_marker_pitch_deg(pitch, static_pitch):
     return np.asarray(pitch, float) - float(static_pitch)
 
 
-def stance_deciles(stance) -> np.ndarray:
-    """Decile (0 to 9) of each frame of one foot's stance, counted from its heel strike, -1 outside stance. `stance` is the boolean flag of the
-    100 unique phase points of a stride (frame 100 repeats frame 0); the stance may wrap around the stride boundary."""
+def stance_run(stance):
+    """(start, length) of one foot's stance in the 100 unique frames of a stride: the longest circular run of the flag, counted from its heel strike. The
+    stance may wrap the stride boundary, and the force threshold flickers for a frame or two after toe-off in about a quarter of the foot-strides, so a
+    shorter run is not part of it. None when the flag is never set."""
     s = np.asarray(stance, bool)
     n = len(s)
-    out = np.full(n, -1, int)
     if not s.any():
-        return out
+        return None
     starts = np.flatnonzero(s & ~np.roll(s, 1))
     if len(starts) == 0:
         raise ValueError("a flag that is true throughout has no heel strike to count from")
-    # the force threshold flickers at toe-off (a one or two frame blip after the stance, about a quarter of the foot-strides): the stance is the
-    # longest circular run and a shorter run is not part of it
     runs = []
     for st in starts:
         length = 0
@@ -71,6 +69,18 @@ def stance_deciles(stance) -> np.ndarray:
             length += 1
         runs.append((length, int(st)))
     length, start = max(runs)
+    return start, length
+
+
+def stance_deciles(stance) -> np.ndarray:
+    """Decile (0 to 9) of each frame of one foot's stance, counted from its heel strike, -1 outside stance. `stance` is the boolean flag of the
+    100 unique phase points of a stride (frame 100 repeats frame 0); the stance may wrap around the stride boundary."""
+    n = len(stance)
+    out = np.full(n, -1, int)
+    run = stance_run(stance)
+    if run is None:
+        return out
+    start, length = run
     for j in range(length):
         k = (start + j) % n
         out[k] = min(N_DEC - 1, int(N_DEC * j / length))
