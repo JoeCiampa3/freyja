@@ -114,6 +114,15 @@ def model_hip_mid(model, q):
     return 0.5 * (d.xpos[ids[0]] + d.xpos[ids[1]])
 
 
+def mapping_without_offsets(mapping) -> dict:
+    """A copy of the mapping with every joint's `offset` removed: the model as it was before the field was used (diagnostics only)."""
+    import copy
+    out = copy.deepcopy(mapping)
+    for spec in out["joints"].values():
+        spec.pop("offset", None)
+    return out
+
+
 def model_hip_offset(model):
     """Hip-midpoint minus root origin, in the root frame, at the neutral pose."""
     d = mujoco.MjData(model)
@@ -213,7 +222,7 @@ class Cycle:
         self.joint_adr, series = [], []
         for joint, spec in mapping["joints"].items():
             self.joint_adr.append(_hinge_adr(model, joint))
-            series.append(np.deg2rad(spec["sign"] * col(spec["dataset"])))
+            series.append(np.deg2rad(spec["sign"] * col(spec["dataset"]) + spec.get("offset", 0.0)))  # offset: model degrees, optional (camargo_mapping.yaml)
         eul = [np.deg2rad(col(n)) for n in mapping["frame"]["pelvis_euler"]]
         self.h_f = model_hip_offset(model)
         if root_ref == "hip_midpoint":

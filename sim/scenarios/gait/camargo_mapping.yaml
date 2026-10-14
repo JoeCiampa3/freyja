@@ -8,6 +8,11 @@
 # Model conventions: every hinge positive in the flexion / adduction / internal-rotation / dorsiflexion / inversion
 # direction named in checks/joint_polarity.yaml; the model's own axes handle the left-right mirror.
 #
+# `offset` (optional, degrees, default 0) is a constant added after the sign, in the model's own positive direction: the model's hinge angle is
+# `sign * dataset angle + offset`, so for the ankle (positive dorsiflexion) a negative offset tips the foot toe-down. It records a convention
+# difference between the dataset's OpenSim zero and Freyja's, not a gait feature, and is used for the ankle only (Stage 2e): the dataset's foot
+# is flat on the plate when its ankle reads about 3.4 degrees less dorsiflexion than Freyja's flat-soled foot (memo12). Moments are not offset.
+#
 # `verified` names the T1 feature check that validates the sign (sim/scripts/gaitfeatures.py). `unverified` joints are
 # still mapped with the sign shown; they are listed in the stage 2 report.
 schema: camargo-mapping/1
@@ -39,8 +44,8 @@ joints:
   hip_ier_left:       {dataset: hip_rotation_l,   sign: 1,  verified: unverified}
   knee_right:         {dataset: knee_angle_r,     sign: -1, verified: knee_swing_peak}
   knee_left:          {dataset: knee_angle_l,     sign: -1, verified: knee_swing_peak}
-  ankle_pdflex_right: {dataset: ankle_angle_r,    sign: 1,  verified: ankle_plantarflexed_toe_off}
-  ankle_pdflex_left:  {dataset: ankle_angle_l,    sign: 1,  verified: ankle_plantarflexed_toe_off}
+  ankle_pdflex_right: {dataset: ankle_angle_r,    sign: 1,  offset: -3.4, verified: ankle_plantarflexed_toe_off}
+  ankle_pdflex_left:  {dataset: ankle_angle_l,    sign: 1,  offset: -3.4, verified: ankle_plantarflexed_toe_off}
   ankle_ie_right:     {dataset: subtalar_angle_r, sign: 1,  verified: unverified}
   ankle_ie_left:      {dataset: subtalar_angle_l, sign: 1,  verified: unverified}
 # Held at the standing pose from stand_static: every spine, neck and arm joint (lumbar channels in the dataset are zero).

@@ -239,6 +239,8 @@ def run_stride(task: dict) -> dict:
     """Everything the record needs from one subject-stride. `task` is plain data so it can cross a process boundary."""
     c = _ctx(task["model_path"])
     model, mapping = c.model, c.mapping
+    if task.get("ignore_mapping_offset"):  # a diagnostic switch (gait_diag.py offset-effect): the mapping as it was before its offsets
+        mapping = retarget.mapping_without_offsets(mapping)
     z = _subject_arrays(task["processed"], task["subject"])
     sp, i = task["speed"], task["index"]
     ik, idm, fp = z[f"{sp}_ik"][i], z[f"{sp}_id"][i], z[f"{sp}_fp"][i]

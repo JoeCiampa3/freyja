@@ -186,7 +186,7 @@ def a_sagittal_rows(S, mass) -> dict:
     return out
 
 
-def a_filtered_strides(speed, workers):
+def a_filtered_strides(speed, workers, ignore_mapping_offset=False):
     """Every subject-stride at one speed through method A_filtered (rigid trunk: A's leg torques do not depend on the mode) with the per-frame
     joint torques kept, the dataset's own moment per kg of the subject, and the scaling factors of the stride. Returns (strides, Freyja's mass, spec)."""
     import retarget
@@ -195,7 +195,7 @@ def a_filtered_strides(speed, workers):
     manifest = json.loads((REPO / spec["dataset"]["manifest"]).read_text(encoding="utf-8"))
     tasks = gait._tasks(spec, manifest, gait.simrun.MODEL_FILE, processed, ["A_filtered"], float(spec["smoothing"]["cutoff_hz"]),
                         float(spec["pelvis_pitch_offset_deg"]), None, False, False, False, trunk="rigid")
-    tasks = [dict(t, keep_torque=True) for t in tasks if t["speed"] == speed]
+    tasks = [dict(t, keep_torque=True, ignore_mapping_offset=ignore_mapping_offset) for t in tasks if t["speed"] == speed]
     rows = gait._run_tasks(tasks, workers)
     c = gait._ctx(gait.simrun.MODEL_FILE)
     out = []

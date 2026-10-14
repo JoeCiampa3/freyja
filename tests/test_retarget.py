@@ -376,7 +376,10 @@ def test_mutation_flipping_the_compensation_sign_breaks_world_constancy(model, s
 def test_rigid_trunk_output_is_unchanged_from_before_the_trunk_modes(model, stand):
     import hashlib
     z = np.load(PROCESSED)
-    c = retarget.Cycle(model, MAPPING, stand, z["1.4_ik"][3], float(z["1.4_duration_s"][3]), 0.92, hip_in_pelvis_os=HIP)
+    # Stage 2e: the mapping now carries an ankle offset (camargo_mapping.yaml), which moves the ankle channels and the root height; this test guards
+    # the rigid trunk's behaviour, so it keeps the mapping without offsets (the offset has its own tests, tests/test_ankle_offset.py)
+    mapping = retarget.mapping_without_offsets(MAPPING)
+    c = retarget.Cycle(model, mapping, stand, z["1.4_ik"][3], float(z["1.4_duration_s"][3]), 0.92, hip_in_pelvis_os=HIP)
     q, qd, qdd = c.grid()
     h = lambda a: hashlib.sha256((np.round(a, 9) + 0.0).tobytes()).hexdigest()[:16]
     # Stage 2c: the root pose changed (the standing lean R_stand is no longer composed with a measured pitch), so the hash of the whole
@@ -387,7 +390,7 @@ def test_rigid_trunk_output_is_unchanged_from_before_the_trunk_modes(model, stan
     assert h(np.concatenate([q[:, 7:].ravel(), qd[:, 6:].ravel(), qdd[:, 6:].ravel()])) == "464519a942ec31d9"
     assert h(np.concatenate([qd[:, 3:6].ravel(), qdd[:, 3:6].ravel()])) == "87062236a9c39767"
     assert h(np.array([retarget.model_hip_mid(model, k)[:2] for k in q])) == "afb38100df5e7d71"
-    same = retarget.Cycle(model, MAPPING, stand, z["1.4_ik"][3], float(z["1.4_duration_s"][3]), 0.92, hip_in_pelvis_os=HIP, trunk="rigid")
+    same = retarget.Cycle(model, mapping, stand, z["1.4_ik"][3], float(z["1.4_duration_s"][3]), 0.92, hip_in_pelvis_os=HIP, trunk="rigid")
     assert all(np.array_equal(a, b) for a, b in zip(c.grid(), same.grid()))
 
 

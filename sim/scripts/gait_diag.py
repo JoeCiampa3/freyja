@@ -469,6 +469,7 @@ def pushoff_report(args):
     dyn = gait.dynamics
     c = gait._ctx(str(gait.simrun.MODEL_FILE))
     m = c.model
+    mapping = retarget.mapping_without_offsets(c.mapping) if args.no_mapping_offset else c.mapping
     manifest = json.loads((REPO / "data/camargo2021/manifest.json").read_text(encoding="utf-8"))
     bins = {k: [[] for _ in range(10)] for k in ("single", "double")}
     pitch = [[] for _ in range(10)]
@@ -477,7 +478,7 @@ def pushoff_report(args):
         ratio = retarget.leg_length_ratio(m, d["height_m"])
         for i in range(min(args.cap, d["strides"][args.speed])):
             ik, fp, fmk = z[f"{args.speed}_ik"][i], z[f"{args.speed}_fp"][i], z[f"{args.speed}_foot_markers"][i]
-            cyc = retarget.Cycle(m, c.mapping, c.stand, ik, float(z[f"{args.speed}_duration_s"][i]), ratio, hip_in_pelvis_os=d["hip_in_pelvis_os_m"],
+            cyc = retarget.Cycle(m, mapping, c.stand, ik, float(z[f"{args.speed}_duration_s"][i]), ratio, hip_in_pelvis_os=d["hip_in_pelvis_os_m"],
                                  trunk=args.trunk, pitch_mean="measured")
             q, qd, qdd = cyc.grid()
             for fi, foot in enumerate(gait.FEET):
@@ -990,6 +991,33 @@ def hip_extension_report(args):
         print(f" hip extension, strides with mean pelvis_list below 5 deg: {q4(raw[pl < 5])}; at or above 5 deg: {q4(raw[pl >= 5])}")
 
 
+def offset_effect_stats(S_without, S_with, joints) -> dict:
+    """Per joint, over strides given in the same order: the 95th percentile and the maximum of the peak |torque| without and with the ankle offset,
+    the mean and the largest change of the stride peak, and the largest change of any frame (N m). S: strides as `a_filtered_strides` gives them."""
+    out = {}
+    for j in joints:
+        t0 = [np.asarray(s["tau"][j], float) for s in S_without]
+        t1 = [np.asarray(s["tau"][j], float) for s in S_with]
+        p0, p1 = np.array([np.abs(t).max() for t in t0]), np.array([np.abs(t).max() for t in t1])
+        out[j] = {"n": len(t0), "p95_without": float(np.percentile(p0, 95)), "p95_with": float(np.percentile(p1, 95)), "max_without": float(p0.max()),
+                  "max_with": float(p1.max()), "mean_peak_diff": float(np.mean(np.abs(p1 - p0))), "max_peak_diff": float(np.abs(p1 - p0).max()),
+                  "max_frame_abs_diff": float(max(np.abs(a - b).max() for a, b in zip(t0, t1)))}
+    return out
+
+
+def offset_effect_report(args):
+    """Stage 2e T3: A_filtered's sagittal joint torques over every subject-stride, with the mapping's ankle offset and without it."""
+    for speed in args.speeds:
+        S1, mass, _ = gait_extract.a_filtered_strides(speed, args.workers)
+        S0, _, _ = gait_extract.a_filtered_strides(speed, args.workers, ignore_mapping_offset=True)
+        assert [s["subject"] for s in S0] == [s["subject"] for s in S1]
+        eff = offset_effect_stats(S0, S1, [f"{stem}_{side}" for stem in A_SAGITTAL for side in ("right", "left")])
+        print(f"=== {speed} m/s, {len(S1)} subject-strides: A_filtered peak |torque|, N m, without the offset / with it ===")
+        print("joint                 p95 without   p95 with   max without   max with   mean |change of stride peak|   largest change of a stride peak   largest change of any frame")
+        for j, e in eff.items():
+            print(f"  {j:20s} {e['p95_without']:9.2f} {e['p95_with']:11.2f} {e['max_without']:11.2f} {e['max_with']:10.2f} {e['mean_peak_diff']:20.3f} {e['max_peak_diff']:30.3f} {e['max_frame_abs_diff']:26.3f}")
+
+
 def ankle_gain_command(args):
     import ankle_gain
     ankle_gain.ankle_gain_report(args)
@@ -1071,6 +1099,7 @@ def main(argv=None):
     po.add_argument("--cap", type=int, default=4)
     po.add_argument("--speed", default="1.4")
     po.add_argument("--trunk", default="counter_rotate", choices=["rigid", "counter_rotate"])
+    po.add_argument("--no-mapping-offset", action="store_true", help="Stage 2e: the mapping's joint offsets removed (memo10's conditions)")
     la = sub.add_parser("lateral")
     la.add_argument("--cap", type=int, default=3)
     la.add_argument("--subjects", type=int, default=6)
@@ -1091,9 +1120,14 @@ def main(argv=None):
     fpc.add_argument("--workers", type=int, default=5)
     fpc.add_argument("--cap", type=int, default=0, help="strides per subject for the pitch table (0 = all)")
     fpc.add_argument("--polygon-cap", type=int, default=None, help="also the polygon by decile, this many strides per subject (0 = all; memo10 used 4)")
+    fpc.add_argument("--criterion", action="store_true", help="Stage 2e T3: the ankle offset by the brief's criterion (1.4 m/s, 20 to 40% of stance, single support); ignores the mapping's offsets")
+    fpc.add_argument("--no-mapping-offset", action="store_true", help="Stage 2e: run with the mapping's joint offsets removed (the model as it was before the field was authored)")
     fpc.add_argument("--trunk", default="counter_rotate", choices=["rigid", "counter_rotate"])
     fpc.add_argument("--pitch-offset-deg", type=float, default=0.0, help="the existing pelvis pitch sensitivity knob; 0 = the spec's default")
     fpc.add_argument("--ankle-offset-deg", type=float, default=0.0, help="counterfactual: add this to both ankle angles of the input (what a constant mapping offset would do)")
+    oe = sub.add_parser("offset-effect")  # Stage 2e T3: A_filtered torques with and without the mapping's ankle offset, every stride
+    oe.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
+    oe.add_argument("--workers", type=int, default=5)
     kgn = sub.add_parser("knee-gain")  # Stage 2d T4 and T5: report only; needs data/camargo2021/processed/ankle_lat (ankle_gain.py extract) and the raw archives
     kgn.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
     kgn.add_argument("--workers", type=int, default=5)
@@ -1102,7 +1136,7 @@ def main(argv=None):
     mh.add_argument("--speeds", nargs="+", default=["1.4", "1.6"])
     mh.add_argument("--workers", type=int, default=5)
     args = ap.parse_args(argv)
-    {"marker-hip": marker_hip_command, "knee-gain": knee_gain_command, "foot-pitch": foot_pitch_command, "ankle-gain": ankle_gain_command, "hipext": hip_extension_report,"a-torque": a_torque_report,"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "harmonic": harmonic_report, "pitch": pitch_report, "trunkcom": trunkcom_report, "standing": standing_data_report, "toe": toe_report, "double": double_report, "polygon": polygon_report, "swing": swing_report, "masses": masses_report, "placement": placement_report, "pushoff": pushoff_report}[args.cmd](args)
+    {"offset-effect": offset_effect_report, "marker-hip": marker_hip_command, "knee-gain": knee_gain_command, "foot-pitch": foot_pitch_command, "ankle-gain": ankle_gain_command, "hipext": hip_extension_report,"a-torque": a_torque_report,"a-agreement": a_agreement, "force": force_report, "lateral": lateral, "cop": cop_steps, "foot": foot_report, "trunk": trunk_report, "trunk-imu": trunk_imu_report, "harmonic": harmonic_report, "pitch": pitch_report, "trunkcom": trunkcom_report, "standing": standing_data_report, "toe": toe_report, "double": double_report, "polygon": polygon_report, "swing": swing_report, "masses": masses_report, "placement": placement_report, "pushoff": pushoff_report}[args.cmd](args)
 
 
 if __name__ == "__main__":
