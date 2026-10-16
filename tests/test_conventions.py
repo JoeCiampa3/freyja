@@ -32,3 +32,15 @@ def test_section_2_describes_tests_as_pytest_modules_as_section_7_does():
     assert "tests/" in section(7) and "pytest.ini" in section(7)
     fea_row = next(r for k, r in rows.items() if k == "`fea/`")
     assert "tests/" not in fea_row
+
+
+def test_every_status_the_decision_template_lists_parses_when_pasted_into_a_record():
+    """T5b(g): `superseded-by: adr-NNNN` unquoted is not valid YAML; the template must show the quoted form."""
+    block = re.search(r"\*\*Decision\*\* \(`decisions/NNNN-slug.md`\):\s*```markdown\n(.*?)```", section(8), re.DOTALL).group(1)
+    line = next(l for l in block.splitlines() if l.startswith("status:"))
+    options = [o.strip() for o in line.split("#", 1)[1].split("|")]
+    assert len(options) == 3 and options[0] == "proposed" and options[1] == "accepted"
+    for option in options:
+        record = yaml.safe_load(f"id: adr-0012\nstatus: {option}\n")
+        assert isinstance(record["status"], str) and record["status"] == option.strip('"')
+    assert yaml.safe_load("status: " + options[2])["status"] == "superseded-by: adr-NNNN"

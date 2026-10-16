@@ -174,7 +174,7 @@ status: active              # active | superseded | waived
 ```markdown
 ---
 id: adr-0012
-status: accepted            # proposed | accepted | superseded-by: adr-NNNN
+status: accepted            # proposed | accepted | "superseded-by: adr-NNNN"
 date: YYYY-MM-DD
 links: [req.x.y, part.a.b]
 ---
