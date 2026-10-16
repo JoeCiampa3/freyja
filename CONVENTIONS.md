@@ -31,7 +31,8 @@ Rules that outlive any tool in this repo. Tools get replaced; these do not. If c
 | `analysis/` | scripts that produce numbers entering the sheet | authored |
 | `sim/` | `models/` (template authored, `freyja.xml` generated), `scripts/`, `scenarios/` (authored; `scenarios/sweeps/` holds the sweep specs, `scenarios/gait/` the gait spec and the dataset mapping), `controllers/` (authored), `runs/` (tracked summaries), `sweeps/` (generated, tracked), `gait/` (generated: `gait.json` is gitignored, `GAIT.md` is tracked), `benchmarks/` (tracked: `walk_reference.json`, written by `fy gait --write-baseline`, and `gait_extract.json`, written by `fy gait --write-extract` or `--extract-only`) | mixed |
 | `cad/` | `fusion_addin/` authored; `sidecars/*.json` and `exports/` generated | mixed |
-| `fea/`, `tests/` | structured study and bench-run records | authored (entered), later scripted |
+| `fea/` | structured study records | authored (entered), later scripted |
+| `tests/` | pytest test modules and their fixtures (`pytest.ini` collects `tests/` and `checks/`; section 7) | authored |
 | `data/` | raw measurements with a `manifest.json` each; large files stay out of git unless LFS. `data/camargo2021/` holds the gait dataset's manifest, audit and attribution (tracked) and its processed arrays (gitignored); the raw files stay outside the repo | imported |
 | `checks/` | executable checks, `joint_polarity.yaml`, `waivers.yaml` | authored |
 | `notebook/` | dated notes, origin-tagged | authored |
