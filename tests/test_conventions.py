@@ -44,3 +44,9 @@ def test_every_status_the_decision_template_lists_parses_when_pasted_into_a_reco
         record = yaml.safe_load(f"id: adr-0012\nstatus: {option}\n")
         assert isinstance(record["status"], str) and record["status"] == option.strip('"')
     assert yaml.safe_load("status: " + options[2])["status"] == "superseded-by: adr-NNNN"
+
+
+def test_section_2_lists_every_top_level_directory_the_roadmap_work_added():
+    listed = set(re.findall(r"^\| `([^`/]+)/", section(2), re.MULTILINE)) | set(re.findall(r"^\| `\.([^`/]+)/", section(2), re.MULTILINE))
+    assert {"roadmap", "tools", "githooks"} <= listed
+    assert re.search(r"^\| `\.github/workflows/` \|", section(2), re.MULTILINE)

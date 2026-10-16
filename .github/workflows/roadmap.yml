@@ -1,0 +1,35 @@
+# Roadmap workflow (docs/briefs/architecture/roadmap-brief1.md, T6). Authored.
+# On every push to the default branch: validate the roadmap (catches commits that bypassed the pre-commit hook), then open one issue
+# per leaf that became ready and one per stub that became expandable between the before and after commits of the push.
+# Dry run from a clone: python tools/fy roadmap notify --before <sha> --after <sha> --repo OWNER/NAME --dry-run
+name: roadmap
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  roadmap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the before commit of the push must be in the clone
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install the two packages the roadmap library uses (versions as in requirements.txt)
+        run: pip install PyYAML==6.0.3 jsonschema==4.26.0
+      - name: Validate the roadmap
+        run: python tools/fy roadmap validate
+      - name: Open issues for newly workable nodes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+          REPOSITORY: ${{ github.repository }}
+        run: python tools/fy roadmap notify --before "$BEFORE" --after "$AFTER" --repo "$REPOSITORY"

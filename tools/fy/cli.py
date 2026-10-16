@@ -13,7 +13,7 @@ CONVENTIONS.md, so it works from any directory.
     fy gait <spec>                       walking joint loads from the Camargo dataset (sim/scenarios/gait/)
     fy view <scenario> [--set k=v] [--speed x]   watch a scenario live in the MuJoCo viewer
     fy runs list|show|compare|digest|envelope   read run records; digest and envelope write sim/runs/*.md
-    fy roadmap validate|build|show|frontier|refs|open|fixture|install-hooks   the roadmap graph (tools/roadmap)
+    fy roadmap validate|build|show|frontier|refs|open|fixture|notify|install-hooks   the roadmap graph (tools/roadmap)
 """
 from __future__ import annotations
 

@@ -9,6 +9,7 @@ takes --json.
     refs <query>                     where the node id is mentioned (log/, docs/memos/, notebook/, commit messages)
     open <query>                     open the node file in an editor (FREYJA_EDITOR, VISUAL, EDITOR, code -g, the file association)
     fixture --size N --out DIR       write a synthetic roadmap (seeded; --seed S)
+    notify --before SHA --after SHA --repo OWNER/NAME [--dry-run]   open GitHub issues for nodes that entered the frontier between two commits
     install-hooks                    git config core.hooksPath .githooks (stops if hooks already exist)
 
 <query> is an exact id, the id without `rm.`, or a unique case-insensitive substring of an id or title.
@@ -21,7 +22,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from . import editor, fixture, query, refs, render
+from . import editor, fixture, notify, query, refs, render
 from .derive import compute
 
 REPO = Path(__file__).resolve().parents[2]
@@ -45,6 +46,11 @@ def _parser() -> argparse.ArgumentParser:
     fx.add_argument("--size", type=int, required=True)
     fx.add_argument("--out", required=True)
     fx.add_argument("--seed", type=int, default=0)
+    nt = sub.add_parser("notify", parents=[common], help="open issues for nodes that entered the frontier between two commits")
+    nt.add_argument("--before", required=True, help="the commit before the push (all zeros or unknown: nothing is opened)")
+    nt.add_argument("--after", required=True, help="the commit after the push")
+    nt.add_argument("--repo", required=True, help="OWNER/NAME, for the links in the issue bodies")
+    nt.add_argument("--dry-run", action="store_true", help="print the issues instead of creating them; gh is not called")
     sub.add_parser("install-hooks", parents=[common], help="enable .githooks for this clone")
     return ap
 
@@ -149,6 +155,8 @@ def main(argv=None, say=print, opener=None, default_root=None) -> int:
     root = Path(ns.root or default_root or REPO)
     if cmd == "install-hooks":
         return install_hooks(root, say)
+    if cmd == "notify":
+        return notify.run(root, ns.before, ns.after, ns.repo, dry_run=ns.dry_run, say=say)
     as_json = getattr(ns, "json", False)
 
     if cmd == "build":
