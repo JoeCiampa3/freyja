@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "roadmap-node/1",
+  "title": "roadmap-node/1",
+  "description": "The YAML front matter of one roadmap node, roadmap/nodes/<id>.md (CONVENTIONS sections 2 and 3; docs/briefs/architecture/roadmap-brief1.md). Authored. This schema checks the shape of one node only; structure across nodes (one root, a tree, blocking edges, leaf versus interior versus stub) is checked by tools/roadmap. Status is derived and never stored here. `done_when` is the node's completion criterion (a 'gate' in this repo is a blocking check, so the word is not used here); it is required on leaves and forbidden on interior nodes and stubs, which the library enforces. Paths are relative to the repo root and may not leave it.",
+  "type": "object",
+  "required": ["schema", "id", "title", "parent"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "roadmap-node/1"},
+    "id": {"$ref": "#/$defs/node_id", "description": "Equals the filename stem."},
+    "title": {"type": "string", "minLength": 1, "description": "A verifiable end state, not an area."},
+    "parent": {"anyOf": [{"$ref": "#/$defs/node_id"}, {"type": "null"}], "description": "Null only on the root."},
+    "blocked_by": {"type": "array", "items": {"$ref": "#/$defs/node_id"}, "description": "Nodes this node waits for; may cross branches."},
+    "stub": {"type": "boolean", "description": "A childless placeholder that has not been decomposed. Carries neither done_when nor estimate_days."},
+    "estimate_days": {"type": "number", "exclusiveMinimum": 0, "description": "Leaves only."},
+    "tags": {"type": "array", "items": {"type": "string"}},
+    "done_when": {"$ref": "#/$defs/done_when"},
+    "active": {"type": "boolean", "description": "Human-set: work in progress."},
+    "signed_off": {"type": "boolean", "description": "Meaningful only with done_when.type manual. Only Joe sets it."},
+    "superseded_by": {"$ref": "#/$defs/node_id", "description": "Marks a retired node; IDs are never deleted."}
+  },
+  "$defs": {
+    "node_id": {"type": "string", "pattern": "^rm[.][a-z0-9-]+$"},
+    "rel_path": {"type": "string", "minLength": 1, "pattern": "^(?![/\\\\])(?![A-Za-z]:)(?!.*(^|/)[.][.](/|$))[^\\\\]+$", "description": "Repo-relative, forward slashes, no parent-directory segment."},
+    "done_when": {
+      "oneOf": [
+        {"type": "object", "required": ["type", "path"], "additionalProperties": false,
+         "properties": {"type": {"const": "artifact"}, "path": {"$ref": "#/$defs/rel_path"}, "schema": {"$ref": "#/$defs/rel_path", "description": "A JSON Schema under docs/schemas/."}}},
+        {"type": "object", "required": ["type", "record"], "additionalProperties": false,
+         "properties": {"type": {"const": "decision"}, "record": {"$ref": "#/$defs/rel_path", "description": "A path under decisions/."}}},
+        {"type": "object", "required": ["type", "check"], "additionalProperties": false,
+         "properties": {"type": {"const": "check"}, "check": {"type": "string", "pattern": "^check[.][a-z0-9_.-]+$"}}},
+        {"type": "object", "required": ["type", "record", "pointer", "op", "value"], "additionalProperties": false,
+         "properties": {"type": {"const": "metric"}, "record": {"$ref": "#/$defs/rel_path"},
+                        "pointer": {"type": "string", "pattern": "^(/([^~/]|~[01])*)+$", "description": "RFC 6901 JSON Pointer."},
+                        "op": {"enum": ["<", "<=", ">", ">=", "=="]}, "value": {"type": "number"},
+                        "units": {"type": "string", "description": "Documentation only."}}},
+        {"type": "object", "required": ["type"], "additionalProperties": false, "properties": {"type": {"const": "manual"}}}
+      ]
+    }
+  }
+}
