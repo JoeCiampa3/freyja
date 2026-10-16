@@ -133,3 +133,18 @@ def test_errors_leave_unresolvable_statuses_unknown_but_derive_the_rest(tmp_path
     assert [e.code for e in rm.errors] == ["blocker-unresolved"]
     assert rm.status("rm.a") == "done" and rm.status("rm.y") == "ready"
     assert rm.status("rm.x") == "blocked"  # an unresolvable blocker can never be cleared
+
+
+def test_a_criterion_whose_evidence_is_missing_or_unreadable_warns(tmp_path):
+    """Joe's decision 2 on memo13: an `unknown` evaluation stays ready (the brief) but is no longer silent."""
+    metric = {"type": "metric", "record": "sim/none.json", "pointer": "/x", "op": "<", "value": 1}
+    rm = derive(tmp_path, {**ROOT, "rm.a": {**leaf("rm.root"), "done_when": metric}, "rm.b": leaf("rm.root")})
+    assert rm.status("rm.a") == "ready" and rm.status("rm.b") == "ready"
+    got = [w for w in rm.warnings if w.code == "criterion-unknown"]
+    assert [w.ids for w in got] == [("rm.a",)] and "sim/none.json" in got[0].message and "roadmap/nodes/rm.a.md" in got[0].message
+
+
+def test_a_failing_criterion_is_not_a_criterion_unknown_warning(tmp_path):
+    art = {"type": "artifact", "path": "sim/none.json"}  # a missing artifact is a fail, not unknown
+    rm = derive(tmp_path, {**ROOT, "rm.a": {**leaf("rm.root"), "done_when": art}})
+    assert rm.evaluation("rm.a").result == "fail" and rm.warnings == []

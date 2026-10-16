@@ -60,7 +60,9 @@ def test_fixture_is_valid_and_derived_statuses_match_the_intended_ones(tmp_path,
     fixture.generate(size, root, seed=seed)
     rm = roadmap.compute(root)
     assert rm.errors == [], [e.message for e in rm.errors[:3]]
-    assert rm.warnings == [], [w.message for w in rm.warnings[:3]]
+    # the only warnings are criterion-unknown, one for each leaf the generator left with missing or unreadable evidence
+    assert [w.code for w in rm.warnings] == ["criterion-unknown"] * len(intended(root)["unknown_criteria"]), [w.message for w in rm.warnings[:3]]
+    assert sorted(w.ids[0] for w in rm.warnings) == intended(root)["unknown_criteria"] != []
     want = intended(root)["statuses"]
     assert len(want) == size and sorted(rm.nodes) == sorted(want)
     wrong = {i: (want[i], rm.status(i)) for i in want if rm.status(i) != want[i]}

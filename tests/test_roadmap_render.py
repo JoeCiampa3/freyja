@@ -121,3 +121,25 @@ def test_the_inputs_hash_changes_with_a_node_and_with_a_referenced_record(tmp_pa
     (root / "roadmap" / "nodes" / "rm.root.md").write_text((root / "roadmap" / "nodes" / "rm.root.md").read_text() + "more\n", encoding="utf-8")
     h2 = render.inputs_hash(root, roadmap.compute(root))
     assert len({h0, h1, h2}) == 3
+
+
+def test_the_banner_carries_the_inputs_hash_and_not_the_snapshot_hash(tmp_path):
+    """Joe's decision 4 on memo13: the roadmap does not depend on the snapshot, so a snapshot change must not rewrite its files."""
+    root = make(tmp_path / "r", NODES)
+    (root / "params").mkdir()
+    meta = root / "params" / "snapshot.meta.json"
+    meta.write_text(json.dumps({"snapshot_sha256": "a" * 64}))
+    render.build(root)
+    first = {n: (root / "roadmap" / n).read_bytes() for n in ("state.json", "STATUS.md")}
+    assert b"snapshot" not in first["STATUS.md"].splitlines()[0] and b"snapshot" not in first["state.json"]
+    assert b"(inputs sha256:" in first["STATUS.md"].splitlines()[0]
+    meta.write_text(json.dumps({"snapshot_sha256": "b" * 64}))
+    render.build(root)
+    assert first == {n: (root / "roadmap" / n).read_bytes() for n in ("state.json", "STATUS.md")}
+
+
+def test_conventions_describe_the_roadmap_banner_and_no_longer_list_roadmap_yaml():
+    text = (REPO / "CONVENTIONS.md").read_text(encoding="utf-8")
+    row = next(l for l in text.splitlines() if l.startswith("| `roadmap/`"))
+    assert "roadmap.yaml" not in row
+    assert "inputs sha256:" in text.split("## 4. Generated files")[1].split("## 5.")[0]

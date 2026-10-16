@@ -142,6 +142,7 @@ def generate(size: int, out, seed: int = 0) -> dict:
     meta = {}  # which check ids are listed, and how
     checks = {}
     decision_no = [0]
+    unknown = []  # leaves whose evidence is meant to be missing or unreadable: they evaluate unknown and draw a criterion-unknown warning
     log_ids = []
 
     def criterion(i, done):
@@ -177,6 +178,8 @@ def generate(size: int, out, seed: int = 0) -> dict:
             how = "PASS" if done else rng.choice(["FAIL", "WAIVED", "absent"])
             if how != "absent":
                 checks[cid] = how
+            else:
+                unknown.append(ids[i])
             return {"type": "check", "check": cid}, False
         rel = f"records/metrics/{slug}.json"  # metric
         op = rng.choice(OPS)
@@ -188,6 +191,8 @@ def generate(size: int, out, seed: int = 0) -> dict:
             _dump(out / rel, json.dumps({"result": {"value": round(good if how == "good" else bad, 4)}}, sort_keys=True) + "\n")
         elif how == "nopointer":
             _dump(out / rel, json.dumps({"result": {}}) + "\n")
+        if how in ("missing", "nopointer"):
+            unknown.append(ids[i])
         return {"type": "metric", "record": rel, "pointer": "/result/value", "op": op, "value": t, "units": "arb"}, False
 
     for i in range(n):
@@ -227,5 +232,5 @@ def generate(size: int, out, seed: int = 0) -> dict:
 
     intended = {ids[i]: status[i] for i in range(n)}
     intended.update({sid: "superseded" for sid, _, _ in sup})
-    _dump(out / "fixture-intent.json", json.dumps({"seed": seed, "size": size, "statuses": dict(sorted(intended.items()))}, indent=2, sort_keys=True) + "\n")
+    _dump(out / "fixture-intent.json", json.dumps({"seed": seed, "size": size, "unknown_criteria": sorted(unknown), "statuses": dict(sorted(intended.items()))}, indent=2, sort_keys=True) + "\n")
     return intended

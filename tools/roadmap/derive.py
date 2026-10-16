@@ -152,6 +152,8 @@ def derive(g: Graph, root, extra_warnings=None) -> tuple:
                 return NodeState(kind, "blocked", blocked_reason(unc), None, unc)
             return NodeState(kind, "expandable", "stub not yet decomposed", None, [])
         ev = evaluate(n, root)
+        if ev is not None and ev.result == "unknown":
+            warnings.append(Issue("criterion-unknown", f"{n.path}: node {i} cannot be evaluated: {ev.reason}", (i,), (n.path,)))
         if ev is not None and ev.result == "pass":
             if unc:
                 warnings.append(Issue("done-out-of-order", f"{n.path}: node {i} is done while blocker {', '.join(unc)} is not", (i, *unc), (n.path,)))
