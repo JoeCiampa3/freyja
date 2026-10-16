@@ -135,6 +135,9 @@ def derive(g: Graph, root, extra_warnings=None) -> tuple:
             kids = g.children[i]
             kid_status = [status_of(c) for c in kids]
             if all(s == "done" for s in kid_status):
+                unc = uncleared_of(i)
+                if unc:
+                    warnings.append(Issue("done-out-of-order", f"{n.path}: node {i} is done (all its children are) while blocker {', '.join(unc)} is not", (i, *unc), (n.path,)))
                 return NodeState(kind, "done", f"all {len(kids)} children done", None, [])
             unc = uncleared_of(i)
             if unc:

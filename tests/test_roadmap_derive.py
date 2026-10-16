@@ -148,3 +148,28 @@ def test_a_failing_criterion_is_not_a_criterion_unknown_warning(tmp_path):
     art = {"type": "artifact", "path": "sim/none.json"}  # a missing artifact is a fail, not unknown
     rm = derive(tmp_path, {**ROOT, "rm.a": {**leaf("rm.root"), "done_when": art}})
     assert rm.evaluation("rm.a").result == "fail" and rm.warnings == []
+
+
+def test_a_done_interior_node_with_an_uncleared_blocker_is_done_with_a_warning(tmp_path):
+    """T5b(e): the warning covers an interior node whose children are all done while its own blockers are not."""
+    rm = derive(tmp_path, {**ROOT, "rm.a": leaf("rm.root"),
+        "rm.g": {"parent": "rm.root", "blocked_by": ["rm.a"]}, "rm.g1": leaf("rm.g", done=True), "rm.g2": leaf("rm.g", done=True)})
+    assert rm.status("rm.g") == "done"
+    got = {w.ids for w in rm.warnings if w.code == "done-out-of-order"}
+    assert ("rm.g", "rm.a") in got  # the interior node, then the blocker it ran ahead of
+    assert got == {("rm.g", "rm.a"), ("rm.g1", "rm.a"), ("rm.g2", "rm.a")}  # its leaves inherit the blocker and warn as before
+    interior = next(w for w in rm.warnings if w.ids == ("rm.g", "rm.a"))
+    assert "roadmap/nodes/rm.g.md" in interior.message and "rm.g" in interior.message
+
+
+def test_an_interior_node_inherits_the_warning_from_an_ancestors_blocker(tmp_path):
+    rm = derive(tmp_path, {**ROOT, "rm.a": leaf("rm.root"),
+        "rm.top": {"parent": "rm.root", "blocked_by": ["rm.a"]}, "rm.mid": {"parent": "rm.top"}, "rm.m1": leaf("rm.mid", done=True)})
+    assert rm.status("rm.mid") == "done" and rm.status("rm.top") == "done"
+    assert {w.ids for w in rm.warnings} == {("rm.top", "rm.a"), ("rm.mid", "rm.a"), ("rm.m1", "rm.a")}
+
+
+def test_a_done_interior_node_whose_blockers_are_cleared_does_not_warn(tmp_path):
+    rm = derive(tmp_path, {**ROOT, "rm.a": leaf("rm.root", done=True),
+        "rm.g": {"parent": "rm.root", "blocked_by": ["rm.a"]}, "rm.g1": leaf("rm.g", done=True)})
+    assert rm.status("rm.g") == "done" and rm.warnings == []
