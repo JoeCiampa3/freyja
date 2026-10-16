@@ -13,6 +13,7 @@ CONVENTIONS.md, so it works from any directory.
     fy gait <spec>                       walking joint loads from the Camargo dataset (sim/scenarios/gait/)
     fy view <scenario> [--set k=v] [--speed x]   watch a scenario live in the MuJoCo viewer
     fy runs list|show|compare|digest|envelope   read run records; digest and envelope write sim/runs/*.md
+    fy roadmap validate|build|show|frontier|refs|open|fixture|install-hooks   the roadmap graph (tools/roadmap)
 """
 from __future__ import annotations
 
@@ -102,6 +103,12 @@ def run_runs(root: Path, args: list):
     return runs_report.main(args)
 
 
+def run_roadmap(root: Path, args: list):
+    _use(root, "tools")
+    from roadmap import cli as roadmap_cli
+    return roadmap_cli.main(args, default_root=root)
+
+
 def run_check(root: Path, tier: str | None, say=print) -> int:
     """Run the checks on the committed model and snapshot. Exit code 1 only when a gate check fails."""
     _use(root, "checks")
@@ -129,6 +136,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("gait", help="walking joint loads from the Camargo dataset", add_help=False)
     sub.add_parser("state", help="write docs/STATE.md (--no-run skips the tests and checks)", add_help=False)
     sub.add_parser("view", help="watch a scenario in the MuJoCo viewer", add_help=False)
+    sub.add_parser("roadmap", help="the roadmap graph: validate, build, show, frontier, refs, open, fixture, install-hooks", add_help=False)
     sub.add_parser("runs", help="list, show and compare run records; write the digest and envelope", add_help=False)
     chk = sub.add_parser("check", help="run the model checks")
     chk.add_argument("--tier", choices=("gate", "advisory"), help="only results of this tier")
@@ -139,7 +147,7 @@ def main(argv=None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     ap = build_parser()
     # build, watch, test, run and runs hand everything after the command to the tool that owns the options
-    if argv[:1] and argv[0] in ("build", "watch", "test", "run", "runs", "view", "sweep", "gait", "state"):
+    if argv[:1] and argv[0] in ("build", "watch", "test", "run", "runs", "view", "sweep", "gait", "state", "roadmap"):
         command, rest = argv[0], argv[1:]
         tier = None
     else:
@@ -166,4 +174,6 @@ def main(argv=None) -> int:
         return run_gait(root, rest)
     if command == "state":
         return run_state(root, rest)
+    if command == "roadmap":
+        return run_roadmap(root, rest)
     return run_check(root, tier)

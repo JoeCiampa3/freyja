@@ -103,6 +103,17 @@ def _names(root, sub) -> list:
     return sorted(p.name for p in d.iterdir() if p.is_file()) if d.exists() else []
 
 
+def roadmap_line(root) -> str:
+    """One line for the roadmap: node count, frontier size and error count, computed from roadmap/nodes under root (tools/roadmap)."""
+    tools = str(REPO / "tools")
+    if tools not in sys.path:
+        sys.path.insert(0, tools)
+    import roadmap
+    rm = roadmap.compute(root)
+    nodes = "no nodes" if not rm.nodes and not rm.errors else f"{rm.node_count} nodes"
+    return f"Roadmap: {nodes} | frontier {len(rm.frontier)} | errors {len(rm.errors)}"
+
+
 def generate(root=None, run=True, runner=None) -> str:
     root = Path(root or REPO)
     head = _git(root, "rev-parse", "HEAD").strip()
@@ -124,7 +135,7 @@ def generate(root=None, run=True, runner=None) -> str:
            f"Base commit: {head}", f"Branch: {branch}", f"Tree dirty: {'yes' if dirty else 'no'}",
            f"Diff hash (git diff HEAD, {STATE_FILE} excluded): {diff or 'none'}",
            f"Brief: {brief_path(root)}", f"Brief sha256 (line endings normalised to LF): {bh}",
-           f"Snapshot sha256: {snap}", f"Model sha256: {model}", "", "## Tests", ""]
+           f"Snapshot sha256: {snap}", f"Model sha256: {model}", roadmap_line(root), "", "## Tests", ""]
     if results:
         t = results["tests"]
         out.append(f"passed {t['passed']}, failed {t['failed']}, skipped {t['skipped']}")
