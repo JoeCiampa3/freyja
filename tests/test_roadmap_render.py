@@ -143,3 +143,10 @@ def test_conventions_describe_the_roadmap_banner_and_no_longer_list_roadmap_yaml
     row = next(l for l in text.splitlines() if l.startswith("| `roadmap/`"))
     assert "roadmap.yaml" not in row
     assert "inputs sha256:" in text.split("## 4. Generated files")[1].split("## 5.")[0]
+
+
+def test_state_dict_takes_a_banner_override_and_otherwise_uses_the_build_banner(tmp_path):
+    root = make(tmp_path / "r", NODES)
+    rm = roadmap.compute(root)
+    assert render.state_dict(rm, banner_text="live")["_generated"] == "live"
+    assert render.state_dict(rm)["_generated"] == render.banner(root, rm)

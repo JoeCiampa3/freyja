@@ -50,3 +50,9 @@ def test_section_2_lists_every_top_level_directory_the_roadmap_work_added():
     listed = set(re.findall(r"^\| `([^`/]+)/", section(2), re.MULTILINE)) | set(re.findall(r"^\| `\.([^`/]+)/", section(2), re.MULTILINE))
     assert {"roadmap", "tools", "githooks"} <= listed
     assert re.search(r"^\| `\.github/workflows/` \|", section(2), re.MULTILINE)
+
+
+def test_section_2_describes_the_whole_roadmap_library():
+    row = next(l for l in section(2).splitlines() if l.startswith("| `tools/roadmap/`"))
+    for word in ("notification", "viewer"):
+        assert word in row, word

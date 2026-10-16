@@ -10,6 +10,7 @@ takes --json.
     open <query>                     open the node file in an editor (FREYJA_EDITOR, VISUAL, EDITOR, code -g, the file association)
     fixture --size N --out DIR       write a synthetic roadmap (seeded; --seed S)
     notify --before SHA --after SHA --repo OWNER/NAME [--dry-run]   open GitHub issues for nodes that entered the frontier between two commits
+    serve [--port 8765] [--focus QUERY] [--no-browser]   the local viewer (127.0.0.1 only)
     install-hooks                    git config core.hooksPath .githooks (stops if hooks already exist)
 
 <query> is an exact id, the id without `rm.`, or a unique case-insensitive substring of an id or title.
@@ -22,7 +23,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from . import editor, fixture, notify, query, refs, render
+from . import editor, fixture, notify, query, refs, render, server
 from .derive import compute
 
 REPO = Path(__file__).resolve().parents[2]
@@ -51,6 +52,10 @@ def _parser() -> argparse.ArgumentParser:
     nt.add_argument("--after", required=True, help="the commit after the push")
     nt.add_argument("--repo", required=True, help="OWNER/NAME, for the links in the issue bodies")
     nt.add_argument("--dry-run", action="store_true", help="print the issues instead of creating them; gh is not called")
+    sv = sub.add_parser("serve", parents=[common], help="serve the local roadmap viewer on 127.0.0.1")
+    sv.add_argument("--port", type=int, default=server.DEFAULT_PORT)
+    sv.add_argument("--focus", help="open on this node (the same query rules as show)")
+    sv.add_argument("--no-browser", action="store_true", help="print the URL without opening a browser")
     sub.add_parser("install-hooks", parents=[common], help="enable .githooks for this clone")
     return ap
 
@@ -155,6 +160,8 @@ def main(argv=None, say=print, opener=None, default_root=None) -> int:
     root = Path(ns.root or default_root or REPO)
     if cmd == "install-hooks":
         return install_hooks(root, say)
+    if cmd == "serve":
+        return server.serve(root, ns.port, ns.focus, browser=not ns.no_browser, say=say)
     if cmd == "notify":
         return notify.run(root, ns.before, ns.after, ns.repo, dry_run=ns.dry_run, say=say)
     as_json = getattr(ns, "json", False)

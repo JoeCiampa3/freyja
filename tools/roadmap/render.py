@@ -43,7 +43,7 @@ def banner(root, rm: Roadmap) -> str:
             f"(inputs sha256:{inputs_hash(root, rm)}). Do not edit; change the inputs and rebuild.")
 
 
-def state_dict(rm: Roadmap) -> dict:
+def state_dict(rm: Roadmap, banner_text: str | None = None) -> dict:
     nodes = {}
     for i in sorted(rm.nodes):
         n, st = rm.nodes[i], rm.states[i]
@@ -54,7 +54,7 @@ def state_dict(rm: Roadmap) -> dict:
             "active": n.active, "signed_off": n.signed_off, "superseded_by": n.superseded_by, "done_when": n.done_when,
             "evaluation": st.evaluation.to_dict() if st.evaluation else None}
     root = rm.root
-    return {"_generated": banner(root, rm), "generated_by": TOOL, "inputs": ["roadmap/nodes/*.md"], "schema": "roadmap-state/1",
+    return {"_generated": banner_text if banner_text is not None else banner(root, rm), "generated_by": TOOL, "inputs": ["roadmap/nodes/*.md"], "schema": "roadmap-state/1",
             "node_count": rm.node_count, "superseded_count": rm.superseded_count, "counts": dict(sorted(rm.counts.items())),
             "frontier": list(rm.frontier), "errors": [e.to_dict() for e in rm.errors], "warnings": [w.to_dict() for w in rm.warnings],
             "nodes": nodes}
