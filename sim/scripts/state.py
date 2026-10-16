@@ -32,15 +32,31 @@ def _git_bytes(root, *args) -> bytes:
     return subprocess.run(["git", *args], cwd=root, check=True, capture_output=True).stdout
 
 
-def brief_path(root) -> str | None:
-    m = re.search(r"Current brief:\s*`([^`]+)`", (Path(root) / "CLAUDE.md").read_text(encoding="utf-8"))
-    return m.group(1) if m else None
+class BriefLinesError(ValueError):
+    """CLAUDE.md does not carry the per-track brief lines this tool reads."""
 
 
-def brief_hash(root) -> str:
-    """First 12 hex of the sha256 of the current brief's bytes with line endings normalised to LF."""
-    path = brief_path(root)
-    if path is None or not (Path(root) / path).exists():
+BRIEF_LINE = re.compile(r"^Current (\w+) brief:\s*`([^`]+)`", re.MULTILINE)
+
+
+def briefs(root) -> dict:
+    """track (lower case) -> brief path, from the `Current <track> brief: `path`` lines of CLAUDE.md, sorted by track."""
+    found = {}
+    for m in BRIEF_LINE.finditer((Path(root) / "CLAUDE.md").read_text(encoding="utf-8")):
+        track = m.group(1).lower()
+        if track in found:
+            raise BriefLinesError(f"CLAUDE.md names two 'Current {m.group(1)} brief:' lines; each track has exactly one")
+        found[track] = m.group(2)
+    if not found:
+        raise BriefLinesError("CLAUDE.md has no line of the form 'Current <track> brief: `path`' (one per track, path in backticks); "
+                              "fy state reads one brief hash per track from those lines")
+    return dict(sorted(found.items()))
+
+
+def brief_hash(root, track) -> str:
+    """First 12 hex of the sha256 of the track's current brief, bytes with line endings normalised to LF; `missing` when the named file is absent."""
+    path = briefs(root)[track]
+    if not (Path(root) / path).exists():
         return "missing"
     data = (Path(root) / path).read_bytes().replace(b"\r\n", b"\n")
     return hashlib.sha256(data).hexdigest()[:12]
@@ -128,13 +144,14 @@ def generate(root=None, run=True, runner=None) -> str:
         tests_short = f"{t['passed']}/{t['passed'] + t['failed'] + t['skipped']}"
     else:
         tests_short = "not run"
-    bh = brief_hash(root)
+    paths = briefs(root)
+    bh = {t: brief_hash(root, t) for t in paths}
     out = [f"<!-- {GENERATED.format(snap=snap)} -->", "",
-           f"STATE: base {head[:12]} | brief sha256:{bh} | snapshot sha256:{snap} | tests {tests_short} | dirty {'yes' if dirty else 'no'}", "",
+           f"STATE: base {head[:12]} | brief {', '.join(f'{t} sha256:{h}' for t, h in bh.items())} | snapshot sha256:{snap} | tests {tests_short} | dirty {'yes' if dirty else 'no'}", "",
            "# State", "",
            f"Base commit: {head}", f"Branch: {branch}", f"Tree dirty: {'yes' if dirty else 'no'}",
            f"Diff hash (git diff HEAD, {STATE_FILE} excluded): {diff or 'none'}",
-           f"Brief: {brief_path(root)}", f"Brief sha256 (line endings normalised to LF): {bh}",
+           *[l for t, p in paths.items() for l in (f"Brief ({t}): {p}", f"Brief sha256 ({t}, line endings normalised to LF): {bh[t]}")],
            f"Snapshot sha256: {snap}", f"Model sha256: {model}", roadmap_line(root), "", "## Tests", ""]
     if results:
         t = results["tests"]
@@ -157,7 +174,11 @@ def generate(root=None, run=True, runner=None) -> str:
 
 def main(argv=None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
-    text = generate(REPO, run="--no-run" not in argv)
+    try:
+        text = generate(REPO, run="--no-run" not in argv)
+    except BriefLinesError as e:
+        print(f"fy state: {e}", file=sys.stderr)
+        return 1
     with open(REPO / STATE_FILE, "w", encoding="utf-8", newline="\n") as f:
         f.write(text)
     print(text.splitlines()[2])

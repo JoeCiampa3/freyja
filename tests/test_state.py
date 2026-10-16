@@ -5,6 +5,7 @@ Run from the repo root:
     python -m pytest tests/test_state.py
 """
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -24,12 +25,14 @@ def git(root, *args):
 @pytest.fixture()
 def repo(tmp_path):
     root = tmp_path / "r"
-    (root / "docs" / "briefs").mkdir(parents=True)
+    (root / "docs" / "briefs" / "ariadne").mkdir(parents=True)
+    (root / "docs" / "briefs" / "architecture").mkdir(parents=True)
     (root / "docs" / "memos").mkdir(parents=True)
     (root / "params").mkdir()
     (root / "checks").mkdir()
-    (root / "CLAUDE.md").write_text("Read CONVENTIONS.md first.\nCurrent brief: `docs/briefs/b.md`.\n")
-    (root / "docs" / "briefs" / "b.md").write_bytes(b"# brief\nline two\n")
+    (root / "CLAUDE.md").write_text("Read CONVENTIONS.md first.\n\nCurrent Ariadne brief: `docs/briefs/ariadne/b.md`.\nCurrent architecture brief: `docs/briefs/architecture/a.md`.\n")
+    (root / "docs" / "briefs" / "ariadne" / "b.md").write_bytes(b"# brief\nline two\n")
+    (root / "docs" / "briefs" / "architecture" / "a.md").write_bytes(b"# arch brief\nline two\n")
     (root / "docs" / "memos" / "memo1-x.md").write_text("m\n")
     (root / "params" / "snapshot.meta.json").write_text(json.dumps({"snapshot_sha256": "a" * 64, "model_sha256": "b" * 64}))
     (root / "checks" / "waivers.yaml").write_text("- check: check.x.y\n  reason: r\n  source: s\n  recorded: 2026-01-01\n  review_by: 2027-01-01\n  confirmed: false\n")
@@ -57,26 +60,26 @@ def test_the_state_line_follows_the_banner_and_the_file_is_short(repo):
     assert ls[1] == "" and ls[2].startswith("STATE: base ")
     assert len(ls) < 120
     head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True, check=True).stdout.strip()
-    assert f"STATE: base {head[:12]} | brief sha256:" in ls[2] and "| snapshot sha256:aaaaaaaaaaaa | tests not run | dirty no" in ls[2]
+    assert f"STATE: base {head[:12]} | brief architecture sha256:" in ls[2] and ", ariadne sha256:" in ls[2] and "| snapshot sha256:aaaaaaaaaaaa | tests not run | dirty no" in ls[2]
 
 
 def test_changing_one_byte_of_the_brief_changes_only_what_depends_on_it(repo):
     before = lines(state.generate(repo, run=False))
-    p = repo / "docs" / "briefs" / "b.md"
+    p = repo / "docs" / "briefs" / "ariadne" / "b.md"
     p.write_bytes(p.read_bytes().replace(b"two", b"twp"))
     git(repo, "add", "-A")
     git(repo, "commit", "-q", "-m", "edit the brief")  # committed, so the tree is clean again and only the brief and the base move
     after = lines(state.generate(repo, run=False))
     assert len(before) == len(after)
     changed = {a.split(":")[0].split(" |")[0] for a, b in zip(before, after) if a != b}
-    assert changed == {"STATE", "Base commit", "Brief sha256 (line endings normalised to LF)"}
+    assert changed == {"STATE", "Base commit", "Brief sha256 (ariadne, line endings normalised to LF)"}
 
 
 def test_line_endings_do_not_change_the_brief_hash(repo):
-    a = state.brief_hash(repo)
-    p = repo / "docs" / "briefs" / "b.md"
+    a = state.brief_hash(repo, "ariadne")
+    p = repo / "docs" / "briefs" / "ariadne" / "b.md"
     p.write_bytes(p.read_bytes().replace(b"\n", b"\r\n"))
-    assert state.brief_hash(repo) == a
+    assert state.brief_hash(repo, "ariadne") == a
 
 
 @pytest.mark.parametrize("how", ["untracked", "modified"])
@@ -107,7 +110,7 @@ def test_generating_the_file_does_not_change_the_dirty_state_or_hash(repo):
 def test_waivers_memos_and_briefs_are_listed_from_the_tree(repo):
     text = state.generate(repo, run=False)
     assert "check.x.y" in text and "confirmed false" in text and "2027-01-01" in text
-    assert "memo1-x.md" in text and "b.md" in text
+    assert "memo1-x.md" in text
 
 
 def test_a_runner_supplies_test_and_check_results(repo):
@@ -136,6 +139,53 @@ def test_a_staged_file_is_clean_and_an_unstaged_or_untracked_one_is_dirty(repo):
     assert "dirty no" in lines(state.generate(repo, run=False))[2]  # staged modification
     (repo / "stray.txt").write_text("x")
     assert "dirty yes" in lines(state.generate(repo, run=False))[2]  # an untracked file beside staged ones
+
+
+def _state_line_hashes(repo):
+    line = lines(state.generate(repo, run=False))[2]
+    return dict(re.findall(r"(\w+) sha256:([0-9a-f]{12}|missing)", line.split("| brief ")[1].split(" | snapshot")[0]))
+
+
+def test_the_state_line_has_one_brief_hash_per_track_and_each_follows_its_own_file(repo):
+    before = _state_line_hashes(repo)
+    assert sorted(before) == ["architecture", "ariadne"] and before["ariadne"] != before["architecture"]
+    assert before["ariadne"] == state.brief_hash(repo, "ariadne") and before["architecture"] == state.brief_hash(repo, "architecture")
+    p = repo / "docs" / "briefs" / "architecture" / "a.md"
+    p.write_bytes(p.read_bytes().replace(b"two", b"twp"))
+    after = _state_line_hashes(repo)
+    assert after["ariadne"] == before["ariadne"] and after["architecture"] != before["architecture"]
+
+
+def test_a_named_brief_that_does_not_exist_reads_missing_and_the_other_track_is_unaffected(repo):
+    (repo / "docs" / "briefs" / "ariadne" / "b.md").unlink()
+    got = _state_line_hashes(repo)
+    assert got["ariadne"] == "missing" and got["architecture"] != "missing"
+
+
+@pytest.mark.parametrize("text", [
+    "No brief lines here.\n",
+    "Current brief: `docs/briefs/ariadne/b.md`.\n",  # the pre-tracks form is no longer read
+    "Current Ariadne brief: docs/briefs/ariadne/b.md\n",  # no backticks
+])
+def test_unparseable_brief_lines_fail_with_a_message_that_names_claude_md(repo, text):
+    (repo / "CLAUDE.md").write_text(text)
+    with pytest.raises(state.BriefLinesError) as e:
+        state.generate(repo, run=False)
+    assert "CLAUDE.md" in str(e.value) and "Current <track> brief:" in str(e.value)
+
+
+def test_two_lines_for_one_track_fail(repo):
+    p = repo / "CLAUDE.md"
+    p.write_text(p.read_text() + "Current ariadne brief: `docs/briefs/ariadne/b.md`.\n")
+    with pytest.raises(state.BriefLinesError, match="two"):
+        state.generate(repo, run=False)
+
+
+def test_main_reports_the_brief_error_and_exits_nonzero_without_writing(repo, monkeypatch, capsys):
+    (repo / "CLAUDE.md").write_text("nothing\n")
+    monkeypatch.setattr(state, "REPO", repo)
+    assert state.main(["--no-run"]) == 1
+    assert "CLAUDE.md" in capsys.readouterr().err and not (repo / "docs" / "STATE.md").exists()
 
 
 def test_the_latest_gait_record_reads_the_tracked_extract_and_not_the_untracked_gait_json(repo):

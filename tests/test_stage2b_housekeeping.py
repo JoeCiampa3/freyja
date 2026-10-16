@@ -57,12 +57,12 @@ def test_gitattributes_fixes_line_endings_to_lf():
     assert "* text=auto eol=lf" in lines
 
 
-def test_claude_md_names_the_current_brief_and_it_exists():
-    m = re.search(r"Current brief:\s*`([^`]+)`", (REPO / "CLAUDE.md").read_text(encoding="utf-8"))
-    assert m, "CLAUDE.md has no 'Current brief:' line"
-    path = m.group(1)
-    assert path.startswith("docs/briefs/") and path.endswith("-brief.md")  # no per-stage edit of this test
-    assert (REPO / path).is_file()
+def test_claude_md_names_the_current_brief_of_each_track_and_each_exists():
+    found = re.findall(r"^Current (\w+) brief:\s*`([^`]+)`", (REPO / "CLAUDE.md").read_text(encoding="utf-8"), re.MULTILINE)
+    assert sorted(t.lower() for t, _ in found) == ["architecture", "ariadne"], "CLAUDE.md needs one 'Current <track> brief:' line per track"
+    for track, path in found:
+        assert path.startswith("docs/briefs/") and path.endswith("-brief.md"), track  # no per-stage edit of this test
+        assert (REPO / path).is_file(), f"{track}: {path} does not exist"
 
 
 DECISION_SUMMARY_RULE = (
