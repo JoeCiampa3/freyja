@@ -13,7 +13,7 @@ from rmhelp import REPO, leaf, make
 import roadmap
 from roadmap import render
 
-STATE_SCHEMA = json.loads((REPO / "docs" / "schemas" / "roadmap-state-1.json").read_text(encoding="utf-8"))
+STATE_SCHEMA = json.loads((REPO / "docs" / "schemas" / "roadmap-state-1.schema.json").read_text(encoding="utf-8"))
 
 NODES = {
     "rm.root": {"title": "Freyja v1 walks"},

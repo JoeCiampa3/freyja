@@ -2,7 +2,7 @@
 Roadmap model: nodes loaded from roadmap/nodes/<id>.md under a root directory, and the issues found while loading.
 
 A node file is YAML front matter between two `---` lines followed by free Markdown that machines ignore. Loading checks the shape of
-each file (docs/schemas/roadmap-node-1.json) and that its filename stem equals its id. Structure across nodes is validate.py's job.
+each file (docs/schemas/roadmap-node-1.schema.json) and that its filename stem equals its id. Structure across nodes is validate.py's job.
 """
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ import jsonschema
 import yaml
 
 NODES_DIR = "roadmap/nodes"
-NODE_SCHEMA = "docs/schemas/roadmap-node-1.json"
+NODE_SCHEMA = "docs/schemas/roadmap-node-1.schema.json"
 ID_RE = re.compile(r"^rm[.][a-z0-9-]+$")
 ESTIMATE_CAP_DAYS = 3.0  # a leaf is sized to finish in hours to a few days; above this the estimate is a warning (brief: warnings)
 
