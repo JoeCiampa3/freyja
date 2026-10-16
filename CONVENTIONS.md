@@ -65,6 +65,8 @@ Roadmap node IDs obey the permanence rule: a retired node is never deleted; it c
 
 Filenames derive from the ID. Fusion user parameters cannot contain dots, so the CAD bridge maps `.` to `_` on the Fusion side only.
 
+**Track terms.** Work runs on tracks, and a brief belongs to one. **Ariadne** is the digital thread: the pipeline from the sheet to the model, sims, load envelopes and later CAD and FEA (Stages 2, 3 and on). **Architecture** is the track for repo tooling, such as the roadmap. `CLAUDE.md` names one current brief per track.
+
 **Roadmap terms.** A **node** is one file in `roadmap/nodes/`. Nodes form a strict tree by `parent` ("is part of"), with `blocked_by` edges laid over it that may cross branches. An **interior** node has children, carries no completion criterion, and takes its status from its children. A **leaf** is childless, sized to hours or a few days, and carries a `done_when` and an `estimate_days`. A **stub** is a childless placeholder not yet decomposed (`stub: true`), with neither. **`done_when`** is a leaf's completion criterion; "gate" stays reserved for blocking checks (section 7), and a `done_when` can reference a check. The **frontier** is every `ready` leaf plus every `expandable` stub, sorted by id. Status is derived on every evaluation and never stored in a node file; only a human decides `active`, `signed_off` and the criterion.
 
 ## 4. Generated files
