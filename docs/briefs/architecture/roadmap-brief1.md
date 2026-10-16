@@ -1,4 +1,4 @@
-# Stage 3a brief (for Claude Code): roadmap graph, tooling and viewer
+# Roadmap brief1 (for Claude Code): roadmap graph, tooling and viewer
 
 Read `CLAUDE.md`, `CONVENTIONS.md` and `docs/STATE.md` first, in the order `CLAUDE.md` gives. This brief builds the project roadmap as a machine-checked graph of small, verifiable goals. It has six parts: a strict decomposition tree with blocking edges laid over it; one authored Markdown file per node; a library that validates the graph and derives every node's status; `fy roadmap` commands; generated status files with a GitHub notification when a node becomes workable; and a local viewer app.
 
