@@ -1,6 +1,8 @@
-# Roadmap workflow (docs/briefs/architecture/roadmap-brief1.md, T6). Authored.
+# Roadmap workflow (docs/briefs/architecture/roadmap-brief1.md T6, roadmap-brief2.md T5). Authored.
 # On every push to the default branch: validate the roadmap (catches commits that bypassed the pre-commit hook), then open one issue
-# per leaf that became ready and one per stub that became expandable between the before and after commits of the push.
+# per leaf that became ready and one per stub that became expandable between the before and after commits of the push. The two
+# frontiers are built fresh from temporary worktrees of those commits, not read from the committed roadmap/state.json; a committed
+# state.json that differs from the fresh build is reported as a ::warning:: annotation naming the nodes, never as a failure.
 # Dry run from a clone: python tools/fy roadmap notify --before <sha> --after <sha> --repo OWNER/NAME --dry-run
 name: roadmap
 

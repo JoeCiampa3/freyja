@@ -173,7 +173,8 @@ def test_a_zero_or_unknown_before_commit_opens_nothing(repo, before):
     assert gh.calls == [] and any("no before state" in s for s in out)
 
 
-def test_a_before_commit_without_a_state_file_opens_nothing(repo):
+def test_a_before_commit_without_a_state_file_is_built_fresh_from_its_nodes(repo):
+    """Brief 2 T5: the committed state file is no longer the source, so a commit without one is not a reason to skip."""
     root, first, second = repo
     git(root, "rm", "-q", "--cached", "roadmap/state.json")
     git(root, "commit", "-q", "-m", "drop the state file")
@@ -182,7 +183,10 @@ def test_a_before_commit_without_a_state_file_opens_nothing(repo):
     git(root, "commit", "-q", "-m", "restore it")
     gh = FakeGh()
     assert notify.run(root, dropped, git(root, "rev-parse", "HEAD"), "o/r", gh=gh, say=lambda s: None) == 0
-    assert gh.calls == []
+    assert creates(gh) == []  # the nodes did not change between the two commits
+    gh = FakeGh()
+    assert notify.run(root, first, dropped, "o/r", gh=gh, say=lambda s: None) == 0
+    assert len(creates(gh)) == 2  # first -> dropped: the nodes changed, and that alone decides it
 
 
 def test_a_missing_or_invalid_after_state_is_an_error(repo):
@@ -259,3 +263,168 @@ def test_the_library_is_importable_without_the_network_stack():
     mods = {n.names[0].name.split(".")[0] for n in ast.walk(tree) if isinstance(n, ast.Import)} | {
         n.module.split(".")[0] for n in ast.walk(tree) if isinstance(n, ast.ImportFrom) and n.module}
     assert not mods & {"requests", "urllib", "http", "socket", "httpx"}
+
+
+# ---- brief 2 T5: the issues follow a fresh build of both commits, never the committed state.json
+
+def commit_all(root, msg):
+    git(root, "add", "-A")
+    git(root, "commit", "-q", "-m", msg)
+    return git(root, "rev-parse", "HEAD")
+
+
+def new_repo(tmp_path, nodes=None):
+    root = tmp_path / "r"
+    root.mkdir()
+    git(root, "init", "-q")
+    git(root, "config", "user.email", "t@example.com")
+    git(root, "config", "user.name", "t")
+    git(root, "config", "core.autocrlf", "false")
+    if nodes is not None:
+        make(root, nodes)
+        render.build(root)
+    return root
+
+
+def worktrees(root):
+    return [l for l in git(root, "worktree", "list", "--porcelain").splitlines() if l.startswith("worktree ")]
+
+
+def titles_of(gh):
+    return [a[a.index("--title") + 1] for a, _ in creates(gh)]
+
+
+def test_a_commit_that_bypassed_the_hook_is_notified_from_the_nodes_not_the_stale_state_file(tmp_path):
+    """Memo 14, finding 7. The second commit signs rm.a off but leaves roadmap/state.json as it was."""
+    root = new_repo(tmp_path, NODES)
+    first = commit_all(root, "one")
+    make(root, {"rm.a": {**NODES["rm.a"], "signed_off": True}})  # the nodes change; state.json is not rebuilt
+    second = commit_all(root, "two, bypassing the hook")
+    assert json.loads(git(root, "show", f"{second}:roadmap/state.json"))["frontier"] == ["rm.a", "rm.c"]  # the stale file
+    gh, out = FakeGh(), []
+    assert notify.run(root, first, second, "o/r", gh=gh, say=out.append) == 0
+    assert titles_of(gh) == ["Ready: Elbow selected (rm.b)", "Expandable: Wrist decomposed (rm.s)"]  # what the stale file would have hidden
+    warnings = [l for l in out if l.startswith("::warning")]
+    assert len(warnings) == 1
+    for id in ("rm.a", "rm.b", "rm.s", "rm.root"):  # every node whose committed entry differs from the fresh one
+        assert id in warnings[0]
+    assert "rm.c" not in warnings[0]  # unchanged
+    assert "\n" not in warnings[0]
+
+
+def test_a_fresh_committed_state_draws_no_warning(repo):
+    root, first, second = repo
+    out = []
+    notify.run(root, first, second, "o/r", gh=FakeGh(), say=out.append)
+    assert not [l for l in out if "::warning" in l]
+
+
+def test_the_warning_is_not_a_failure(tmp_path):
+    root = new_repo(tmp_path, NODES)
+    first = commit_all(root, "one")
+    make(root, {"rm.a": {**NODES["rm.a"], "signed_off": True}})
+    second = commit_all(root, "two")
+    assert notify.run(root, first, second, "o/r", gh=FakeGh(), say=lambda s: None) == 0
+
+
+def test_a_missing_committed_state_file_warns_too(tmp_path):
+    root = new_repo(tmp_path)
+    make(root, NODES)  # nodes but no state.json at all
+    first = commit_all(root, "nodes without a state file")
+    make(root, {"rm.a": {**NODES["rm.a"], "signed_off": True}})
+    second = commit_all(root, "two")
+    out = []
+    assert notify.run(root, first, second, "o/r", gh=FakeGh(), say=out.append) == 0
+    assert any(l.startswith("::warning") and "roadmap/state.json" in l for l in out)
+
+
+def test_a_before_commit_with_no_roadmap_is_an_empty_frontier(tmp_path):
+    """The first real push opens one issue per ready leaf and per expandable stub (accepted behaviour, brief 2)."""
+    root = new_repo(tmp_path)
+    (root / "README.md").write_text("nothing here\n", encoding="utf-8")
+    first = commit_all(root, "no roadmap yet")
+    make(root, NODES)
+    render.build(root)
+    second = commit_all(root, "the roadmap arrives")
+    gh, out = FakeGh(), []
+    assert notify.run(root, first, second, "o/r", gh=gh, say=out.append) == 0
+    assert titles_of(gh) == ["Ready: Cable routed (rm.a)", "Ready: Battery chosen (rm.c)"]
+    assert "none (new node)" in creates(gh)[0][1]
+    assert out[0] == "notify: 2 issue(s) to open"
+
+
+def test_an_all_zero_before_commit_still_opens_nothing_and_builds_nothing(tmp_path):
+    root = new_repo(tmp_path, NODES)
+    second = commit_all(root, "first push")
+    gh, out = FakeGh(), []
+    assert notify.run(root, "0" * 40, second, "o/r", gh=gh, say=out.append) == 0
+    assert gh.calls == [] and any("no before state" in s for s in out)
+    assert worktrees(root) == [l for l in worktrees(root)[:1]]  # no worktree was left or even needed
+
+
+def test_both_commits_are_built_in_temporary_worktrees_that_are_removed(tmp_path):
+    root = new_repo(tmp_path, NODES)
+    first = commit_all(root, "one")
+    make(root, {"rm.a": {**NODES["rm.a"], "signed_off": True}})
+    render.build(root)
+    second = commit_all(root, "two")
+    seen = []
+    real = notify.fresh_state
+
+    def spy(wt_root, *a, **k):
+        seen.append(str(wt_root))
+        assert len(worktrees(root)) >= 2  # a worktree exists while it is built
+        return real(wt_root, *a, **k)
+    notify.fresh_state, saved = spy, notify.fresh_state
+    try:
+        notify.run(root, first, second, "o/r", gh=FakeGh(), say=lambda s: None)
+    finally:
+        notify.fresh_state = saved
+    assert len(seen) == 2 and seen[0] != seen[1] and not any(__import__("os").path.exists(p) for p in seen)
+    assert len(worktrees(root)) == 1
+
+
+def test_notify_writes_nothing_into_the_clone(tmp_path):
+    root = new_repo(tmp_path, NODES)
+    first = commit_all(root, "one")
+    make(root, {"rm.a": {**NODES["rm.a"], "signed_off": True}})
+    second = commit_all(root, "two, stale state")
+    before = git(root, "status", "--porcelain=v1", "--ignored")
+    stale = (root / "roadmap" / "state.json").read_bytes()
+    notify.run(root, first, second, "o/r", gh=FakeGh(), say=lambda s: None)
+    assert git(root, "status", "--porcelain=v1", "--ignored") == before and (root / "roadmap" / "state.json").read_bytes() == stale
+
+
+def test_the_after_commits_own_tool_code_builds_both_states(tmp_path, monkeypatch):
+    """Both worktrees are read by the code that is running, so a rule change cannot make the two sides disagree."""
+    root = new_repo(tmp_path, NODES)
+    first = commit_all(root, "one")
+    make(root, {"rm.a": {**NODES["rm.a"], "signed_off": True}})
+    second = commit_all(root, "two")
+    calls = []
+    real = notify.compute
+    monkeypatch.setattr(notify, "compute", lambda r: calls.append(r) or real(r))
+    notify.run(root, first, second, "o/r", gh=FakeGh(), say=lambda s: None)
+    assert len(calls) == 2 and all(str(c) != str(root) for c in calls)
+
+
+def test_a_before_commit_whose_roadmap_is_broken_opens_nothing(tmp_path):
+    root = new_repo(tmp_path, NODES)
+    (root / "roadmap" / "nodes" / "rm.broken.md").write_text("---\nnot: [valid\n---\n", encoding="utf-8")
+    first = commit_all(root, "broken")
+    (root / "roadmap" / "nodes" / "rm.broken.md").unlink()
+    second = commit_all(root, "fixed")
+    gh, out = FakeGh(), []
+    assert notify.run(root, first, second, "o/r", gh=gh, say=out.append) == 0
+    assert gh.calls == [] or creates(gh) == []
+    assert any("before" in s and "error(s)" in s for s in out)
+
+
+def test_a_broken_after_roadmap_is_an_error(tmp_path):
+    root = new_repo(tmp_path, NODES)
+    first = commit_all(root, "one")
+    (root / "roadmap" / "nodes" / "rm.broken.md").write_text("---\nnot: [valid\n---\n", encoding="utf-8")
+    second = commit_all(root, "broken")
+    out = []
+    assert notify.run(root, first, second, "o/r", gh=FakeGh(), say=out.append) == 1
+    assert any("after" in s for s in out)

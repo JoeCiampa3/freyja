@@ -1,26 +1,33 @@
 """
-Roadmap notification: compare the frontier in roadmap/state.json at two commits and open one GitHub issue per leaf that became ready and
-one per stub that became expandable (docs/briefs/architecture/roadmap-brief1.md, T6). The diff is a pure function of two parsed state
-files; `gh` is reached only through the `gh` callable passed to run(), so the tests never touch the network and this module imports no
-network library. Nothing is opened without a before state (first push, all-zero before commit, a commit with no state file).
+Roadmap notification: compare the frontier at two commits and open one GitHub issue per leaf that became ready and one per stub that
+became expandable (docs/briefs/architecture/roadmap-brief1.md T6; roadmap-brief2.md T5). The frontiers are not read from the committed
+roadmap/state.json, which a commit that bypassed the pre-commit hook leaves stale: both commits are checked out into temporary git
+worktrees and built fresh with the code that is running (the after commit's tool code). A before commit with no roadmap/nodes is an empty
+frontier. When the committed state.json at the after commit differs from the fresh build, a `::warning::` annotation names the differing
+nodes; it is a warning, never a failure, so a byte difference between platforms cannot turn every push red. The diff is a pure function
+of two parsed state dicts; `gh` is reached only through the `gh` callable passed to run(), so the tests never touch the network and this
+module imports no network library. Nothing is opened without a before commit (first push, all-zero or unknown before commit) or when the
+before roadmap has errors.
 """
 from __future__ import annotations
 
 import json
 import re
+import shutil
 import subprocess
+import tempfile
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
-import jsonschema
-
+from .derive import compute
 from .refs import token_re
-from .render import STATE_JSON, criterion_text
+from .render import STATE_JSON, criterion_text, state_dict
 
 LABEL = "roadmap"
 LABEL_COLOR = "0e8a16"
 LABEL_DESCRIPTION = "A roadmap node became workable"
-STATE_SCHEMA = Path(__file__).resolve().parents[2] / "docs" / "schemas" / "roadmap-state-2.schema.json"
+MAX_NAMED = 30  # node ids named in the stale-state warning
 
 
 class GhError(RuntimeError):
@@ -28,7 +35,7 @@ class GhError(RuntimeError):
 
 
 class StateError(ValueError):
-    """roadmap/state.json at a commit is missing, unparseable or does not match its schema."""
+    """A commit cannot be resolved, checked out or read."""
 
 
 @dataclass(frozen=True)
@@ -92,17 +99,74 @@ def _git(root, *args) -> str:
     return r.stdout
 
 
-def read_state_at(root, commit: str) -> dict:
-    """roadmap/state.json as committed at `commit`, validated against roadmap-state/2. Raises StateError."""
-    text = _git(root, "show", f"{commit}:{STATE_JSON}")
+def resolve_commit(root, ref: str) -> str:
+    """The full hash of a commit that exists in the clone. Raises StateError."""
+    return _git(root, "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}").strip()
+
+
+@contextmanager
+def worktree(root, commit: str):
+    """A detached, temporary checkout of `commit`; removed on exit. Nothing is written into the clone's own working tree."""
+    tmp = tempfile.mkdtemp(prefix="roadmap-notify-")
+    path = Path(tmp) / "wt"
     try:
-        state = json.loads(text)
-        errs = list(jsonschema.Draft202012Validator(json.loads(STATE_SCHEMA.read_text(encoding="utf-8"))).iter_errors(state))
-    except ValueError as e:
-        raise StateError(f"{STATE_JSON} at {commit[:12]} is not valid JSON ({e.__class__.__name__})") from e
-    if errs:
-        raise StateError(f"{STATE_JSON} at {commit[:12]} does not match roadmap-state/2: {errs[0].message[:120]}")
-    return state
+        _git(root, "-c", "core.autocrlf=false", "worktree", "add", "--detach", "--force", str(path), commit)
+        yield path
+    finally:
+        try:
+            _git(root, "worktree", "remove", "--force", str(path))
+        except StateError:
+            pass
+        shutil.rmtree(tmp, ignore_errors=True)
+        try:
+            _git(root, "worktree", "prune")
+        except StateError:
+            pass
+
+
+def fresh_state(wt_root):
+    """(state dict, []) for the roadmap under a checkout, built by the running code; (None, errors) when the roadmap has errors."""
+    rm = compute(wt_root)
+    if rm.errors:
+        return None, rm.errors
+    return json.loads(json.dumps(state_dict(rm), sort_keys=True, ensure_ascii=False)), []
+
+
+def committed_state(root, commit: str):
+    """roadmap/state.json as committed at `commit` (parsed), or None when it is absent or not JSON."""
+    try:
+        return json.loads(_git(root, "show", f"{commit}:{STATE_JSON}"))
+    except (StateError, ValueError):
+        return None
+
+
+def differing(committed: dict, fresh: dict) -> tuple:
+    """(node ids whose entry differs or exists on one side only, other top-level fields that differ). The banner is ignored."""
+    a, b = committed.get("nodes", {}), fresh.get("nodes", {})
+    ids = sorted(i for i in set(a) | set(b) if a.get(i) != b.get(i))
+    fields = sorted(k for k in (set(committed) | set(fresh)) - {"nodes", "_generated"} if committed.get(k) != fresh.get(k))
+    return ids, fields
+
+
+def _annotation(text: str) -> str:
+    """One GitHub Actions workflow-command line (message escaping per the runner's rules)."""
+    return "::warning title=roadmap/state.json is stale::" + text.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+
+
+def stale_warning(root, commit: str, fresh: dict):
+    """The ::warning:: line when the committed state.json at `commit` differs from the fresh build, else None."""
+    old = committed_state(root, commit)
+    if old is None:
+        return _annotation(f"{STATE_JSON} is missing or unreadable at {commit[:12]}; run `python tools/fy roadmap build` and commit it.")
+    ids, fields = differing(old, fresh)
+    if not ids and not fields:
+        return None
+    named = ", ".join(ids[:MAX_NAMED]) + (f" (and {len(ids) - MAX_NAMED} more)" if len(ids) > MAX_NAMED else "")
+    parts = [f"{len(ids)} node(s): {named}"] if ids else []
+    if fields:
+        parts.append("fields: " + ", ".join(fields))
+    return _annotation(f"{STATE_JSON} at {commit[:12]} differs from a fresh build in " + "; ".join(parts) +
+                       ". The issues were computed from the fresh build. A commit that bypassed the pre-commit hook leaves it stale: run `python tools/fy roadmap build`.")
 
 
 def default_gh(args, input=None) -> str:
@@ -113,21 +177,39 @@ def default_gh(args, input=None) -> str:
 
 
 def run(root, before: str, after: str, repo: str, dry_run=False, gh=None, say=print) -> int:
-    """Open the issues for the nodes that entered the frontier between two commits. Exit code 0 (including 'nothing to open'), or 1 on an unusable after state or a gh failure."""
+    """Open the issues for the nodes that entered the frontier between two commits. Exit code 0 (including 'nothing to open'), or 1 on an unusable after commit or roadmap, or a gh failure."""
     gh = gh or default_gh
     try:
-        after_state = read_state_at(root, after)
+        after_sha = resolve_commit(root, after)
     except StateError as e:
-        say(f"notify: no usable after state: {e}")
+        say(f"notify: no usable after state: {after} is not a commit here ({e})")
         return 1
     if not before or re.fullmatch("0+", before):
         say("notify: no before state (no previous commit); opening nothing.")
         return 0
     try:
-        before_state = read_state_at(root, before)
-    except StateError as e:
-        say(f"notify: no before state ({e}); opening nothing.")
+        before_sha = resolve_commit(root, before)
+    except StateError:
+        say(f"notify: no before state ({before[:12]} is not a commit in this clone); opening nothing.")
         return 0
+    try:
+        with worktree(root, after_sha) as wt:
+            after_state, errs = fresh_state(wt)
+        if after_state is None:
+            say(f"notify: no usable after state: the roadmap at {after_sha[:12]} has {len(errs)} error(s), first: {errs[0].code}: {errs[0].message}")
+            return 1
+        with worktree(root, before_sha) as wt:
+            before_state, errs = fresh_state(wt)
+    except StateError as e:
+        say(f"notify: could not check out the commits: {e}")
+        return 1
+    if before_state is None:
+        say(f"notify: no before state (the roadmap at {before_sha[:12]} has {len(errs)} error(s)); opening nothing.")
+        return 0
+    warning = stale_warning(root, after_sha, after_state)
+    if warning:
+        say(warning)
+    after = after_sha
     link_base = f"https://github.com/{repo}/blob/{after}"
     try:
         if dry_run:
