@@ -4,7 +4,7 @@ Roadmap T8: the viewer (tools/roadmap/viewer/). Two kinds of test.
 Static: the vendored files are the pinned ones, nothing loads from outside the page's own directory, the markup is compatible with the
 server's Content-Security-Policy, and the server serves every file the page needs.
 
-Logic: app.js keeps its pure logic (index, active leaves, outline, keyboard navigation, query resolution, blocker chain, Markdown) in
+Logic: app.js keeps its pure logic (index, icicle layout, keyboard navigation, query resolution, blocker chain, Markdown) in
 window.RoadmapLogic. These tests run it in a headless Chromium-family browser (Edge, Chrome or Chromium) on a generated page, against
 expected values that Python computes independently from the library. They are skipped, with the reason, when no such browser is installed.
 No server and no socket is involved: the page is a file.
@@ -166,7 +166,13 @@ try {
     check("chain flows left to right into " + id, c.edges.every(([b, n]) => col[b] < col[n]) && col[id] === c.cols.length - 1);
   }
   check("a chain is capped", L.blockerChain(D.state.nodes, D.big_chain, 3).count <= 3 && L.blockerChain(D.state.nodes, D.big_chain, 3).truncated === true);
-  // --- brief 2 T7: active leaves and the outline
+  // --- relative depth
+  check("relative depth", L.relativeDepth(idx, D.deep, idx.rootId) === idx.depthOf[D.deep] && L.relativeDepth(idx, idx.rootId, D.deep) === -1);
+
+  // --- brief 2: child order, active leaves
+  for (const [id, want] of Object.entries(D.ordered)) { const got = L.orderedChildren(idx, id); if (!eq(got, want)) check("child order of " + id, false, [got, want]); }
+  checks += Object.keys(D.ordered).length;
+  check("the child order ranks active, ready, expandable, blocked, in_progress, not_started, done", eq(L.CHILD_ORDER, ["active", "ready", "expandable", "blocked", "in_progress", "not_started", "done"]));
   check("active leaves are the leaves marked active", eq(L.activeLeaves(idx), D.active_leaves) && D.active_leaves.length > 0, L.activeLeaves(idx));
   // --- outline
   for (const c of D.outline_filters) {
@@ -178,10 +184,72 @@ try {
   check("an outline opened along a path lists the siblings along it", eq(rowsOf({ open: new Set(D.path_open), text: "", statuses: [] }), D.outline_rows_path));
   check("under a filter the outline lists matches and their ancestors, in tree order, regardless of what is open", eq(rowsOf({ open: new Set(), text: D.outline_filters[0].text, statuses: [] }), D.outline_rows_filter));
   check("outline rows know whether they have children", L.outlineRows(idx, { open: new Set(D.path_open), text: "", statuses: [] }).every((r) => r.hasKids === (D.children[r.id].length > 0)));
-  // --- subtree and relative depth
-  const st = L.subtree(idx, idx.rootId, 2, 0);
-  check("subtree depth", st.children.every((c) => c.children.every((g) => g.children.length === 0 && g.hidden === idx.children[g.id].length)));
-  check("relative depth", L.relativeDepth(idx, D.deep, idx.rootId) === idx.depthOf[D.deep] && L.relativeDepth(idx, idx.rootId, D.deep) === -1);
+  // --- breadcrumb
+  const cp = (f, ex) => L.crumbParts(idx, f, ex).map((q) => (q.kind === "gap" ? "…" : q.id));
+  check("a deep breadcrumb collapses to root, …, grandparent, parent, node", eq(cp(D.deep, false), D.crumb_collapsed), cp(D.deep, false));
+  check("clicking the … shows the full path", eq(cp(D.deep, true), D.crumb_full), cp(D.deep, true));
+  check("a breadcrumb with four ancestors is never collapsed", eq(cp(D.crumb_four, false), D.crumb_four_full) && L.crumbParts(idx, D.crumb_four, false).every((q) => q.kind !== "gap"), cp(D.crumb_four, false));
+  check("the root's breadcrumb is just the root", eq(cp(D.root, false), [D.root]));
+  check("breadcrumb titles are cut at 28 characters and keep the full title", L.crumbParts(idx, D.deep, true).every((q) => q.kind === "gap" || (q.label.length <= 28 && q.full === D.state.nodes[q.id].title && (q.full.length <= 28 ? q.label === q.full : q.label.endsWith("…")))));
+  check("truncateTitle", L.truncateTitle("x".repeat(40), 28).length === 28 && L.truncateTitle("short", 28) === "short");
+  // --- focus layout: the shown nodes, the geometry, the links
+  const LY = L.LAYOUT;
+  const overlaps = (a, b) => a.x < b.x + b.w - 0.5 && b.x < a.x + a.w - 0.5 && a.y < b.y + b.h - 0.5 && b.y < a.y + a.h - 0.5;
+  for (const c of D.shown) {
+    const tag = c.focus + " depth " + c.depth + (c.more.length ? " expanded" : "");
+    const lay = L.focusLayout(idx, c.focus, { depth: c.depth, more: new Set(c.more) });
+    const cards = lay.items.filter((i) => i.kind === "card"), mores = lay.items.filter((i) => i.kind === "more");
+    check("layout shows exactly the expected nodes: " + tag, eq(cards.map((i) => i.id).sort(), c.ids), [cards.length, c.ids.length]);
+    check("layout offers the expected +k more cards: " + tag, eq(mores.map((i) => [i.of, i.count]).sort(), c.more_cards), mores.map((i) => [i.of, i.count]));
+    let bad = [];
+    for (let a = 0; a < lay.items.length; a++) {
+      const A = lay.items[a];
+      if (A.x < 0 || A.y < 0 || A.x + A.w > lay.width + 1e-6 || A.y + A.h > lay.height + 1e-6) bad.push(["outside", A.id]);
+      for (let b = a + 1; b < lay.items.length; b++) if (overlaps(A, lay.items[b])) bad.push(["overlap", A.id, lay.items[b].id]);
+    }
+    check("no card overlaps another or leaves the canvas: " + tag, bad.length === 0, bad.slice(0, 3));
+    const byKey = {}; for (const i of lay.items) byKey[i.key] = i;
+    check("every card but the focus has exactly one link ending on its edge: " + tag, lay.links.length === lay.items.length - 1 && lay.links.every((lk) => {
+      const t = byKey[lk.to], par = byKey[lk.from], pts = lk.pts, last = pts[pts.length - 1], first = pts[0];
+      const onTop = Math.abs(last[1] - t.y) < 0.5 && last[0] >= t.x - 0.5 && last[0] <= t.x + t.w + 0.5;
+      const onLeft = Math.abs(last[0] - t.x) < 0.5 && last[1] >= t.y - 0.5 && last[1] <= t.y + t.h + 0.5;
+      return par && (onTop || onLeft) && Math.abs(first[0] - (par.x + par.w / 2)) < 0.5 && Math.abs(first[1] - (par.y + par.h)) < 0.5;
+    }), lay.links.length);
+    // compact layout: a node's childless children stack in one column; its interior children spread along one row, right of the column
+    const byParent = {}; for (const i of lay.items) if (i.parent) (byParent[i.parent] = byParent[i.parent] || []).push(i);
+    let shapeBad = [];
+    for (const [par, kids] of Object.entries(byParent)) {
+      const column = kids.filter((k) => k.column), row = kids.filter((k) => !k.column);
+      if (column.some((k) => Math.abs(k.x - column[0].x) > 1e-6)) shapeBad.push(["column x", par]);
+      for (let q = 1; q < column.length; q++) if (!(column[q].y > column[q - 1].y)) shapeBad.push(["column order", par]);
+      if (row.some((k) => Math.abs(k.y - row[0].y) > 1e-6)) shapeBad.push(["row y", par]);
+      for (let q = 1; q < row.length; q++) if (!(row[q].x > row[q - 1].x)) shapeBad.push(["row order", par]);
+      if (column.length && row.length && !(row[0].x >= column[0].x + column[0].w)) shapeBad.push(["row right of column", par]);
+      const childless = kids.filter((k) => k.kind === "card" && D.children[k.id].length === 0);
+      if (childless.some((k) => !k.column)) shapeBad.push(["a childless child outside the column", par]);
+      if (kids.some((k) => k.kind === "card" && D.children[k.id].length > 0 && k.column)) shapeBad.push(["an interior child in the column", par]);
+      const want = (D.ordered[par] || []).filter((k) => kids.some((kk) => kk.id === k));
+      const gotCol = column.filter((k) => k.kind === "card").map((k) => k.id), gotRow = row.map((k) => k.id);
+      if (!eq(gotCol, want.filter((k) => D.children[k].length === 0)) || !eq(gotRow, want.filter((k) => D.children[k].length > 0))) shapeBad.push(["child order", par]);
+      if (column.some((k) => k.kind === "more") && column[column.length - 1].kind !== "more") shapeBad.push(["more card last", par]);
+      const P = byKey[par], left = Math.min.apply(null, kids.map((k) => k.x)), right = Math.max.apply(null, kids.map((k) => k.x + k.w));
+      if (P.x + P.w / 2 < left - 0.5 || P.x + P.w / 2 > right + 0.5) shapeBad.push(["parent centred over its children", par]);
+    }
+    check("compact layout: childless children in one column, interior children in one row, in child order: " + tag, shapeBad.length === 0, shapeBad.slice(0, 3));
+  }
+  check("the focus node is the first item at the top left of the canvas padding", (() => { const lay = L.focusLayout(idx, D.root, { depth: 1, more: new Set() }); return lay.items[0].id === D.root && lay.items[0].y === LY.pad; })());
+  check("a node with more than 8 children offers a +k more card at depth 1", L.focusLayout(idx, D.wide, { depth: 1, more: new Set() }).items.some((i) => i.kind === "more" && i.count === D.children[D.wide].length - 8));
+  // --- automatic depth
+  for (const f of [D.root, D.mixed, D.big_interior]) for (const wd of [380, 600, 900, 1300, 2000, 5000]) {
+    const d = L.autoDepth(idx, f, wd);
+    const w = L.focusLayout(idx, f, { depth: d, more: new Set() }).width;
+    const useful = L.usefulDepth(idx, f);
+    const next = d < Math.min(L.MAX_DEPTH, useful) ? L.focusLayout(idx, f, { depth: d + 1, more: new Set() }).width : Infinity;
+    check("auto depth fits the width or is 1: " + f + " @" + wd, d >= 1 && d <= L.MAX_DEPTH && (w <= wd || d === 1), [d, w]);
+    check("auto depth is the largest that fits: " + f + " @" + wd, next > wd, [d, next]);
+  }
+  check("auto depth never falls as the width grows", [D.root, D.mixed, D.big_interior].every((f) => { let last = 0; for (const wd of [300, 500, 800, 1200, 2000, 3000, 8000]) { const d = L.autoDepth(idx, f, wd); if (d < last) return false; last = d; } return true; }));
+  check("useful depth is the height of the subtree", L.usefulDepth(idx, D.root) === D.max_depth, [L.usefulDepth(idx, D.root), D.max_depth]);
   // --- markdown
   const md = (s) => L.renderMarkdown(s);
   // the <\/ below keeps the HTML parser from ending this script element
@@ -206,10 +274,22 @@ document.getElementById("out").textContent = JSON.stringify({ fails, checks });
 """
 
 
-def expected_brief2(rm, live, children, parent, root, depth, deep):
-    """What brief 2's pure sidebar logic must return, computed here from the library's states and the stated rules, never from app.js."""
-    active_leaves = sorted(i for i in live if not children[i] and rm.nodes[i].active)
+CHILD_RANK = ["active", "ready", "expandable", "blocked", "in_progress", "not_started", "done"]
+MAX_KIDS = 8
+TITLE_CUT = 28
 
+
+def cut(title):
+    return title if len(title) <= TITLE_CUT else title[:TITLE_CUT - 1] + "\u2026"
+
+
+def expected_brief2(rm, live, children, parent, root, depth, deep):
+    """What brief 2's pure logic must return, computed here from the library's states and the stated rules, never from app.js."""
+    def rank(i):
+        s = rm.status(i)
+        return CHILD_RANK.index(s) if s in CHILD_RANK else len(CHILD_RANK)
+    ordered = {i: sorted(children[i], key=lambda c: (rank(c), c)) for i in live if children[i]}
+    active_leaves = sorted(i for i in live if not children[i] and rm.nodes[i].active)
     def chain(i):  # root .. i
         out = []
         while i:
@@ -246,8 +326,48 @@ def expected_brief2(rm, live, children, parent, root, depth, deep):
         walk(root, 0)
         return out
     path_open = chain(deep)
-    return {"active_leaves": active_leaves, "outline_filters": filters, "path_open": path_open,
-            "outline_rows_path": rows(set(path_open), None), "outline_rows_filter": rows(set(), set(filters[0]["visible"]))}
+    interior_deep = next(i for i in chain(deep)[::-1] if children[i])
+    four = next(i for i in live if depth(i) == 4)
+    crumb_full = chain(deep)
+    crumb_collapsed = [crumb_full[0], "\u2026", crumb_full[-3], crumb_full[-2], crumb_full[-1]]
+
+    def visible_set(focus, depth_, more):
+        out = []
+
+        def rec(i, level):
+            out.append(i)
+            if level >= depth_ or not children[i]:
+                return
+            kids = ordered[i]
+            take = kids if (i in more or len(kids) <= MAX_KIDS) else kids[:MAX_KIDS]
+            for k in take:
+                rec(k, level + 1)
+        rec(focus, 0)
+        return sorted(out)
+
+    def more_cards(focus, depth_, more):
+        out = []
+
+        def rec(i, level):
+            if level >= depth_ or not children[i]:
+                return
+            kids = ordered[i]
+            if len(kids) > MAX_KIDS and i not in more:
+                out.append([i, len(kids) - MAX_KIDS])
+            for k in (kids if (i in more or len(kids) <= MAX_KIDS) else kids[:MAX_KIDS]):
+                rec(k, level + 1)
+        rec(focus, 0)
+        return sorted(out)
+    wide = max(live, key=lambda i: (len(children[i]), i))  # the 120-node fixture of seed 4 has one node of 9 children
+    mixed = min((i for i in live if sum(1 for c in children[i] if not children[c]) >= 2 and any(children[c] for c in children[i])), key=lambda i: (depth(i), i), default=root)
+    big_interior = max((i for i in live if children[i]), key=lambda i: (sum(1 for _ in rm.graph.descendants(i)), i))
+    shown = []
+    for focus, d, more in [(root, 1, []), (root, 2, []), (root, 3, []), (mixed, 2, []), (mixed, 4, []), (wide, 1, []), (wide, 1, [wide]), (wide, 3, []), (interior_deep, 3, []), (big_interior, 12, [])]:
+        shown.append({"focus": focus, "depth": d, "more": more, "ids": visible_set(focus, d, set(more)), "more_cards": more_cards(focus, d, set(more))})
+    return {"ordered": ordered, "active_leaves": active_leaves, "outline_filters": filters, "path_open": path_open,
+            "outline_rows_path": rows(set(path_open), None), "outline_rows_filter": rows(set(), set(filters[0]["visible"])),
+            "crumb_collapsed": crumb_collapsed, "crumb_full": crumb_full, "crumb_four": four, "crumb_four_full": chain(four),
+            "shown": shown, "wide": wide, "mixed": mixed, "big_interior": big_interior}
 
 
 def expected_for(root):
@@ -294,8 +414,9 @@ def expected_for(root):
     broken = {"nodes": {"rm.a": {"title": "A", "status": "ready", "kind": "leaf", "parent": None},
                         "rm.b": {"title": "B", "status": "ready", "kind": "leaf", "parent": None},
                         "rm.c": {"title": "C", "status": "blocked", "kind": "leaf", "parent": "rm.gone"}}}
+    extra = expected_brief2(rm, live, children, parent, roots[0], depth, deep)
     return {"state": state, "root": roots[0], "live_count": len(live), "children": children, "leaf_total": leaf_total, "max_depth": max(depth(i) for i in live),
-            "nav": nav, "queries": expected_q, "chains": chains, "big_chain": big, "deep": deep, "broken": broken, "broken_roots": 3, **expected_brief2(rm, live, children, parent, roots[0], depth, deep)}
+            "nav": nav, "queries": expected_q, "chains": chains, "big_chain": big, "deep": deep, "broken": broken, "broken_roots": 3, **extra}
 
 
 @pytest.fixture(scope="module")
@@ -318,7 +439,7 @@ def logic_result(tmp_path_factory):
 
 def test_viewer_logic_passes_in_a_real_browser_engine(logic_result):
     assert logic_result["fails"] == [], logic_result["fails"][:8]
-    assert logic_result["checks"] > 400  # the assertions really ran: a count, so an empty harness cannot pass
+    assert logic_result["checks"] > 450  # the assertions really ran: a count, so an empty harness cannot pass
 
 
 def test_the_harness_detects_a_wrong_answer(tmp_path):

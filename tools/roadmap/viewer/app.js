@@ -1,11 +1,12 @@
 /*
- * Roadmap viewer (docs/briefs/architecture/roadmap-brief1.md T8, roadmap-brief2.md T7). One page, no build step, no framework: d3 v7 for the layouts and marked
- * for node bodies, both vendored beside this file. It reads /api/state, /api/node/<id>, /api/pins and /api/events; its write-shaped calls are
- * POST /api/open/<id> (asks the local editor to open a node file) and POST /api/unpin/<id> (the personal pins file).
+ * Roadmap viewer (docs/briefs/architecture/roadmap-brief1.md T8, roadmap-brief2.md T6 to T8). One page, no build step, no framework: d3 v7 for
+ * the hierarchy and marked for node bodies, both vendored beside this file. It reads /api/state, /api/node/<id>, /api/pins and
+ * /api/events; its write-shaped calls are POST /api/open/<id> (asks the local editor to open a node file) and POST /api/pin/<id> and
+ * /api/unpin/<id> (the personal pins file).
  *
- * Part 1 is pure logic (index, outline, active leaves, keyboard navigation, query resolution, blocker chain, Markdown): it touches no DOM and is
- * exposed as window.RoadmapLogic so that tests/test_roadmap_viewer.py can run it in a headless browser. Part 2 is the interface.
- * Setting window.ROADMAP_TEST before this file loads skips Part 2.
+ * Part 1 is pure logic (index, child order, outline, breadcrumb, focus layout, automatic depth, keyboard navigation, query
+ * resolution, blocker chain, Markdown): it touches no DOM and is exposed as window.RoadmapLogic so that tests/test_roadmap_viewer.py can
+ * run it in a headless browser. Part 2 is the interface. Setting window.ROADMAP_TEST before this file loads skips Part 2.
  */
 "use strict";
 (function () {
@@ -22,9 +23,14 @@
     stale: { label: "stale", glyph: "!" },
   };
   const STATUS_ORDER = ["done", "in_progress", "active", "ready", "expandable", "blocked", "not_started", "unknown", "superseded"];
+  const CHILD_ORDER = ["active", "ready", "expandable", "blocked", "in_progress", "not_started", "done"]; // what to look at first
+  const CRUMB_MAX = 28; // characters of a title in the breadcrumb; the full title is the hover text
+  const MAX_DEPTH = 12;
+  const LAYOUT = { cardW: 190, cardH: 76, leafH: 56, gapX: 22, gapY: 44, gapLeaf: 8, pad: 12, maxKids: 8 };
 
   function statusInfo(s) { return STATUS[s] || STATUS.unknown; }
   function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+  function truncateTitle(t, n) { t = String(t); return t.length <= n ? t : t.slice(0, n - 1) + "…"; }
 
   /** The nodes the viewer shows: superseded ones only on request. Children keep id order; the tree is reachable from the roots only. */
   function buildIndex(state, showSuperseded) {
@@ -78,6 +84,18 @@
     return sib[key === "ArrowLeft" ? Math.max(0, i - 1) : Math.min(sib.length - 1, i + 1)];
   }
 
+  function relativeDepth(index, id, focus) { // how far below `focus` the node sits, or -1
+    let n = 0;
+    for (let c = id; c; c = index.parent[c], n++) if (c === focus) return n;
+    return -1;
+  }
+
+  /** The children of a node in the order to look at them: active, ready, expandable, blocked, in progress, not started, done; ties by id. */
+  function childRank(status) { const i = CHILD_ORDER.indexOf(status); return i < 0 ? CHILD_ORDER.length : i; }
+  function orderedChildren(index, id) {
+    return (index.children[id] || []).slice().sort((a, b) => childRank(index.nodes[a].status) - childRank(index.nodes[b].status) || (a < b ? -1 : a > b ? 1 : 0));
+  }
+
   /** Every leaf with `active: true`: what is being worked on, derived from the repo (the same set the memos and Code see). */
   function activeLeaves(index) {
     return Object.keys(index.depthOf).filter((id) => !(index.children[id] || []).length && index.nodes[id].kind === "leaf" && index.nodes[id].active === true).sort();
@@ -115,20 +133,90 @@
     return rows;
   }
 
-  /** The nested object d3.hierarchy reads: `depth` levels below the focus; `hidden` counts children cut off at the limit. */
-  function subtree(index, id, depth, level) {
-    const kids = index.children[id] || [];
-    const open = level < depth;
-    return { id, hidden: open ? 0 : kids.length, children: open ? kids.map((k) => subtree(index, k, depth, level + 1)) : [] };
+  /** The breadcrumb: beyond four ancestors it reads root › … › grandparent › parent › node until the … is clicked (`expanded`). */
+  function crumbParts(index, focus, expanded) {
+    const anc = ancestors(index, focus).reverse(); // root .. parent
+    const part = (id, kind) => ({ kind, id, label: truncateTitle(index.nodes[id].title, CRUMB_MAX), full: index.nodes[id].title });
+    let shown = anc.map((id) => part(id, "node"));
+    if (!expanded && anc.length > 4) shown = [part(anc[0], "node"), { kind: "gap" }, part(anc[anc.length - 2], "node"), part(anc[anc.length - 1], "node")];
+    return [...shown, part(focus, "cur")];
   }
 
-  function relativeDepth(index, id, focus) { // how far below `focus` the node sits, or -1
-    let n = 0;
-    for (let c = id; c; c = index.parent[c], n++) if (c === focus) return n;
-    return -1;
+  function usefulDepth(index, id) { // levels below `id`
+    let m = 0;
+    (function f(x, d) { if (d > m) m = d; for (const k of index.children[x] || []) f(k, d + 1); })(id, 0);
+    return m;
   }
 
-  /** difflib.SequenceMatcher.ratio() with a = candidate and b = query, no junk: what Python's get_close_matches ranks by. */
+  /**
+   * The compact layout of a node and `depth` levels below it, in canvas pixels. Under each node its childless children stack in one column
+   * (left) and its interior children spread along one row (right of the column), both in child order; a node with more than 8 children shows
+   * the first 8 and a "+k more" card at the foot of the column, which expands in place (`o.more` holds the ids expanded, and the card then
+   * reads "show fewer"). Returns {items, links, width, height}. An item is {key, id, kind: card|more|fewer, x, y, w, h, hidden, parent,
+   * column}; a link is {from, to, pts} (orthogonal, from the parent's bottom centre to the child's top or left edge).
+   */
+  function focusLayout(index, focus, o) {
+    const Y = LAYOUT, depth = o.depth, more = o.more || new Set();
+    const items = [], links = [];
+    const childless = (id) => !(index.children[id] || []).length;
+    function measure(id, level) {
+      const kids = orderedChildren(index, id);
+      if (!kids.length) return { id, w: Y.cardW, h: Y.leafH, cut: 0, leaf: true };
+      if (level >= depth) return { id, w: Y.cardW, h: Y.cardH, cut: kids.length, leaf: false };
+      const expanded = more.has(id), over = kids.length > Y.maxKids;
+      const shown = over && !expanded ? kids.slice(0, Y.maxKids) : kids;
+      const leaves = shown.filter(childless), inter = shown.filter((k) => !childless(k)).map((k) => measure(k, level + 1));
+      const tail = over ? { count: kids.length - Y.maxKids, expanded } : null;
+      const colN = leaves.length + (tail ? 1 : 0);
+      const colH = colN ? colN * Y.leafH + (colN - 1) * Y.gapLeaf : 0, colW = colN ? Y.cardW : 0;
+      const rowW = colW + (colN && inter.length ? Y.gapX : 0) + inter.reduce((s, b) => s + b.w, 0) + Math.max(0, inter.length - 1) * Y.gapX;
+      const rowH = Math.max(colH, ...inter.map((b) => b.h), 0);
+      return { id, w: Math.max(Y.cardW, rowW), h: Y.cardH + Y.gapY + rowH, leaf: false, cut: 0, leaves, inter, tail, colN, rowW, rowH };
+    }
+    function place(b, x0, y0, parent, column) {
+      const x = x0 + (b.w - Y.cardW) / 2;
+      const it = { key: b.id, id: b.id, kind: "card", x, y: y0, w: Y.cardW, h: b.leaf ? Y.leafH : Y.cardH, hidden: b.cut, parent, column };
+      items.push(it);
+      if (b.leaves === undefined) return it;
+      const rowX = x0 + (b.w - b.rowW) / 2, rowY = y0 + Y.cardH + Y.gapY, px = x + Y.cardW / 2, py = y0 + Y.cardH, busY = rowY - Y.gapY / 2;
+      let cx = rowX;
+      if (b.colN) {
+        const spineX = cx - 8;
+        let cy = rowY;
+        const col = b.leaves.map((id) => ({ id, kind: "card" }));
+        if (b.tail) col.push({ kind: b.tail.expanded ? "fewer" : "more" });
+        for (const c of col) {
+          const child = c.kind === "card"
+            ? { key: c.id, id: c.id, kind: "card", x: cx, y: cy, w: Y.cardW, h: Y.leafH, hidden: 0, parent: b.id, column: true }
+            : { key: "more:" + b.id, id: null, of: b.id, kind: c.kind, count: b.tail.count, x: cx, y: cy, w: Y.cardW, h: Y.leafH, hidden: 0, parent: b.id, column: true };
+          items.push(child);
+          links.push({ from: b.id, to: child.key, pts: [[px, py], [px, busY], [spineX, busY], [spineX, cy + Y.leafH / 2], [cx, cy + Y.leafH / 2]] });
+          cy += Y.leafH + Y.gapLeaf;
+        }
+        cx += Y.cardW + Y.gapX;
+      }
+      for (const sb of b.inter) {
+        const child = place(sb, cx, rowY, b.id, false);
+        const tx = child.x + Y.cardW / 2;
+        links.push({ from: b.id, to: child.key, pts: [[px, py], [px, busY], [tx, busY], [tx, rowY]] });
+        cx += sb.w + Y.gapX;
+      }
+      return it;
+    }
+    const block = measure(focus, 0);
+    place(block, Y.pad, Y.pad, null, false);
+    return { items, links, width: block.w + 2 * Y.pad, height: block.h + 2 * Y.pad };
+  }
+
+  /** The largest depth (1 to 12) whose layout is no wider than `width`, and 1 when none is. Collapsed "+k more" cards are assumed. */
+  function autoDepth(index, focus, width) {
+    const top = Math.min(MAX_DEPTH, usefulDepth(index, focus));
+    let best = 1;
+    for (let d = 1; d <= top; d++) { if (focusLayout(index, focus, { depth: d }).width <= width) best = d; else break; }
+    return best;
+  }
+
+  /** Difflib.SequenceMatcher.ratio() with a = candidate and b = query, no junk: what Python's get_close_matches ranks by. */
   function matchRatio(a, b) {
     const la = a.length, lb = b.length;
     if (la + lb === 0) return 1;
@@ -249,22 +337,21 @@
   }
   function routeFormat(id) { return "#/node/" + encodeURIComponent(id); }
 
-  window.RoadmapLogic = { VROOT, STATUS, STATUS_ORDER, statusInfo, esc, buildIndex, ancestors, navigate, subtree, relativeDepth, activeLeaves, outlineVisible, outlineRows, matchRatio, resolveQuery,
-    blockerChain, criterionText, safeHref, renderMarkdown, routeParse, routeFormat };
+  window.RoadmapLogic = { VROOT, STATUS, STATUS_ORDER, CHILD_ORDER, LAYOUT, MAX_DEPTH, statusInfo, esc, truncateTitle, buildIndex, ancestors,
+    navigate, relativeDepth, orderedChildren, activeLeaves, outlineVisible, outlineRows, crumbParts, usefulDepth, focusLayout, autoDepth, matchRatio, resolveQuery, blockerChain, criterionText, safeHref, renderMarkdown, routeParse, routeFormat };
   if (window.ROADMAP_TEST) return;
 
   /* ------------------------------------------------------------------ Part 2: interface */
 
   const $ = (id) => document.getElementById(id);
   const SVGNS = "http://www.w3.org/2000/svg";
-  const CARD_W = 190, CARD_H = 74, GAP_X = 22, GAP_Y = 54, PAD = 6;
   const TOKEN = (document.querySelector('meta[name="roadmap-token"]') || {}).content || "";
-
   const TABS = ["outline", "frontier", "problems"];
   const STATUS_CHIPS = ["ready", "active", "blocked", "expandable", "done"];
 
-  const S = { state: null, index: null, focus: null, selected: null, tab: "outline", depth: 3, showSuperseded: false,
-    connected: null, version: null, centre: false, nodeCache: new Map(), firstRenderMs: null, notice: null, candidates: [], candOn: -1, loadedOnce: false,
+  const S = { state: null, index: null, focus: null, selected: null, tab: "outline", showSuperseded: false, connected: null, version: null, nodeCache: new Map(),
+    firstRenderMs: null, notice: null, candidates: [], candOn: -1,
+    depthOverride: null, more: new Set(), crumbsOpen: false, fv: { k: 1, x: 0, y: 0 }, fitPending: true, layout: null, shownDepth: 1,
     open: new Set(), closed: new Set(), chips: new Set(), scrollOutline: true, pins: [], pinSet: new Set(), workCollapsed: false };
 
   function pref(key, value) { // per-viewer conveniences only; the page works without storage
@@ -297,8 +384,11 @@
     for (const c of kids.flat(Infinity)) if (c) e.append(c.nodeType ? c : document.createTextNode(String(c)));
     return e;
   }
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
   const node = (id) => S.index.nodes[id];
+  const isInterior = (id) => (S.index.children[id] || []).length > 0;
+  const isPinned = (id) => S.pinSet.has(id);
   function swatch(status, stub) {
     const i = statusInfo(status);
     return h("span", { class: "sw s-" + status + (stub ? " stub" : ""), "aria-hidden": "true" }, i.glyph);
@@ -319,6 +409,40 @@
     toast.timer = setTimeout(() => t.classList.remove("show"), isError ? 12000 : 2600); // an error stays until read; a click dismisses it
   }
 
+  /* ---- pan and zoom */
+  function viewport(el, o) {
+    let drag = null;
+    const vp = { moved: false };
+    el.addEventListener("wheel", (ev) => {
+      if (!o.enabled()) return;
+      ev.preventDefault();
+      const r = el.getBoundingClientRect(), t = o.get();
+      const k = clamp(t.k * Math.exp(-ev.deltaY * 0.0015), o.minK(), o.maxK());
+      const px = ev.clientX - r.left, py = ev.clientY - r.top;
+      o.set({ k, x: px - (px - t.x) * (k / t.k), y: py - (py - t.y) * (k / t.k) });
+    }, { passive: false });
+    el.addEventListener("pointerdown", (ev) => {
+      if (!o.enabled() || ev.button !== 0 || (ev.target.closest && ev.target.closest("button, input, a"))) return;
+      drag = { x: ev.clientX, y: ev.clientY, t: o.get(), moved: false, id: ev.pointerId };
+    });
+    el.addEventListener("pointermove", (ev) => {
+      if (!drag) return;
+      const dx = ev.clientX - drag.x, dy = ev.clientY - drag.y;
+      if (!drag.moved && Math.hypot(dx, dy) < 4) return;
+      if (!drag.moved) { drag.moved = true; try { el.setPointerCapture(drag.id); } catch (e) { /* no such pointer */ } el.classList.add("panning"); }
+      o.set({ k: drag.t.k, x: drag.t.x + dx, y: drag.t.y + dy });
+    });
+    const end = () => {
+      if (!drag) return;
+      if (drag.moved) { vp.moved = true; setTimeout(() => { vp.moved = false; }, 0); } // the click that follows a drag is not a click
+      drag = null;
+      el.classList.remove("panning");
+    };
+    el.addEventListener("pointerup", end);
+    el.addEventListener("pointercancel", end);
+    return vp;
+  }
+
   /* ---- navigation */
   function go(id) {
     if (!S.index.nodes[id]) { toast("No node " + id); return; }
@@ -330,8 +454,11 @@
     S.focus = id;
     S.selected = id;
     S.notice = notice || null;
-    S.centre = true; // the next render scrolls the new focus into view
+    S.depthOverride = null; // the +/- controls last until the focus changes
+    S.more = new Set();
+    S.crumbsOpen = false;
     S.closed = new Set();
+    S.fitPending = true;
     S.scrollOutline = true;
     renderAll();
   }
@@ -339,13 +466,10 @@
     if (!S.index.nodes[id] || id === S.selected) return;
     S.selected = id;
     const rd = relativeDepth(S.index, id, S.focus);
-    if (rd > S.depth) S.depth = rd; // a keyboard move below the cut-off pulls the cut-off down with it
+    if (rd > S.shownDepth) S.depthOverride = Math.min(MAX_DEPTH, rd); // a keyboard move below the cut-off pulls the cut-off down with it
     renderAll();
-    const el = document.querySelector('#view .card[data-id="' + CSS.escape(id) + '"]');
-    if (el && el.scrollIntoView) el.scrollIntoView({ block: "nearest", inline: "nearest" });
+    ensureCardVisible(id);
   }
-  const isInterior = (id) => (S.index.children[id] || []).length > 0;
-  const isPinned = (id) => S.pinSet.has(id);
 
   /* ---- pins */
   async function loadPins() {
@@ -365,6 +489,12 @@
       setPins(j.pins);
       renderAll();
     } catch (e) { toast("Could not " + (on ? "pin " : "unpin ") + id + ": " + e.message, true); }
+  }
+  function togglePin(id) { if (id && id !== VROOT) setPin(id, !isPinned(id)); }
+  function starButton(id, label) {
+    const on = isPinned(id);
+    return h("button", { class: "star" + (on ? " on" : ""), "aria-pressed": String(on), "aria-label": (on ? "Unpin " : "Pin ") + node(id).title, title: (on ? "Unpin" : "Pin") + " (p)",
+      onclick: (ev) => { ev.stopPropagation(); togglePin(id); } }, (on ? "★" : "☆") + (label ? " " + (on ? "Unpin" : "Pin") : ""));
   }
 
   /* ---- editor and clipboard */
@@ -415,6 +545,7 @@
     const buttons = h("div", { class: "btns" },
       h("button", { onclick: () => openInEditor(id), title: "Open the node file in your editor (e)" }, "Open in editor"),
       h("button", { onclick: () => copyId(id) }, "Copy id"),
+      starButton(id, true),
       page ? null : h("button", { onclick: () => go(id), title: "Make this the focus (Enter)" }, "Focus here"));
     root.append(
       h("div", { class: "statusline" }, statusPill(n), h("span", { class: "muted" }, n.kind + (n.kind === "stub" ? " (not yet decomposed)" : "")), est(n) ? h("span", {}, est(n)) : null),
@@ -439,7 +570,7 @@
     if (isInterior(id)) { const p = idx.progress[id]; row("Progress", p.done + " of " + p.total + " leaves and stubs done"); }
     root.append(kv);
     add(root, chipGroup("Blocked by (effective)", n.effective_blockers, n.uncleared_blockers), chipGroup("Blocks (dependents)", n.dependents),
-      isInterior(id) ? chipGroup("Children", idx.children[id]) : null);
+      isInterior(id) ? chipGroup("Children", orderedChildren(idx, id)) : null);
     const slot = h("div", { class: "md-slot" });
     root.append(slot);
     nodeInfo(id).then((info) => {
@@ -456,17 +587,29 @@
   }
 
   /* ---- cards */
-  function cardEl(id, left, top, w, hgt, hiddenKids) {
-    const n = node(id), idx = S.index;
-    const info = statusInfo(n.status);
+  function cardEl(item, o) {
+    const id = item.id, n = node(id), idx = S.index;
+    const info = statusInfo(n.status), interior = isInterior(id);
     let meta;
-    if (isInterior(id)) meta = [h("b", {}, info.glyph + " " + info.label), " · " + idx.progress[id].done + "/" + idx.progress[id].total + " done"];
+    if (interior) meta = [h("b", {}, info.glyph + " " + info.label), " · " + idx.progress[id].done + "/" + idx.progress[id].total + " done"];
     else meta = [h("b", {}, info.glyph + " " + info.label), n.kind === "stub" ? " · stub" : est(n) ? " · " + est(n) : ""];
-    const c = h("div", { class: "card" + (n.kind === "stub" ? " stub" : "") + (n.status === "superseded" ? " superseded" : ""), role: "button", tabindex: "0", "data-id": id,
-      "aria-label": n.title + ", " + info.label, style: "left:" + left + "px;top:" + top + "px;" + (w ? "width:" + w + "px;height:" + hgt + "px;" : "") + "border-left-color:var(--c-" + n.status + ")",
-      onclick: () => select(id), ondblclick: () => go(id), onkeydown: (ev) => { if (ev.key === "Enter") { ev.preventDefault(); go(id); } } },
-      h("div", { class: "ct" }, n.title), h("div", { class: "cm" }, meta), hiddenKids ? h("div", { class: "more", title: hiddenKids + " children below the depth limit" }, "⋯ " + hiddenKids) : null);
-    return c;
+    const p = interior ? idx.progress[id] : null;
+    const pct = p && p.total ? 100 * p.done / p.total : 0;
+    return h("div", { class: "card" + (n.kind === "stub" ? " stub" : "") + (n.status === "superseded" ? " superseded" : "") + (item.column ? " leafcard" : ""), role: "button", tabindex: "0", "data-id": id,
+      "aria-label": n.title + ", " + info.label, style: "left:" + item.x + "px;top:" + item.y + "px;width:" + item.w + "px;height:" + item.h + "px;border-left-color:var(--c-" + n.status + ")",
+      onclick: () => { if (S.vp && S.vp.moved) return; select(id); }, ondblclick: () => go(id), onkeydown: (ev) => { if (ev.key === "Enter") { ev.preventDefault(); go(id); } } },
+      h("div", { class: "ct" }, n.title), h("div", { class: "cm" }, meta),
+      interior ? h("div", { class: "bar", "aria-hidden": "true" }, h("i", { style: "width:" + pct.toFixed(1) + "%" })) : null,
+      item.hidden ? h("div", { class: "more", title: item.hidden + " children below the depth limit" }, "⋯ " + item.hidden) : null,
+      o && o.noStar ? null : starButton(id));
+  }
+  function moreCardEl(item) {
+    const expanded = item.kind === "fewer";
+    return h("div", { class: "card more-card", role: "button", tabindex: "0", "data-more": item.of, "aria-label": expanded ? "Show fewer children" : item.count + " more children",
+      style: "left:" + item.x + "px;top:" + item.y + "px;width:" + item.w + "px;height:" + item.h + "px",
+      onclick: () => { if (S.vp && S.vp.moved) return; if (expanded) S.more.delete(item.of); else S.more.add(item.of); renderView(); },
+      onkeydown: (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); ev.target.click(); } } },
+      h("div", { class: "ct" }, expanded ? "Show fewer" : "+" + item.count + " more"), h("div", { class: "cm" }, expanded ? "collapse to the first 8" : "show the rest here"));
   }
 
   /* ---- sidebar */
@@ -594,93 +737,134 @@
     if (!scrolling) body.scrollTop = keep;
   }
 
-  /* ---- main view */
+  /* ---- main view: crumbs */
   function renderCrumbs() {
     const idx = S.index, bar = $("crumbs");
     bar.replaceChildren();
     if (S.focus === null) return;
-    const chain = [...ancestors(idx, S.focus)].reverse();
-    chain.forEach((a) => bar.append(h("button", { onclick: () => go(a), title: statusInfo(node(a).status).label }, node(a).title), h("span", { class: "sep", "aria-hidden": "true" }, "›")));
-    bar.append(h("span", { class: "cur", "aria-current": "page" }, node(S.focus).title));
+    const sep = () => h("span", { class: "sep", "aria-hidden": "true" }, "›");
+    for (const p of crumbParts(idx, S.focus, S.crumbsOpen)) {
+      if (p.kind === "gap") bar.append(h("button", { class: "crumb-gap", title: "Show the whole path", "aria-label": "Show the whole path", onclick: () => { S.crumbsOpen = true; renderCrumbs(); } }, "…"), sep());
+      else if (p.kind === "node") bar.append(h("button", { title: p.full, onclick: () => go(p.id) }, p.label), sep());
+      else bar.append(h("span", { class: "cur", "aria-current": "page", title: p.full }, p.label));
+    }
     const tools = h("div", { class: "tools" });
     if (isInterior(S.focus)) {
       tools.append("Depth",
-        h("button", { "aria-label": "Show one level fewer", onclick: () => { S.depth = Math.max(1, S.depth - 1); pref("depth", S.depth); renderAll(); } }, "−"),
-        h("span", { "aria-live": "polite" }, String(S.depth)),
-        h("button", { "aria-label": "Show one level more", onclick: () => { S.depth = Math.min(12, S.depth + 1); pref("depth", S.depth); renderAll(); } }, "+"));
+        h("button", { "aria-label": "Show one level fewer", onclick: () => { S.depthOverride = Math.max(1, S.shownDepth - 1); S.fitPending = true; renderAll(); } }, "−"),
+        h("span", { id: "depthval", "aria-live": "polite", title: S.depthOverride === null ? "chosen to fit the width of this view" : "set by hand until the focus changes" }, String(S.shownDepth)),
+        h("button", { "aria-label": "Show one level more", onclick: () => { S.depthOverride = Math.min(MAX_DEPTH, S.shownDepth + 1); S.fitPending = true; renderAll(); } }, "+"),
+        h("button", { id: "fitbtn", title: "Fit the view (f)", onclick: () => fitView() }, "Fit"));
     }
     const cb = h("input", { type: "checkbox", id: "supcb" });
     cb.checked = S.showSuperseded;
-    cb.addEventListener("change", () => { S.showSuperseded = cb.checked; pref("superseded", cb.checked ? 1 : 0); S.index = buildIndex(S.state, S.showSuperseded); ensureValid(); renderAll(); });
+    cb.addEventListener("change", () => { S.showSuperseded = cb.checked; pref("superseded", cb.checked ? 1 : 0); S.index = buildIndex(S.state, S.showSuperseded); ensureValid(); S.fitPending = true; renderAll(); });
     tools.append(h("label", {}, cb, " show superseded"));
     bar.append(tools);
   }
 
+  /* ---- main view: the focus tree, panned and zoomed */
   function rectEdge(cx, cy, w, hh, tx, ty) { // where the line from the rectangle's centre towards (tx, ty) leaves the rectangle
     const dx = tx - cx, dy = ty - cy;
     if (!dx && !dy) return [cx, cy];
     const k = Math.min(dx ? (w / 2) / Math.abs(dx) : Infinity, dy ? (hh / 2) / Math.abs(dy) : Infinity);
     return [cx + dx * k, cy + dy * k];
   }
+  const stageEl = () => document.querySelector("#view .stage");
+  function applyFv() {
+    const s = stageEl();
+    if (!s) return;
+    const t = S.fv;
+    s.style.transform = "translate(" + t.x.toFixed(2) + "px," + t.y.toFixed(2) + "px) scale(" + t.k.toFixed(4) + ")";
+    s.dataset.k = t.k.toFixed(4); s.dataset.tx = t.x.toFixed(2); s.dataset.ty = t.y.toFixed(2);
+  }
+  function fitView() {
+    const view = $("view"), lay = S.layout;
+    if (!lay || !stageEl()) return;
+    const w = view.clientWidth || 1;
+    const k = clamp(Math.min(1, w / lay.width), 0.25, 1);
+    view.dataset.fitwidth = String(Math.round(w)); // what this fit was computed against
+    S.fv = { k, x: Math.max(0, (w - lay.width * k) / 2), y: 0 };
+    applyFv();
+  }
+  function ensureCardVisible(id) {
+    const lay = S.layout, view = $("view"), it = lay && lay.items.find((i) => i.kind === "card" && i.id === id);
+    if (!it || !stageEl()) return;
+    const t = S.fv, m = 16, W = view.clientWidth, H = view.clientHeight;
+    const l = t.x + it.x * t.k, r = t.x + (it.x + it.w) * t.k, tp = t.y + it.y * t.k, b = t.y + (it.y + it.h) * t.k;
+    let dx = 0, dy = 0;
+    if (l < m) dx = m - l; else if (r > W - m) dx = W - m - r;
+    if (tp < m) dy = m - tp; else if (b > H - m) dy = H - m - b;
+    if (dx || dy) { S.fv = { k: t.k, x: t.x + dx, y: t.y + dy }; applyFv(); }
+  }
+
+  function effectiveDepth() {
+    if (S.depthOverride !== null) return clamp(S.depthOverride, 1, MAX_DEPTH);
+    return autoDepth(S.index, S.focus, $("view").clientWidth || 800);
+  }
 
   function renderTreeView(view) {
+    view.className = "tree-mode";
     const idx = S.index;
-    const root = d3.hierarchy(subtree(idx, S.focus, S.depth, 0), (d) => d.children);
-    d3.tree().nodeSize([CARD_W + GAP_X, CARD_H + GAP_Y]).separation(() => 1)(root);
-    let minX = Infinity, maxX = -Infinity, maxY = 0;
-    root.each((d) => { minX = Math.min(minX, d.x); maxX = Math.max(maxX, d.x); maxY = Math.max(maxY, d.y); });
-    const W = maxX - minX + CARD_W + 2 * PAD, H = maxY + CARD_H + 2 * PAD;
+    const depth = effectiveDepth();
+    if (depth !== S.shownDepth) S.fitPending = true;
+    S.shownDepth = depth;
+    view.dataset.depth = String(depth);
+    view.dataset.auto = S.depthOverride === null ? "1" : "0";
+    const lay = focusLayout(idx, S.focus, { depth, more: S.more });
+    S.layout = lay;
     const pos = {};
-    root.each((d) => { pos[d.data.id] = { left: d.x - minX + PAD, top: d.y + PAD }; });
-    const canvas = h("div", { class: "canvas", style: "width:" + W + "px;height:" + H + "px" });
-    const svg = sv("svg", { class: "links", width: W, height: H },
+    for (const it of lay.items) if (it.kind === "card") pos[it.id] = it;
+    const stage = h("div", { class: "stage", style: "width:" + lay.width + "px;height:" + lay.height + "px" });
+    const svg = sv("svg", { class: "links", width: lay.width, height: lay.height },
       sv("defs", {}, ...["blocker", "dependent"].map((k) => sv("marker", { id: "arrow-" + k, viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto-start-reverse" },
         sv("path", { d: "M0,0 L10,5 L0,10 z", style: "fill:var(--edge-" + k + ")" })))));
-    root.links().forEach((l) => {
-      const a = pos[l.source.data.id], b = pos[l.target.data.id];
-      const x1 = a.left + CARD_W / 2, y1 = a.top + CARD_H, x2 = b.left + CARD_W / 2, y2 = b.top, ym = (y1 + y2) / 2;
-      svg.append(sv("path", { class: "link", d: "M" + x1 + "," + y1 + " C" + x1 + "," + ym + " " + x2 + "," + ym + " " + x2 + "," + y2 }));
-    });
-    canvas.append(svg);
+    for (const l of lay.links) svg.append(sv("path", { class: "link", d: "M" + l.pts.map((p) => p[0] + "," + p[1]).join(" L") }));
+    stage.append(svg);
     const rel = relatedSets();
-    root.each((d) => {
-      const id = d.data.id, p = pos[id];
-      const c = cardEl(id, p.left, p.top, 0, 0, d.data.hidden);
-      if (id === S.selected) c.classList.add("sel");
-      if (rel.blockers.has(id)) c.classList.add("blocker");
-      if (rel.dependents.has(id)) c.classList.add("dependent");
-      canvas.append(c);
-    });
+    for (const it of lay.items) {
+      if (it.kind !== "card") { stage.append(moreCardEl(it)); continue; }
+      const c = cardEl(it);
+      if (it.id === S.selected) c.classList.add("sel");
+      if (rel.blockers.has(it.id)) c.classList.add("blocker");
+      if (rel.dependents.has(it.id)) c.classList.add("dependent");
+      stage.append(c);
+    }
     const sel = S.selected && pos[S.selected];
     if (sel) {
       const draw = (other, kind) => {
         const o = pos[other];
         if (!o || other === S.selected) return;
         const from = kind === "blocker" ? o : sel, to = kind === "blocker" ? sel : o; // the arrow runs from the blocker to the node it holds up
-        const fc = [from.left + CARD_W / 2, from.top + CARD_H / 2], tc = [to.left + CARD_W / 2, to.top + CARD_H / 2];
-        if (Math.abs(fc[1] - tc[1]) < CARD_H / 2) { // same row: the gap between neighbours is too small for an arrow, so loop under the cards
-          const y = from.top + CARD_H + 4, drop = 30 + Math.min(40, Math.abs(tc[0] - fc[0]) / 14);
-          svg.append(sv("path", { class: "edge " + kind, d: "M" + fc[0] + "," + y + " C" + fc[0] + "," + (y + drop) + " " + tc[0] + "," + (y + drop) + " " + tc[0] + "," + (to.top + CARD_H + 4), "marker-end": "url(#arrow-" + kind + ")" }),
-            sv("text", { class: "edgelabel " + kind, x: (fc[0] + tc[0]) / 2, y: y + drop * 0.75 + 4, "text-anchor": "middle" }, kind === "blocker" ? "blocks selection" : "waits on selection"));
+        const fc = [from.x + from.w / 2, from.y + from.h / 2], tc = [to.x + to.w / 2, to.y + to.h / 2];
+        const label = kind === "blocker" ? "blocks selection" : "waits on selection";
+        if (Math.abs(fc[1] - tc[1]) < Math.max(from.h, to.h) / 2) { // same row: the gap between neighbours is too small for an arrow, so loop under the cards
+          const y = from.y + from.h + 4, drop = 30 + Math.min(40, Math.abs(tc[0] - fc[0]) / 14);
+          svg.append(sv("path", { class: "edge " + kind, d: "M" + fc[0] + "," + y + " C" + fc[0] + "," + (y + drop) + " " + tc[0] + "," + (y + drop) + " " + tc[0] + "," + (to.y + to.h + 4), "marker-end": "url(#arrow-" + kind + ")" }),
+            sv("text", { class: "edgelabel " + kind, x: (fc[0] + tc[0]) / 2, y: y + drop * 0.75 + 4, "text-anchor": "middle" }, label));
           return;
         }
-        const a = rectEdge(fc[0], fc[1], CARD_W + 6, CARD_H + 6, tc[0], tc[1]), b = rectEdge(tc[0], tc[1], CARD_W + 10, CARD_H + 10, fc[0], fc[1]);
+        const a = rectEdge(fc[0], fc[1], from.w + 6, from.h + 6, tc[0], tc[1]), b = rectEdge(tc[0], tc[1], to.w + 10, to.h + 10, fc[0], fc[1]);
         const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
         const nx = -(b[1] - a[1]) * 0.12, ny = (b[0] - a[0]) * 0.12; // a gentle bow so parallel edges do not overlap the tree links
         svg.append(sv("path", { class: "edge " + kind, d: "M" + a[0] + "," + a[1] + " Q" + (mx + nx) + "," + (my + ny) + " " + b[0] + "," + b[1], "marker-end": "url(#arrow-" + kind + ")" }),
-          sv("text", { class: "edgelabel " + kind, x: mx + nx / 2, y: my + ny / 2, "text-anchor": "middle" }, kind === "blocker" ? "blocks selection" : "waits on selection"));
+          sv("text", { class: "edgelabel " + kind, x: mx + nx / 2, y: my + ny / 2, "text-anchor": "middle" }, label));
       };
       (node(S.selected).effective_blockers || []).forEach((b) => draw(b, "blocker"));
       (node(S.selected).dependents || []).forEach((d) => draw(d, "dependent"));
     }
-    view.append(canvas);
-    if (S.centre) { view.scrollLeft = Math.max(0, pos[S.focus].left + CARD_W / 2 + 18 - view.clientWidth / 2); view.scrollTop = 0; S.centre = false; }
+    view.append(stage);
+    if (S.fitPending) { S.fitPending = false; fitView(); } else applyFv();
   }
 
   function renderPage(view) {
+    view.className = "page-mode";
+    delete view.dataset.depth; delete view.dataset.auto;
+    S.layout = null;
     const id = S.focus, n = node(id);
     const page = detailEl(id, true);
     const unc = n.uncleared_blockers || [];
+    const PAD = 6;
     if (unc.length) {
       const ch = blockerChain(S.state.nodes, id, 60);
       const w = 168, hh = 62, gx = 56, gy = 14;
@@ -697,23 +881,25 @@
         svg.append(sv("path", { class: "edge blocker", d: "M" + x1 + "," + y1 + " C" + xm + "," + y1 + " " + xm + "," + y2 + " " + x2 + "," + y2, "marker-end": "url(#arrow-chain)" }));
       });
       box.append(svg);
-      Object.keys(pos).forEach((cid) => { const c = cardEl(cid, pos[cid].left, pos[cid].top, w, hh, 0); if (cid === id) c.classList.add("sel"); box.append(c); });
+      Object.keys(pos).forEach((cid) => { const c = cardEl({ id: cid, x: pos[cid].left, y: pos[cid].top, w, h: hh, hidden: 0 }, { noStar: true }); if (cid === id) c.classList.add("sel"); box.append(c); });
       const slotEl = page.querySelector(".md-slot");
       [h("h2", { class: "sec", style: "margin-left:0" }, "Chain of uncleared blockers (" + ch.count + (ch.count === 1 ? " node" : " nodes") + ", upstream on the left)"),
         h("div", { class: "chain" }, box), ch.truncated ? h("p", { class: "muted" }, "The chain is cut at 60 nodes.") : null].filter(Boolean).forEach((e) => slotEl.before(e));
     }
     view.append(page);
-    if (S.centre) { view.scrollLeft = 0; view.scrollTop = 0; S.centre = false; }
+    view.scrollLeft = 0; view.scrollTop = 0;
   }
 
   function renderView() {
-    const view = $("view"), idx = S.index;
+    const view = $("view");
     view.replaceChildren();
     const errs = (S.state.errors || []).length;
-    if (errs) view.append(h("div", { class: "banner" }, h("b", {}, errs + (errs === 1 ? " error" : " errors") + " in the roadmap. "),
+    const banners = [];
+    if (errs) banners.push(h("div", { class: "banner" }, h("b", {}, errs + (errs === 1 ? " error" : " errors") + " in the roadmap. "),
       "What parsed is shown; statuses that cannot be derived read unknown. ", h("button", { onclick: () => { S.tab = "problems"; renderSidebar(); } }, "Show problems")));
-    if (S.notice) view.append(h("div", { class: "banner" }, S.notice));
-    if (S.focus === null) { view.append(h("p", { class: "pad muted" }, "No nodes yet. Node files go in roadmap/nodes/.")); return; }
+    if (S.notice) banners.push(h("div", { class: "banner" }, S.notice));
+    $("banners").replaceChildren(...banners);
+    if (S.focus === null) { view.className = "page-mode"; view.append(h("p", { class: "pad muted" }, "No nodes yet. Node files go in roadmap/nodes/.")); return; }
     if (isInterior(S.focus)) renderTreeView(view);
     else renderPage(view);
   }
@@ -734,7 +920,7 @@
     sb.append(h("span", {}, st.node_count + " nodes"));
     STATUS_ORDER.filter((s) => counts[s]).forEach((s) => sb.append(h("span", {}, swatch(s), counts[s] + " " + statusInfo(s).label)));
     sb.append(h("span", {}, "superseded " + (st.superseded_count || 0)), h("span", { class: "grow" }));
-    sb.append(h("span", {}, "↑↓←→ move · Enter focus · e editor · / search · Esc"));
+    sb.append(h("span", {}, "↑↓←→ move · Enter focus · e editor · p pin · f fit · / search · Esc"));
     if (S.bench) sb.append(h("span", {}, S.bench));
     sb.append(h("span", { title: "Time from navigation start to the first render of this page" }, S.firstRenderMs === null ? "" : "first render " + Math.round(S.firstRenderMs) + " ms"));
     sb.append(h("span", { title: "Live updates from /api/events" }, S.connected === null ? "" : S.connected ? "● live" : "○ reconnecting…"));
@@ -742,9 +928,9 @@
 
   function renderAll() {
     renderSidebar();
+    renderDrawer(); // before the view: it takes width, and the view's automatic depth and fit are computed from its width
+    renderView(); // before the breadcrumb: the depth it shows is decided while the view is laid out
     renderCrumbs();
-    renderView();
-    renderDrawer();
     renderStatusbar();
     document.title = (S.focus && node(S.focus) ? node(S.focus).title + " — " : "") + "Freyja roadmap";
   }
@@ -773,9 +959,7 @@
   /* ---- state and live updates */
   function ensureValid() {
     const idx = S.index;
-    if (S.focus !== null && !idx.nodes[S.focus]) {
-      S.focus = idx.rootId; // the focused node is gone (renamed or deleted): fall back to the root
-    }
+    if (S.focus !== null && !idx.nodes[S.focus]) S.focus = idx.rootId; // the focused node is gone (renamed or deleted): fall back to the root
     if (S.focus === null) S.focus = idx.rootId;
     if (S.selected === null || !idx.nodes[S.selected]) S.selected = S.focus;
   }
@@ -788,14 +972,13 @@
       const want = routeParse(location.hash);
       S.focus = want && S.index.nodes[want] ? want : S.index.rootId;
       S.selected = S.focus;
-      S.centre = true;
+      S.fitPending = true;
       if (want && !S.index.nodes[want]) S.notice = "No node " + want + " in the roadmap; showing the root.";
     }
     ensureValid();
-    const view = $("view"), side = $("side-body");
-    const keep = [view.scrollTop, view.scrollLeft, side.scrollTop];
+    const side = $("side-body"), keepSide = side.scrollTop;
     renderAll();
-    if (!first) { view.scrollTop = keep[0]; view.scrollLeft = keep[1]; side.scrollTop = keep[2]; }
+    if (!first) side.scrollTop = keepSide;
   }
 
   async function fetchState() {
@@ -843,6 +1026,8 @@
       if (ev.target && ev.target.closest && ev.target.closest("button, [role=button]")) return; // a focused control keeps its own Enter
       if (S.selected) go(S.selected);
     } else if (k === "e") { if (S.selected && S.selected !== VROOT) openInEditor(S.selected); }
+    else if (k === "p") { if (S.selected) togglePin(S.selected); }
+    else if (k === "f") fitView();
     else if (k === "/") { ev.preventDefault(); $("search").focus(); $("search").select(); }
     else if (k === "Escape") { if ($("search").value || S.chips.size) { S.chips.clear(); clearSearch(); } }
   });
@@ -860,6 +1045,20 @@
     else applyFocus(S.index.rootId);
   });
 
+  S.vp = viewport($("view"), {
+    enabled: () => $("view").classList.contains("tree-mode") && !!stageEl(),
+    get: () => S.fv, set: (t) => { S.fv = t; applyFv(); },
+    minK: () => 0.12, maxK: () => 3,
+  });
+
+  /** The view's width changed (window or sidebar): with an automatic depth, a different depth may now fit. */
+  function onViewResize() {
+    if (!S.state || S.focus === null || !isInterior(S.focus)) return;
+    if (S.depthOverride === null && effectiveDepth() !== S.shownDepth) { S.fitPending = true; renderView(); renderCrumbs(); }
+  }
+  let resizeTimer = 0;
+  window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(onViewResize, 30); });
+
   (function sidebarResizer() {
     const bar = $("resizer"), app = $("app");
     const set = (px) => { const w = Math.max(220, Math.min(window.innerWidth * 0.7, px)); app.style.setProperty("--side-w", w + "px"); return w; };
@@ -868,14 +1067,14 @@
     let drag = false;
     bar.addEventListener("pointerdown", (ev) => { drag = true; bar.classList.add("drag"); bar.setPointerCapture(ev.pointerId); });
     bar.addEventListener("pointermove", (ev) => { if (drag) set(ev.clientX); });
-    const end = () => { if (!drag) return; drag = false; bar.classList.remove("drag"); pref("sidew", Math.round($("sidebar").getBoundingClientRect().width)); };
+    const end = () => { if (!drag) return; drag = false; bar.classList.remove("drag"); pref("sidew", Math.round($("sidebar").getBoundingClientRect().width)); onViewResize(); };
     bar.addEventListener("pointerup", end);
     bar.addEventListener("pointercancel", end);
     bar.addEventListener("keydown", (ev) => {
       if (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight") return;
       ev.preventDefault(); ev.stopPropagation();
       const w = set($("sidebar").getBoundingClientRect().width + (ev.key === "ArrowRight" ? 24 : -24));
-      pref("sidew", Math.round(w));
+      pref("sidew", Math.round(w)); onViewResize();
     });
   })();
 
@@ -883,18 +1082,18 @@
   (async function boot() {
     const q = new URLSearchParams(location.search);
     if (q.get("theme") === "light" || q.get("theme") === "dark") document.documentElement.dataset.theme = q.get("theme"); // for captures; otherwise the system setting decides
-    S.depth = Math.max(1, Math.min(12, parseInt(q.get("depth") || pref("depth") || "3", 10) || 3));
     S.showSuperseded = pref("superseded") === "1";
     S.workCollapsed = pref("workcollapsed") === "1";
     S.tab = TABS.includes(pref("tab")) ? pref("tab") : "outline";
     try {
       const [state] = await Promise.all([fetchState(), loadPins()]);
       applyState(state, true);
-      // capture parameters: they only seed the initial view state (selection, tab, search text, depth), so a screenshot can show it
+      // capture parameters: they only seed the initial view (selection, tab, search text, depth), so a screenshot can show it
       if (q.has("select") && S.index.nodes[q.get("select")]) S.selected = q.get("select");
       if (TABS.includes(q.get("tab"))) S.tab = q.get("tab");
-      renderAll();
+      if (q.get("depth")) S.depthOverride = clamp(parseInt(q.get("depth"), 10) || 3, 1, MAX_DEPTH);
       if (q.get("q")) { $("search").value = q.get("q"); renderCandidates(); }
+      renderAll();
     } catch (e) {
       document.body.prepend(h("div", { class: "banner" }, "Could not load /api/state: " + e.message + ". Is `fy roadmap serve` still running?"));
       return;
@@ -904,13 +1103,13 @@
       document.documentElement.dataset.firstRenderMs = String(Math.round(S.firstRenderMs));
       document.documentElement.dataset.scriptRenderMs = String(Math.round(S.firstRenderMs - T0));
       document.documentElement.dataset.ready = "1";
-      if (q.get("bench")) { // capture parameter: time 20 full re-renders (a selection change redraws everything) and show the average in the status bar
+      if (q.get("bench")) { // capture parameter: time N full re-renders (a selection change redraws everything) and show the average in the status bar
         const kids = S.index.children[S.focus] || [], t = performance.now();
         for (let i = 0; i < +q.get("bench"); i++) { S.selected = kids[i % Math.max(1, Math.min(2, kids.length))] || S.focus; renderAll(); }
         S.bench = "re-render " + ((performance.now() - t) / +q.get("bench")).toFixed(1) + " ms avg of " + q.get("bench");
       }
       renderStatusbar();
     });
-    if (!new URLSearchParams(location.search).has("nolive")) connectEvents(); // ?nolive: no event stream (a headless capture never goes idle with one open)
+    if (!q.has("nolive")) connectEvents(); // ?nolive: no event stream (a headless capture never goes idle with one open)
   })();
 })();

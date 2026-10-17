@@ -1,7 +1,7 @@
 """
-Roadmap T8 (brief 1 T8, brief 2 T7): the viewer's interface, in a headless Chromium-family browser. The real index.html and
+Roadmap T8 (brief 1 T8, brief 2 T7 and T8): the viewer's interface, in a headless Chromium-family browser. The real index.html and
 app.js are loaded from files, with fetch and EventSource stubbed by a script placed before app.js, and a scripted session then drives the
-page (keyboard, clicks, history, search, the sidebar, live updates) and checks the DOM. The expected answers come from
+page (keyboard, clicks, wheel and pointer events, history, search, pins, live updates) and checks the DOM. The expected answers come from
 Python's reading of the library, never from app.js. Skipped, with the reason, when no browser is installed. No server and no socket is
 involved.
 
@@ -60,7 +60,7 @@ UI_TEST = r"""
   const $ = (s) => document.querySelector(s), $$ = (s) => Array.from(document.querySelectorAll(s));
   const key = (k, target) => (target || document.body).dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true }));
   const title = (id) => D.state.nodes[id].title;
-  const cur = () => ($("#crumbs .cur") || {}).textContent;
+  const cur = () => ($("#crumbs .cur") || { getAttribute: () => undefined }).getAttribute("title"); // the crumb shows 28 characters; the full title is the hover text
   const drawerTitle = () => ($("#drawer h3") || {}).textContent;
   const hash = () => decodeURIComponent(location.hash);
   const click = (el) => el.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -87,6 +87,7 @@ UI_TEST = r"""
     check("problems badge counts errors and warnings", $("#badge").textContent === String(D.state.errors.length + D.state.warnings.length), $("#badge").textContent);
     check("status bar shows the node count and the live indicator", $("#statusbar").textContent.includes(D.state.node_count + " nodes") && $("#statusbar").textContent.includes("live"));
     check("the pins were requested at boot", window.calls.some((c) => c[0] === "/api/pins" && c[1] === "GET"));
+    check("the first fit and automatic depth were computed against the view's final width (the drawer already showing)", Number($("#view").dataset.fitwidth) === $("#view").clientWidth && $("#view").clientWidth > 0, [$("#view").dataset.fitwidth, $("#view").clientWidth]);
         check("the icicle and the sidebar maximise control are gone", $("svg.icicle") === null && $("#maxbtn") === null && !$(".zoombar"));
     check("the tabs are Outline, Frontier, Problems, in that order", $$(".tabs [role=tab]").map((b) => b.dataset.tab).join("|") === "outline|frontier|problems" && $("#tab-outline").textContent === "Outline");
 
@@ -146,9 +147,14 @@ UI_TEST = r"""
     chip("ready").click(); key("Escape", $("#search"));
     check("clearing both restores the outline", rowIds().length === 1 + kids.length && $$(".chips-status button[aria-pressed=true]").length === 0);
 
-    // =================================================================== the main view (unchanged by T7)
-    check("cards for the root and its children", $$("#view .card").length >= 1 + kids.length);
-    check("every card carries a status label", $$("#view .card").every((c) => /(done|in progress|active|ready|expandable|blocked|not started|unknown|superseded)/.test(c.textContent)));
+    // =================================================================== focus mode
+    const view = $("#view");
+    check("focus mode has no scrollbar: the view pans and zooms", view.classList.contains("tree-mode") && getComputedStyle(view).overflow === "hidden" && stage() !== null && tf() !== null);
+    check("the default depth fits the view's width, and says it is automatic", depthShown() === L.autoDepth(IDX, D.root, view.clientWidth) && view.dataset.auto === "1" && $("#depthval").textContent === String(depthShown()), [depthShown(), view.clientWidth]);
+    const shown0 = D.shown.find((c) => c.focus === D.root && c.depth === depthShown());
+    check("the root's cards are exactly the expected nodes", shown0 && JSON.stringify($$("#view .card:not(.more-card)").map((c) => c.dataset.id).sort()) === JSON.stringify(shown0.ids), [depthShown(), $$("#view .card").length]);
+    check("every card carries a status label", $$("#view .card:not(.more-card)").every((c) => /(done|in progress|active|ready|expandable|blocked|not started|unknown|superseded)/.test(c.textContent)));
+    check("interior cards have a progress bar for done/total, leaves do not", $$("#view .card:not(.more-card)").every((c) => { const id = c.dataset.id, bar = c.querySelector(".bar i"); if (!isInterior(id)) return bar === null; const [d, t] = prog(id); return bar && Math.abs(parseFloat(bar.style.width) - 100 * d / t) < 0.2; }));
     check("legend names every status", ["done", "in progress", "active", "ready", "expandable", "blocked", "not started", "unknown"].every((s) => $(".legend").textContent.includes(s)));
     // keyboard: down, right, left, up, as Python's graph says
     const first = D.nav[D.root].ArrowDown;
@@ -164,42 +170,137 @@ UI_TEST = r"""
     check("Up again reaches the root", drawerTitle() === title(D.root));
     key("ArrowUp");
     check("Up at the root stays", drawerTitle() === title(D.root));
-    key("ArrowDown"); key("Enter"); await sleep(50);
+    // Enter refocuses; routing; history
+    key("ArrowDown"); key("Enter"); await sleep(60);
     check("Enter refocuses (hash and breadcrumb)", hash() === "#/node/" + first && cur() === title(first), [hash(), cur()]);
-    $$("#crumbs button").find((b) => b.textContent === title(D.root)).click(); await sleep(50);
+    click($$("#crumbs button").find((b) => b.getAttribute("title") === title(D.root))); await sleep(60);
     check("a breadcrumb click refocuses", hash() === "#/node/" + D.root && cur() === title(D.root), [hash(), cur()]);
     history.back(); await sleep(80);
     check("back returns to the previous focus", hash() === "#/node/" + first && cur() === title(first), [hash(), cur()]);
     history.forward(); await sleep(80);
     check("forward goes on", hash() === "#/node/" + D.root, hash());
-    // depth controls and the superseded toggle
+    // compact layout and child order
+    await goTo(D.mixed);
+    const mixedKids = D.ordered[D.mixed];
+    const colIds = mixedKids.filter((k) => !isInterior(k)), rowKids = mixedKids.filter(isInterior);
+    const card = (id) => $("#view .card[data-id='" + id + "']");
+    check("childless children stack in one column, in child order", colIds.length >= 2 && colIds.every((k) => card(k) && xy(card(k)).x === xy(card(colIds[0])).x) && colIds.every((k, i) => i === 0 || xy(card(k)).y > xy(card(colIds[i - 1])).y), colIds.length);
+    check("interior children spread along one row, in child order, right of the column", rowKids.length >= 1 && rowKids.every((k) => xy(card(k)).y === xy(card(rowKids[0])).y && xy(card(k)).x > xy(card(colIds[0])).x) && rowKids.every((k, i) => i === 0 || xy(card(k)).x > xy(card(rowKids[i - 1])).x));
+    check("the focus card sits above its children", xy(card(D.mixed)).y < xy(card(colIds[0])).y && xy(card(D.mixed)).y < xy(card(rowKids[0])).y);
+    // overflow
+    await goTo(D.wide);
+    const wideKids = D.ordered[D.wide];
+    let more = $("#view .more-card");
+    check("a node with more than 8 children shows the first 8 and a +k more card", more && more.textContent.includes("+" + (wideKids.length - 8) + " more") && wideKids.slice(0, 8).every((k) => card(k)) && wideKids.slice(8).every((k) => !card(k)), more && more.textContent);
+    click(more); await sleep(30);
+    check("the +k more card expands in place", wideKids.every((k) => card(k)) && ($("#view .more-card") === null || /fewer/.test($("#view .more-card").textContent)));
+    await goTo(D.root); await goTo(D.wide);
+    check("a new focus collapses it again", !card(wideKids[8]) && $("#view .more-card") !== null);
+    // automatic depth, recomputed on resize; the +/- controls override it until the focus changes
+    const candidates = Object.keys(D.children).filter(isInterior);
+    const wideW = view.clientWidth;
+    $("#app").style.setProperty("--side-w", "700px");
+    const narrowW = view.clientWidth;
+    $("#app").style.setProperty("--side-w", "320px");
+    const probe = candidates.find((f) => L.autoDepth(IDX, f, wideW) > L.autoDepth(IDX, f, narrowW));
+    check("the fixture has a node whose automatic depth depends on the width", probe !== undefined, [wideW, narrowW]);
+    await goTo(probe);
+    const d0 = depthShown();
+    check("automatic depth at the normal width", d0 === L.autoDepth(IDX, probe, view.clientWidth) && view.dataset.auto === "1", [d0, view.clientWidth]);
+    $("#app").style.setProperty("--side-w", "700px"); window.dispatchEvent(new Event("resize")); await sleep(120);
+    check("narrowing the view lowers the depth by itself", depthShown() === L.autoDepth(IDX, probe, view.clientWidth) && depthShown() < d0, [depthShown(), d0]);
+    $("#app").style.setProperty("--side-w", "320px"); window.dispatchEvent(new Event("resize")); await sleep(120);
+    check("widening it raises the depth again", depthShown() === d0, [depthShown(), d0]);
+    tool("Show one level fewer").click();
+    check("the depth controls override the automatic depth", depthShown() === Math.max(1, d0 - 1) && view.dataset.auto === "0", [depthShown(), d0]);
+    $("#app").style.setProperty("--side-w", "700px"); window.dispatchEvent(new Event("resize")); await sleep(120);
+    check("an override survives a resize", depthShown() === Math.max(1, d0 - 1), depthShown());
+    $("#app").style.setProperty("--side-w", "320px"); window.dispatchEvent(new Event("resize")); await sleep(120);
+    tool("Show one level more").click(); tool("Show one level more").click();
     const n3 = $$("#view .card").length;
-    tool("Show one level more").click();
-    const n4 = $$("#view .card").length;
-    tool("Show one level fewer").click();
-    tool("Show one level fewer").click();
-    const n2 = $$("#view .card").length;
-    check("the depth controls change how many cards are drawn", n2 < n3 && n4 >= n3, [n2, n3, n4]);
-    tool("Show one level more").click();
-    const sup = Object.values(D.state.nodes).filter((n) => n.status === "superseded").length;
-    $("#search").value = "retired"; $("#search").dispatchEvent(new Event("input", { bubbles: true }));
-    const supRows = () => rowIds().filter((id) => D.state.nodes[id].status === "superseded").length;
-    const before = supRows();
-    const cb = $("#supcb"); cb.checked = true; cb.dispatchEvent(new Event("change", { bubbles: true }));
-    check("superseded nodes are hidden by default and shown on request", sup > 0 && before === 0 && supRows() === sup, [before, sup, supRows()]);
-    $("#supcb").checked = false; $("#supcb").dispatchEvent(new Event("change", { bubbles: true }));
-    key("Escape", $("#search"));
+    check("more levels draw more cards", depthShown() === Math.min(12, d0 + 1) && n3 >= 1, depthShown());
+    await goTo(D.root); await goTo(probe);
+    check("a new focus returns to the automatic depth", depthShown() === d0 && view.dataset.auto === "1", [depthShown(), d0]);
+    // pan, zoom, fit
+    await goTo(D.root);
+    const t0 = tf(), r0 = view.getBoundingClientRect(), cx = r0.left + 300, cy = r0.top + 200;
+    wheel(view, -300, cx, cy);
+    const t1 = tf();
+    check("the mouse wheel zooms in", t1[0] > t0[0], [t0, t1]);
+    check("zooming keeps the point under the cursor in place", Math.abs((cx - r0.left - t1[1]) / t1[0] - (cx - r0.left - t0[1]) / t0[0]) < 0.5 && Math.abs((cy - r0.top - t1[2]) / t1[0] - (cy - r0.top - t0[2]) / t0[0]) < 0.5);
+    wheel(view, 600, cx, cy);
+    check("and out", tf()[0] < t1[0]);
+    ptr(view, "pointerdown", cx, cy); ptr(view, "pointermove", cx + 60, cy + 30); ptr(view, "pointermove", cx + 90, cy + 40); ptr(view, "pointerup", cx + 90, cy + 40);
+    const t2 = tf();
+    check("dragging pans the stage by the drag distance", Math.abs(t2[1] - t0[1] - 90) < 1.5 && Math.abs(t2[2] - t0[2] - 40) < 1.5 || t2[0] !== t0[0], [t0, t2]);
+    key("f");
+    check("f fits the view again", JSON.stringify(tf().map((x) => Math.round(x))) === JSON.stringify(t0.map((x) => Math.round(x))), [tf(), t0]);
+    wheel(view, -600, cx, cy);
+    click($("#fitbtn"));
+    check("the Fit button does the same", JSON.stringify(tf().map((x) => Math.round(x))) === JSON.stringify(t0.map((x) => Math.round(x))));
+    key("f");
+    const x0 = tf()[1];
+    ptr(view, "pointerdown", cx, cy); ptr(view, "pointermove", cx + 80, cy); ptr(view, "pointerup", cx + 80, cy);
+    check("a drag moves the stage by exactly the drag distance", Math.abs(tf()[1] - x0 - 80) < 1.5, [tf()[1], x0]);
+    const selBefore = drawerTitle(), cEl = card(first), cc = centre(cEl);
+    ptr(cEl, "pointerdown", cc[0], cc[1]); ptr(cEl, "pointermove", cc[0] + 30, cc[1]); ptr(cEl, "pointerup", cc[0] + 30, cc[1]); click(cEl);
+    check("a drag that starts on a card pans and does not select it", drawerTitle() === selBefore && tf()[1] !== x0 + 80, [drawerTitle(), selBefore]);
+    key("f");
+    // breadcrumb
+    await goTo(D.deep);
+    const crumbBtns = () => $$("#crumbs > button");
+    const full = chain(D.deep);
+    check("a deep breadcrumb shows root, …, grandparent, parent, node", $(".crumb-gap") !== null && crumbBtns().filter((b) => !b.classList.contains("crumb-gap")).map((b) => b.getAttribute("title")).join("|") === [full[0], full[full.length - 3], full[full.length - 2]].map(title).join("|") && $("#crumbs .cur").textContent.length <= 28, crumbBtns().map((b) => b.textContent));
+    check("titles in the breadcrumb are cut at about 28 characters, the full title on hover", crumbBtns().every((b) => b.textContent.length <= 28) && crumbBtns().filter((b) => !b.classList.contains("crumb-gap")).every((b) => b.getAttribute("title").startsWith(b.textContent.replace(/…$/, ""))));
+    click($(".crumb-gap"));
+    check("clicking … expands the full path", $(".crumb-gap") === null && crumbBtns().length === full.length - 1, crumbBtns().length);
+    await goTo(D.root);
+
+    // =================================================================== pins
+    const target = first;
+    const starOf = (id) => $("#view .card[data-id='" + id + "'] .star");
+    window.calls.length = 0;
+    click(starOf(target)); await sleep(60);
+    const pinCall = window.calls.find((c) => c[0] === "/api/pin/" + encodeURIComponent(target));
+    check("the star on a card pins the node: POST with the token", pinCall && pinCall[1] === "POST" && pinCall[2]["X-Roadmap-Token"] === "tok", pinCall);
+    check("the card shows it, and the working panel lists it", starOf(target).classList.contains("on") && starOf(target).getAttribute("aria-pressed") === "true" && $$("#wg-pinned .wrow").map((r) => r.dataset.id).join() === target);
+    check("the outline row carries a star", rowOf(target) && rowOf(target).querySelector(".star-mark") !== null);
+    click($("#view .card[data-id='" + target + "']"));
+    check("the drawer has a star toggle, on for a pinned node", $("#drawer .star").classList.contains("on"));
+    window.calls.length = 0;
+    key("p"); await sleep(60);
+    check("p unpins the selection", window.calls.some((c) => c[0] === "/api/unpin/" + encodeURIComponent(target)) && !starOf(target).classList.contains("on") && $$("#wg-pinned .wrow").length === 0 && window.PINS.length === 0);
+    key("p"); await sleep(60);
+    check("and pins it again", starOf(target).classList.contains("on") && window.PINS.join() === target);
+    const second = D.nav[target].ArrowRight !== target ? D.nav[target].ArrowRight : D.nav[target].ArrowLeft;
+    click(starOf(second)); await sleep(60);
+    check("pins are listed in id order", $$("#wg-pinned .wrow").map((r) => r.dataset.id).join() === [target, second].sort().join(), $$("#wg-pinned .wrow").map((r) => r.dataset.id));
+    window.PIN_FAILS = true;
+    click(starOf(second)); await sleep(60);
+    check("a failed pin call shows its error as a visible notice and changes nothing", $("#toast").classList.contains("show") && $("#toast").classList.contains("err") && $("#toast").textContent.includes("disk full") && starOf(second).classList.contains("on"), $("#toast").textContent);
+    window.PIN_FAILS = false;
+    window.PINS.push("rm.gone"); window.es.listeners.changed(); await sleep(300);
+    const dang = $("#wg-pinned .wrow[data-id='rm.gone']");
+    check("a pin whose node is gone is listed as dangling, not dropped", dang && /no longer/.test(dang.textContent) && dang.querySelector("button.unpin") !== null, dang && dang.textContent);
+    window.calls.length = 0;
+    dang.querySelector("button.unpin").click(); await sleep(60);
+    check("and can be removed", window.calls.some((c) => c[0] === "/api/unpin/rm.gone") && !$("#wg-pinned .wrow[data-id='rm.gone']"));
+    click(starOf(second)); await sleep(60); // unpin the second; the first stays pinned for the map checks
 
     // =================================================================== the single-node page
     window.BODIES[D.big_chain] = "Notes <img src=x onerror=window.pwned=1> **bold** [bad](javascript:window.pwned=1)";
     await goTo(D.big_chain);
-    check("a leaf opens the single-node page", $(".page h1") && $(".page h1").textContent === title(D.big_chain) && $("#drawer").hidden === true);
+    check("a leaf opens the single-node page, not a scrolling tree", $(".page h1") && $(".page h1").textContent === title(D.big_chain) && $("#drawer").hidden === true && view.classList.contains("page-mode") && getComputedStyle(view).overflowY === "auto");
     check("the page shows the criterion and its evaluation", $(".page").textContent.includes("Done when") && $(".page").textContent.includes("Evaluation"));
     const chainCards = $$(".chain .card").length;
     check("the chain of uncleared blockers is drawn", chainCards >= 2 && chainCards <= 60 && $(".chain svg path.edge") !== null, chainCards);
     check("the chain ends in the node itself", $$(".chain .card").some((c) => c.dataset.id === D.big_chain && c.classList.contains("sel")));
     check("markdown is rendered with raw html escaped", $(".md") && $(".md").innerHTML.includes("&lt;img") && $(".md strong") && !$(".md img") && !$(".md a[href^='javascript']") && window.pwned === undefined, $(".md") && $(".md").innerHTML);
-    check("the page has Open in editor and Copy id", $$(".page .btns button").map((b) => b.textContent).join("|") === "Open in editor|Copy id");
+    check("the page has Open in editor, Copy id and a pin star", $$(".page .btns button").map((b) => b.textContent.replace(/^[★☆] /, "")).join("|") === "Open in editor|Copy id|Pin" && $(".page .btns .star") !== null);
+    window.calls.length = 0;
+    click($(".page .btns .star")); await sleep(60);
+    check("the page's star pins this node", window.calls.some((c) => c[0] === "/api/pin/" + encodeURIComponent(D.big_chain)) && $(".page .btns .star").classList.contains("on"));
+    click($(".page .btns .star")); await sleep(60);
     // the editor call: POST, token header, id from the selection
     window.calls.length = 0;
     key("e"); await sleep(30);
@@ -217,8 +318,8 @@ UI_TEST = r"""
     await goTo(D.root);
     key("/");
     check("/ focuses the search box", document.activeElement === $("#search"));
-    window.calls.length = 0; key("e", $("#search"));
-    check("keys are ignored while typing in an input", !window.calls.some((c) => c[1] === "POST"));
+    key("m", $("#search")); key("p", $("#search")); key("f", $("#search"));
+    check("keys are ignored while typing in an input", window.PINS.join() === target && $("#fitbtn") !== null);
     $("#search").value = "gear"; $("#search").dispatchEvent(new Event("input", { bubbles: true }));
     const cands = $$("#cands li button");
     check("typing lists candidates", cands.length >= 1 && cands.length <= 10, cands.length);
@@ -295,4 +396,4 @@ def ui_result(tmp_path_factory):
 
 def test_the_interface_behaves_in_a_real_browser_engine(ui_result):
     assert ui_result["fails"] == [], ui_result["fails"][:12]
-    assert ui_result["checks"] >= 65  # a count, so a script that stops early cannot pass
+    assert ui_result["checks"] >= 100  # a count, so a script that stops early cannot pass
