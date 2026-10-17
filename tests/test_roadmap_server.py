@@ -289,8 +289,8 @@ def test_the_default_viewer_directory_is_inside_the_library():
 
 def test_the_server_binds_loopback_only():
     src = (REPO / "tools" / "roadmap" / "server.py").read_text(encoding="utf-8")
-    assert server.HOST == "127.0.0.1" and "0.0.0.0" not in src and '""' not in src.split("ThreadingHTTPServer((")[1].split(",")[0]
-    assert "ThreadingHTTPServer((HOST, port)" in src
+    assert server.HOST == "127.0.0.1" and "0.0.0.0" not in src and '""' not in src.split("srv = Server((")[1].split(",")[0]
+    assert "srv = Server((HOST, port)" in src and issubclass(server.Server, server.ThreadingHTTPServer)
 
 
 def test_prepare_builds_the_url_and_resolves_focus_with_the_cli_query_rules(tmp_path):
@@ -326,3 +326,21 @@ def test_the_cli_serve_command_reports_a_bad_focus_without_starting_a_server(tmp
     ns = cli._parser().parse_args(["serve", "--port", "9000", "--root", "x", "--focus", "q", "--no-browser"])
     assert (ns.port, ns.focus, ns.no_browser) == (9000, "q", True)
     assert cli._parser().parse_args(["serve"]).port == server.DEFAULT_PORT
+
+
+# ---- a second server on a port that is already being served must fail, not share it
+
+def test_a_second_server_cannot_bind_a_port_that_is_already_listening(tmp_path):
+    """Found while checking brief 2's viewer: on Windows SO_REUSEADDR lets a second `fy roadmap serve` bind a listening port, and the older
+    server keeps answering, so a new viewer can silently show the old code. Real loopback sockets on a free port; nothing is requested."""
+    root = make(tmp_path / "r", NODES)
+    first = server.make_server(server.App(root, port=0), 0)
+    try:
+        port = first.server_address[1]
+        with pytest.raises(OSError):
+            server.make_server(server.App(root, port=port), port)
+        out = []
+        assert server.serve(root, port=port, browser=False, say=out.append) == 1
+        assert "cannot listen" in out[0] and "--port" in out[0]
+    finally:
+        first.server_close()

@@ -362,9 +362,16 @@ class Shell(BaseHTTPRequestHandler):
         self._serve("POST")
 
 
+class Server(ThreadingHTTPServer):
+    # http.server sets SO_REUSEADDR. On Windows that lets a second server bind a port that is already listening, and the older one keeps
+    # answering: `fy roadmap serve` would start without complaint and the browser would show the old code. There the option is left off,
+    # so the bind fails with "address in use" and `serve` says so.
+    allow_reuse_address = os.name != "nt"
+
+
 def make_server(app: App, port) -> ThreadingHTTPServer:
     shell = type("BoundShell", (Shell,), {"app": app})
-    srv = ThreadingHTTPServer((HOST, port), shell)
+    srv = Server((HOST, port), shell)
     srv.daemon_threads = True
     app.port = srv.server_address[1]
     return srv
