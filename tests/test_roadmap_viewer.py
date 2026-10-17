@@ -250,6 +250,36 @@ try {
   }
   check("auto depth never falls as the width grows", [D.root, D.mixed, D.big_interior].every((f) => { let last = 0; for (const wd of [300, 500, 800, 1200, 2000, 3000, 8000]) { const d = L.autoDepth(idx, f, wd); if (d < last) return false; last = d; } return true; }));
   check("useful depth is the height of the subtree", L.usefulDepth(idx, D.root) === D.max_depth, [L.usefulDepth(idx, D.root), D.max_depth]);
+  // --- the map
+  const markerStatuses = ["done", "ready", "active", "blocked", "expandable"];
+  check("every leaf and stub status has its own marker shape", new Set(markerStatuses.map(L.markerShape)).size === markerStatuses.length, markerStatuses.map(L.markerShape));
+  check("every status the library can emit has a marker shape", Object.keys(L.STATUS).every((s) => typeof L.markerShape(s) === "string" && L.markerShape(s) !== ""));
+  check("a ring with no progress has no wedge, a full one is a disc, a half is an arc", L.ringWedge(0, 7) === "" && /A7,7/.test(L.ringWedge(0.5, 7)) && /A7,7/.test(L.ringWedge(1, 7)));
+  const live = D.live_count, nBranch = D.children[D.root].length;
+  for (const mode of ["radial", "top"]) {
+    const M = L.mapLayout(idx, mode);
+    const by = {}; for (const n of M.nodes) by[n.id] = n;
+    check("map " + mode + ": every live node is placed once", M.nodes.length === live && Object.keys(by).length === live, M.nodes.length);
+    check("map " + mode + ": one link per non-root node", M.links.length === live - 1 && M.links.every((lk) => by[lk.source] && by[lk.target] && idx.parent[lk.target] === lk.source));
+    check("map " + mode + ": a sector for each first-layer branch, in tree order", eq(M.sectors.map((q) => q.id), D.children[D.root]), M.sectors.map((q) => q.id));
+    check("map " + mode + ": depth is carried by every node", M.nodes.every((n) => n.depth === idx.depthOf[n.id]));
+    check("map " + mode + ": no two neighbours on a level are closer than the minimum gap", M.minGap >= L.MAP_MIN_GAP - 1e-6, M.minGap);
+    check("map " + mode + ": titles appear at the zoom where neighbours are label-height apart", Math.abs(L.labelZoom(M) * M.minGap - L.LABEL_PX) < 1e-6);
+    check("map " + mode + ": no coordinate is NaN", M.nodes.every((n) => Number.isFinite(n.x) && Number.isFinite(n.y)));
+    if (mode === "radial") {
+      check("radial: the root is at the centre", by[D.root].x === 0 && by[D.root].y === 0 && by[D.root].r === 0);
+      check("radial: a ring is a depth (radius = depth x step)", M.nodes.every((n) => Math.abs(n.r - n.depth * M.step) < 1e-6 && Math.abs(Math.hypot(n.x, n.y) - n.r) < 1e-6), M.step);
+      let span = 0; for (const q of M.sectors) span += q.a1 - q.a0;
+      check("radial: the sectors tile the circle", Math.abs(span - 2 * Math.PI) < 1e-6, span);
+      const inSector = (n, q) => { const a = ((n.angle - q.a0) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI); return a <= (q.a1 - q.a0) + 1e-9; };
+      const branchOf = (id) => { let c = id; while (idx.parent[c] && idx.parent[c] !== D.root) c = idx.parent[c]; return c; };
+      check("radial: every node lies inside its own branch's sector", M.nodes.filter((n) => n.id !== D.root).every((n) => inSector(n, M.sectors.find((q) => q.id === branchOf(n.id)))));
+    } else {
+      check("top-down: a level is a row (y = depth x step)", M.nodes.every((n) => Math.abs(n.y - n.depth * M.step) < 1e-6), M.step);
+      check("top-down: sectors are disjoint, ordered bands that contain their branch", M.sectors.every((q, k) => q.x1 > q.x0 && (k === 0 || q.x0 >= M.sectors[k - 1].x1 - 1e-6)) &&
+        M.nodes.filter((n) => n.id !== D.root).every((n) => { const b = (() => { let c = n.id; while (idx.parent[c] && idx.parent[c] !== D.root) c = idx.parent[c]; return c; })(); const q = M.sectors.find((s2) => s2.id === b); return n.x >= q.x0 - 1e-6 && n.x <= q.x1 + 1e-6; }));
+    }
+  }
   // --- markdown
   const md = (s) => L.renderMarkdown(s);
   // the <\/ below keeps the HTML parser from ending this script element

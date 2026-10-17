@@ -1,5 +1,5 @@
 """
-Roadmap T8 (brief 1 T8, brief 2 T7 and T8): the viewer's interface, in a headless Chromium-family browser. The real index.html and
+Roadmap T8/T9 (brief 1 T8, brief 2 T7 to T9): the viewer's interface, in a headless Chromium-family browser. The real index.html and
 app.js are loaded from files, with fetch and EventSource stubbed by a script placed before app.js, and a scripted session then drives the
 page (keyboard, clicks, wheel and pointer events, history, search, pins, live updates) and checks the DOM. The expected answers come from
 Python's reading of the library, never from app.js. Skipped, with the reason, when no browser is installed. No server and no socket is
@@ -319,7 +319,7 @@ UI_TEST = r"""
     key("/");
     check("/ focuses the search box", document.activeElement === $("#search"));
     key("m", $("#search")); key("p", $("#search")); key("f", $("#search"));
-    check("keys are ignored while typing in an input", window.PINS.join() === target && $("#fitbtn") !== null);
+    check("keys are ignored while typing in an input", !document.body.classList.contains("map") && window.PINS.join() === target);
     $("#search").value = "gear"; $("#search").dispatchEvent(new Event("input", { bubbles: true }));
     const cands = $$("#cands li button");
     check("typing lists candidates", cands.length >= 1 && cands.length <= 10, cands.length);
@@ -329,6 +329,93 @@ UI_TEST = r"""
     $("#search").value = "gear"; $("#search").dispatchEvent(new Event("input", { bubbles: true })); $("#search").blur(); await sleep(200);
     key("Escape");
     check("Esc outside the box clears a standing search", $("#search").value === "");
+
+    // =================================================================== map mode
+    await goTo(D.root);
+    key("m"); await sleep(60);
+    const MAP = $("#map"), svg = $("#mapsvg");
+    check("the map was fitted to the size it has", MAP.dataset.fitdims === Math.round(MAP.clientWidth) + "x" + Math.round(MAP.clientHeight - MAP.querySelector(".maptools").offsetHeight), [MAP.dataset.fitdims, MAP.clientWidth, MAP.clientHeight]);
+        check("m opens the full-screen map", document.body.classList.contains("map") && MAP.hidden === false && MAP.dataset.mode === "radial");
+    check("one marker per live node", $$("#map g.mk").length === D.live_count, $$("#map g.mk").length);
+    const step = parseFloat(MAP.dataset.step);
+    check("radial: a ring is a depth", step > 0 && $$("#map g.mk").every((g) => Math.abs(parseFloat(g.dataset.r) - Number(g.dataset.depth) * step) < 1e-3 && Number(g.dataset.depth) === chain(g.dataset.id).length - 1));
+    check("a faint labelled sector for each first-layer branch", $$("#map .sector").length === kids.length && kids.every((k) => $("#map .sector-label[data-id='" + k + "']") && $("#map .sector-label[data-id='" + k + "']").textContent.length > 2));
+    const leafStub = $$("#map g.mk").filter((g) => g.dataset.kind !== "interior");
+    const shapeOf = {}; let consistent = true;
+    for (const g of leafStub) { const s = D.state.nodes[g.dataset.id].status; if (shapeOf[s] && shapeOf[s] !== g.dataset.shape) consistent = false; shapeOf[s] = g.dataset.shape; }
+    const present = Object.keys(shapeOf);
+    check("each leaf and stub status has its own marker shape", consistent && present.length >= 4 && new Set(Object.values(shapeOf)).size === present.length, shapeOf);
+    check("interior nodes are rings filled to their done fraction", $$("#map g.mk[data-kind=interior]").length === Object.keys(D.children).filter(isInterior).length && $$("#map g.mk[data-kind=interior]").every((g) => { const [d, t] = prog(g.dataset.id); return g.querySelector(".ring") && Math.abs(parseFloat(g.querySelector(".ring").dataset.frac) - d / t) < 1e-3; }));
+    check("nothing but the status marker carries the status: shape differs, not only fill", leafStub.every((g) => g.querySelector("path.shape") && g.dataset.shape));
+    check("the focus is marked 'you are here' and centred", $("#map .here") && /you are here/.test($("#map .here").textContent) && (() => { const c = centre($("#map g.mk[data-id='" + D.root + "']")), s = centre(svg); return Math.hypot(c[0] - s[0], c[1] - s[1]) < 60; })());
+    check("no blocking edge is drawn until a node is hovered", $$("#map path.hoverlink").length === 0);
+    // hover
+    const hov = Object.keys(D.state.nodes).find((id) => D.state.nodes[id].status !== "superseded" && D.state.nodes[id].effective_blockers.length > 0 && D.state.nodes[id].dependents.length >= 0 && !isInterior(id));
+    const liveN = (ids) => ids.filter((i) => D.state.nodes[i] && D.state.nodes[i].status !== "superseded").length;
+    const mk = (id) => $("#map g.mk[data-id='" + id + "']");
+    mk(hov).dispatchEvent(new PointerEvent("pointerover", { bubbles: true, clientX: 400, clientY: 300 }));
+    check("hovering shows title, id and status in a tooltip", $("#tip").style.display === "block" && $("#tip").textContent.includes(title(hov)) && $("#tip").textContent.includes(hov) && $("#tip").textContent.includes(L.statusInfo(D.state.nodes[hov].status).label), $("#tip").textContent);
+    check("hovering draws the node's blockers and dependents as dashed connectors", $$("#map path.hoverlink").length === liveN(D.state.nodes[hov].effective_blockers) + liveN(D.state.nodes[hov].dependents) && $$("#map path.hoverlink").length > 0 && $$("#map path.hoverlink").every((p) => p.getAttribute("stroke-dasharray")), $$("#map path.hoverlink").length);
+    check("and highlights the path to the root", $$("#map path.mlink.onpath").length === chain(hov).length - 1, $$("#map path.mlink.onpath").length);
+    mk(hov).dispatchEvent(new PointerEvent("pointerout", { bubbles: true, relatedTarget: svg }));
+    check("moving away clears it", $$("#map path.hoverlink").length === 0 && $$("#map path.mlink.onpath").length === 0 && $("#tip").style.display !== "block");
+    const inter = kids.find(isInterior);
+    mk(inter).dispatchEvent(new PointerEvent("pointerover", { bubbles: true, clientX: 400, clientY: 300 }));
+    check("an interior node's tooltip shows its fraction", $("#tip").textContent.includes(prog(inter).join("/")), $("#tip").textContent);
+    mk(inter).dispatchEvent(new PointerEvent("pointerout", { bubbles: true, relatedTarget: svg }));
+    // frontier toggle
+    const frontier = new Set(D.state.frontier);
+    const a = leafStub.find((g) => frontier.has(g.dataset.id)), b = leafStub.find((g) => !frontier.has(g.dataset.id) && D.state.nodes[g.dataset.id].status === "done");
+    click($("#map-frontier"));
+    check("the frontier toggle dims every node that is neither ready nor expandable", $("#map-frontier").getAttribute("aria-pressed") === "true" && parseFloat(getComputedStyle(b).opacity) < 0.5 && parseFloat(getComputedStyle(a).opacity) === 1, [getComputedStyle(a).opacity, getComputedStyle(b).opacity]);
+    click($("#map-frontier"));
+    // zoom, constant marker size, labels
+    const mkBox = () => mk(a.dataset.id).querySelector("path.shape").getBoundingClientRect();
+    const w0 = mkBox().width, k0m = parseFloat($("#mapworld").dataset.k);
+    check("titles are hidden at the fitted zoom", $$("#map .lbl.show").length === 0);
+    const sr = svg.getBoundingClientRect();
+    for (let i = 0; i < 14; i++) wheel(svg, -400, sr.left + sr.width / 2, sr.top + sr.height / 2);
+    const k1m = parseFloat($("#mapworld").dataset.k);
+    check("the wheel zooms the map", k1m > k0m * 2, [k0m, k1m]);
+    check("marker sizes stay constant on screen while zooming", Math.abs(mkBox().width - w0) < 0.6, [w0, mkBox().width]);
+    check("titles appear beside nodes once the zoom passes the no-overlap threshold", k1m >= parseFloat(MAP.dataset.labelzoom) && $$("#map .lbl.show").length > 0, [k1m, MAP.dataset.labelzoom, $$("#map .lbl.show").length]);
+    const tx0 = parseFloat($("#mapworld").dataset.tx);
+    ptr(svg, "pointerdown", 600, 400); ptr(svg, "pointermove", 650, 430); ptr(svg, "pointerup", 650, 430);
+    check("dragging pans the map by the drag distance", Math.abs(parseFloat($("#mapworld").dataset.tx) - tx0 - 50) < 1.5, [tx0, $("#mapworld").dataset.tx]);
+    key("f");
+    check("f fits the whole map and hides the titles again", Math.abs(parseFloat($("#mapworld").dataset.k) - k0m) < 1e-6 && $$("#map .lbl.show").length === 0);
+    // pins on the map
+    check("pinned nodes carry a star", $$("#map .pinstar").length === window.PINS.filter((p) => D.state.nodes[p]).length && $$("#map .pinstar").length >= 1 && mk(target).querySelector(".pinstar") !== null, $$("#map .pinstar").length);
+    // layout toggle
+    click($("#map-layout"));
+    check("the layout toggle switches to top-down", MAP.dataset.mode === "top" && $$("#map g.mk").length === D.live_count && $$("#map .sector").length === kids.length);
+    check("top-down: a sector title never runs wider than its sector, so titles do not overlap", $$("#map .sector-label:not(.hide)").length >= 1 && $$("#map .sector-label:not(.hide)").every((t) => { const b = t.getBoundingClientRect(), q = $("#map .sector[data-id='" + t.dataset.id + "']").getBoundingClientRect(); return b.width <= q.width + 1; }), $$("#map .sector-label:not(.hide)").length);
+    const step2 = parseFloat(MAP.dataset.step);
+    check("top-down: a level is a row", $$("#map g.mk").every((g) => Math.abs(parseFloat(g.dataset.y) - Number(g.dataset.depth) * step2) < 1e-3));
+    click($("#map-layout"));
+    check("and back to radial", MAP.dataset.mode === "radial");
+    // keyboard on the map
+    key("ArrowDown");
+    check("arrows move the selection on the map", $("#map g.mk.sel") && $("#map g.mk.sel").dataset.id === D.nav[D.root].ArrowDown, $("#map g.mk.sel") && $("#map g.mk.sel").dataset.id);
+    window.calls.length = 0;
+    key("e"); await sleep(30);
+    check("e opens the selection in the editor from the map", window.calls.some((c) => c[0] === "/api/open/" + encodeURIComponent(D.nav[D.root].ArrowDown)));
+    key("Enter"); await sleep(80);
+    check("Enter refocuses on the selection and leaves the map", !document.body.classList.contains("map") && MAP.hidden === true && hash() === "#/node/" + D.nav[D.root].ArrowDown, hash());
+    key("m"); await sleep(40);
+    check("the map opens centred on the current focus", (() => { const c = centre(mk(D.nav[D.root].ArrowDown)), s = centre(svg); return Math.hypot(c[0] - s[0], c[1] - s[1]) < 60; })());
+    key("Escape");
+    check("Esc leaves the map", !document.body.classList.contains("map") && MAP.hidden === true);
+    click($("#mapbtn")); await sleep(40);
+    check("the Map button opens it", document.body.classList.contains("map"));
+    click($("#map-close"));
+    check("and the close button leaves it", !document.body.classList.contains("map"));
+    key("m"); await sleep(40);
+    const pick = D.nav[D.nav[D.root].ArrowDown].ArrowDown;
+    click(mk(pick)); await sleep(80);
+    check("clicking a node on the map leaves it and focuses that node", !document.body.classList.contains("map") && hash() === "#/node/" + pick && cur() === title(pick), [hash(), cur()]);
+    key("m"); key("m");
+    check("m toggles", !document.body.classList.contains("map"));
 
     // =================================================================== live updates, errors
     location.hash = "#/node/" + first; await sleep(60);
@@ -396,4 +483,4 @@ def ui_result(tmp_path_factory):
 
 def test_the_interface_behaves_in_a_real_browser_engine(ui_result):
     assert ui_result["fails"] == [], ui_result["fails"][:12]
-    assert ui_result["checks"] >= 100  # a count, so a script that stops early cannot pass
+    assert ui_result["checks"] >= 110  # a count, so a script that stops early cannot pass

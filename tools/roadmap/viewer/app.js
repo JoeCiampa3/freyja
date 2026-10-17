@@ -1,10 +1,10 @@
 /*
- * Roadmap viewer (docs/briefs/architecture/roadmap-brief1.md T8, roadmap-brief2.md T6 to T8). One page, no build step, no framework: d3 v7 for
- * the hierarchy and marked for node bodies, both vendored beside this file. It reads /api/state, /api/node/<id>, /api/pins and
+ * Roadmap viewer (docs/briefs/architecture/roadmap-brief1.md T8, roadmap-brief2.md T6 to T9). One page, no build step, no framework: d3 v7 for
+ * the map's layouts and marked for node bodies, both vendored beside this file. It reads /api/state, /api/node/<id>, /api/pins and
  * /api/events; its write-shaped calls are POST /api/open/<id> (asks the local editor to open a node file) and POST /api/pin/<id> and
  * /api/unpin/<id> (the personal pins file).
  *
- * Part 1 is pure logic (index, child order, outline, breadcrumb, focus layout, automatic depth, keyboard navigation, query
+ * Part 1 is pure logic (index, child order, outline, breadcrumb, focus layout, automatic depth, map layout, keyboard navigation, query
  * resolution, blocker chain, Markdown): it touches no DOM and is exposed as window.RoadmapLogic so that tests/test_roadmap_viewer.py can
  * run it in a headless browser. Part 2 is the interface. Setting window.ROADMAP_TEST before this file loads skips Part 2.
  */
@@ -27,6 +27,9 @@
   const CRUMB_MAX = 28; // characters of a title in the breadcrumb; the full title is the hover text
   const MAX_DEPTH = 12;
   const LAYOUT = { cardW: 190, cardH: 76, leafH: 56, gapX: 22, gapY: 44, gapLeaf: 8, pad: 12, maxKids: 8 };
+  const MAP_MIN_GAP = 14; // px between neighbours on one level of the map, at zoom 1
+  const LABEL_PX = 12; // the height a title needs; titles appear when neighbours are this far apart on screen
+  const MAP_RING = 7; // radius of an interior node's ring, px, constant on screen
 
   function statusInfo(s) { return STATUS[s] || STATUS.unknown; }
   function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
@@ -216,6 +219,117 @@
     return best;
   }
 
+  /* ---- the map: radial or top-down tidy tree of the whole roadmap */
+  const MARKER_SHAPE = { done: "square", ready: "circle", active: "triangle", blocked: "diamond", expandable: "cross", unknown: "hex", stale: "hex",
+    in_progress: "ring", not_started: "ring", superseded: "dot" };
+  function markerShape(status) { return MARKER_SHAPE[status] || "hex"; }
+  /** SVG path of a marker shape centred on the origin, `r` the half extent. */
+  function shapePath(name, r) {
+    const f = (v) => +v.toFixed(2), s = r;
+    switch (name) {
+      case "square": return `M${-s},${-s}H${s}V${s}H${-s}Z`;
+      case "triangle": return `M0,${-s * 1.15}L${f(s * 1.05)},${f(s * 0.8)}H${f(-s * 1.05)}Z`;
+      case "diamond": return `M0,${-s * 1.3}L${f(s * 1.3)},0L0,${f(s * 1.3)}L${f(-s * 1.3)},0Z`;
+      case "cross": { const t = s * 0.38; return `M${-t},${-s}H${t}V${-t}H${s}V${t}H${t}V${s}H${-t}V${t}H${-s}V${-t}H${-t}Z`; }
+      case "hex": return `M${-s},0L${f(-s / 2)},${f(-s * 0.87)}H${f(s / 2)}L${s},0L${f(s / 2)},${f(s * 0.87)}H${f(-s / 2)}Z`;
+      case "dot": return `M${-s / 2},0A${s / 2},${s / 2} 0 1,1 ${s / 2},0A${s / 2},${s / 2} 0 1,1 ${-s / 2},0Z`;
+      default: return `M${-s},0A${s},${s} 0 1,1 ${s},0A${s},${s} 0 1,1 ${-s},0Z`; // circle, ring
+    }
+  }
+  /** The filled part of an interior node's ring: a wedge from 12 o'clock clockwise for `frac` (0 to 1) of the turn; "" for none, a disc for all. */
+  function ringWedge(frac, r) {
+    if (!(frac > 0)) return "";
+    if (frac >= 1) return `M0,${-r}A${r},${r} 0 1,1 0,${r}A${r},${r} 0 1,1 0,${-r}Z`;
+    const a = frac * 2 * Math.PI, x = +(r * Math.sin(a)).toFixed(3), y = +(-r * Math.cos(a)).toFixed(3);
+    return `M0,0L0,${-r}A${r},${r} 0 ${frac > 0.5 ? 1 : 0},1 ${x},${y}Z`;
+  }
+
+  /**
+   * Layout of the whole tree for the map. mode "radial": the root at the centre, depth as rings (radius = depth x step, a d3 tidy tree
+   * mapped to angle, so a ring means a depth); mode "top": the root at the top, a level per row. Neighbours on a level are never closer
+   * than MAP_MIN_GAP. Returns {nodes: [{id, depth, x, y, r, angle}], links: [{source, target}], sectors, step, minGap, bounds, mode}; a sector is
+   * a faint background for a first-layer branch ({id, title, a0, a1} radial, {id, title, x0, x1} top-down).
+   */
+  function mapLayout(index, mode) {
+    const nest = (id) => ({ id, children: (index.children[id] || []).map(nest) });
+    const rootId = index.rootId, heads = index.children[rootId] || [];
+    // Each first-layer branch is its own tidy tree in a range of its own: laid out as one tree, a deep branch can reach under its neighbour's
+    // shallow nodes, and then a background sector per branch could not contain exactly that branch's nodes.
+    const subs = heads.map((hd) => d3.hierarchy(nest(hd), (d) => d.children));
+    const rows = []; // {id, depth, u} with u the position along the level axis (angle units / px)
+    const links = heads.map((hd) => ({ source: rootId, target: hd }));
+    let step, offset = 0;
+    const GAP = mode === "radial" ? 1 : MAP_MIN_GAP; // empty room between two branches, in the units of u
+    const sep = (a, b) => (a.parent === b.parent ? 1 : 2) / Math.max(1, a.depth + 1); // a.depth + 1 is the depth in the whole tree
+    const spans = subs.map((sub) => {
+      if (mode === "radial") d3.tree().nodeSize([1, 1]).separation(sep)(sub); else d3.tree().nodeSize([MAP_MIN_GAP, 1]).separation(() => 1)(sub);
+      let lo = Infinity, hi = -Infinity;
+      sub.each((d) => { if (d.x < lo) lo = d.x; if (d.x > hi) hi = d.x; });
+      return [lo, hi];
+    });
+    subs.forEach((sub, i) => {
+      sub.each((d) => rows.push({ id: d.data.id, depth: d.depth + 1, u: offset + d.x - spans[i][0] }));
+      for (const l of sub.links()) links.push({ source: l.source.data.id, target: l.target.data.id });
+      offset += spans[i][1] - spans[i][0] + GAP;
+    });
+    const total = Math.max(offset, 1); // for the radial layout the last gap closes the circle
+    let nodes;
+    if (mode === "radial") {
+      for (const r of rows) r.angle = r.u / total * 2 * Math.PI;
+      const at = (unit) => (r) => [unit * r.depth * Math.sin(r.angle), -unit * r.depth * Math.cos(r.angle)];
+      const unit0 = 100, g0 = minGapOf(rows, at(unit0), (r) => r.angle, true);
+      step = Math.max(70, unit0 * Math.max(1, Number.isFinite(g0) ? MAP_MIN_GAP * 1.0000001 / g0 : 1)); // room between rings for a title, and between neighbours for a marker
+      nodes = [{ id: rootId, depth: 0, angle: 0, r: 0, x: 0, y: 0 }, ...rows.map((r) => ({ id: r.id, depth: r.depth, angle: r.angle, r: r.depth * step,
+        x: r.depth * step * Math.sin(r.angle), y: -r.depth * step * Math.cos(r.angle) }))];
+    } else {
+      step = 90;
+      const mid = rows.length ? (Math.min(...rows.filter((r) => r.depth === 1).map((r) => r.u)) + Math.max(...rows.filter((r) => r.depth === 1).map((r) => r.u))) / 2 : 0;
+      nodes = [{ id: rootId, depth: 0, x: mid, y: 0 }, ...rows.map((r) => ({ id: r.id, depth: r.depth, x: r.u, y: r.depth * step }))];
+    }
+    const by = {}; for (const n of nodes) by[n.id] = n;
+    const minGap = minGapOf(nodes, (n) => [n.x, n.y], mode === "radial" ? (n) => n.angle : (n) => n.x, mode === "radial");
+    // each branch's extent along the level axis: disjoint by construction
+    const extent = heads.map((hd) => {
+      let lo = Infinity, hi = -Infinity;
+      (function f(id) { const v = mode === "radial" ? by[id].angle : by[id].x; if (v < lo) lo = v; if (v > hi) hi = v; for (const k of index.children[id] || []) f(k); })(hd);
+      return [lo, hi];
+    });
+    const sectors = heads.map((hd, i) => ({ id: hd, title: index.nodes[hd].title }));
+    if (mode === "radial") {
+      const T = 2 * Math.PI;
+      heads.forEach((hd, i) => {
+        const prevHi = i ? extent[i - 1][1] : extent[heads.length - 1][1] - T, nextLo = i < heads.length - 1 ? extent[i + 1][0] : extent[0][0] + T;
+        sectors[i].a0 = (prevHi + extent[i][0]) / 2; sectors[i].a1 = (extent[i][1] + nextLo) / 2;
+      });
+    } else {
+      heads.forEach((hd, i) => {
+        sectors[i].x0 = i ? (extent[i - 1][1] + extent[i][0]) / 2 : extent[i][0] - MAP_MIN_GAP / 2;
+        sectors[i].x1 = i < heads.length - 1 ? (extent[i][1] + extent[i + 1][0]) / 2 : extent[i][1] + MAP_MIN_GAP / 2;
+      });
+    }
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const n of nodes) { x0 = Math.min(x0, n.x); x1 = Math.max(x1, n.x); y0 = Math.min(y0, n.y); y1 = Math.max(y1, n.y); }
+    const maxDepth = Math.max.apply(null, nodes.map((n) => n.depth));
+    const reach = mode === "radial" ? (maxDepth + 0.6) * step : 0; // sectors and their labels reach beyond the outermost ring
+    if (mode === "radial") { const r2 = reach + 0.4 * step; x0 = -r2; x1 = r2; y0 = -r2; y1 = r2; } // the rim titles sit just outside the sectors else { y0 -= 40; y1 += 40; x0 -= MAP_MIN_GAP; x1 += MAP_MIN_GAP; }
+    return { mode, nodes, links, sectors, step, minGap, bounds: { x0, y0, x1, y1 }, maxDepth, reach };
+  }
+  /** The smallest distance between neighbours on one level (sorted by `key`; for a ring the last wraps round to the first). */
+  function minGapOf(items, pos, key, wrap) {
+    const levels = {};
+    for (const it of items) (levels[it.depth] = levels[it.depth] || []).push(it);
+    let gap = Infinity;
+    for (const list of Object.values(levels)) {
+      list.sort((a, b) => key(a) - key(b));
+      const n = list.length;
+      for (let i = 0; i + 1 < n; i++) { const a = pos(list[i]), b = pos(list[i + 1]); gap = Math.min(gap, Math.hypot(a[0] - b[0], a[1] - b[1])); }
+      if (wrap && n > 2) { const a = pos(list[n - 1]), b = pos(list[0]); gap = Math.min(gap, Math.hypot(a[0] - b[0], a[1] - b[1])); }
+    }
+    return gap;
+  }
+  /** The zoom at which neighbours on a level are far enough apart on screen for their titles not to overlap. */
+  function labelZoom(layout) { return Number.isFinite(layout.minGap) ? LABEL_PX / layout.minGap : 0; }
+
   /** Difflib.SequenceMatcher.ratio() with a = candidate and b = query, no junk: what Python's get_close_matches ranks by. */
   function matchRatio(a, b) {
     const la = a.length, lb = b.length;
@@ -337,8 +451,9 @@
   }
   function routeFormat(id) { return "#/node/" + encodeURIComponent(id); }
 
-  window.RoadmapLogic = { VROOT, STATUS, STATUS_ORDER, CHILD_ORDER, LAYOUT, MAX_DEPTH, statusInfo, esc, truncateTitle, buildIndex, ancestors,
-    navigate, relativeDepth, orderedChildren, activeLeaves, outlineVisible, outlineRows, crumbParts, usefulDepth, focusLayout, autoDepth, matchRatio, resolveQuery, blockerChain, criterionText, safeHref, renderMarkdown, routeParse, routeFormat };
+  window.RoadmapLogic = { VROOT, STATUS, STATUS_ORDER, CHILD_ORDER, LAYOUT, MAX_DEPTH, MAP_MIN_GAP, LABEL_PX, statusInfo, esc, truncateTitle, buildIndex, ancestors,
+    navigate, relativeDepth, orderedChildren, activeLeaves, outlineVisible, outlineRows, crumbParts, usefulDepth, focusLayout, autoDepth, markerShape, shapePath,
+    ringWedge, mapLayout, labelZoom, matchRatio, resolveQuery, blockerChain, criterionText, safeHref, renderMarkdown, routeParse, routeFormat };
   if (window.ROADMAP_TEST) return;
 
   /* ------------------------------------------------------------------ Part 2: interface */
@@ -352,7 +467,8 @@
   const S = { state: null, index: null, focus: null, selected: null, tab: "outline", showSuperseded: false, connected: null, version: null, nodeCache: new Map(),
     firstRenderMs: null, notice: null, candidates: [], candOn: -1,
     depthOverride: null, more: new Set(), crumbsOpen: false, fv: { k: 1, x: 0, y: 0 }, fitPending: true, layout: null, shownDepth: 1,
-    open: new Set(), closed: new Set(), chips: new Set(), scrollOutline: true, pins: [], pinSet: new Set(), workCollapsed: false };
+    open: new Set(), closed: new Set(), chips: new Set(), scrollOutline: true, pins: [], pinSet: new Set(), workCollapsed: false,
+    map: false, mapMode: "radial", mapFrontier: false, mv: { k: 1, x: 0, y: 0 }, stamp: 0, mapBuilt: null, mapState: null };
 
   function pref(key, value) { // per-viewer conveniences only; the page works without storage
     try {
@@ -409,7 +525,7 @@
     toast.timer = setTimeout(() => t.classList.remove("show"), isError ? 12000 : 2600); // an error stays until read; a click dismisses it
   }
 
-  /* ---- pan and zoom */
+  /* ---- pan and zoom, shared by the focus view and the map */
   function viewport(el, o) {
     let drag = null;
     const vp = { moved: false };
@@ -446,6 +562,8 @@
   /* ---- navigation */
   function go(id) {
     if (!S.index.nodes[id]) { toast("No node " + id); return; }
+    S.map = false;
+    document.body.classList.remove("map");
     const hash = routeFormat(id);
     if (location.hash === hash) applyFocus(id);
     else location.hash = hash; // the hashchange handler applies it, so back and forward use the same path
@@ -460,15 +578,18 @@
     S.closed = new Set();
     S.fitPending = true;
     S.scrollOutline = true;
+    if (S.map) { S.map = false; document.body.classList.remove("map"); }
     renderAll();
   }
   function select(id) {
     if (!S.index.nodes[id] || id === S.selected) return;
     S.selected = id;
-    const rd = relativeDepth(S.index, id, S.focus);
-    if (rd > S.shownDepth) S.depthOverride = Math.min(MAX_DEPTH, rd); // a keyboard move below the cut-off pulls the cut-off down with it
+    if (!S.map) {
+      const rd = relativeDepth(S.index, id, S.focus);
+      if (rd > S.shownDepth) S.depthOverride = Math.min(MAX_DEPTH, rd); // a keyboard move below the cut-off pulls the cut-off down with it
+    }
     renderAll();
-    ensureCardVisible(id);
+    if (S.map) ensureMapVisible(id); else ensureCardVisible(id);
   }
 
   /* ---- pins */
@@ -756,9 +877,10 @@
         h("button", { "aria-label": "Show one level more", onclick: () => { S.depthOverride = Math.min(MAX_DEPTH, S.shownDepth + 1); S.fitPending = true; renderAll(); } }, "+"),
         h("button", { id: "fitbtn", title: "Fit the view (f)", onclick: () => fitView() }, "Fit"));
     }
+    tools.append(h("button", { id: "mapbtn", title: "Map of the whole roadmap (m)", onclick: () => setMap(!S.map) }, "Map"));
     const cb = h("input", { type: "checkbox", id: "supcb" });
     cb.checked = S.showSuperseded;
-    cb.addEventListener("change", () => { S.showSuperseded = cb.checked; pref("superseded", cb.checked ? 1 : 0); S.index = buildIndex(S.state, S.showSuperseded); ensureValid(); S.fitPending = true; renderAll(); });
+    cb.addEventListener("change", () => { S.showSuperseded = cb.checked; pref("superseded", cb.checked ? 1 : 0); S.index = buildIndex(S.state, S.showSuperseded); S.stamp++; ensureValid(); S.fitPending = true; renderAll(); });
     tools.append(h("label", {}, cb, " show superseded"));
     bar.append(tools);
   }
@@ -779,6 +901,7 @@
     s.dataset.k = t.k.toFixed(4); s.dataset.tx = t.x.toFixed(2); s.dataset.ty = t.y.toFixed(2);
   }
   function fitView() {
+    if (S.map) { mapFit(); return; }
     const view = $("view"), lay = S.layout;
     if (!lay || !stageEl()) return;
     const w = view.clientWidth || 1;
@@ -920,20 +1043,266 @@
     sb.append(h("span", {}, st.node_count + " nodes"));
     STATUS_ORDER.filter((s) => counts[s]).forEach((s) => sb.append(h("span", {}, swatch(s), counts[s] + " " + statusInfo(s).label)));
     sb.append(h("span", {}, "superseded " + (st.superseded_count || 0)), h("span", { class: "grow" }));
-    sb.append(h("span", {}, "↑↓←→ move · Enter focus · e editor · p pin · f fit · / search · Esc"));
+    sb.append(h("span", {}, "↑↓←→ move · Enter focus · e editor · p pin · m map · f fit · / search · Esc"));
     if (S.bench) sb.append(h("span", {}, S.bench));
     sb.append(h("span", { title: "Time from navigation start to the first render of this page" }, S.firstRenderMs === null ? "" : "first render " + Math.round(S.firstRenderMs) + " ms"));
     sb.append(h("span", { title: "Live updates from /api/events" }, S.connected === null ? "" : S.connected ? "● live" : "○ reconnecting…"));
   }
 
   function renderAll() {
+    document.body.classList.toggle("map", S.map);
+    $("map").hidden = !S.map;
     renderSidebar();
     renderDrawer(); // before the view: it takes width, and the view's automatic depth and fit are computed from its width
     renderView(); // before the breadcrumb: the depth it shows is decided while the view is laid out
     renderCrumbs();
     renderStatusbar();
+    if (S.map) renderMap();
     document.title = (S.focus && node(S.focus) ? node(S.focus).title + " — " : "") + "Freyja roadmap";
   }
+
+  /* ---- the map */
+  const SECTOR_TINTS = ["var(--sector-a)", "var(--sector-b)", "var(--sector-c)"];
+  function setMap(on) {
+    if (on === S.map) return;
+    S.map = on;
+    document.body.classList.toggle("map", on);
+    if (on) { const t = performance.now(); renderMap(true); S.mapOpenMs = performance.now() - t; document.documentElement.dataset.mapOpenMs = S.mapOpenMs.toFixed(1); }
+    else $("map").hidden = true;
+    renderStatusbar();
+  }
+  function mapDims() { const box = $("map"); return [box.clientWidth || 1000, (box.clientHeight || 700) - $("map").querySelector(".maptools").offsetHeight]; }
+  function mapKeyOf() { return [S.stamp, S.mapMode, S.showSuperseded ? 1 : 0].join("|"); }
+  function mapFit() {
+    const M = S.mapState && S.mapState.lay;
+    if (!M) return;
+    const [W, H] = mapDims(), b = M.bounds, bw = b.x1 - b.x0, bh = b.y1 - b.y0;
+    $("map").dataset.fitdims = Math.round(W) + "x" + Math.round(H); // what this fit was computed against
+    const k = clamp(Math.min(W / bw, H / bh) * 0.94, 0.02, 3);
+    setMapT({ k, x: W / 2 - (b.x0 + bw / 2) * k, y: H / 2 - (b.y0 + bh / 2) * k });
+    S.mapState.fitK = k;
+  }
+  function mapCentreOn(id) {
+    const ms = S.mapState, n = ms.byId[id];
+    if (!n) return;
+    const [W, H] = mapDims();
+    const k = clamp(Math.min(1, Math.max(ms.fitK * 2.5, 0.5)), ms.fitK, 8);
+    setMapT({ k, x: W / 2 - n.x * k, y: H / 2 - n.y * k });
+  }
+  function ensureMapVisible(id) {
+    const ms = S.mapState, n = ms && ms.byId[id];
+    if (!n) return;
+    const [W, H] = mapDims(), t = S.mv, sx = t.x + n.x * t.k, sy = t.y + n.y * t.k;
+    if (sx < 30 || sx > W - 30 || sy < 30 || sy > H - 30) setMapT({ k: t.k, x: t.x + (W / 2 - sx), y: t.y + (H / 2 - sy) });
+  }
+  function setMapT(t) {
+    const ms = S.mapState;
+    const prevK = S.mv.k;
+    S.mv = t;
+    const world = $("mapworld");
+    world.setAttribute("transform", "translate(" + t.x.toFixed(2) + "," + t.y.toFixed(2) + ") scale(" + t.k.toFixed(5) + ")");
+    world.dataset.k = t.k.toFixed(5); world.dataset.tx = t.x.toFixed(2); world.dataset.ty = t.y.toFixed(2);
+    if (!ms) return;
+    if (t.k !== prevK || ms.dirtyScale) { ms.dirtyScale = false; mapRescale(); }
+  }
+  /** Markers, labels and annotations keep a constant size on screen: each is drawn at its place and scaled by 1/zoom about it. */
+  function mapRescale() {
+    const ms = S.mapState, k = S.mv.k, inv = 1 / k;
+    const showLabels = k >= ms.labelZoom;
+    $("map").dataset.labelzoom = ms.labelZoom.toFixed(4);
+    for (const g of ms.markers) g.el.setAttribute("transform", "translate(" + g.x + "," + g.y + ") scale(" + inv.toFixed(5) + ")");
+    for (const l of ms.labels) {
+      l.el.classList.toggle("show", showLabels);
+      if (!showLabels) continue;
+      l.el.setAttribute("transform", l.t + " scale(" + inv.toFixed(5) + ")");
+      const room = Math.floor((ms.lay.step * k - 22) / 6.2), n = clamp(room, 4, 40);
+      if (l.chars !== n) { l.chars = n; l.el.textContent = truncateTitle(l.full, n); }
+    }
+    for (const s of ms.secLabels) { // a sector's title must fit inside the sector, so neighbours' titles never overlap: shorten it to the room it has, or hide it
+      s.el.setAttribute("transform", s.t + " scale(" + inv.toFixed(5) + ")");
+      const room = Math.floor(s.w * k / 6.6);
+      s.el.classList.toggle("hide", room < 5);
+      if (room >= 5 && s.chars !== room) { s.chars = room; s.el.textContent = truncateTitle(s.full, Math.min(40, room)); }
+    }
+    if (ms.here) ms.here.el.setAttribute("transform", "translate(" + ms.here.x + "," + ms.here.y + ") scale(" + inv.toFixed(5) + ")");
+  }
+
+  function buildMap() {
+    const idx = S.index, M = mapLayout(idx, S.mapMode);
+    const byId = {}; for (const n of M.nodes) byId[n.id] = n;
+    const world = sv("g", { id: "mapworld" });
+    const gSec = sv("g", { class: "sectors" }), gLink = sv("g", { class: "mlinks" }), gOver = sv("g", { class: "over" }), gMk = sv("g", { class: "markers" }), gLbl = sv("g", { class: "labels" }), gSecLbl = sv("g", { class: "seclabels" });
+    const ms = { lay: M, byId, markers: [], labels: [], secLabels: [], linkEls: {}, mkEls: {}, over: gOver, labelZoom: labelZoom(M), here: null, fitK: 1, dirtyScale: true };
+    // sectors: a faint background and a title for each first-layer branch
+    M.sectors.forEach((q, i) => {
+      const tint = SECTOR_TINTS[i % SECTOR_TINTS.length];
+      let t;
+      if (M.mode === "radial") {
+        const R = M.reach, mid = (q.a0 + q.a1) / 2;
+        gSec.append(sv("path", { class: "sector", "data-id": q.id, d: d3.arc()({ innerRadius: 0, outerRadius: R, startAngle: q.a0, endAngle: q.a1 }), style: "fill:" + tint }));
+        const lr = R + 6, lx = lr * Math.sin(mid), ly = -lr * Math.cos(mid), deg = ((mid * 180 / Math.PI) % 360 + 360) % 360;
+        const flip = deg > 90 && deg < 270; // along the tangent, and never upside down
+        t = "translate(" + lx.toFixed(1) + "," + ly.toFixed(1) + ") rotate(" + (flip ? deg - 180 : deg).toFixed(1) + ")";
+        gSecLbl.append(sv("text", { class: "sector-label", "data-id": q.id, "text-anchor": "middle", transform: t }, truncateTitle(q.title, 40)));
+      } else {
+        const y0 = M.bounds.y0, y1 = M.bounds.y1;
+        gSec.append(sv("rect", { class: "sector", "data-id": q.id, x: q.x0, y: y0, width: q.x1 - q.x0, height: y1 - y0, style: "fill:" + tint }));
+        t = "translate(" + ((q.x0 + q.x1) / 2).toFixed(1) + "," + (y0 + 14).toFixed(1) + ")";
+        gSecLbl.append(sv("text", { class: "sector-label", "data-id": q.id, "text-anchor": "middle", transform: t }, truncateTitle(q.title, 40)));
+      }
+      ms.secLabels.push({ el: gSecLbl.lastChild, t, full: q.title, w: M.mode === "radial" ? (M.reach + 6) * (q.a1 - q.a0) : q.x1 - q.x0, chars: -1 });
+    });
+    // links
+    for (const l of M.links) {
+      const a = byId[l.source], b = byId[l.target];
+      const d = M.mode === "radial" ? d3.linkRadial().angle((n) => n.angle).radius((n) => n.r)({ source: a, target: b }) : d3.linkVertical().x((n) => n.x).y((n) => n.y)({ source: a, target: b });
+      const p = sv("path", { class: "mlink", "data-to": l.target, d });
+      ms.linkEls[l.target] = p;
+      gLink.append(p);
+    }
+    // markers: a shape per status for leaves and stubs, a ring filled to the done fraction for interior nodes
+    const frontier = new Set(S.state.frontier || []);
+    for (const n of M.nodes) {
+      const nd = idx.nodes[n.id], interior = (idx.children[n.id] || []).length > 0;
+      const kind = interior ? "interior" : nd.kind === "stub" ? "stub" : "leaf";
+      const shape = interior ? "ring" : markerShape(nd.status);
+      const g = sv("g", { class: "mk" + (frontier.has(n.id) ? " frontier" : ""), "data-id": n.id, "data-kind": kind, "data-shape": shape, "data-depth": n.depth, "data-status": nd.status,
+        "data-r": M.mode === "radial" ? n.r.toFixed(3) : null, "data-y": M.mode === "radial" ? null : n.y.toFixed(3), role: "img", "aria-label": nd.title + ", " + statusInfo(nd.status).label });
+      g.append(sv("circle", { class: "hit", r: 10 }));
+      if (interior) {
+        const p = idx.progress[n.id], frac = p.total ? p.done / p.total : 0;
+        g.append(sv("circle", { class: "ring" + (nd.status === "blocked" ? " blockedring" : ""), r: MAP_RING, "data-frac": frac.toFixed(4), style: "stroke:var(--c-" + nd.status + ")" }));
+        const wedge = ringWedge(frac, MAP_RING - 1);
+        if (wedge) g.append(sv("path", { class: "wedge", d: wedge }));
+      } else {
+        g.append(sv("path", { class: "shape" + (nd.kind === "stub" ? " stubshape" : ""), d: shapePath(shape, 5.5), style: "fill:var(--c-" + nd.status + ")" }));
+      }
+      ms.markers.push({ el: g, x: n.x.toFixed(2), y: n.y.toFixed(2) });
+      ms.mkEls[n.id] = g;
+      gMk.append(g);
+      // the title, drawn along the ray (radial) or downwards (top-down) once the zoom lets neighbours' titles clear each other
+      let t;
+      if (M.mode === "radial") {
+        const deg = n.angle * 180 / Math.PI, flip = deg > 180;
+        t = "translate(" + n.x.toFixed(2) + "," + n.y.toFixed(2) + ") rotate(" + ((flip ? deg + 90 : deg - 90)).toFixed(1) + ")";
+        const tx = sv("text", { class: "lbl", "text-anchor": flip ? "end" : "start", x: flip ? -11 : 11, y: 4 }, "");
+        ms.labels.push({ el: tx, t, full: nd.title, chars: -1 });
+        gLbl.append(tx);
+      } else {
+        t = "translate(" + n.x.toFixed(2) + "," + n.y.toFixed(2) + ") rotate(90)";
+        const tx = sv("text", { class: "lbl", x: 11, y: 4 }, "");
+        ms.labels.push({ el: tx, t, full: nd.title, chars: -1 });
+        gLbl.append(tx);
+      }
+      ms.labels[ms.labels.length - 1].el.setAttribute("transform", t);
+    }
+    const here = sv("g", { class: "here" }, sv("circle", { r: 15, class: "hererings" }), sv("text", { class: "heretext", y: -22, "text-anchor": "middle" }, "you are here"));
+    ms.here = { el: here, x: "0", y: "0" };
+    world.append(gSec, gLink, gOver, gMk, gLbl, gSecLbl, here);
+    return { ms, world };
+  }
+
+  function updateMapPins() {
+    const ms = S.mapState;
+    if (!ms) return;
+    for (const [id, g] of Object.entries(ms.mkEls)) {
+      const has = g.querySelector(".pinstar"), want = isPinned(id);
+      if (want && !has) g.append(sv("path", { class: "pinstar", d: shapePathStar(5), transform: "translate(8,-8)" }));
+      else if (!want && has) has.remove();
+    }
+  }
+  function shapePathStar(r) {
+    const pts = [];
+    for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.42 : r; pts.push((rr * Math.cos(a)).toFixed(2) + "," + (rr * Math.sin(a)).toFixed(2)); }
+    return "M" + pts.join("L") + "Z";
+  }
+  function updateMapSelection() {
+    const ms = S.mapState;
+    if (!ms) return;
+    for (const g of ms.markers) g.el.classList.toggle("sel", g.el.dataset.id === S.selected);
+    const f = ms.byId[S.focus];
+    if (f) { ms.here.x = f.x.toFixed(2); ms.here.y = f.y.toFixed(2); ms.here.el.setAttribute("transform", "translate(" + ms.here.x + "," + ms.here.y + ") scale(" + (1 / S.mv.k).toFixed(5) + ")"); }
+  }
+
+  function renderMap(opening) {
+    const box = $("map"), svg = $("mapsvg");
+    box.hidden = !S.map;
+    if (!S.map) return;
+    const key = mapKeyOf();
+    let built = false;
+    if (!S.mapBuilt || S.mapBuilt !== key) {
+      const { ms, world } = buildMap();
+      S.mapState = ms; S.mapBuilt = key;
+      svg.replaceChildren(world);
+      built = true;
+      box.dataset.step = ms.lay.step.toFixed(3);
+    }
+    box.dataset.mode = S.mapMode;
+    $("map-layout").textContent = S.mapMode === "radial" ? "Top-down" : "Radial";
+    $("map-frontier").setAttribute("aria-pressed", String(S.mapFrontier));
+    svg.classList.toggle("frontier-only", S.mapFrontier);
+    updateMapPins(); // pins, the selection and the focus mark are cheap, so they follow every render; the layout is rebuilt only when it changes
+    if (opening || built) {
+      mapFit();
+      if (S.focus !== S.index.rootId) mapCentreOn(S.focus);
+    }
+    updateMapSelection();
+  }
+
+  function hoverOn(id, ev) {
+    const ms = S.mapState, idx = S.index, n = idx.nodes[id];
+    hoverOff();
+    const p = idx.progress[id], interior = isInterior(id);
+    const tip = $("tip");
+    tip.replaceChildren(h("b", {}, n.title), h("div", { class: "mono" }, id), h("div", {}, statusInfo(n.status).label + (n.kind === "stub" ? " (stub)" : "") + (interior ? " · " + p.done + "/" + p.total + " done" : "")));
+    tip.style.display = "block";
+    tip.style.left = Math.min(window.innerWidth - 380, (ev.clientX || 0) + 14) + "px";
+    tip.style.top = Math.min(window.innerHeight - 60, (ev.clientY || 0) + 16) + "px";
+    for (let c = id; c && idx.parent[c]; c = idx.parent[c]) if (ms.linkEls[c]) ms.linkEls[c].classList.add("onpath");
+    const A = ms.byId[id];
+    const connect = (other, kind) => {
+      const B = ms.byId[other];
+      if (!B || other === id) return;
+      const mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2, cx = S.mapMode === "radial" ? mx * 0.55 : mx, cy = S.mapMode === "radial" ? my * 0.55 : my + 40;
+      ms.over.append(sv("path", { class: "hoverlink " + kind, d: "M" + A.x + "," + A.y + " Q" + cx + "," + cy + " " + B.x + "," + B.y, "stroke-dasharray": kind === "blocker" ? "7 4" : "2 4" }));
+    };
+    (n.effective_blockers || []).forEach((b) => connect(b, "blocker"));
+    (n.dependents || []).forEach((d) => connect(d, "dependent"));
+  }
+  function hoverOff() {
+    const ms = S.mapState;
+    $("tip").style.display = "none";
+    if (!ms) return;
+    ms.over.replaceChildren();
+    for (const p of document.querySelectorAll("#mapsvg path.mlink.onpath")) p.classList.remove("onpath");
+  }
+
+  (function wireMap() {
+    const svg = $("mapsvg");
+    S.mvp = viewport(svg, {
+      enabled: () => S.map && !!S.mapState,
+      get: () => S.mv, set: setMapT,
+      minK: () => (S.mapState ? S.mapState.fitK * 0.5 : 0.01), maxK: () => 8,
+    });
+    svg.addEventListener("pointerover", (ev) => { const g = ev.target.closest && ev.target.closest("g.mk"); if (g && !(S.mvp && S.mvp.moved)) hoverOn(g.dataset.id, ev); });
+    svg.addEventListener("pointermove", (ev) => { const g = ev.target.closest && ev.target.closest("g.mk"); if (g) { $("tip").style.left = Math.min(window.innerWidth - 380, ev.clientX + 14) + "px"; $("tip").style.top = Math.min(window.innerHeight - 60, ev.clientY + 16) + "px"; } });
+    svg.addEventListener("pointerout", (ev) => {
+      const g = ev.target.closest && ev.target.closest("g.mk");
+      if (!g) return;
+      const to = ev.relatedTarget;
+      if (to && to.closest && to.closest("g.mk") === g) return;
+      hoverOff();
+    });
+    svg.addEventListener("click", (ev) => {
+      if (S.mvp && S.mvp.moved) return;
+      const g = ev.target.closest && ev.target.closest("g.mk");
+      if (g) go(g.dataset.id);
+    });
+    $("map-close").addEventListener("click", () => setMap(false));
+    $("map-fit").addEventListener("click", () => mapFit());
+    $("map-layout").addEventListener("click", () => { S.mapMode = S.mapMode === "radial" ? "top" : "radial"; pref("maplayout", S.mapMode); renderMap(true); });
+    $("map-frontier").addEventListener("click", () => { S.mapFrontier = !S.mapFrontier; renderMap(); });
+  })();
 
   /* ---- search */
   function renderCandidates() {
@@ -968,6 +1337,7 @@
     S.state = state;
     S.index = buildIndex(state, S.showSuperseded);
     S.nodeCache.clear();
+    S.stamp++;
     if (first) {
       const want = routeParse(location.hash);
       S.focus = want && S.index.nodes[want] ? want : S.index.rootId;
@@ -1029,7 +1399,8 @@
     else if (k === "p") { if (S.selected) togglePin(S.selected); }
     else if (k === "f") fitView();
     else if (k === "/") { ev.preventDefault(); $("search").focus(); $("search").select(); }
-    else if (k === "Escape") { if ($("search").value || S.chips.size) { S.chips.clear(); clearSearch(); } }
+    else if (k === "m") setMap(!S.map);
+    else if (k === "Escape") { if (S.map) setMap(false); else if ($("search").value || S.chips.size) { S.chips.clear(); clearSearch(); } }
   });
 
   document.querySelectorAll(".tabs [data-tab]").forEach((b) => b.addEventListener("click", () => { S.tab = b.dataset.tab; pref("tab", S.tab); renderSidebar(); }));
@@ -1046,18 +1417,18 @@
   });
 
   S.vp = viewport($("view"), {
-    enabled: () => $("view").classList.contains("tree-mode") && !!stageEl(),
+    enabled: () => $("view").classList.contains("tree-mode") && !S.map && !!stageEl(),
     get: () => S.fv, set: (t) => { S.fv = t; applyFv(); },
     minK: () => 0.12, maxK: () => 3,
   });
 
   /** The view's width changed (window or sidebar): with an automatic depth, a different depth may now fit. */
   function onViewResize() {
-    if (!S.state || S.focus === null || !isInterior(S.focus)) return;
+    if (!S.state || S.map || S.focus === null || !isInterior(S.focus)) return;
     if (S.depthOverride === null && effectiveDepth() !== S.shownDepth) { S.fitPending = true; renderView(); renderCrumbs(); }
   }
   let resizeTimer = 0;
-  window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(onViewResize, 30); });
+  window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { if (S.map) { mapFit(); if (S.focus !== S.index.rootId) mapCentreOn(S.focus); } else onViewResize(); }, 30); });
 
   (function sidebarResizer() {
     const bar = $("resizer"), app = $("app");
@@ -1084,16 +1455,25 @@
     if (q.get("theme") === "light" || q.get("theme") === "dark") document.documentElement.dataset.theme = q.get("theme"); // for captures; otherwise the system setting decides
     S.showSuperseded = pref("superseded") === "1";
     S.workCollapsed = pref("workcollapsed") === "1";
+    S.mapMode = q.get("layout") === "top" || (!q.get("layout") && pref("maplayout") === "top") ? "top" : "radial";
     S.tab = TABS.includes(pref("tab")) ? pref("tab") : "outline";
     try {
       const [state] = await Promise.all([fetchState(), loadPins()]);
       applyState(state, true);
-      // capture parameters: they only seed the initial view (selection, tab, search text, depth), so a screenshot can show it
+      // capture parameters: they only seed the initial view (selection, tab, search text, depth, map), so a screenshot can show it
       if (q.has("select") && S.index.nodes[q.get("select")]) S.selected = q.get("select");
       if (TABS.includes(q.get("tab"))) S.tab = q.get("tab");
       if (q.get("depth")) S.depthOverride = clamp(parseInt(q.get("depth"), 10) || 3, 1, MAX_DEPTH);
+      if (q.get("frontier") === "1") S.mapFrontier = true;
       if (q.get("q")) { $("search").value = q.get("q"); renderCandidates(); }
+      if (q.get("map") === "1") { S.map = true; document.body.classList.add("map"); }
+      const t = performance.now();
       renderAll();
+      if (S.map) { S.mapOpenMs = performance.now() - t; document.documentElement.dataset.mapOpenMs = S.mapOpenMs.toFixed(1); }
+      if (S.map && parseFloat(q.get("mapk")) > 0) { // capture parameter: open the map zoomed to this factor, centred on the focus
+        const n = S.mapState.byId[S.focus], k = parseFloat(q.get("mapk")), [W, H] = mapDims();
+        setMapT({ k, x: W / 2 - n.x * k, y: H / 2 - n.y * k });
+      }
     } catch (e) {
       document.body.prepend(h("div", { class: "banner" }, "Could not load /api/state: " + e.message + ". Is `fy roadmap serve` still running?"));
       return;

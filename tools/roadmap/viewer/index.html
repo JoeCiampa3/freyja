@@ -174,6 +174,38 @@ dl.kv dt { color: var(--muted); } dl.kv dd { margin: 0; overflow-wrap: anywhere;
 #tip { position: fixed; z-index: 50; pointer-events: none; background: var(--ink); color: var(--bg); padding: 4px 8px; border-radius: 4px; font-size: 12px; max-width: 360px; display: none; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .kbd { font: 11px ui-monospace, Consolas, monospace; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 3px; padding: 0 4px; background: var(--panel2); }
+
+/* the map: the whole tree, full screen */
+#map { position: fixed; inset: 0; z-index: 30; background: var(--bg); display: flex; flex-direction: column; }
+#map[hidden] { display: none; }
+.maptools { display: flex; gap: 8px; align-items: center; padding: 6px 12px; border-bottom: 1px solid var(--line); background: var(--panel); flex: none; }
+.maptools .grow { flex: 1; } .maptools .hint { color: var(--muted); font-size: 12px; }
+.maptools button[aria-pressed=true] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 18%, var(--panel2)); font-weight: 600; }
+#mapsvg { flex: 1; width: 100%; min-height: 0; display: block; touch-action: none; cursor: grab; user-select: none; }
+#mapsvg.panning { cursor: grabbing; }
+#mapsvg .sector { stroke: none; }
+#mapsvg .sector-label { font-size: 12px; font-weight: 700; fill: var(--muted); pointer-events: none; paint-order: stroke; stroke: var(--bg); stroke-width: 3px; }
+#mapsvg .sector-label.hide { display: none; }
+#mapsvg .mlink { fill: none; stroke: var(--line); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+#mapsvg .mlink.onpath { stroke: var(--accent); stroke-width: 2.8; }
+#mapsvg g.mk { cursor: pointer; }
+#mapsvg g.mk .hit { fill: transparent; }
+#mapsvg g.mk.sel .hit { fill: rgba(128,128,128,.22); stroke: var(--ink); stroke-width: 1.5; }
+#mapsvg g.mk .shape { stroke: var(--ink); stroke-width: 1; }
+#mapsvg g.mk .shape.stubshape { stroke-dasharray: 2 1.5; }
+#mapsvg g.mk .ring { fill: var(--panel); stroke-width: 2.4; }
+#mapsvg g.mk .ring.blockedring { stroke-dasharray: 3 2; }
+#mapsvg g.mk .wedge { fill: var(--c-done); }
+#mapsvg .pinstar { fill: #f5c518; stroke: #6b4e00; stroke-width: .8; }
+#mapsvg .lbl { font-size: 11px; fill: var(--ink); display: none; pointer-events: none; paint-order: stroke; stroke: var(--bg); stroke-width: 3px; }
+#mapsvg .lbl.show { display: block; }
+#mapsvg .hererings { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-dasharray: 4 3; }
+#mapsvg .heretext { font-size: 12px; font-weight: 700; fill: var(--accent); text-anchor: middle; paint-order: stroke; stroke: var(--bg); stroke-width: 3px; }
+#mapsvg .here { pointer-events: none; }
+#mapsvg .hoverlink { fill: none; stroke-width: 2.2; vector-effect: non-scaling-stroke; pointer-events: none; }
+#mapsvg .hoverlink.blocker { stroke: var(--edge-blocker); } #mapsvg .hoverlink.dependent { stroke: var(--edge-dependent); }
+#mapsvg.frontier-only g.mk:not(.frontier) { opacity: .15; }
+#mapsvg.frontier-only .mlink { opacity: .35; }
 </style>
 </head>
 <body>
@@ -204,6 +236,18 @@ dl.kv dt { color: var(--muted); } dl.kv dd { margin: 0; overflow-wrap: anywhere;
     <aside id="drawer" aria-label="Selected node" hidden></aside>
   </div>
   <footer id="statusbar" role="status"></footer>
+</div>
+<div id="map" hidden aria-label="Map of the whole roadmap">
+  <div class="maptools">
+    <strong>Map</strong>
+    <button id="map-layout" title="Switch between the radial and the top-down layout">Top-down</button>
+    <button id="map-frontier" aria-pressed="false" title="Dim every node that is neither ready nor expandable">Frontier only</button>
+    <button id="map-fit" title="Fit the whole map (f)">Fit</button>
+    <span class="grow"></span>
+    <span class="hint">wheel zooms · drag pans · click a node to focus it · ↑↓←→ move · p pin · e editor · f fit · Esc closes</span>
+    <button id="map-close" title="Leave the map (Esc or m)">Close</button>
+  </div>
+  <svg id="mapsvg" role="img" aria-label="The roadmap as a tree: rings are depths in the radial layout; each marker is a node"></svg>
 </div>
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="tip"></div>
