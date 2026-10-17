@@ -60,9 +60,16 @@ def test_fixture_is_valid_and_derived_statuses_match_the_intended_ones(tmp_path,
     fixture.generate(size, root, seed=seed)
     rm = roadmap.compute(root)
     assert rm.errors == [], [e.message for e in rm.errors[:3]]
-    # the only warnings are criterion-unknown, one for each leaf the generator left with missing or unreadable evidence
-    assert [w.code for w in rm.warnings] == ["criterion-unknown"] * len(intended(root)["unknown_criteria"]), [w.message for w in rm.warnings[:3]]
-    assert sorted(w.ids[0] for w in rm.warnings) == intended(root)["unknown_criteria"] != []
+    # the only warnings are criterion-unknown, and they name exactly the leaves the generator left with unreadable or unexpectable evidence;
+    # the leaves whose evidence is merely not there yet are awaiting and draw nothing
+    want_unknown, want_awaiting = intended(root)["unknown_criteria"], intended(root)["awaiting_criteria"]
+    assert [w.code for w in rm.warnings] == ["criterion-unknown"] * len(want_unknown), [w.message for w in rm.warnings[:3]]
+    assert sorted(w.ids[0] for w in rm.warnings) == want_unknown != []
+    assert want_awaiting != [] and not set(want_awaiting) & set(want_unknown)
+    assert {i: rm.evaluation(i).result for i in want_awaiting} == {i: "awaiting" for i in want_awaiting}
+    assert {i: rm.evaluation(i).result for i in want_unknown} == {i: "unknown" for i in want_unknown}
+    got = {i for i in rm.nodes if rm.evaluation(i) is not None and rm.evaluation(i).result in ("awaiting", "unknown")}
+    assert got == set(want_awaiting) | set(want_unknown)  # and no other leaf evaluates to either
     want = intended(root)["statuses"]
     assert len(want) == size and sorted(rm.nodes) == sorted(want)
     wrong = {i: (want[i], rm.status(i)) for i in want if rm.status(i) != want[i]}

@@ -18,7 +18,7 @@ import roadmap
 from roadmap import fixture, render, server
 
 INVALID = REPO / "tests" / "fixtures" / "roadmap" / "invalid"
-STATE_SCHEMA = json.loads((REPO / "docs" / "schemas" / "roadmap-state-1.schema.json").read_text(encoding="utf-8"))
+STATE_SCHEMA = json.loads((REPO / "docs" / "schemas" / "roadmap-state-2.schema.json").read_text(encoding="utf-8"))
 PORT = 8765
 HOST = {"Host": f"127.0.0.1:{PORT}"}
 METRIC = {"type": "metric", "record": "records/m.json", "pointer": "/v", "op": ">", "value": 1}
@@ -145,7 +145,7 @@ def test_a_node_edit_a_new_node_a_removed_node_and_a_changed_record_each_recompu
 def test_a_record_that_appears_later_is_noticed(root, tmp_path, monkeypatch):
     (root / "records" / "m.json").unlink()
     app = app_for(root, tmp_path)
-    assert get(app, "/api/state").json()["nodes"]["rm.m"]["evaluation"]["result"] == "unknown"
+    assert get(app, "/api/state").json()["nodes"]["rm.m"]["evaluation"]["result"] == "awaiting"  # the parent directory is still there
     (root / "records" / "m.json").write_text('{"v": 9}', encoding="utf-8")
     assert get(app, "/api/state").json()["nodes"]["rm.m"]["status"] == "done"
 

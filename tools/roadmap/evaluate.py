@@ -1,7 +1,10 @@
 """
 Roadmap done_when evaluation. Every type is read from files already in the repo (the root directory); the library never runs a
-simulation, a test suite or a check. A leaf's evaluation is pass, fail or unknown (a record that is missing or unreadable where a
-record is the evidence), with a one-line reason and, for metrics, the measured value.
+simulation, a test suite or a check. A leaf's evaluation is pass, fail, awaiting or unknown, with a one-line reason and, for metrics, the
+measured value. `awaiting` means the evidence does not exist yet but could (the file is absent and its directory exists; the check is
+recorded as not run): normal for unfinished work, so it draws no warning. `unknown` means the evidence cannot be read or cannot be
+expected (an unparseable record, a pointer that does not resolve, a missing parent directory, a check id nobody lists): it warns.
+Neither counts as a pass.
 
 Where a check's result is recorded: docs/STATE.md lists every check as `- <id> | <tier> | <STATUS>` under "## Checks". That file is
 generated, tracked and deterministic. checks/last_run.json is gitignored and is not used.
@@ -12,7 +15,7 @@ import json
 import operator
 import re
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 import jsonschema
 import yaml
@@ -25,7 +28,7 @@ OPS = {"<": operator.lt, "<=": operator.le, ">": operator.gt, ">=": operator.ge,
 
 @dataclass(frozen=True)
 class Evaluation:
-    result: str  # pass | fail | unknown
+    result: str  # pass | fail | awaiting | unknown
     reason: str
     measured: float | None = None
 
@@ -77,12 +80,19 @@ def _load_structured(path: Path):
     return json.loads(text)
 
 
+def _absent(rel, p) -> Evaluation:
+    """The evidence file is absent: awaiting when its parent directory exists, else unknown (nothing says where it would appear)."""
+    if p.parent.is_dir():
+        return Evaluation("awaiting", f"{rel} does not exist yet")
+    return Evaluation("unknown", f"{rel} does not exist and its directory {PurePosixPath(rel).parent} is missing")
+
+
 def _artifact(root, dw):
     p = safe_path(root, dw["path"])
     if p is None:
         return Evaluation("unknown", f"path {dw['path']!r} is not a relative path inside the root")
     if not p.is_file():
-        return Evaluation("fail", f"{dw['path']} does not exist")
+        return _absent(dw["path"], p)
     if p.stat().st_size == 0:
         return Evaluation("fail", f"{dw['path']} is empty")
     if "schema" not in dw:
@@ -111,7 +121,7 @@ def _decision(root, dw):
     if p is None:
         return Evaluation("unknown", f"record {dw['record']!r} is not a relative path inside the root")
     if not p.is_file():
-        return Evaluation("fail", f"{dw['record']} does not exist")
+        return _absent(dw["record"], p)
     try:
         parts = split_front_matter(p.read_text(encoding="utf-8"))
         front = yaml.safe_load(parts[0]) if parts else None
@@ -128,12 +138,17 @@ def _decision(root, dw):
 _CHECK_LINE = re.compile(r"^- (check\.[^ |]+) \| ([a-z]+) \| ([A-Z_]+)\s*$")
 
 
-def recorded_checks(root) -> dict | None:
-    """check id -> status as recorded in docs/STATE.md, or None when there is no usable record."""
+NOT_RUN = "not run"  # `fy state --no-run` writes "not run (--no-run)" in place of the check lines
+_NOT_RUN_STATUSES = ("NOT_RUN", "NOT RUN")
+
+
+def recorded_checks(root):
+    """check id -> status as recorded in docs/STATE.md; NOT_RUN when the Checks section says the checks were not run; None when there
+    is no usable record (no file, no Checks section, or an empty one)."""
     p = Path(root) / STATE_FILE
     if not p.is_file():
         return None
-    out, in_section = {}, False
+    out, in_section, not_run = {}, False, False
     for line in p.read_text(encoding="utf-8").splitlines():
         if line.startswith("## "):
             in_section = line.strip() == "## Checks"
@@ -141,16 +156,24 @@ def recorded_checks(root) -> dict | None:
             m = _CHECK_LINE.match(line)
             if m:
                 out[m.group(1)] = m.group(3)
-    return out or None
+            elif line.strip().lower().startswith("not run"):
+                not_run = True
+    if out:
+        return out
+    return NOT_RUN if not_run else None
 
 
 def _check(root, dw):
     recorded = recorded_checks(root)
     if recorded is None:
         return Evaluation("unknown", f"{STATE_FILE} has no recorded check results")
+    if recorded == NOT_RUN:
+        return Evaluation("awaiting", f"the checks are recorded as not run in {STATE_FILE}")
     status = recorded.get(dw["check"])
     if status is None:
         return Evaluation("unknown", f"{dw['check']} is not in the recorded results of {STATE_FILE}")
+    if status in _NOT_RUN_STATUSES:
+        return Evaluation("awaiting", f"{dw['check']} is recorded as not run")
     if status == "PASS":
         return Evaluation("pass", f"{dw['check']} recorded PASS")
     return Evaluation("fail", f"{dw['check']} recorded {status}")
@@ -158,8 +181,10 @@ def _check(root, dw):
 
 def _metric(root, dw):
     p = safe_path(root, dw["record"])
-    if p is None or not p.is_file():
-        return Evaluation("unknown", f"record {dw['record']} is not available")
+    if p is None:
+        return Evaluation("unknown", f"record {dw['record']!r} is not a relative path inside the root")
+    if not p.is_file():
+        return _absent(dw["record"], p)
     try:
         doc = _load_structured(p)
     except (OSError, ValueError, yaml.YAMLError) as e:

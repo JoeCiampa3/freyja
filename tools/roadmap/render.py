@@ -1,5 +1,5 @@
 """
-Roadmap generated files: roadmap/state.json (roadmap-state/1) and roadmap/STATUS.md. Deterministic: sorted keys and ids, repo-relative
+Roadmap generated files: roadmap/state.json (roadmap-state/2) and roadmap/STATUS.md. Deterministic: sorted keys and ids, repo-relative
 paths, LF line endings, no timestamps. Nothing is written when the graph has errors.
 """
 from __future__ import annotations
@@ -54,7 +54,7 @@ def state_dict(rm: Roadmap, banner_text: str | None = None) -> dict:
             "active": n.active, "signed_off": n.signed_off, "superseded_by": n.superseded_by, "done_when": n.done_when,
             "evaluation": st.evaluation.to_dict() if st.evaluation else None}
     root = rm.root
-    return {"_generated": banner_text if banner_text is not None else banner(root, rm), "generated_by": TOOL, "inputs": ["roadmap/nodes/*.md"], "schema": "roadmap-state/1",
+    return {"_generated": banner_text if banner_text is not None else banner(root, rm), "generated_by": TOOL, "inputs": ["roadmap/nodes/*.md"], "schema": "roadmap-state/2",
             "node_count": rm.node_count, "superseded_count": rm.superseded_count, "counts": dict(sorted(rm.counts.items())),
             "frontier": list(rm.frontier), "errors": [e.to_dict() for e in rm.errors], "warnings": [w.to_dict() for w in rm.warnings],
             "nodes": nodes}

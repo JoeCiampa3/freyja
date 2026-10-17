@@ -37,7 +37,7 @@ def fx(tmp_path_factory):
 
 def test_validate_exit_codes_and_output(fx):
     code, out, _ = run(["validate"], fx)
-    n_unknown = len(json.loads((fx / "fixture-intent.json").read_text(encoding="utf-8"))["unknown_criteria"])
+    n_unknown = len(json.loads((fx / "fixture-intent.json").read_text(encoding="utf-8"))["unknown_criteria"])  # awaiting ones draw none
     assert code == 0 and f"0 errors, {n_unknown} warnings" in out and n_unknown > 0  # the fixture's unreadable-evidence leaves
     code, out, _ = run(["validate"], INVALID / "parent-unresolved")
     assert code == 1 and "parent-unresolved" in out and "rm.x" in out and "rm.ghost" in out

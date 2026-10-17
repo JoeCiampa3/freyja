@@ -142,7 +142,8 @@ def generate(size: int, out, seed: int = 0) -> dict:
     meta = {}  # which check ids are listed, and how
     checks = {}
     decision_no = [0]
-    unknown = []  # leaves whose evidence is meant to be missing or unreadable: they evaluate unknown and draw a criterion-unknown warning
+    unknown = []  # leaves whose evidence cannot be read or expected: they evaluate unknown and draw a criterion-unknown warning
+    awaiting = []  # leaves whose evidence does not exist yet (absent file in an existing directory, checks not run): no warning
     log_ids = []
 
     def criterion(i, done):
@@ -156,7 +157,13 @@ def generate(size: int, out, seed: int = 0) -> dict:
             dw = {"type": "artifact", "path": rel}
             if rng.random() < 0.5:
                 dw["schema"] = "docs/schemas/fixture-artifact.json"
-            how = "good" if done else rng.choice(["missing", "empty", "bad"])
+            how = "good" if done else rng.choice(["missing", "empty", "bad", "nodir"])
+            if how == "nodir":  # the directory is never created: nothing says where the file would appear
+                dw["path"] = f"records/pending/{slug}.json"
+                unknown.append(ids[i])
+            if how == "missing":
+                (out / "records" / "artifacts").mkdir(parents=True, exist_ok=True)
+                awaiting.append(ids[i])
             if how == "good":
                 _dump(out / rel, json.dumps({"ok": True, "id": slug}, sort_keys=True) + "\n")
             elif how == "empty":
@@ -168,30 +175,42 @@ def generate(size: int, out, seed: int = 0) -> dict:
         if kind == "decision":
             decision_no[0] += 1
             rel = f"decisions/{decision_no[0]:04d}-{slug}.md"
-            how = "accepted" if done else rng.choice(["proposed", "missing", "superseded"])
-            if how != "missing":
+            how = "accepted" if done else rng.choice(["proposed", "missing", "superseded", "nostatus"])
+            if how == "missing":
+                awaiting.append(ids[i])
+            elif how == "nostatus":
+                unknown.append(ids[i])
+                _dump(out / rel, f"---\nid: adr-{decision_no[0]:04d}\ndate: 2026-01-01\nlinks: []\n---\n## Context\n")
+            else:
                 st = "accepted" if how == "accepted" else ("proposed" if how == "proposed" else '"superseded-by: adr-9999"')
                 _dump(out / rel, f"---\nid: adr-{decision_no[0]:04d}\nstatus: {st}\ndate: 2026-01-01\nlinks: []\n---\n## Context\n")
             return {"type": "decision", "record": rel}, False
         if kind == "check":
             cid = f"check.fixture.{slug}"
-            how = "PASS" if done else rng.choice(["FAIL", "WAIVED", "absent"])
-            if how != "absent":
-                checks[cid] = how
+            how = "PASS" if done else rng.choice(["FAIL", "WAIVED", "absent", "NOT_RUN"])
+            if how == "absent":
+                unknown.append(ids[i])  # listed nowhere in docs/STATE.md
             else:
-                unknown.append(ids[i])
+                checks[cid] = how
+                if how == "NOT_RUN":
+                    awaiting.append(ids[i])
             return {"type": "check", "check": cid}, False
         rel = f"records/metrics/{slug}.json"  # metric
         op = rng.choice(OPS)
         t = round(rng.uniform(0.5, 9.5), 2)
         good = {"<": t / 2, "<=": t, ">": t * 2, ">=": t, "==": t}[op]
         bad = {"<": t * 2, "<=": t * 2, ">": t / 2, ">=": t / 2, "==": t + 1}[op]
-        how = "good" if done else rng.choice(["bad", "missing", "nopointer"])
+        how = "good" if done else rng.choice(["bad", "missing", "nopointer", "corrupt"])
+        if how == "missing":
+            (out / "records" / "metrics").mkdir(parents=True, exist_ok=True)
+            awaiting.append(ids[i])
+        if how == "corrupt":
+            _dump(out / rel, "{not json\n")
         if how in ("good", "bad"):
             _dump(out / rel, json.dumps({"result": {"value": round(good if how == "good" else bad, 4)}}, sort_keys=True) + "\n")
         elif how == "nopointer":
             _dump(out / rel, json.dumps({"result": {}}) + "\n")
-        if how in ("missing", "nopointer"):
+        if how in ("nopointer", "corrupt"):
             unknown.append(ids[i])
         return {"type": "metric", "record": rel, "pointer": "/result/value", "op": op, "value": t, "units": "arb"}, False
 
@@ -232,5 +251,5 @@ def generate(size: int, out, seed: int = 0) -> dict:
 
     intended = {ids[i]: status[i] for i in range(n)}
     intended.update({sid: "superseded" for sid, _, _ in sup})
-    _dump(out / "fixture-intent.json", json.dumps({"seed": seed, "size": size, "unknown_criteria": sorted(unknown), "statuses": dict(sorted(intended.items()))}, indent=2, sort_keys=True) + "\n")
+    _dump(out / "fixture-intent.json", json.dumps({"seed": seed, "size": size, "awaiting_criteria": sorted(awaiting), "unknown_criteria": sorted(unknown), "statuses": dict(sorted(intended.items()))}, indent=2, sort_keys=True) + "\n")
     return intended

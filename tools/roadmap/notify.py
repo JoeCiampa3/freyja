@@ -20,7 +20,7 @@ from .render import STATE_JSON, criterion_text
 LABEL = "roadmap"
 LABEL_COLOR = "0e8a16"
 LABEL_DESCRIPTION = "A roadmap node became workable"
-STATE_SCHEMA = Path(__file__).resolve().parents[2] / "docs" / "schemas" / "roadmap-state-1.schema.json"
+STATE_SCHEMA = Path(__file__).resolve().parents[2] / "docs" / "schemas" / "roadmap-state-2.schema.json"
 
 
 class GhError(RuntimeError):
@@ -93,7 +93,7 @@ def _git(root, *args) -> str:
 
 
 def read_state_at(root, commit: str) -> dict:
-    """roadmap/state.json as committed at `commit`, validated against roadmap-state/1. Raises StateError."""
+    """roadmap/state.json as committed at `commit`, validated against roadmap-state/2. Raises StateError."""
     text = _git(root, "show", f"{commit}:{STATE_JSON}")
     try:
         state = json.loads(text)
@@ -101,7 +101,7 @@ def read_state_at(root, commit: str) -> dict:
     except ValueError as e:
         raise StateError(f"{STATE_JSON} at {commit[:12]} is not valid JSON ({e.__class__.__name__})") from e
     if errs:
-        raise StateError(f"{STATE_JSON} at {commit[:12]} does not match roadmap-state/1: {errs[0].message[:120]}")
+        raise StateError(f"{STATE_JSON} at {commit[:12]} does not match roadmap-state/2: {errs[0].message[:120]}")
     return state
 
 

@@ -145,9 +145,21 @@ def test_a_criterion_whose_evidence_is_missing_or_unreadable_warns(tmp_path):
 
 
 def test_a_failing_criterion_is_not_a_criterion_unknown_warning(tmp_path):
-    art = {"type": "artifact", "path": "sim/none.json"}  # a missing artifact is a fail, not unknown
+    art = {"type": "artifact", "path": "sim/empty.json"}  # present but empty: a fail, not unknown
+    (tmp_path / "r" / "sim").mkdir(parents=True)
+    (tmp_path / "r" / "sim" / "empty.json").write_text("", encoding="utf-8")
     rm = derive(tmp_path, {**ROOT, "rm.a": {**leaf("rm.root"), "done_when": art}})
     assert rm.evaluation("rm.a").result == "fail" and rm.warnings == []
+
+
+def test_an_awaiting_criterion_draws_no_warning_and_is_not_a_pass(tmp_path):
+    """Brief 2 T2: unfinished work has no evidence yet; the Problems tab must not fill with it."""
+    (tmp_path / "r" / "sim").mkdir(parents=True)
+    art = {"type": "artifact", "path": "sim/none.json"}
+    rm = derive(tmp_path, {**ROOT, "rm.a": {**leaf("rm.root"), "done_when": art}, "rm.b": {**leaf("rm.root"), "done_when": {**art, "path": "nodir/x.json"}}})
+    assert rm.evaluation("rm.a").result == "awaiting" and rm.status("rm.a") == "ready"
+    assert rm.evaluation("rm.b").result == "unknown"
+    assert [w.ids for w in rm.warnings if w.code == "criterion-unknown"] == [("rm.b",)]
 
 
 def test_a_done_interior_node_with_an_uncleared_blocker_is_done_with_a_warning(tmp_path):
