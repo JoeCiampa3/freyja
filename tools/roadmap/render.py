@@ -1,5 +1,5 @@
 """
-Roadmap generated files: roadmap/state.json (roadmap-state/2) and roadmap/STATUS.md. Deterministic: sorted keys and ids, repo-relative
+Roadmap generated files: roadmap/state.json (roadmap-state/3) and roadmap/STATUS.md. Deterministic: sorted keys and ids, repo-relative
 paths, LF line endings, no timestamps. Nothing is written when the graph has errors.
 """
 from __future__ import annotations
@@ -50,11 +50,11 @@ def state_dict(rm: Roadmap, banner_text: str | None = None) -> dict:
         nodes[i] = {
             "title": n.title, "path": n.path, "kind": st.kind, "status": st.status, "reason": st.reason, "parent": n.parent,
             "children": rm.children(i), "blocked_by": sorted(n.blocked_by), "effective_blockers": rm.effective_blockers(i),
-            "uncleared_blockers": rm.uncleared(i), "dependents": rm.dependents(i), "estimate_days": n.estimate_days, "tags": list(n.tags),
+            "uncleared_blockers": rm.uncleared(i), "dependents": rm.dependents(i), "estimate_days": n.estimate_days, "tags": list(n.tags), "short": n.short,
             "active": n.active, "signed_off": n.signed_off, "superseded_by": n.superseded_by, "done_when": n.done_when,
             "evaluation": st.evaluation.to_dict() if st.evaluation else None}
     root = rm.root
-    return {"_generated": banner_text if banner_text is not None else banner(root, rm), "generated_by": TOOL, "inputs": ["roadmap/nodes/*.md"], "schema": "roadmap-state/2",
+    return {"_generated": banner_text if banner_text is not None else banner(root, rm), "generated_by": TOOL, "inputs": ["roadmap/nodes/*.md"], "schema": "roadmap-state/3",
             "node_count": rm.node_count, "superseded_count": rm.superseded_count, "counts": dict(sorted(rm.counts.items())),
             "frontier": list(rm.frontier), "errors": [e.to_dict() for e in rm.errors], "warnings": [w.to_dict() for w in rm.warnings],
             "nodes": nodes}

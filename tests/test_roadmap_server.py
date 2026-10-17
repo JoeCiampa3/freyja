@@ -18,7 +18,7 @@ import roadmap
 from roadmap import fixture, render, server
 
 INVALID = REPO / "tests" / "fixtures" / "roadmap" / "invalid"
-STATE_SCHEMA = json.loads((REPO / "docs" / "schemas" / "roadmap-state-2.schema.json").read_text(encoding="utf-8"))
+STATE_SCHEMA = json.loads((REPO / "docs" / "schemas" / "roadmap-state-3.schema.json").read_text(encoding="utf-8"))
 PORT = 8765
 HOST = {"Host": f"127.0.0.1:{PORT}"}
 METRIC = {"type": "metric", "record": "records/m.json", "pointer": "/v", "op": ">", "value": 1}

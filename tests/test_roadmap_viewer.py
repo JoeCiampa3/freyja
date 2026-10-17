@@ -190,7 +190,16 @@ try {
   check("clicking the … shows the full path", eq(cp(D.deep, true), D.crumb_full), cp(D.deep, true));
   check("a breadcrumb with four ancestors is never collapsed", eq(cp(D.crumb_four, false), D.crumb_four_full) && L.crumbParts(idx, D.crumb_four, false).every((q) => q.kind !== "gap"), cp(D.crumb_four, false));
   check("the root's breadcrumb is just the root", eq(cp(D.root, false), [D.root]));
-  check("breadcrumb titles are cut at 28 characters and keep the full title", L.crumbParts(idx, D.deep, true).every((q) => q.kind === "gap" || (q.label.length <= 28 && q.full === D.state.nodes[q.id].title && (q.full.length <= 28 ? q.label === q.full : q.label.endsWith("…")))));
+  check("breadcrumb titles are cut at 28 characters and keep the full title", L.crumbParts(idx, D.deep, true).every((q) => q.kind === "gap" || (q.full === D.state.nodes[q.id].title && (D.shorts[q.id] && q.kind === "node" ? true : q.label.length <= 28 && (q.full.length <= 28 ? q.label === q.full : q.label.endsWith("…"))))));
+  // --- brief 3 T1: the short label
+  check("the data has short labels to test with", Object.values(D.shorts).filter(Boolean).length > D.children[D.root].length, D.shorts);
+  for (const f of [D.deep, D.crumb_four, D.root]) for (const expanded of [true, false]) {
+    const parts = L.crumbParts(idx, f, expanded).filter((q) => q.kind !== "gap");
+    const want = parts.map((q, k) => [q.id, q.full, k === parts.length - 1 ? (q.full.length <= 28 ? q.full : q.full.slice(0, 27) + "…") : (D.shorts[q.id] || (q.full.length <= 28 ? q.full : q.full.slice(0, 27) + "…"))]);
+    check("breadcrumb segments other than the last use the short label, the last keeps its title: " + f, eq(parts.map((q) => [q.id, q.full, q.label]), want), parts.map((q) => q.label));
+  }
+  check("a short label is used by breadcrumb segments, so some segment differs from its title", L.crumbParts(idx, D.deep, true).some((q) => q.kind === "node" && D.shorts[q.id] && q.label !== q.full.slice(0, 28)));
+  check("shortOf falls back to the title and ignores an empty label", L.shortOf({ title: "T title", short: null }) === "T title" && L.shortOf({ title: "T title", short: "" }) === "T title" && L.shortOf({ title: "T", short: "S" }) === "S" && L.shortOf(undefined) === "");
   check("truncateTitle", L.truncateTitle("x".repeat(40), 28).length === 28 && L.truncateTitle("short", 28) === "short");
   // --- focus layout: the shown nodes, the geometry, the links
   const LY = L.LAYOUT;
@@ -262,6 +271,7 @@ try {
     check("map " + mode + ": every live node is placed once", M.nodes.length === live && Object.keys(by).length === live, M.nodes.length);
     check("map " + mode + ": one link per non-root node", M.links.length === live - 1 && M.links.every((lk) => by[lk.source] && by[lk.target] && idx.parent[lk.target] === lk.source));
     check("map " + mode + ": a sector for each first-layer branch, in tree order", eq(M.sectors.map((q) => q.id), D.children[D.root]), M.sectors.map((q) => q.id));
+    check("map " + mode + ": a sector's label is its branch's short label, and its title stays beside it", M.sectors.every((q) => q.label === (D.shorts[q.id] || D.state.nodes[q.id].title) && q.title === D.state.nodes[q.id].title) && M.sectors.every((q) => D.shorts[q.id]), M.sectors.map((q) => [q.label, q.title]));
     check("map " + mode + ": depth is carried by every node", M.nodes.every((n) => n.depth === idx.depthOf[n.id]));
     check("map " + mode + ": no two neighbours on a level are closer than the minimum gap", M.minGap >= L.MAP_MIN_GAP - 1e-6, M.minGap);
     check("map " + mode + ": titles appear at the zoom where neighbours are label-height apart", Math.abs(L.labelZoom(M) * M.minGap - L.LABEL_PX) < 1e-6);
@@ -445,7 +455,8 @@ def expected_for(root):
                         "rm.b": {"title": "B", "status": "ready", "kind": "leaf", "parent": None},
                         "rm.c": {"title": "C", "status": "blocked", "kind": "leaf", "parent": "rm.gone"}}}
     extra = expected_brief2(rm, live, children, parent, roots[0], depth, deep)
-    return {"state": state, "root": roots[0], "live_count": len(live), "children": children, "leaf_total": leaf_total, "max_depth": max(depth(i) for i in live),
+    shorts = {i: rm.nodes[i].short for i in live}  # from the node files, not from the state the viewer reads
+    return {"shorts": shorts, "state": state, "root": roots[0], "live_count": len(live), "children": children, "leaf_total": leaf_total, "max_depth": max(depth(i) for i in live),
             "nav": nav, "queries": expected_q, "chains": chains, "big_chain": big, "deep": deep, "broken": broken, "broken_roots": 3, **extra}
 
 

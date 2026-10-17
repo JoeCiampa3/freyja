@@ -252,6 +252,7 @@ UI_TEST = r"""
     const full = chain(D.deep);
     check("a deep breadcrumb shows root, …, grandparent, parent, node", $(".crumb-gap") !== null && crumbBtns().filter((b) => !b.classList.contains("crumb-gap")).map((b) => b.getAttribute("title")).join("|") === [full[0], full[full.length - 3], full[full.length - 2]].map(title).join("|") && $("#crumbs .cur").textContent.length <= 28, crumbBtns().map((b) => b.textContent));
     check("titles in the breadcrumb are cut at about 28 characters, the full title on hover", crumbBtns().every((b) => b.textContent.length <= 28) && crumbBtns().filter((b) => !b.classList.contains("crumb-gap")).every((b) => b.getAttribute("title").startsWith(b.textContent.replace(/…$/, ""))));
+    check("brief 3 T1: a breadcrumb segment before the last shows the short label and keeps the full title on hover; the last shows its title", crumbBtns().filter((b) => !b.classList.contains("crumb-gap")).every((b) => { const id = full.find((c) => title(c) === b.getAttribute("title")); return b.textContent === (D.shorts[id] || (title(id).length <= 28 ? title(id) : title(id).slice(0, 27) + "…")); }) && crumbBtns().some((b) => D.shorts[full.find((c) => title(c) === b.getAttribute("title"))]) && $("#crumbs .cur").textContent === (title(D.deep).length <= 28 ? title(D.deep) : title(D.deep).slice(0, 27) + "…"), crumbBtns().map((b) => b.textContent));
     click($(".crumb-gap"));
     check("clicking … expands the full path", $(".crumb-gap") === null && crumbBtns().length === full.length - 1, crumbBtns().length);
     await goTo(D.root);
@@ -340,6 +341,8 @@ UI_TEST = r"""
     const step = parseFloat(MAP.dataset.step);
     check("radial: a ring is a depth", step > 0 && $$("#map g.mk").every((g) => Math.abs(parseFloat(g.dataset.r) - Number(g.dataset.depth) * step) < 1e-3 && Number(g.dataset.depth) === chain(g.dataset.id).length - 1));
     check("a faint labelled sector for each first-layer branch", $$("#map .sector").length === kids.length && kids.every((k) => $("#map .sector-label[data-id='" + k + "']") && $("#map .sector-label[data-id='" + k + "']").textContent.length > 2));
+    const secText = (k) => $("#map .sector-label[data-id='" + k + "']").textContent;
+    check("brief 3 T1: a sector label is the branch's short label (cut to the room), and the full title is the sector's hover text", kids.every((k) => { const t = secText(k).replace("…", ""); return D.shorts[k] && D.shorts[k].startsWith(t) && t.length > 2 && $("#map .sector[data-id='" + k + "'] title").textContent === title(k); }), kids.map((k) => [secText(k), D.shorts[k]]));
     const leafStub = $$("#map g.mk").filter((g) => g.dataset.kind !== "interior");
     const shapeOf = {}; let consistent = true;
     for (const g of leafStub) { const s = D.state.nodes[g.dataset.id].status; if (shapeOf[s] && shapeOf[s] !== g.dataset.shape) consistent = false; shapeOf[s] = g.dataset.shape; }
@@ -379,6 +382,8 @@ UI_TEST = r"""
     check("the wheel zooms the map", k1m > k0m * 2, [k0m, k1m]);
     check("marker sizes stay constant on screen while zooming", Math.abs(mkBox().width - w0) < 0.6, [w0, mkBox().width]);
     check("titles appear beside nodes once the zoom passes the no-overlap threshold", k1m >= parseFloat(MAP.dataset.labelzoom) && $$("#map .lbl.show").length > 0, [k1m, MAP.dataset.labelzoom, $$("#map .lbl.show").length]);
+    const shownLabels = $$("#map .lbl.show");
+    check("brief 3 T1: a node title on the map is its short label where it has one (cut to the room, never the title)", shownLabels.every((l) => { const want = D.shorts[l.dataset.id] || title(l.dataset.id), t = l.textContent; return t === want || (t.endsWith("…") && want.startsWith(t.slice(0, -1))); }) && shownLabels.some((l) => D.shorts[l.dataset.id]), shownLabels.slice(0, 4).map((l) => [l.dataset.id, l.textContent]));
     const tx0 = parseFloat($("#mapworld").dataset.tx);
     ptr(svg, "pointerdown", 600, 400); ptr(svg, "pointermove", 650, 430); ptr(svg, "pointerup", 650, 430);
     check("dragging pans the map by the drag distance", Math.abs(parseFloat($("#mapworld").dataset.tx) - tx0 - 50) < 1.5, [tx0, $("#mapworld").dataset.tx]);

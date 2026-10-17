@@ -33,6 +33,8 @@
 
   function statusInfo(s) { return STATUS[s] || STATUS.unknown; }
   function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+  /** The short label where the node has one (roadmap-node/2), else the title: for places too small for a title. Tooltips and the drawer keep the title. */
+  function shortOf(n) { return n && typeof n.short === "string" && n.short ? n.short : n ? String(n.title) : ""; }
   function truncateTitle(t, n) { t = String(t); return t.length <= n ? t : t.slice(0, n - 1) + "…"; }
 
   /** The nodes the viewer shows: superseded ones only on request. Children keep id order; the tree is reachable from the roots only. */
@@ -139,7 +141,7 @@
   /** The breadcrumb: beyond four ancestors it reads root › … › grandparent › parent › node until the … is clicked (`expanded`). */
   function crumbParts(index, focus, expanded) {
     const anc = ancestors(index, focus).reverse(); // root .. parent
-    const part = (id, kind) => ({ kind, id, label: truncateTitle(index.nodes[id].title, CRUMB_MAX), full: index.nodes[id].title });
+    const part = (id, kind) => { const n = index.nodes[id]; return { kind, id, label: kind === "node" && n.short ? n.short : truncateTitle(n.title, CRUMB_MAX), full: n.title }; }; // the current node keeps its title
     let shown = anc.map((id) => part(id, "node"));
     if (!expanded && anc.length > 4) shown = [part(anc[0], "node"), { kind: "gap" }, part(anc[anc.length - 2], "node"), part(anc[anc.length - 1], "node")];
     return [...shown, part(focus, "cur")];
@@ -294,7 +296,7 @@
       (function f(id) { const v = mode === "radial" ? by[id].angle : by[id].x; if (v < lo) lo = v; if (v > hi) hi = v; for (const k of index.children[id] || []) f(k); })(hd);
       return [lo, hi];
     });
-    const sectors = heads.map((hd, i) => ({ id: hd, title: index.nodes[hd].title }));
+    const sectors = heads.map((hd, i) => ({ id: hd, title: index.nodes[hd].title, label: shortOf(index.nodes[hd]) }));
     if (mode === "radial") {
       const T = 2 * Math.PI;
       heads.forEach((hd, i) => {
@@ -451,7 +453,7 @@
   }
   function routeFormat(id) { return "#/node/" + encodeURIComponent(id); }
 
-  window.RoadmapLogic = { VROOT, STATUS, STATUS_ORDER, CHILD_ORDER, LAYOUT, MAX_DEPTH, MAP_MIN_GAP, LABEL_PX, statusInfo, esc, truncateTitle, buildIndex, ancestors,
+  window.RoadmapLogic = { VROOT, STATUS, shortOf, STATUS_ORDER, CHILD_ORDER, LAYOUT, MAX_DEPTH, MAP_MIN_GAP, LABEL_PX, statusInfo, esc, truncateTitle, buildIndex, ancestors,
     navigate, relativeDepth, orderedChildren, activeLeaves, outlineVisible, outlineRows, crumbParts, usefulDepth, focusLayout, autoDepth, markerShape, shapePath,
     ringWedge, mapLayout, labelZoom, matchRatio, resolveQuery, blockerChain, criterionText, safeHref, renderMarkdown, routeParse, routeFormat };
   if (window.ROADMAP_TEST) return;
@@ -1139,18 +1141,18 @@
       let t;
       if (M.mode === "radial") {
         const R = M.reach, mid = (q.a0 + q.a1) / 2;
-        gSec.append(sv("path", { class: "sector", "data-id": q.id, d: d3.arc()({ innerRadius: 0, outerRadius: R, startAngle: q.a0, endAngle: q.a1 }), style: "fill:" + tint }));
+        gSec.append(sv("path", { class: "sector", "data-id": q.id, d: d3.arc()({ innerRadius: 0, outerRadius: R, startAngle: q.a0, endAngle: q.a1 }), style: "fill:" + tint }, sv("title", {}, q.title))); // the full title stays on hover
         const lr = R + 6, lx = lr * Math.sin(mid), ly = -lr * Math.cos(mid), deg = ((mid * 180 / Math.PI) % 360 + 360) % 360;
         const flip = deg > 90 && deg < 270; // along the tangent, and never upside down
         t = "translate(" + lx.toFixed(1) + "," + ly.toFixed(1) + ") rotate(" + (flip ? deg - 180 : deg).toFixed(1) + ")";
-        gSecLbl.append(sv("text", { class: "sector-label", "data-id": q.id, "text-anchor": "middle", transform: t }, truncateTitle(q.title, 40)));
+        gSecLbl.append(sv("text", { class: "sector-label", "data-id": q.id, "text-anchor": "middle", transform: t }, truncateTitle(q.label, 40)));
       } else {
         const y0 = M.bounds.y0, y1 = M.bounds.y1;
-        gSec.append(sv("rect", { class: "sector", "data-id": q.id, x: q.x0, y: y0, width: q.x1 - q.x0, height: y1 - y0, style: "fill:" + tint }));
+        gSec.append(sv("rect", { class: "sector", "data-id": q.id, x: q.x0, y: y0, width: q.x1 - q.x0, height: y1 - y0, style: "fill:" + tint }, sv("title", {}, q.title)));
         t = "translate(" + ((q.x0 + q.x1) / 2).toFixed(1) + "," + (y0 + 14).toFixed(1) + ")";
-        gSecLbl.append(sv("text", { class: "sector-label", "data-id": q.id, "text-anchor": "middle", transform: t }, truncateTitle(q.title, 40)));
+        gSecLbl.append(sv("text", { class: "sector-label", "data-id": q.id, "text-anchor": "middle", transform: t }, truncateTitle(q.label, 40)));
       }
-      ms.secLabels.push({ el: gSecLbl.lastChild, t, full: q.title, w: M.mode === "radial" ? (M.reach + 6) * (q.a1 - q.a0) : q.x1 - q.x0, chars: -1 });
+      ms.secLabels.push({ el: gSecLbl.lastChild, t, full: q.label, w: M.mode === "radial" ? (M.reach + 6) * (q.a1 - q.a0) : q.x1 - q.x0, chars: -1 });
     });
     // links
     for (const l of M.links) {
@@ -1185,13 +1187,13 @@
       if (M.mode === "radial") {
         const deg = n.angle * 180 / Math.PI, flip = deg > 180;
         t = "translate(" + n.x.toFixed(2) + "," + n.y.toFixed(2) + ") rotate(" + ((flip ? deg + 90 : deg - 90)).toFixed(1) + ")";
-        const tx = sv("text", { class: "lbl", "text-anchor": flip ? "end" : "start", x: flip ? -11 : 11, y: 4 }, "");
-        ms.labels.push({ el: tx, t, full: nd.title, chars: -1 });
+        const tx = sv("text", { class: "lbl", "data-id": n.id, "text-anchor": flip ? "end" : "start", x: flip ? -11 : 11, y: 4 }, "");
+        ms.labels.push({ el: tx, t, full: shortOf(nd), chars: -1 });
         gLbl.append(tx);
       } else {
         t = "translate(" + n.x.toFixed(2) + "," + n.y.toFixed(2) + ") rotate(90)";
-        const tx = sv("text", { class: "lbl", x: 11, y: 4 }, "");
-        ms.labels.push({ el: tx, t, full: nd.title, chars: -1 });
+        const tx = sv("text", { class: "lbl", "data-id": n.id, x: 11, y: 4 }, "");
+        ms.labels.push({ el: tx, t, full: shortOf(nd), chars: -1 });
         gLbl.append(tx);
       }
       ms.labels[ms.labels.length - 1].el.setAttribute("transform", t);

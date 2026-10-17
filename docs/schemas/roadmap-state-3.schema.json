@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "roadmap-state/2",
-  "title": "roadmap-state/2",
-  "description": "The generated state of the roadmap (roadmap/state.json), written by `fy roadmap build` (tools/roadmap; CONVENTIONS section 4 for the banner, docs/briefs/architecture/roadmap-brief1.md for the rules). Deterministic: sorted keys and ids, repo-relative paths, no timestamps. `status` is derived on every build and never authored. Leaf statuses: done, blocked, active, ready. Stub statuses: blocked, expandable. Interior statuses: done, blocked, in_progress, not_started. `superseded` nodes are excluded from every count and from the frontier. `unknown` appears only when a status cannot be derived because the graph has errors (the server may return such a state; `fy roadmap build` writes nothing on errors). `stale` is reserved and never emitted. `counts` covers non-superseded nodes only. Version 2 (roadmap brief 2, T2) splits the old evaluation result `unknown`: `awaiting` is evidence that does not exist yet but could (no warning); `unknown` is evidence that cannot be read or expected (warns `criterion-unknown`). Neither is a pass.",
+  "$id": "roadmap-state/3",
+  "title": "roadmap-state/3",
+  "description": "The generated state of the roadmap (roadmap/state.json), written by `fy roadmap build` (tools/roadmap; CONVENTIONS section 4 for the banner, docs/briefs/architecture/roadmap-brief1.md for the rules). Deterministic: sorted keys and ids, repo-relative paths, no timestamps. `status` is derived on every build and never authored. Leaf statuses: done, blocked, active, ready. Stub statuses: blocked, expandable. Interior statuses: done, blocked, in_progress, not_started. `superseded` nodes are excluded from every count and from the frontier. `unknown` appears only when a status cannot be derived because the graph has errors (the server may return such a state; `fy roadmap build` writes nothing on errors). `stale` is reserved and never emitted. `counts` covers non-superseded nodes only. Version 2 (roadmap brief 2, T2) splits the old evaluation result `unknown`: `awaiting` is evidence that does not exist yet but could (no warning); `unknown` is evidence that cannot be read or expected (warns `criterion-unknown`). Neither is a pass. Version 3 (roadmap brief 3, T1) adds the node's `short` label.",
   "type": "object",
   "required": ["_generated", "generated_by", "inputs", "schema", "node_count", "superseded_count", "counts", "frontier", "errors", "warnings", "nodes"],
   "additionalProperties": false,
@@ -10,7 +10,7 @@
     "_generated": {"type": "string", "description": "The banner."},
     "generated_by": {"type": "string"},
     "inputs": {"type": "array", "items": {"type": "string"}},
-    "schema": {"const": "roadmap-state/2"},
+    "schema": {"const": "roadmap-state/3"},
     "node_count": {"type": "integer", "minimum": 0, "description": "Non-superseded nodes."},
     "superseded_count": {"type": "integer", "minimum": 0},
     "counts": {"type": "object", "propertyNames": {"$ref": "#/$defs/status"}, "additionalProperties": {"type": "integer", "minimum": 0}},
@@ -29,7 +29,7 @@
     "node": {
       "type": "object",
       "required": ["title", "path", "kind", "status", "reason", "parent", "children", "blocked_by", "effective_blockers", "uncleared_blockers", "dependents",
-                   "estimate_days", "tags", "active", "signed_off", "superseded_by", "done_when", "evaluation"],
+                   "estimate_days", "tags", "short", "active", "signed_off", "superseded_by", "done_when", "evaluation"],
       "additionalProperties": false,
       "properties": {
         "title": {"type": "string"},
@@ -45,6 +45,7 @@
         "dependents": {"type": "array", "items": {"type": "string"}, "description": "Nodes whose effective blockers include this one."},
         "estimate_days": {"type": ["number", "null"]},
         "tags": {"type": "array", "items": {"type": "string"}},
+        "short": {"type": ["string", "null"], "maxLength": 16, "description": "The node's optional short label; null when it has none."},
         "active": {"type": "boolean"},
         "signed_off": {"type": "boolean"},
         "superseded_by": {"type": ["string", "null"]},

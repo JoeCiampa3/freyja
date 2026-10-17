@@ -8,6 +8,7 @@ Run from the repo root:
 """
 import hashlib
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -163,3 +164,20 @@ def test_intended_statuses_hold_for_an_overridden_first_layer(tmp_path, seed):
     rm = roadmap.compute(root)
     want = intended(root)["statuses"]
     assert {i: (want[i], rm.status(i)) for i in want if rm.status(i) != want[i]} == {}
+
+
+@pytest.mark.parametrize("seed", [0, 3, 7])
+def test_the_fixture_exercises_both_node_schema_versions_and_shorts_the_first_layer(tmp_path, seed):
+    """Brief 3 T1: every first-layer branch has a short label, some deeper nodes do, and the rest are version-1 files without one."""
+    root = tmp_path / "f"
+    fixture.generate(300, root, seed=seed)
+    rm = roadmap.compute(root)
+    assert rm.errors == []
+    layer = [i for i in first_layer(rm) if not rm.nodes[i].superseded]
+    assert all(rm.nodes[i].short and len(rm.nodes[i].short) <= 16 for i in layer)
+    shorts = [n for n in rm.nodes.values() if n.short]
+    assert len(layer) < len(shorts) < len(rm.nodes) - 20  # a mix, not all or only the heads
+    own = re.compile(r"^schema: (\S+)$", re.M)  # the node's own line, not a done_when schema path
+    versions = {i: own.search((root / "roadmap" / "nodes" / f"{i}.md").read_text(encoding="utf-8")).group(1) for i in rm.nodes}
+    assert {v for i, v in versions.items() if rm.nodes[i].short} == {"roadmap-node/2"}
+    assert "roadmap-node/1" in set(versions.values())

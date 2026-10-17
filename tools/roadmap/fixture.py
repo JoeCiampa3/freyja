@@ -236,8 +236,12 @@ def generate(size: int, out, seed: int = 0, first_layer: int | None = None) -> d
             unknown.append(ids[i])
         return {"type": "metric", "record": rel, "pointer": "/result/value", "op": op, "value": t, "units": "arb"}, False
 
+    lrng = random.Random(f"labels-{seed}")  # short labels come from their own stream, so adding them moved nothing else in the fixture
     for i in range(n):
         front = {"schema": "roadmap-node/1", "id": ids[i], "parent": ids[parent[i]] if parent[i] is not None else None}
+        if (parent[i] == 0 or (i and lrng.random() < 0.2)):  # every first-layer branch has a short label, and about one node in five below them
+            front["schema"] = "roadmap-node/2"
+            front["short"] = ids[i].split("-", 1)[-1].capitalize()
         noun = ids[i].split("-", 1)[-1]
         front["title"] = f"{noun.capitalize()} {i:03d} {rng.choice(PHRASES)}" if i else "Freyja v1 walks indoors at 1.4 m/s"
         if own[i]:

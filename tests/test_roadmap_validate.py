@@ -98,3 +98,22 @@ def test_a_node_whose_children_are_all_superseded_is_a_childless_node(tmp_path):
         "rm.old": {**leaf("rm.a"), "superseded_by": "rm.a"}}))
     # rm.a has only a retired child, so it is a childless non-stub without a criterion
     assert [(e.code, e.ids) for e in rm.errors] == [("leaf-incomplete", ("rm.a",))]
+
+
+def test_both_node_schema_versions_load_side_by_side_and_short_reaches_the_node(tmp_path):
+    root = make(tmp_path / "r", {"rm.root": {"title": "Top", "short": "Top"}, "rm.a": leaf("rm.root"), "rm.b": leaf("rm.root", short="B")})
+    text = {i: (root / "roadmap" / "nodes" / f"{i}.md").read_text(encoding="utf-8") for i in ("rm.root", "rm.a", "rm.b")}
+    assert "schema: roadmap-node/2" in text["rm.root"] and "schema: roadmap-node/1" in text["rm.a"]  # the fixtures exercise both forms
+    rm = roadmap.compute(root)
+    assert rm.errors == [] and [rm.nodes[i].short for i in ("rm.root", "rm.a", "rm.b")] == ["Top", None, "B"]
+
+
+def test_short_over_16_characters_or_on_a_version_1_file_is_a_schema_error_naming_the_node(tmp_path):
+    root = make(tmp_path / "r", {"rm.root": {"title": "Top"}, "rm.long": leaf("rm.root", short="x" * 17)})
+    nodes = root / "roadmap" / "nodes"
+    text = (nodes / "rm.long.md").read_text(encoding="utf-8").replace("rm.long", "rm.old").replace("roadmap-node/2", "roadmap-node/1").replace("x" * 17, "ok")
+    (nodes / "rm.old.md").write_text(text, encoding="utf-8", newline="\n")  # a version-1 file that carries `short`
+    rm = roadmap.compute(root)
+    bad = sorted((e.code, e.ids) for e in rm.errors if e.code == "schema")
+    assert bad == [("schema", ("rm.long",)), ("schema", ("rm.old",))], [e.message for e in rm.errors]
+    assert any("short" in e.message and "roadmap-node/2" in e.message for e in rm.errors if e.ids == ("rm.old",))  # the message says what to do

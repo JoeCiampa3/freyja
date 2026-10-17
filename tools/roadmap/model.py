@@ -2,7 +2,7 @@
 Roadmap model: nodes loaded from roadmap/nodes/<id>.md under a root directory, and the issues found while loading.
 
 A node file is YAML front matter between two `---` lines followed by free Markdown that machines ignore. Loading checks the shape of
-each file (docs/schemas/roadmap-node-1.schema.json) and that its filename stem equals its id. Structure across nodes is validate.py's job.
+each file (docs/schemas/roadmap-node-2.schema.json) and that its filename stem equals its id. Structure across nodes is validate.py's job.
 """
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ import jsonschema
 import yaml
 
 NODES_DIR = "roadmap/nodes"
-NODE_SCHEMA = "docs/schemas/roadmap-node-1.schema.json"
+NODE_SCHEMA = "docs/schemas/roadmap-node-2.schema.json"
 ID_RE = re.compile(r"^rm[.][a-z0-9-]+$")
 ESTIMATE_CAP_DAYS = 3.0  # a leaf is sized to finish in hours to a few days; above this the estimate is a warning (brief: warnings)
 
@@ -44,6 +44,7 @@ class Node:
     stub: bool = False
     estimate_days: float | None = None
     tags: list = field(default_factory=list)
+    short: str | None = None  # an optional label of at most 16 characters (roadmap-node/2)
     done_when: dict | None = None
     active: bool = False
     signed_off: bool = False
@@ -72,6 +73,8 @@ def split_front_matter(text: str):
 
 
 def _describe(err) -> str:
+    if err.validator == "not" and (err.validator_value or {}).get("required") == ["short"]:
+        return "short: this label exists from schema roadmap-node/2; change the file's `schema:` line to roadmap-node/2"
     where = ".".join(str(p) for p in err.absolute_path) or "(top level)"
     return f"{where}: {err.message}"[:300]
 
@@ -123,7 +126,7 @@ def load_nodes(root):
             continue
         nodes[rid] = Node(
             id=rid, title=raw["title"], parent=raw["parent"], path=rel, blocked_by=list(raw.get("blocked_by", [])),
-            stub=bool(raw.get("stub", False)), estimate_days=raw.get("estimate_days"), tags=list(raw.get("tags", [])),
+            stub=bool(raw.get("stub", False)), estimate_days=raw.get("estimate_days"), tags=list(raw.get("tags", [])), short=raw.get("short"),
             done_when=raw.get("done_when"), active=bool(raw.get("active", False)), signed_off=bool(raw.get("signed_off", False)),
             superseded_by=raw.get("superseded_by"), body=parts[1].lstrip("\n"))
     return nodes, known, issues

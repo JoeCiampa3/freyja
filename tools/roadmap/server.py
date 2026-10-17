@@ -6,7 +6,7 @@ a request to the user's editor to open a node file whose path the library suppli
 
     GET  /                 the viewer page, with this launch's token in a <meta> tag
     GET  /<file>           a whitelisted file directly inside tools/roadmap/viewer/
-    GET  /api/state        the roadmap-state/2 content, computed live (cached on file mtimes and sizes)
+    GET  /api/state        the roadmap-state/3 content, computed live (cached on file mtimes and sizes)
     GET  /api/node/<id>    the body Markdown, references and file path of a node in the loaded graph
     GET  /api/events       server-sent events; `changed` when a node file or a record a done_when reads changes
     POST /api/open/<id>    open the node file with the T4 editor resolution (token and Origin required)
@@ -159,7 +159,7 @@ class Backend:
 
 
 def _internal_state(e) -> dict:
-    return {"_generated": LIVE_BANNER, "generated_by": render.TOOL, "inputs": ["roadmap/nodes/*.md"], "schema": "roadmap-state/2", "node_count": 0,
+    return {"_generated": LIVE_BANNER, "generated_by": render.TOOL, "inputs": ["roadmap/nodes/*.md"], "schema": "roadmap-state/3", "node_count": 0,
             "superseded_count": 0, "counts": {}, "frontier": [], "nodes": {}, "warnings": [],
             "errors": [{"code": "internal", "message": f"the roadmap library failed: {e.__class__.__name__}: {e}", "ids": [], "paths": []}]}
 

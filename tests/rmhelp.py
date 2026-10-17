@@ -15,7 +15,7 @@ if TOOLS not in sys.path:
 def node_text(**fields):
     """A node file: YAML front matter (sorted keys) and a body."""
     body = fields.pop("_body", "Body.\n")
-    front = {"schema": "roadmap-node/1", **fields}
+    front = {"schema": "roadmap-node/2" if "short" in fields else "roadmap-node/1", **fields}  # `short` exists from version 2; both versions load
     return "---\n" + yaml.safe_dump(front, sort_keys=True) + "---\n" + body
 
 
