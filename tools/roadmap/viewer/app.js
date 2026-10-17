@@ -294,12 +294,14 @@
   }
   function est(n) { return n.estimate_days === null || n.estimate_days === undefined ? "" : (+n.estimate_days).toString() + " d"; }
 
-  function toast(msg) {
+  function toast(msg, isError) {
     const t = $("toast");
     t.textContent = msg;
+    t.classList.toggle("err", !!isError);
+    t.onclick = () => t.classList.remove("show");
     t.classList.add("show");
     clearTimeout(toast.timer);
-    toast.timer = setTimeout(() => t.classList.remove("show"), 2600);
+    toast.timer = setTimeout(() => t.classList.remove("show"), isError ? 12000 : 2600); // an error stays until read; a click dismisses it
   }
 
   /* ---- navigation */
@@ -334,8 +336,8 @@
     try {
       const r = await fetch("/api/open/" + encodeURIComponent(id), { method: "POST", headers: { "X-Roadmap-Token": TOKEN } });
       const j = await r.json();
-      toast(r.ok ? "Opened " + j.opened : "Could not open: " + (j.error || r.status));
-    } catch (e) { toast("Could not reach the server: " + e); }
+      toast(r.ok ? "Opened " + j.opened : "Could not open: " + (j.error || r.status), !r.ok);
+    } catch (e) { toast("Could not reach the server: " + e, true); }
   }
   async function copyId(id) {
     try { await navigator.clipboard.writeText(id); toast("Copied " + id); return; } catch (e) { /* fall through */ }

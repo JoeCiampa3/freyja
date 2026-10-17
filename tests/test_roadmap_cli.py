@@ -226,3 +226,19 @@ def test_the_state_line(tmp_path):
     root = make(tmp_path / "r", {"rm.root": {"title": "Top"}, "rm.a": leaf("rm.root"), "rm.b": leaf("rm.root", done=True)})
     assert state.roadmap_line(root) == "Roadmap: 3 nodes | frontier 1 | errors 0"
     assert state.roadmap_line(make(tmp_path / "e", {})) == "Roadmap: no nodes | frontier 0 | errors 0"
+
+
+def test_open_exits_nonzero_with_the_underlying_error(fx):
+    some = pick(roadmap.compute(fx), "leaf")
+
+    def bad(path):
+        raise OSError("WinError 2: cannot find the file")
+    out = []
+    code = cli.main(["open", some, "--root", str(fx)], say=out.append, opener=bad)
+    assert code == 1 and "WinError 2" in "\n".join(out)
+
+
+def test_open_passes_an_absolute_path(fx):
+    some = pick(roadmap.compute(fx), "leaf")
+    _, _, opened = run(["open", some], fx)
+    assert Path(opened[0]).is_absolute()

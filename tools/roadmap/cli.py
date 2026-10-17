@@ -221,7 +221,10 @@ def main(argv=None, say=print, opener=None, default_root=None) -> int:
             for x in r["commits"]:
                 say(f"  {x['hash']} {x['subject']}")
     elif cmd == "open":
-        path = root / rm.nodes[id].path
-        (opener or editor.open_file)(path)
+        try:
+            (opener or editor.open_file)(editor.node_file(root, rm.nodes[id].path))
+        except (OSError, ValueError) as e:
+            say(f"open: {e}")
+            return 1
         say(f"opened {rm.nodes[id].path}")
     return 0

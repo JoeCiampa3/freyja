@@ -114,3 +114,71 @@ def test_open_in_editor_runs_the_resolved_command(tmp_path):
     assert calls == [["ed", str(tmp_path / "f.md")]]
     editor.open_file(tmp_path / "f.md", env={}, which=lambda n: None, popen=lambda argv: calls.append(argv), startfile=lambda p: calls.append(("sf", p)))
     assert calls[-1] == ("sf", str(tmp_path / "f.md"))
+
+
+# ---- brief 2 T1: launching the editor on Windows
+
+@pytest.mark.skipif(__import__("os").name != "nt", reason="a .cmd shim is a Windows mechanism")
+def test_a_cmd_shim_on_path_receives_the_absolute_node_path(tmp_path, monkeypatch):
+    """The root cause of memo 14 finding 5: `code` is code.CMD and CreateProcess does not apply PATHEXT to a bare name."""
+    import time
+    shim_dir = tmp_path / "shims"
+    shim_dir.mkdir()
+    seen = tmp_path / "seen.txt"
+    (shim_dir / "fyedit.cmd").write_text(f'@echo off\r\n>"{seen}" echo %*\r\n', encoding="ascii")
+    node = tmp_path / "my roadmap" / "nodes" / "rm.a.md"  # a space in the path: it must survive the cmd.exe layer
+    node.parent.mkdir(parents=True)
+    node.write_text("x", encoding="utf-8")
+    monkeypatch.setenv("PATH", str(shim_dir) + __import__("os").pathsep + __import__("os").environ["PATH"])
+    with pytest.raises(FileNotFoundError):  # the bare name is what failed before the fix
+        subprocess.Popen(["fyedit", "-g", str(node)])
+    editor.open_file(node, env={"EDITOR": "fyedit -g"})
+    for _ in range(100):
+        if seen.exists() and seen.read_text().strip():
+            break
+        time.sleep(0.05)
+    assert str(node) in seen.read_text()
+    assert seen.read_text().split()[0] == "-g"
+
+
+def test_the_editor_is_resolved_to_its_full_path_before_launch(tmp_path):
+    calls = []
+    editor.open_file(tmp_path / "f.md", env={"EDITOR": "ed"}, which=lambda n: "/full/bin/ed.exe", popen=lambda argv: calls.append(argv))
+    assert calls == [["/full/bin/ed.exe", str(tmp_path / "f.md")]]
+
+
+def test_a_launch_failure_falls_back_to_startfile(tmp_path):
+    calls = []
+
+    def boom(argv):
+        raise FileNotFoundError("WinError 2")
+    argv = editor.open_file(tmp_path / "f.md", env={"EDITOR": "ed"}, which=lambda n: None, popen=boom, startfile=lambda p: calls.append(p))
+    assert calls == [str(tmp_path / "f.md")] and argv[0] == "startfile"
+
+
+def test_when_everything_fails_the_error_carries_both_causes(tmp_path):
+    def boom(argv):
+        raise FileNotFoundError("launch failed")
+
+    def boom2(p):
+        raise OSError("no association")
+    with pytest.raises(editor.EditorError) as e:
+        editor.open_file(tmp_path / "f.md", env={"EDITOR": "ed"}, which=lambda n: None, popen=boom, startfile=boom2)
+    assert "launch failed" in str(e.value) and "no association" in str(e.value)
+
+
+def test_arguments_cmd_would_reinterpret_are_not_sent_through_cmd(tmp_path):
+    """A .cmd shim runs under cmd.exe, where % and ^ in an argument are live. Such a path goes to startfile instead."""
+    calls = []
+    bad = tmp_path / "100%done.md"
+    editor.open_file(bad, env={"EDITOR": "ed"}, which=lambda n: "C:/x/ed.cmd", popen=lambda a: calls.append(("popen", a)),
+                     startfile=lambda p: calls.append(("sf", p)), windows=True)
+    assert calls == [("sf", str(bad))]
+
+
+def test_node_file_is_absolute_and_stays_under_the_root(tmp_path):
+    (tmp_path / "roadmap" / "nodes").mkdir(parents=True)
+    p = editor.node_file(tmp_path, "roadmap/nodes/rm.a.md")
+    assert p.is_absolute() and p == (tmp_path / "roadmap" / "nodes" / "rm.a.md").resolve()
+    with pytest.raises(ValueError):
+        editor.node_file(tmp_path, "../outside.md")

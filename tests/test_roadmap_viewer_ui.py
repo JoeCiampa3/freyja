@@ -30,6 +30,7 @@ window.fetch = (url, opts) => {
   const ok = (obj) => Promise.resolve({ ok: true, status: 200, headers: { get: () => "1" }, json: () => Promise.resolve(obj) });
   if (url.startsWith("/api/state")) return ok(JSON.parse(JSON.stringify(window.STATE_NOW)));
   if (url.startsWith("/api/node/")) { const id = decodeURIComponent(url.slice(10)); return ok({ id, title: "", path: "", body: window.BODIES[id] || "", references: { files: [], commits: [] } }); }
+  if (url.startsWith("/api/open/") && window.OPEN_FAILS) return Promise.resolve({ ok: false, status: 500, headers: { get: () => "1" }, json: () => Promise.resolve({ error: "WinError 2: cannot find the file" }) });
   if (url.startsWith("/api/open/")) return ok({ opened: "roadmap/nodes/stub.md" });
   return Promise.reject(new Error("unexpected fetch " + url));
 };
@@ -121,6 +122,12 @@ UI_TEST = r"""
     const post = window.calls.find((c) => c[1] === "POST");
     check("e posts to /api/open/<id> with the token", post && post[0] === "/api/open/" + encodeURIComponent(D.big_chain) && post[2]["X-Roadmap-Token"] === "tok", post);
     check("the result is announced", $("#toast").textContent.includes("Opened"), $("#toast").textContent);
+    window.OPEN_FAILS = true;
+    key("e"); await sleep(30);
+    check("a failed open shows the underlying error as a visible notice", $("#toast").textContent.includes("WinError 2") && $("#toast").classList.contains("show") && $("#toast").classList.contains("err"), $("#toast").textContent);
+    $("#toast").click();
+    check("a click dismisses the error notice", !$("#toast").classList.contains("show"));
+    window.OPEN_FAILS = false;
     // --- search
     location.hash = "#/node/" + D.root; await sleep(60);
     key("/");

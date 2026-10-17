@@ -141,6 +141,7 @@ dl.kv dt { color: var(--muted); } dl.kv dd { margin: 0; overflow-wrap: anywhere;
 .banner { margin: 10px 14px 0; padding: 8px 12px; border: 1px solid var(--c-blocked); border-radius: 5px; background: var(--panel); }
 #toast { position: fixed; right: 14px; bottom: 36px; max-width: 420px; background: var(--ink); color: var(--bg); padding: 8px 12px; border-radius: 5px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 20; }
 #toast.show { opacity: .96; }
+#toast.err { background: var(--bad, #b3261e); color: #fff; pointer-events: auto; cursor: pointer; }
 #tip { position: fixed; z-index: 30; pointer-events: none; background: var(--ink); color: var(--bg); padding: 4px 8px; border-radius: 4px; font-size: 12px; max-width: 360px; display: none; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .kbd { font: 11px ui-monospace, Consolas, monospace; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 3px; padding: 0 4px; background: var(--panel2); }

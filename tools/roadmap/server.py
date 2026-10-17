@@ -239,7 +239,7 @@ class App:
             return _error(404, "no such node")
         n = self.backend.snapshot().rm.nodes[id]
         try:
-            self.opener(self.root / n.path)
+            self.opener(editor.node_file(self.root, n.path))
         except Exception as e:  # noqa: BLE001
             return _error(500, f"could not open the editor: {e}")
         return _json(200, {"opened": n.path})
