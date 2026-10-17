@@ -18,6 +18,8 @@ For each: the change, the cheapest-fix rung it sits on, payback estimate, and th
 ## Build briefs
 Anything that needs building, written so it can be handed to Claude Code as-is: goal, inputs, outputs, done-when.
 
+Build a reviewer (Code) subagent that runs in a separate context, with only the brief, the acceptance test and the diff. Eventually build out distinct "engineer" roles that exist as skills and have links to specific parts of the repo and specialized knowledge to suit its role.
+
 ## Parking lot
 One-line content topics that came up and were deferred.
 
