@@ -17,8 +17,8 @@
     "frontier": {"type": "array", "items": {"type": "string"}, "description": "Every ready leaf and every expandable stub, sorted by id."},
     "errors": {"type": "array", "items": {"$ref": "#/$defs/issue"}},
     "warnings": {"type": "array", "items": {"$ref": "#/$defs/issue"}},
-    "tag_vocabulary": {"type": "object", "description": "roadmap/tags.yaml as {namespace: {value: colour or null}}; empty when the file is absent or unusable.",
-                       "additionalProperties": {"type": "object", "additionalProperties": {"type": ["string", "null"]}}},
+    "tag_vocabulary": {"type": "object", "description": "roadmap/tags.yaml as {namespace: [{value, colour or null}, ...]}, the values in the order of the file (the legend shows them so); empty when the file is absent or unusable.",
+                       "additionalProperties": {"type": "array", "items": {"type": "object", "required": ["value", "colour"], "additionalProperties": false, "properties": {"value": {"type": "string"}, "colour": {"type": ["string", "null"]}}}}},
     "nodes": {"type": "object", "additionalProperties": {"$ref": "#/$defs/node"}}
   },
   "$defs": {

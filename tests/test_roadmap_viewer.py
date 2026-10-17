@@ -28,6 +28,9 @@ from rmhelp import REPO, leaf, make
 import roadmap
 from roadmap import fixture, query, render, server
 
+sys.path.insert(0, str(REPO / "analysis"))
+import tag_palette  # noqa: E402  (its NEUTRAL is the grey the viewer must use for "no tag")
+
 VIEWER = REPO / "tools" / "roadmap" / "viewer"
 INDEX = (VIEWER / "index.html").read_text(encoding="utf-8")
 APP = (VIEWER / "app.js").read_text(encoding="utf-8")
@@ -81,6 +84,14 @@ def test_the_server_serves_the_page_and_every_file_it_needs(tmp_path):
         r = app.handle("GET", "/" + name, h)
         assert r.status == 200 and r.body == (VIEWER / name).read_bytes(), name
     assert app.handle("GET", "/d3.min.js", h).headers["Content-Type"].startswith("text/javascript")
+
+
+def test_the_untagged_grey_in_the_page_is_the_one_the_tag_colours_were_checked_against():
+    """Brief 3 T3: the grey for a node without the chosen tag is defined once, for both themes, and is the palette script's NEUTRAL."""
+    assert INDEX.count(f"--c-untagged: {tag_palette.NEUTRAL};") == 1
+    assert tag_palette.min_contrast(tag_palette.NEUTRAL) >= tag_palette.CONTRAST_MIN  # and it is visible on both themes too
+    for needed in ('id="map-colour"', 'id="map-legend"'):
+        assert needed in INDEX
 
 
 def test_the_status_glyphs_and_palette_cover_every_status_the_library_can_emit():
@@ -201,6 +212,36 @@ try {
   check("a short label is used by breadcrumb segments, so some segment differs from its title", L.crumbParts(idx, D.deep, true).some((q) => q.kind === "node" && D.shorts[q.id] && q.label !== q.full.slice(0, 28)));
   check("shortOf falls back to the title and ignores an empty label", L.shortOf({ title: "T title", short: null }) === "T title" && L.shortOf({ title: "T title", short: "" }) === "T title" && L.shortOf({ title: "T", short: "S" }) === "S" && L.shortOf(undefined) === "");
   check("truncateTitle", L.truncateTitle("x".repeat(40), 28).length === 28 && L.truncateTitle("short", 28) === "short");
+  // --- brief 3 T3: colour by tag
+  const V = D.state.tag_vocabulary;
+  check("the state carries the vocabulary the tags.yaml file holds", eq(V, D.vocab), Object.keys(V));
+  check("the Colour by namespaces are those in the vocabulary, region before phase, and none without a vocabulary", eq(L.tagNamespaces(V), ["region", "phase"]) && eq(L.tagNamespaces({}), []) && eq(L.tagNamespaces(undefined), []) && eq(L.tagNamespaces({ zeta: [{ value: "a", colour: null }], region: [{ value: "b", colour: null }], alpha: [{ value: "c", colour: null }] }), ["region", "alpha", "zeta"]), L.tagNamespaces(V));
+  for (const ns of Object.keys(D.vocab)) {
+    const liveIds = Object.keys(idx.depthOf);
+    const bad = liveIds.filter((id) => L.tagValueOf(idx.nodes[id], ns) !== D.tag_values[ns][id] || (L.tagFill(V, ns, idx.nodes[id]) || null) !== D.tag_fills[ns][id]);
+    check("colour mapping for " + ns + ": every node's value and fill match Python's reading of the node files and tags.yaml", bad.length === 0, bad.slice(0, 3).map((id) => [id, L.tagValueOf(idx.nodes[id], ns), L.tagFill(V, ns, idx.nodes[id]), D.tag_values[ns][id], D.tag_fills[ns][id]]));
+    check("colour mapping for " + ns + ": some nodes are tagged and some are not, so the grey fallback is real", liveIds.some((id) => D.tag_fills[ns][id]) && liveIds.some((id) => D.tag_fills[ns][id] === null), ns);
+    const lg = L.legendEntries(idx, V, ns);
+    check("legend for " + ns + ": every vocabulary value in file order with its count, and the untagged count", eq(lg.entries.map((e) => e.value), D.vocab_order[ns]) && lg.entries.every((e) => e.count === D.tag_legend[ns][e.value] && e.colour === D.vocab_colour[ns][e.value]) && lg.none === D.tag_legend[ns]._none, lg);
+    check("legend for " + ns + ": the counts add up to the nodes shown", lg.entries.reduce((s, e) => s + e.count, 0) + lg.none === liveIds.length);
+    const only = D.busiest_region;
+    check("a value that carries the node, and none: " + ns, ns !== "region" || (liveIds.filter((id) => L.carries(idx.nodes[id], ns, only)).length === D.tag_legend.region[only] && liveIds.filter((id) => L.carries(idx.nodes[id], ns, "_none")).length === D.tag_legend.region._none && L.carries(idx.nodes[liveIds[0]], ns, null) === true));
+  }
+  const vv = (...e) => e.map(([value, colour]) => ({ value, colour }));
+  check("a value without a colour is drawn grey but still counted", L.tagFill({ region: vv(["head", null], ["neck", "#112233"]) }, "region", { tags: ["region:head"] }) === null && L.tagFill({ region: vv(["head", null], ["neck", "#112233"]) }, "region", { tags: ["region:neck"] }) === "#112233" && L.tagFill({ region: vv(["head", null]) }, "region", { tags: [] }) === null && L.tagFill({ region: vv(["head", null]) }, "region", { tags: ["region:zzz"] }) === null && L.tagFill({}, "region", { tags: ["region:head"] }) === null && L.legendEntries({ depthOf: { a: 0, b: 1 }, nodes: { a: { tags: ["region:head"] }, b: { tags: [] } } }, { region: vv(["head", null], ["neck", "#112233"]) }, "region").entries.map((e) => e.value + e.count).join() === "head1,neck0");
+  check("a free tag is never a namespace value, and only the first value of a namespace colours a node", L.tagValueOf({ tags: ["arm", "x:region"] }, "region") === null && L.tagValueOf({ tags: ["region:head", "region:neck"] }, "region") === "head");
+  for (const [q, want] of Object.entries(D.tag_queries)) {
+    const got = L.outlineVisible(idx, q, []);
+    check("search " + JSON.stringify(q) + " keeps the matching nodes and their ancestors", eq(got, want), [got && got.length, want.length]);
+  }
+  check("a tag search is not a text search, and combines with the status chips", L.tagQuery("tag:region:x") === "region:x" && L.tagQuery("  TAG:  cad ") === "cad" && L.tagQuery("tagline") === null && L.tagQuery("rm.tag:x") === null && L.tagQuery("tag:") === "" && eq(L.outlineVisible(idx, "tag:cad", ["done", "ready", "blocked", "active", "in_progress", "not_started", "expandable"]), L.outlineVisible(idx, "tag:cad", [])));
+  const route = (id, p) => L.routeFormat(id, p);
+  check("the hash is the plain route when the view is the default", route("rm.a-b") === "#/node/rm.a-b" && route("rm.a-b", {}) === "#/node/rm.a-b" && route("rm.a-b", { colour: undefined, only: null, map: false }) === "#/node/rm.a-b");
+  for (const p of [{ colour: "region" }, { colour: "phase", only: "spec" }, { colour: "region", only: "_none" }, { colour: "region", only: "whole-body", map: "1" }, { map: "1" }]) {
+    const h = route("rm.a-b", p), back = L.routeParams(h);
+    check("the hash round trips " + JSON.stringify(p), L.routeParse(h) === "rm.a-b" && eq(back, p), [h, back]);
+  }
+  check("a malformed hash reads as no parameters, and unknown parameters are kept out", eq(L.routeParams("#/node/rm.a?"), {}) && eq(L.routeParams("#/other?colour=region"), {}) && eq(L.routeParams(""), {}) && eq(L.routeParams("#/node/rm.a?colour=region&zzz=1"), { colour: "region" }) && L.routeParse("#/node/rm.a?colour=region") === "rm.a");
   // --- focus layout: the shown nodes, the geometry, the links
   const LY = L.LAYOUT;
   const overlaps = (a, b) => a.x < b.x + b.w - 0.5 && b.x < a.x + a.w - 0.5 && a.y < b.y + b.h - 0.5 && b.y < a.y + a.h - 0.5;
@@ -410,6 +451,39 @@ def expected_brief2(rm, live, children, parent, root, depth, deep):
             "shown": shown, "wide": wide, "mixed": mixed, "big_interior": big_interior}
 
 
+def expected_tags(root, rm, live, parent):
+    """Brief 3 T3, computed from the node files and roadmap/tags.yaml with plain Python (never from the viewer's code): the colour each node
+    should be drawn in for each namespace (None: the grey), the legend counts, and the nodes a `tag:` search should keep."""
+    import yaml
+    vocab = yaml.safe_load((Path(root) / "roadmap" / "tags.yaml").read_text(encoding="utf-8"))["namespaces"]
+
+    def value_of(i, ns):
+        for t in rm.nodes[i].tags:
+            if t.startswith(ns + ":"):
+                return t.split(":", 1)[1]
+        return None
+    values = {ns: {i: value_of(i, ns) for i in live} for ns in vocab}
+    fills = {ns: {i: (vocab[ns].get(v) if v is not None else None) for i, v in values[ns].items()} for ns in vocab}
+    legend = {ns: {**{v: sum(1 for i in live if values[ns][i] == v) for v in vocab[ns]}, "_none": sum(1 for i in live if values[ns][i] is None)} for ns in vocab}
+
+    def kept(tag):
+        hit = {i for i in live if tag.lower() in [t.lower() for t in rm.nodes[i].tags]}
+        out = set(hit)
+        for i in hit:
+            p = parent[i]
+            while p:
+                out.add(p)
+                p = parent[p]
+        return sorted(out)
+    busiest = max(vocab["region"], key=lambda v: legend["region"][v])
+    queries = [f"tag:region:{busiest}", "tag:phase:spec", "tag:cad", "TAG:CAD", "tag:  region:" + busiest + "  ", "tag:region:nonesuch", "tag:", "tag:arm", "tag:region", "Tag:phase:SIM"]
+    wanted = {q: kept(q.strip()[4:].strip()) if q.strip()[4:].strip() else [] for q in queries}
+    assert len(wanted[queries[0]]) > 3 and wanted["tag:region:nonesuch"] == [] and wanted["tag:cad"] and wanted["tag:cad"] == wanted["TAG:CAD"]
+    assert wanted["tag:region"] == [] and wanted["tag:arm"], "free tag 'arm' exists in the fixture; the bare namespace is not a tag"
+    as_state = {ns: [{"value": v, "colour": c} for v, c in vals.items()] for ns, vals in vocab.items()}  # the order of the file, as the state lists it
+    return {"untagged": tag_palette.NEUTRAL, "vocab": as_state, "vocab_order": {ns: list(vals) for ns, vals in vocab.items()}, "vocab_colour": vocab, "tag_values": values, "tag_fills": fills, "tag_legend": legend, "tag_queries": wanted, "busiest_region": busiest}
+
+
 def expected_for(root):
     rm = roadmap.compute(root)
     state = render.state_dict(rm)
@@ -456,7 +530,7 @@ def expected_for(root):
                         "rm.c": {"title": "C", "status": "blocked", "kind": "leaf", "parent": "rm.gone"}}}
     extra = expected_brief2(rm, live, children, parent, roots[0], depth, deep)
     shorts = {i: rm.nodes[i].short for i in live}  # from the node files, not from the state the viewer reads
-    return {"shorts": shorts, "state": state, "root": roots[0], "live_count": len(live), "children": children, "leaf_total": leaf_total, "max_depth": max(depth(i) for i in live),
+    return {"shorts": shorts, **expected_tags(root, rm, live, parent), "state": state, "root": roots[0], "live_count": len(live), "children": children, "leaf_total": leaf_total, "max_depth": max(depth(i) for i in live),
             "nav": nav, "queries": expected_q, "chains": chains, "big_chain": big, "deep": deep, "broken": broken, "broken_roots": 3, **extra}
 
 

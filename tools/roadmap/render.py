@@ -58,7 +58,7 @@ def state_dict(rm: Roadmap, banner_text: str | None = None) -> dict:
     return {"_generated": banner_text if banner_text is not None else banner(root, rm), "generated_by": TOOL, "inputs": ["roadmap/nodes/*.md", TAGS_FILE], "schema": "roadmap-state/3",
             "node_count": rm.node_count, "superseded_count": rm.superseded_count, "counts": dict(sorted(rm.counts.items())),
             "frontier": list(rm.frontier), "errors": [e.to_dict() for e in rm.errors], "warnings": [w.to_dict() for w in rm.warnings],
-            "tag_vocabulary": {ns: dict(v) for ns, v in sorted(rm.vocabulary.items())}, "nodes": nodes}
+            "tag_vocabulary": {ns: [{"value": value, "colour": colour} for value, colour in values.items()] for ns, values in sorted(rm.vocabulary.items())}, "nodes": nodes}  # values stay in file order: lists, because the file is written with sorted keys
 
 
 def state_json_text(rm: Roadmap) -> str:

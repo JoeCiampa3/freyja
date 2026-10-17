@@ -73,6 +73,7 @@ UI_TEST = r"""
   const prog = (id) => { let d = 0, t = 0; (function f(x) { if (!D.children[x].length) { t++; if (D.state.nodes[x].status === "done") d++; return; } D.children[x].forEach(f); })(id); return [d, t]; };
   const chain = (id) => { const out = []; for (let c = id; c; c = D.state.nodes[c].parent) out.push(c); return out.reverse(); };
   const L = window.RoadmapLogic, IDX = L.buildIndex(D.state, false);
+  const eq2 = (a, b) => JSON.stringify(a) === JSON.stringify(b);
   const xy = (el) => ({ x: parseFloat(el.style.left), y: parseFloat(el.style.top) });
   const stage = () => $("#view .stage");
   const tf = () => { const s = stage(); return s ? [parseFloat(s.dataset.k), parseFloat(s.dataset.tx), parseFloat(s.dataset.ty)] : null; };
@@ -421,6 +422,87 @@ UI_TEST = r"""
     check("clicking a node on the map leaves it and focuses that node", !document.body.classList.contains("map") && hash() === "#/node/" + pick && cur() === title(pick), [hash(), cur()]);
     key("m"); key("m");
     check("m toggles", !document.body.classList.contains("map"));
+
+    // =================================================================== brief 3 T3: colour by tag
+    await goTo(D.root);
+    key("m"); await sleep(60);
+    const CB = $("#map-colour"), LG = $("#map-legend");
+    const markers = () => $$("#map g.mk");
+    const shapeOfMk = (g) => g.querySelector("path.shape");
+    const leafMarkers = () => markers().filter((g) => g.dataset.kind !== "interior");
+    const tagVal = (ns, id) => D.tag_values[ns][id];
+    const legendRow = (v) => $("#map-legend [data-value='" + v + "']");
+    const hexRgb = (h) => "rgb(" + [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)).join(", ") + ")";
+    check("Colour by offers Status, Region and Phase (in that order) and starts on Status", CB && CB.tagName === "SELECT" && eq2($$("#map-colour option").map((o) => o.textContent), ["Status", "Region", "Phase"]) && $$("#map-colour option").map((o) => o.value).join() === "status,region,phase" && CB.value === "status", CB && $$("#map-colour option").map((o) => o.textContent));
+    check("in Status mode the markers keep the status colours and there is no tag legend", leafMarkers().every((g) => shapeOfMk(g).style.fill === "var(--c-" + g.dataset.status + ")" && !shapeOfMk(g).hasAttribute("data-fill")) && LG.hidden === true);
+    const shapeBefore = Object.fromEntries(markers().map((g) => [g.dataset.id, [g.dataset.shape, g.dataset.status, g.dataset.kind]]));
+    const sectorsBefore = $$("#map .sector").map((s) => s.getAttribute("style") + "|" + s.getAttribute("d"));
+    const ringsBefore = $$("#map g.mk[data-kind=interior] .ring").map((r) => r.getAttribute("style") + "|" + r.dataset.frac);
+    const wedgesBefore = $$("#map g.mk[data-kind=interior] .wedge").map((w) => w.getAttribute("d"));
+    const choose = async (v) => { CB.value = v; CB.dispatchEvent(new Event("change", { bubbles: true })); await sleep(30); };
+    await choose("region");
+    check("Region: each leaf and stub marker is filled with its tag value's colour, and a node without one is the neutral grey", leafMarkers().length > 0 && leafMarkers().every((g) => shapeOfMk(g).dataset.fill === (D.tag_fills.region[g.dataset.id] || "var(--c-untagged)")), leafMarkers().slice(0, 3).map((g) => [g.dataset.id, shapeOfMk(g).dataset.fill]));
+    check("Region: both tagged and untagged markers are on the map", leafMarkers().some((g) => D.tag_fills.region[g.dataset.id]) && leafMarkers().some((g) => !D.tag_fills.region[g.dataset.id]));
+    const tg = leafMarkers().find((g) => D.tag_fills.region[g.dataset.id]), ug = leafMarkers().find((g) => !D.tag_fills.region[g.dataset.id]);
+    check("the colours are really painted (computed fill), the grey included", getComputedStyle(shapeOfMk(tg)).fill === hexRgb(D.tag_fills.region[tg.dataset.id]) && getComputedStyle(shapeOfMk(ug)).fill === hexRgb(D.untagged), [getComputedStyle(shapeOfMk(tg)).fill, getComputedStyle(shapeOfMk(ug)).fill, D.untagged]);
+    check("Region: status is still conveyed by shape (shape, status and kind of every marker are unchanged)", markers().every((g) => eq2([g.dataset.shape, g.dataset.status, g.dataset.kind], shapeBefore[g.dataset.id])) && leafMarkers().every((g) => shapeOfMk(g).getAttribute("d").length > 10));
+    check("Region: interior rings keep their progress fill and status stroke, sector backgrounds stay keyed to the branches", eq2($$("#map g.mk[data-kind=interior] .ring").map((r) => r.getAttribute("style") + "|" + r.dataset.frac), ringsBefore) && eq2($$("#map g.mk[data-kind=interior] .wedge").map((w) => w.getAttribute("d")), wedgesBefore) && eq2($$("#map .sector").map((s) => s.getAttribute("style") + "|" + s.getAttribute("d")), sectorsBefore) && $$("#map g.mk[data-kind=interior] .ring").every((r) => !r.hasAttribute("data-fill")));
+    check("Region: a legend lists every value with its count and the untagged count, headed by the namespace", LG.hidden === false && /Region/.test(LG.textContent) && eq2($$("#map-legend [data-value]").map((b) => b.dataset.value), [...D.vocab_order.region, "_none"]) && $$("#map-legend [data-value]").every((b) => b.querySelector(".count").textContent === String(D.tag_legend.region[b.dataset.value])) && $$("#map-legend [data-value]").every((b) => b.dataset.value === "_none" || getComputedStyle(b.querySelector(".lsw")).backgroundColor === hexRgb(D.vocab_colour.region[b.dataset.value])), $$("#map-legend [data-value]").slice(0, 3).map((b) => b.textContent));
+    check("the legend counts add up to every node on the map", $$("#map-legend [data-value] .count").reduce((s, c) => s + Number(c.textContent), 0) === markers().length);
+    const BV = D.busiest_region;
+    check("nothing is dimmed until a legend value is clicked", markers().every((g) => !g.classList.contains("dim")) && $$("#map-legend [aria-pressed=true]").length === 0);
+    click(legendRow(BV)); await sleep(30);
+    check("clicking a value dims every node that does not carry it, and no node that does", markers().every((g) => g.classList.contains("dim") === (tagVal("region", g.dataset.id) !== BV)) && markers().some((g) => g.classList.contains("dim")) && markers().some((g) => !g.classList.contains("dim")) && legendRow(BV).getAttribute("aria-pressed") === "true", [markers().filter((g) => !g.classList.contains("dim")).length, D.tag_legend.region[BV]]);
+    check("the dimmed markers are the same count as the legend says are not carriers", markers().filter((g) => !g.classList.contains("dim")).length === D.tag_legend.region[BV]);
+    check("the view is in the URL hash so that a link reproduces it", hash() === "#/node/" + D.root + "?colour=region&only=" + BV + "&map=1", hash());
+    click(legendRow(BV)); await sleep(30);
+    check("clicking it again clears the dimming", markers().every((g) => !g.classList.contains("dim")) && hash() === "#/node/" + D.root + "?colour=region&map=1", hash());
+    click(legendRow("_none")); await sleep(30);
+    check("the untagged entry dims every node that has a value", markers().every((g) => g.classList.contains("dim") === (tagVal("region", g.dataset.id) !== null)) && hash().includes("only=_none"), hash());
+    click(legendRow(BV)); await sleep(30);
+    check("choosing another value moves the dimming", markers().every((g) => g.classList.contains("dim") === (tagVal("region", g.dataset.id) !== BV)) && $$("#map-legend [aria-pressed=true]").length === 1);
+    key("Escape"); await sleep(40);
+    check("the choice persists across closing the map; the hash drops only the map", !document.body.classList.contains("map") && CB.value === "region" && hash() === "#/node/" + D.root + "?colour=region&only=" + BV, hash());
+    key("m"); await sleep(60);
+    check("and across opening it again: colours, dimming and the control are as they were", CB.value === "region" && leafMarkers().every((g) => shapeOfMk(g).dataset.fill === (D.tag_fills.region[g.dataset.id] || "var(--c-untagged)")) && markers().every((g) => g.classList.contains("dim") === (tagVal("region", g.dataset.id) !== BV)) && hash().endsWith("&map=1"), hash());
+    await choose("phase");
+    check("Phase: fills follow the phase tags, the legend changes namespace, and the value dimming is reset", leafMarkers().every((g) => shapeOfMk(g).dataset.fill === (D.tag_fills.phase[g.dataset.id] || "var(--c-untagged)")) && /Phase/.test(LG.textContent) && eq2($$("#map-legend [data-value]").map((b) => b.dataset.value), [...D.vocab_order.phase, "_none"]) && markers().every((g) => !g.classList.contains("dim")) && hash() === "#/node/" + D.root + "?colour=phase&map=1", hash());
+    await choose("status");
+    check("Status again: status colours return, no legend, the hash is the plain route plus the map", leafMarkers().every((g) => shapeOfMk(g).style.fill === "var(--c-" + g.dataset.status + ")" && !shapeOfMk(g).hasAttribute("data-fill")) && LG.hidden === true && hash() === "#/node/" + D.root + "?map=1", hash());
+    // a link reproduces the view
+    location.hash = "#/node/" + D.root + "?colour=phase&only=spec&map=1"; await sleep(80);
+    check("a link with a colour, a value and map=1 opens the map in that view", document.body.classList.contains("map") && CB.value === "phase" && markers().every((g) => g.classList.contains("dim") === (tagVal("phase", g.dataset.id) !== "spec")) && leafMarkers().every((g) => shapeOfMk(g).dataset.fill === (D.tag_fills.phase[g.dataset.id] || "var(--c-untagged)")), hash());
+    location.hash = "#/node/" + D.root + "?colour=bogus&only=zzz&map=1"; await sleep(60);
+    check("an unknown namespace in a link is ignored; the view stays as it was", CB.value === "phase");
+    location.hash = "#/node/" + D.root + "?colour=region&only=zzz&map=1"; await sleep(60);
+    check("an unknown value in a link is ignored, the namespace is honoured", CB.value === "region" && markers().every((g) => !g.classList.contains("dim")));
+    location.hash = "#/node/" + D.root; await sleep(60);
+    check("a plain route closes the map and leaves the colour choice alone", !document.body.classList.contains("map") && CB.value === "region");
+    // recolouring is cheap and measured
+    key("m"); await sleep(40);
+    check("the recolour time is recorded for the capture scripts", /^\d+(\.\d)?$/.test(document.documentElement.dataset.recolourMs || ""), document.documentElement.dataset.recolourMs);
+    // no vocabulary: only Status
+    window.STATE_NOW.tag_vocabulary = {};
+    window.es.listeners.changed(); await sleep(300);
+    check("without a vocabulary the control offers Status only, the colouring falls back to status and the legend is hidden", $$("#map-colour option").length === 1 && CB.value === "status" && LG.hidden === true && leafMarkers().every((g) => shapeOfMk(g).style.fill === "var(--c-" + g.dataset.status + ")"), [$$("#map-colour option").length, CB.value]);
+    window.STATE_NOW.tag_vocabulary = JSON.parse(JSON.stringify(D.vocab));
+    window.es.listeners.changed(); await sleep(300);
+    check("and when the vocabulary returns, so do the options", $$("#map-colour option").length === 3);
+    key("Escape"); await sleep(30);
+    // search: tag:
+    await goTo(D.root);
+    const typeSearch = (v) => { $("#search").value = v; $("#search").dispatchEvent(new Event("input", { bubbles: true })); };
+    for (const q of ["tag:region:" + BV, "tag:cad", "TAG:CAD", "tag:region:nonesuch", "tag:"]) {
+      typeSearch(q);
+      const want = D.tag_queries[q];
+      check("search " + JSON.stringify(q) + " filters the outline to the matches and their ancestors", eq2(rowIds().slice().sort(), want.slice().sort()), [rowIds().length, want.length]);
+    }
+    typeSearch("tag:region:" + BV);
+    const carriers = Object.keys(D.state.nodes).filter((id) => D.state.nodes[id].status !== "superseded" && D.state.nodes[id].tags.includes("region:" + BV)).sort();
+    check("a tag search lists the matching nodes as candidates (at most 10)", $$("#cands li[role=option]").length === Math.min(10, carriers.length) && $$("#cands li[role=option]").length > 0, [$$("#cands li").map((l) => l.textContent.slice(0, 20))]);
+    typeSearch("");
+    key("Escape");
+    check("clearing the search brings the outline back", rowIds().length > 1);
 
     // =================================================================== live updates, errors
     location.hash = "#/node/" + first; await sleep(60);

@@ -31,7 +31,7 @@ VOCAB = {"namespaces": {"region": {"head": "#0072b2", "arm-l": None, "arm-r": "#
 
 def with_vocab(root, vocab=VOCAB):
     (Path(root) / "roadmap").mkdir(parents=True, exist_ok=True)
-    (Path(root) / "roadmap" / "tags.yaml").write_text(yaml.safe_dump(vocab, sort_keys=True), encoding="utf-8", newline="\n")
+    (Path(root) / "roadmap" / "tags.yaml").write_text(yaml.safe_dump(vocab, sort_keys=False), encoding="utf-8", newline="\n")
     return root
 
 
@@ -194,7 +194,7 @@ def test_load_vocabulary_returns_namespace_to_value_to_colour(tmp_path):
 def test_state_carries_the_vocabulary_and_lists_the_file_among_its_inputs(tmp_path):
     root = tagged(tmp_path / "r", {"rm.a": ["region:head"]})
     st = render.state_dict(roadmap.compute(root))
-    assert st["tag_vocabulary"] == VOCAB["namespaces"] and "roadmap/tags.yaml" in st["inputs"]
+    assert st["tag_vocabulary"] == {ns: [{"value": v, "colour": c} for v, c in vals.items()] for ns, vals in VOCAB["namespaces"].items()} and "roadmap/tags.yaml" in st["inputs"]
     schema = json.loads((REPO / "docs" / "schemas" / "roadmap-state-3.schema.json").read_text(encoding="utf-8"))
     assert list(jsonschema.Draft202012Validator(schema).iter_errors(st)) == []
     assert render.state_dict(roadmap.compute(make(tmp_path / "e", {"rm.root": {"title": "T"}})))["tag_vocabulary"] == {}
@@ -224,3 +224,12 @@ def test_the_fixture_tags_nodes_from_the_vocabulary_without_warnings_it_did_not_
         assert 0.3 * len(live) < len(have) < 0.9 * len(live), (ns, len(have))  # some nodes carry none, so the grey fallback is exercised
         assert none and len(values) >= (10 if ns == "region" else 5), (ns, sorted(values))
     assert all(len([t for t in n.tags if t.startswith("region:")]) <= 1 and len([t for t in n.tags if t.startswith("phase:")]) <= 1 for n in live)
+
+
+def test_the_state_lists_each_namespaces_values_in_the_order_of_the_file_even_though_the_file_is_written_with_sorted_keys(tmp_path):
+    """The legend shows them in this order (head before foot), and state.json has sorted keys, so the values are a list rather than an object."""
+    root = render.build(tagged(tmp_path / "r", {"rm.a": []})) and tmp_path / "r"
+    st = json.loads((root / "roadmap" / "state.json").read_text(encoding="utf-8"))
+    assert [e["value"] for e in st["tag_vocabulary"]["region"]] == ["head", "arm-l", "arm-r"]  # not sorted: arm-l would come first
+    real_state = render.state_dict(roadmap.compute(REPO))
+    assert [e["value"] for e in real_state["tag_vocabulary"]["region"]] == REGION and [e["value"] for e in real_state["tag_vocabulary"]["phase"]] == PHASE

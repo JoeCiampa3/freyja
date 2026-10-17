@@ -15,6 +15,7 @@
   --c-done: #0072B2; --c-in_progress: #56B4E9; --c-active: #E69F00; --c-ready: #009E73; --c-expandable: #CC79A7;
   --c-blocked: #D55E00; --c-not_started: #A6A6A6; --c-unknown: #F0E442; --c-superseded: #D9D9D9; --c-stale: #FFFFFF;
   --on-done: #ffffff; --on-other: #000000;
+  --c-untagged: #8c8c88; /* a node without the chosen tag namespace; checked against the tag colours by analysis/tag_palette.py */
 }
 :root[data-theme="dark"] {
   --bg: #161614; --panel: #1f1f1c; --panel2: #292926; --ink: #ecebe6; --muted: #a9a8a0; --line: #45443f; --accent: #6db2ff; --focus-ring: #6db2ff;
@@ -205,6 +206,18 @@ dl.kv dt { color: var(--muted); } dl.kv dd { margin: 0; overflow-wrap: anywhere;
 #mapsvg .hoverlink { fill: none; stroke-width: 2.2; vector-effect: non-scaling-stroke; pointer-events: none; }
 #mapsvg .hoverlink.blocker { stroke: var(--edge-blocker); } #mapsvg .hoverlink.dependent { stroke: var(--edge-dependent); }
 #mapsvg.frontier-only g.mk:not(.frontier) { opacity: .15; }
+#mapsvg g.mk.dim, #mapsvg .lbl.dim { opacity: .13; }
+.maptools label.colourby { display: flex; gap: 6px; align-items: center; color: var(--muted); font-size: 13px; }
+#map-legend { position: absolute; left: 12px; bottom: 12px; z-index: 2; max-height: 45%; overflow: auto; min-width: 190px; max-width: 280px; padding: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; box-shadow: var(--shadow); font-size: 12px; }
+#map-legend[hidden] { display: none; }
+#map-legend .lhead { color: var(--muted); padding: 2px 4px 6px; }
+#map-legend .lrow { display: flex; gap: 8px; align-items: center; width: 100%; padding: 3px 6px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+#map-legend .lrow:hover { background: var(--panel2); }
+#map-legend .lrow[aria-pressed=true] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 18%, var(--panel2)); font-weight: 600; }
+#map-legend .lsw { flex: none; width: 12px; height: 12px; border-radius: 2px; border: 1px solid var(--ink); }
+#map-legend .lsw.none { background: var(--c-untagged); }
+#map-legend .lname { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#map-legend .count { color: var(--muted); font-variant-numeric: tabular-nums; }
 #mapsvg.frontier-only .mlink { opacity: .35; }
 </style>
 </head>
@@ -242,11 +255,13 @@ dl.kv dt { color: var(--muted); } dl.kv dd { margin: 0; overflow-wrap: anywhere;
     <strong>Map</strong>
     <button id="map-layout" title="Switch between the radial and the top-down layout">Top-down</button>
     <button id="map-frontier" aria-pressed="false" title="Dim every node that is neither ready nor expandable">Frontier only</button>
+    <label class="colourby" for="map-colour">Colour by <select id="map-colour" title="Fill the leaf and stub markers by status (the default) or by a tag namespace; shape always shows the status"></select></label>
     <button id="map-fit" title="Fit the whole map (f)">Fit</button>
     <span class="grow"></span>
     <span class="hint">wheel zooms · drag pans · click a node to focus it · ↑↓←→ move · p pin · e editor · f fit · Esc closes</span>
     <button id="map-close" title="Leave the map (Esc or m)">Close</button>
   </div>
+  <div id="map-legend" hidden aria-label="Legend of the chosen tag namespace"></div>
   <svg id="mapsvg" role="img" aria-label="The roadmap as a tree: rings are depths in the radial layout; each marker is a node"></svg>
 </div>
 <div id="toast" role="status" aria-live="polite"></div>

@@ -106,14 +106,66 @@
     return Object.keys(index.depthOf).filter((id) => !(index.children[id] || []).length && index.nodes[id].kind === "leaf" && index.nodes[id].active === true).sort();
   }
 
-  /** Outline filter: the ids to show (matches of the text and of any chosen status, plus their ancestors) sorted, or null when no filter is set. */
+  /* ---- tags (roadmap/tags.yaml, brief 3): a tag is free or `namespace:value`; the vocabulary (state.tag_vocabulary) maps each namespace to its values in file order, [{value, colour or null}] */
+  const NS_FIRST = ["region", "phase"]; // the order the Colour by control offers them in; any other namespace follows, alphabetically
+  const UNTAGGED = "var(--c-untagged)"; // what a node without the chosen namespace's tag (or a value without a colour) is drawn in
+  const hasOwn = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+  const vocabCache = new WeakMap();
+  /** {order: [values in file order], colour: {value: colour or null}} for a namespace, or null when the vocabulary has none such. */
+  function vocabInfo(vocab, ns) {
+    if (!vocab || typeof vocab !== "object" || !hasOwn(vocab, ns) || !Array.isArray(vocab[ns])) return null;
+    let c = vocabCache.get(vocab);
+    if (!c) { c = {}; vocabCache.set(vocab, c); }
+    if (!c[ns]) { const order = [], colour = {}; for (const e of vocab[ns]) { order.push(e.value); colour[e.value] = e.colour || null; } c[ns] = { order, colour }; }
+    return c[ns];
+  }
+  function tagNamespaces(vocab) {
+    const ks = Object.keys(vocab || {});
+    return [...NS_FIRST.filter((k) => ks.includes(k)), ...ks.filter((k) => !NS_FIRST.includes(k)).sort()];
+  }
+  /** The first value of a namespace on a node, or null. */
+  function tagValueOf(node, ns) {
+    for (const t of (node && node.tags) || []) { const i = String(t).indexOf(":"); if (i > 0 && t.slice(0, i) === ns) return t.slice(i + 1); }
+    return null;
+  }
+  /** The colour (#rrggbb) a node is drawn in when colouring by `ns`, or null for the grey: no value, an unknown value or a value with no colour. */
+  function tagFill(vocab, ns, node) {
+    const v = tagValueOf(node, ns), info = vocabInfo(vocab, ns);
+    return v !== null && info && hasOwn(info.colour, v) && info.colour[v] ? info.colour[v] : null;
+  }
+  /** Does the node carry `only`: a value of the namespace, "_none" for no value at all, or null for no filter (everything). */
+  function carries(node, ns, only) {
+    if (only === null || only === undefined) return true;
+    const v = tagValueOf(node, ns);
+    return only === "_none" ? v === null : v === only;
+  }
+  /** The legend of a namespace over the nodes shown: every vocabulary value in file order with its colour and count, and the count with none. */
+  function legendEntries(index, vocab, ns) {
+    const info = vocabInfo(vocab, ns) || { order: [], colour: {} }, counts = {};
+    let none = 0;
+    for (const id of Object.keys(index.depthOf)) { const v = tagValueOf(index.nodes[id], ns); if (v !== null && hasOwn(info.colour, v)) counts[v] = (counts[v] || 0) + 1; else none++; }
+    return { entries: info.order.map((value) => ({ value, colour: info.colour[value], count: counts[value] || 0 })), none };
+  }
+  /** `tag:<tag>` in the search box: the tag asked for (trimmed; "" while it is still being typed), or null when the text is an ordinary query. */
+  function tagQuery(text) { const m = /^\s*tag:(.*)$/i.exec(String(text || "")); return m ? m[1].trim() : null; }
+  /** The shown nodes carrying exactly this tag (compared without regard to case), sorted. */
+  function tagMatches(index, tag) {
+    const want = String(tag).toLowerCase();
+    if (!want) return [];
+    return Object.keys(index.depthOf).filter((id) => ((index.nodes[id] && index.nodes[id].tags) || []).some((t) => String(t).toLowerCase() === want)).sort();
+  }
+
+  /** Outline filter: the ids to show (matches of the text and of any chosen status, plus their ancestors) sorted, or null when no filter is set.
+   * Text of the form `tag:<tag>` matches nodes carrying that tag instead of matching titles. */
   function outlineVisible(index, text, statuses) {
-    const t = String(text || "").trim().toLowerCase();
+    const tq = tagQuery(text), tagged = tq === null ? null : new Set(tagMatches(index, tq));
+    const t = tq === null ? String(text || "").trim().toLowerCase() : "";
     const st = new Set(statuses || []);
-    if (!t && !st.size) return null;
+    if (tq === null && !t && !st.size) return null;
     const vis = new Set();
     for (const id of Object.keys(index.depthOf)) {
       const n = index.nodes[id];
+      if (tagged && !tagged.has(id)) continue;
       if (t && !(id.toLowerCase().includes(t) || String(n.title).toLowerCase().includes(t))) continue;
       if (st.size && !st.has(n.status)) continue;
       for (let c = id; c && !vis.has(c); c = index.parent[c]) vis.add(c);
@@ -446,16 +498,33 @@
     return mdInstance.parse(String(src || ""));
   }
 
+  /* The hash is #/node/<id>, then optionally ?colour=<namespace>&only=<value or _none>&map=1: the map's Colour by choice, the legend value it is
+   * narrowed to and whether the map is open, so that a link reproduces the view. The default view has no parameters. */
+  const VIEW_KEYS = ["colour", "only", "map"];
   function routeParse(hash) {
-    const m = /^#\/node\/(.+)$/.exec(hash || "");
+    const m = /^#\/node\/([^?]+)(?:\?.*)?$/.exec(hash || "");
     if (!m) return null;
     try { return decodeURIComponent(m[1]); } catch (e) { return null; }
   }
-  function routeFormat(id) { return "#/node/" + encodeURIComponent(id); }
+  function routeParams(hash) {
+    const m = /^#\/node\/[^?]+\?(.*)$/.exec(hash || "");
+    const out = {};
+    if (!m) return out;
+    const sp = new URLSearchParams(m[1]);
+    for (const k of VIEW_KEYS) if (sp.get(k)) out[k] = sp.get(k);
+    return out;
+  }
+  function routeFormat(id, params) {
+    const sp = new URLSearchParams();
+    for (const k of VIEW_KEYS) if (params && params[k]) sp.set(k, params[k]);
+    const q = sp.toString();
+    return "#/node/" + encodeURIComponent(id) + (q ? "?" + q : "");
+  }
 
   window.RoadmapLogic = { VROOT, STATUS, shortOf, STATUS_ORDER, CHILD_ORDER, LAYOUT, MAX_DEPTH, MAP_MIN_GAP, LABEL_PX, statusInfo, esc, truncateTitle, buildIndex, ancestors,
     navigate, relativeDepth, orderedChildren, activeLeaves, outlineVisible, outlineRows, crumbParts, usefulDepth, focusLayout, autoDepth, markerShape, shapePath,
-    ringWedge, mapLayout, labelZoom, matchRatio, resolveQuery, blockerChain, criterionText, safeHref, renderMarkdown, routeParse, routeFormat };
+    ringWedge, mapLayout, labelZoom, matchRatio, resolveQuery, blockerChain, criterionText, safeHref, renderMarkdown, routeParse, routeParams, routeFormat,
+    tagNamespaces, tagValueOf, tagFill, carries, legendEntries, tagQuery, tagMatches, UNTAGGED };
   if (window.ROADMAP_TEST) return;
 
   /* ------------------------------------------------------------------ Part 2: interface */
@@ -470,7 +539,8 @@
     firstRenderMs: null, notice: null, candidates: [], candOn: -1,
     depthOverride: null, more: new Set(), crumbsOpen: false, fv: { k: 1, x: 0, y: 0 }, fitPending: true, layout: null, shownDepth: 1,
     open: new Set(), closed: new Set(), chips: new Set(), scrollOutline: true, pins: [], pinSet: new Set(), workCollapsed: false,
-    map: false, mapMode: "radial", mapFrontier: false, mv: { k: 1, x: 0, y: 0 }, stamp: 0, mapBuilt: null, mapState: null };
+    map: false, mapMode: "radial", mapFrontier: false, mv: { k: 1, x: 0, y: 0 }, stamp: 0, mapBuilt: null, mapState: null,
+    colourBy: "status", only: null };
 
   function pref(key, value) { // per-viewer conveniences only; the page works without storage
     try {
@@ -561,12 +631,33 @@
     return vp;
   }
 
+  /* ---- the map's colour choice and the hash that carries it */
+  const vocab = () => (S.state && S.state.tag_vocabulary) || {};
+  const capital = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  /** A namespace that is no longer in the vocabulary (or a value that is no longer in its namespace) cannot be coloured by: fall back. */
+  function sanitizeColour() {
+    if (S.colourBy !== "status" && !hasOwn(vocab(), S.colourBy)) { S.colourBy = "status"; S.only = null; }
+    if (S.only !== null && (S.colourBy === "status" || (S.only !== "_none" && !hasOwn(vocabInfo(vocab(), S.colourBy).colour, S.only)))) S.only = null;
+  }
+  function viewParams() { const tag = S.colourBy !== "status"; return { colour: tag ? S.colourBy : undefined, only: tag && S.only ? S.only : undefined, map: S.map ? "1" : undefined }; }
+  function syncHash() { // the hash follows the view without adding a history entry (replaceState fires no hashchange)
+    if (S.focus === null) return;
+    const hash = routeFormat(S.focus, viewParams());
+    if (location.hash !== hash) { try { history.replaceState(null, "", hash); } catch (e) { /* the page still works without it */ } }
+  }
+  /** Take a link's view parameters: an unknown namespace is ignored, an unknown value is dropped; absent parameters leave the choice alone. Returns whether the map should be open. */
+  function applyViewParams(p) {
+    if (p.colour === "status") { S.colourBy = "status"; S.only = null; }
+    else if (p.colour && hasOwn(vocab(), p.colour)) { S.colourBy = p.colour; S.only = p.only && (p.only === "_none" || hasOwn(vocabInfo(vocab(), p.colour).colour, p.only)) ? p.only : null; }
+    return p.map === "1";
+  }
+
   /* ---- navigation */
   function go(id) {
     if (!S.index.nodes[id]) { toast("No node " + id); return; }
     S.map = false;
     document.body.classList.remove("map");
-    const hash = routeFormat(id);
+    const hash = routeFormat(id, Object.assign(viewParams(), { map: undefined })); // leaving the map; the colour choice stays in the link
     if (location.hash === hash) applyFocus(id);
     else location.hash = hash; // the hashchange handler applies it, so back and forward use the same path
   }
@@ -1072,6 +1163,7 @@
     if (on) { const t = performance.now(); renderMap(true); S.mapOpenMs = performance.now() - t; document.documentElement.dataset.mapOpenMs = S.mapOpenMs.toFixed(1); }
     else $("map").hidden = true;
     renderStatusbar();
+    syncHash();
   }
   function mapDims() { const box = $("map"); return [box.clientWidth || 1000, (box.clientHeight || 700) - $("map").querySelector(".maptools").offsetHeight]; }
   function mapKeyOf() { return [S.stamp, S.mapMode, S.showSuperseded ? 1 : 0].join("|"); }
@@ -1179,7 +1271,7 @@
       } else {
         g.append(sv("path", { class: "shape" + (nd.kind === "stub" ? " stubshape" : ""), d: shapePath(shape, 5.5), style: "fill:var(--c-" + nd.status + ")" }));
       }
-      ms.markers.push({ el: g, x: n.x.toFixed(2), y: n.y.toFixed(2) });
+      ms.markers.push({ el: g, id: n.id, shape: g.querySelector("path.shape"), x: n.x.toFixed(2), y: n.y.toFixed(2) });
       ms.mkEls[n.id] = g;
       gMk.append(g);
       // the title, drawn along the ray (radial) or downwards (top-down) once the zoom lets neighbours' titles clear each other
@@ -1188,12 +1280,12 @@
         const deg = n.angle * 180 / Math.PI, flip = deg > 180;
         t = "translate(" + n.x.toFixed(2) + "," + n.y.toFixed(2) + ") rotate(" + ((flip ? deg + 90 : deg - 90)).toFixed(1) + ")";
         const tx = sv("text", { class: "lbl", "data-id": n.id, "text-anchor": flip ? "end" : "start", x: flip ? -11 : 11, y: 4 }, "");
-        ms.labels.push({ el: tx, t, full: shortOf(nd), chars: -1 });
+        ms.labels.push({ el: tx, id: n.id, t, full: shortOf(nd), chars: -1 });
         gLbl.append(tx);
       } else {
         t = "translate(" + n.x.toFixed(2) + "," + n.y.toFixed(2) + ") rotate(90)";
         const tx = sv("text", { class: "lbl", "data-id": n.id, x: 11, y: 4 }, "");
-        ms.labels.push({ el: tx, t, full: shortOf(nd), chars: -1 });
+        ms.labels.push({ el: tx, id: n.id, t, full: shortOf(nd), chars: -1 });
         gLbl.append(tx);
       }
       ms.labels[ms.labels.length - 1].el.setAttribute("transform", t);
@@ -1202,6 +1294,52 @@
     ms.here = { el: here, x: "0", y: "0" };
     world.append(gSec, gLink, gOver, gMk, gLbl, gSecLbl, here);
     return { ms, world };
+  }
+
+  /* ---- colour by tag: fill the leaf and stub markers from a tag namespace, with a legend that narrows the view */
+  function renderColourControl() {
+    const sel = $("map-colour"), names = ["status", ...tagNamespaces(vocab())];
+    if (sel.options.length !== names.length || names.some((n, i) => sel.options[i].value !== n)) sel.replaceChildren(...names.map((n) => h("option", { value: n }, capital(n))));
+    sel.value = S.colourBy;
+  }
+  function legendButton(value, label, colour, count) {
+    const on = S.only === value;
+    return h("button", { class: "lrow" + (on ? " on" : ""), "data-value": value, "aria-pressed": String(on), title: (on ? "Show every node again" : "Dim every node that is not " + label) + (value !== "_none" && !colour ? " (no colour set for this value)" : ""),
+      onclick: () => { S.only = S.only === value ? null : value; syncHash(); recolour(); } },
+      h("span", { class: "lsw" + (colour ? "" : " none"), "aria-hidden": "true", style: colour ? "background:" + colour : null }), h("span", { class: "lname" }, label), h("span", { class: "count" }, String(count)));
+  }
+  function renderLegend() {
+    const box = $("map-legend"), ns = S.colourBy;
+    box.hidden = ns === "status" || !S.map;
+    box.replaceChildren();
+    if (box.hidden) return;
+    const lg = legendEntries(S.index, vocab(), ns);
+    add(box, h("div", { class: "lhead" }, capital(ns) + " · click a value to dim the rest"),
+      lg.entries.map((e) => legendButton(e.value, e.value, e.colour, e.count)), legendButton("_none", "no " + ns + " tag", null, lg.none));
+  }
+  const paintSig = () => [S.colourBy, S.only].join("|");
+  /** Repaint the markers for the chosen namespace (or back to status) and dim those the legend narrows away. No layout is rebuilt. */
+  function recolour() {
+    const ms = S.mapState;
+    if (!ms) return;
+    const t0 = performance.now();
+    sanitizeColour();
+    const ns = S.colourBy, V = vocab(), tag = ns !== "status", dims = {};
+    for (const g of ms.markers) {
+      const nd = S.index.nodes[g.id];
+      if (g.shape) {
+        if (!tag) { g.shape.style.fill = "var(--c-" + nd.status + ")"; g.shape.removeAttribute("data-fill"); }
+        else { const f = tagFill(V, ns, nd) || UNTAGGED; g.shape.style.fill = f; g.shape.setAttribute("data-fill", f); }
+      }
+      const dim = tag && S.only !== null && !carries(nd, ns, S.only);
+      dims[g.id] = dim;
+      g.el.classList.toggle("dim", dim);
+    }
+    for (const l of ms.labels) l.el.classList.toggle("dim", !!dims[l.id]);
+    ms.paintSig = paintSig();
+    renderColourControl();
+    renderLegend();
+    document.documentElement.dataset.recolourMs = (performance.now() - t0).toFixed(1);
   }
 
   function updateMapPins() {
@@ -1239,6 +1377,8 @@
       built = true;
       box.dataset.step = ms.lay.step.toFixed(3);
     }
+    if (built || S.mapState.paintSig !== paintSig()) recolour(); // a link or a legend click changed the colours while the markers were not repainted
+    else { const legend = $("map-legend"); if (S.colourBy !== "status" && !legend.childElementCount) renderLegend(); else legend.hidden = S.colourBy === "status"; renderColourControl(); }
     box.dataset.mode = S.mapMode;
     $("map-layout").textContent = S.mapMode === "radial" ? "Top-down" : "Radial";
     $("map-frontier").setAttribute("aria-pressed", String(S.mapFrontier));
@@ -1256,7 +1396,8 @@
     hoverOff();
     const p = idx.progress[id], interior = isInterior(id);
     const tip = $("tip");
-    tip.replaceChildren(h("b", {}, n.title), h("div", { class: "mono" }, id), h("div", {}, statusInfo(n.status).label + (n.kind === "stub" ? " (stub)" : "") + (interior ? " · " + p.done + "/" + p.total + " done" : "")));
+    tip.replaceChildren(...[h("b", {}, n.title), h("div", { class: "mono" }, id), h("div", {}, statusInfo(n.status).label + (n.kind === "stub" ? " (stub)" : "") + (interior ? " · " + p.done + "/" + p.total + " done" : "")),
+      S.colourBy === "status" ? null : h("div", {}, capital(S.colourBy) + ": " + (tagValueOf(n, S.colourBy) || "none"))].filter(Boolean));
     tip.style.display = "block";
     tip.style.left = Math.min(window.innerWidth - 380, (ev.clientX || 0) + 14) + "px";
     tip.style.top = Math.min(window.innerHeight - 60, (ev.clientY || 0) + 16) + "px";
@@ -1304,6 +1445,7 @@
     $("map-fit").addEventListener("click", () => mapFit());
     $("map-layout").addEventListener("click", () => { S.mapMode = S.mapMode === "radial" ? "top" : "radial"; pref("maplayout", S.mapMode); renderMap(true); });
     $("map-frontier").addEventListener("click", () => { S.mapFrontier = !S.mapFrontier; renderMap(); });
+    $("map-colour").addEventListener("change", (ev) => { S.colourBy = ev.target.value; S.only = null; ev.target.blur(); syncHash(); recolour(); }); // blur: a focused select would swallow the map keys
   })();
 
   /* ---- search */
@@ -1312,6 +1454,20 @@
     ul.replaceChildren();
     const q = $("search").value;
     if (!q.trim()) { S.candidates = []; return; }
+    const tq = tagQuery(q);
+    if (tq !== null) { // tag:<tag> lists the nodes that carry it
+      const all = tagMatches(S.index, tq);
+      S.candidates = all.slice(0, MAX_CANDIDATES);
+      if (S.candOn >= S.candidates.length) S.candOn = S.candidates.length - 1;
+      if (!all.length) { ul.append(h("li", { class: "none" }, tq ? "No node carries the tag " + tq : "Type a tag: tag:region:arm-l, or a free tag such as tag:cad")); return; }
+      S.candidates.forEach((id, i) => {
+        const n = S.state.nodes[id];
+        ul.append(h("li", { class: i === S.candOn ? "on" : "", role: "option" }, h("button", { onmousedown: (ev) => ev.preventDefault(), onclick: () => pick(id) },
+          swatch(n.status, n.kind === "stub"), h("span", {}, n.title), h("span", { class: "muted mono" }, id))));
+      });
+      if (all.length > S.candidates.length) ul.append(h("li", { class: "none" }, (all.length - S.candidates.length) + " more; the outline lists them all"));
+      return;
+    }
     const r = resolveQuery(S.state.nodes, q);
     S.candidates = r.ids;
     if (S.candOn >= r.ids.length) S.candOn = r.ids.length - 1;
@@ -1346,7 +1502,9 @@
       S.selected = S.focus;
       S.fitPending = true;
       if (want && !S.index.nodes[want]) S.notice = "No node " + want + " in the roadmap; showing the root.";
+      if (applyViewParams(routeParams(location.hash))) { S.map = true; document.body.classList.add("map"); } // a link carries the map's view
     }
+    sanitizeColour();
     ensureValid();
     const side = $("side-body"), keepSide = side.scrollTop;
     renderAll();
@@ -1413,9 +1571,11 @@
   window.addEventListener("hashchange", () => {
     const id = routeParse(location.hash);
     if (!S.state) return;
+    const wantMap = applyViewParams(routeParams(location.hash)); // before the focus is applied, so the first render already has the colours
     if (id && S.index.nodes[id]) applyFocus(id);
     else if (id) applyFocus(S.index.rootId, "No node " + id + " in the roadmap; showing the root.");
     else applyFocus(S.index.rootId);
+    if (wantMap) setMap(true);
   });
 
   S.vp = viewport($("view"), {

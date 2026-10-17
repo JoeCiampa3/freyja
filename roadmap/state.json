@@ -13,30 +13,90 @@
   "schema": "roadmap-state/3",
   "superseded_count": 0,
   "tag_vocabulary": {
-    "phase": {
-      "bench": "#e149ed",
-      "design": "#9a5397",
-      "fab": "#be3d25",
-      "integrate": "#3da25b",
-      "sim": "#d27c06",
-      "spec": "#9029fa"
-    },
-    "region": {
-      "arm-l": "#c13357",
-      "arm-r": "#5f7088",
-      "foot-l": "#9f03fb",
-      "foot-r": "#4b78f7",
-      "hand-l": "#e462b3",
-      "hand-r": "#21a51d",
-      "head": "#e409fc",
-      "leg-l": "#ad20c8",
-      "leg-r": "#2e775d",
-      "neck": "#f94b01",
-      "pelvis": "#cc6add",
-      "spine": "#7e6a2e",
-      "torso": "#9155ac",
-      "whole-body": "#bf835e"
-    }
+    "phase": [
+      {
+        "colour": "#9029fa",
+        "value": "spec"
+      },
+      {
+        "colour": "#d27c06",
+        "value": "sim"
+      },
+      {
+        "colour": "#9a5397",
+        "value": "design"
+      },
+      {
+        "colour": "#be3d25",
+        "value": "fab"
+      },
+      {
+        "colour": "#e149ed",
+        "value": "bench"
+      },
+      {
+        "colour": "#3da25b",
+        "value": "integrate"
+      }
+    ],
+    "region": [
+      {
+        "colour": "#e409fc",
+        "value": "head"
+      },
+      {
+        "colour": "#f94b01",
+        "value": "neck"
+      },
+      {
+        "colour": "#9155ac",
+        "value": "torso"
+      },
+      {
+        "colour": "#7e6a2e",
+        "value": "spine"
+      },
+      {
+        "colour": "#cc6add",
+        "value": "pelvis"
+      },
+      {
+        "colour": "#c13357",
+        "value": "arm-l"
+      },
+      {
+        "colour": "#5f7088",
+        "value": "arm-r"
+      },
+      {
+        "colour": "#e462b3",
+        "value": "hand-l"
+      },
+      {
+        "colour": "#21a51d",
+        "value": "hand-r"
+      },
+      {
+        "colour": "#ad20c8",
+        "value": "leg-l"
+      },
+      {
+        "colour": "#2e775d",
+        "value": "leg-r"
+      },
+      {
+        "colour": "#9f03fb",
+        "value": "foot-l"
+      },
+      {
+        "colour": "#4b78f7",
+        "value": "foot-r"
+      },
+      {
+        "colour": "#bf835e",
+        "value": "whole-body"
+      }
+    ]
   },
   "warnings": []
 }
