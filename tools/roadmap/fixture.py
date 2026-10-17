@@ -23,6 +23,7 @@ NOUNS = ["actuator", "bearing", "cable", "pelvis", "femur", "ankle", "sensor", "
          "encoder", "battery", "controller", "mount", "knee", "wrist", "spine", "cooling"]
 PHRASES = ["selected and decision recorded", "characterised and report filed", "validated against the model", "assembled and torque tested",
            "specified in the sheet", "benchmarked on the bench", "reviewed and signed off", "fitted inside the envelope"]
+TAGS_FILE = Path(__file__).resolve().parents[2] / "roadmap" / "tags.yaml"  # the fixture ships the repo's real vocabulary, so it shows the real colours
 TAGS = ["arm", "leg", "torso", "actuation", "sensing", "power", "software", "cad"]
 CRITERIA = ["artifact", "decision", "check", "metric", "manual"]
 CRITERIA_WEIGHTS = [3, 2, 2, 3, 2]
@@ -237,6 +238,9 @@ def generate(size: int, out, seed: int = 0, first_layer: int | None = None) -> d
         return {"type": "metric", "record": rel, "pointer": "/result/value", "op": op, "value": t, "units": "arb"}, False
 
     lrng = random.Random(f"labels-{seed}")  # short labels come from their own stream, so adding them moved nothing else in the fixture
+    trng = random.Random(f"tags-{seed}")  # and so do the vocabulary tags
+    vocab = yaml.safe_load(TAGS_FILE.read_text(encoding="utf-8"))["namespaces"]
+    region_w = [trng.lognormvariate(0, 0.8) for _ in vocab["region"]]  # uneven, as a real roadmap's regions are
     for i in range(n):
         front = {"schema": "roadmap-node/1", "id": ids[i], "parent": ids[parent[i]] if parent[i] is not None else None}
         if (parent[i] == 0 or (i and lrng.random() < 0.2)):  # every first-layer branch has a short label, and about one node in five below them
@@ -246,8 +250,13 @@ def generate(size: int, out, seed: int = 0, first_layer: int | None = None) -> d
         front["title"] = f"{noun.capitalize()} {i:03d} {rng.choice(PHRASES)}" if i else "Freyja v1 walks indoors at 1.4 m/s"
         if own[i]:
             front["blocked_by"] = sorted(ids[b] for b in own[i])
-        if rng.random() < 0.5:
-            front["tags"] = sorted(rng.sample(TAGS, rng.randint(1, 2)))
+        mine = sorted(rng.sample(TAGS, rng.randint(1, 2))) if rng.random() < 0.5 else []
+        if trng.random() < 0.7:  # about a third of the nodes carry no region and none a second value, so the "no tag" fallback and the one-per-namespace rule are exercised
+            mine.append("region:" + trng.choices(list(vocab["region"]), region_w)[0])
+        if trng.random() < 0.6:
+            mine.append("phase:" + trng.choice(list(vocab["phase"])))
+        if mine:
+            front["tags"] = sorted(mine)
         if not kids[i]:
             if is_stub[i]:
                 front["stub"] = True
@@ -265,6 +274,7 @@ def generate(size: int, out, seed: int = 0, first_layer: int | None = None) -> d
         _node_file(out / "roadmap" / "nodes" / f"{sid}.md", front, "Retired fixture node.\n")
 
     # ---- shared records: the artifact schema, the recorded check results, and files that mention ids
+    _dump(out / "roadmap" / "tags.yaml", TAGS_FILE.read_text(encoding="utf-8"))
     _dump(out / "docs" / "schemas" / "fixture-artifact.json", json.dumps(FIXTURE_SCHEMA, sort_keys=True, indent=2) + "\n")
     lines = [f"- {c} | gate | {s}" for c, s in sorted(checks.items())]
     _dump(out / "docs" / "STATE.md", "<!-- fixture -->\n\nSTATE: fixture\n\n## Checks\n\n" + "\n".join(lines) + "\n\n## Waivers\n\nnone\n")

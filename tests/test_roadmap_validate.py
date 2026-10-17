@@ -43,6 +43,9 @@ EXPECTED = {
     "superseded-by-unresolved": [("superseded-by-unresolved", ("rm.old",))],
     "superseded-by-superseded": [("superseded-by-superseded", ("rm.old1", "rm.old2"))],
     "superseded-live-children": [("superseded-live-children", ("rm.child", "rm.old"))],
+    "tag-unknown-namespace": [("tag-unknown-namespace", ("rm.x",))],
+    "tag-unknown-value": [("tag-unknown-value", ("rm.x",))],
+    "tags-file-broken": [("tags-file", ())],
 }
 
 
@@ -58,7 +61,7 @@ def test_each_invalid_fixture_yields_exactly_its_error(name):
         assert e.message
         assert all(i in e.message for i in e.ids), (e.code, e.message)  # every message names its ids
         assert all(p in e.message for p in e.paths), (e.code, e.message)  # and its file paths
-        assert all(p.startswith("roadmap/nodes/") and "\\" not in p for p in e.paths)  # repo-relative
+        assert all((p.startswith("roadmap/nodes/") or p == "roadmap/tags.yaml") and "\\" not in p for p in e.paths)  # repo-relative
     if name not in ("no-root", "multiple-roots", "parent-cycle") and not name.startswith("blocking-cycle"):
         assert all(e.paths for e in rm.errors), name
 

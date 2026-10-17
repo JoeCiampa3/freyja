@@ -36,6 +36,7 @@ from urllib.parse import unquote, urlsplit
 from . import derive, editor, pins, query, refs, render
 from .evaluate import referenced_files, safe_path
 from .model import ID_RE, NODES_DIR
+from .tags import TAGS_FILE
 
 HOST = "127.0.0.1"
 DEFAULT_PORT = 8765
@@ -117,7 +118,7 @@ class Backend:
         return (tuple(sorted(listing)), tuple((name, _stat(path)) for name, path in watch))
 
     def _watch_list(self, rm) -> list:
-        names = set()
+        names = {TAGS_FILE}  # the vocabulary: an edit to it changes the colours and the tag errors
         for n in rm.nodes.values():
             names.update(referenced_files(n))
         out = []
@@ -159,8 +160,8 @@ class Backend:
 
 
 def _internal_state(e) -> dict:
-    return {"_generated": LIVE_BANNER, "generated_by": render.TOOL, "inputs": ["roadmap/nodes/*.md"], "schema": "roadmap-state/3", "node_count": 0,
-            "superseded_count": 0, "counts": {}, "frontier": [], "nodes": {}, "warnings": [],
+    return {"_generated": LIVE_BANNER, "generated_by": render.TOOL, "inputs": ["roadmap/nodes/*.md", "roadmap/tags.yaml"], "schema": "roadmap-state/3", "node_count": 0,
+            "superseded_count": 0, "counts": {}, "frontier": [], "nodes": {}, "tag_vocabulary": {}, "warnings": [],
             "errors": [{"code": "internal", "message": f"the roadmap library failed: {e.__class__.__name__}: {e}", "ids": [], "paths": []}]}
 
 

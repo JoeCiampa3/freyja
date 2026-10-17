@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "roadmap-tags/1",
+  "title": "roadmap-tags/1",
+  "description": "The controlled tag vocabulary, roadmap/tags.yaml (CONVENTIONS section 2; docs/briefs/architecture/roadmap-brief3.md T2). Authored; Joe owns the values. A tag on a node is either free (no colon, never checked) or namespaced, `namespace:value`, and a namespaced tag must name a namespace and a value listed here. Each value may carry a display colour as #rrggbb, or null for none; the colour is shown by the viewer's Colour by control and never carries meaning alone. Names are lowercase letters, digits and hyphens.",
+  "type": "object",
+  "required": ["namespaces"],
+  "additionalProperties": false,
+  "properties": {
+    "namespaces": {
+      "type": "object",
+      "propertyNames": {"pattern": "^[a-z][a-z0-9-]*$"},
+      "additionalProperties": {
+        "type": "object",
+        "minProperties": 1,
+        "propertyNames": {"pattern": "^[a-z0-9][a-z0-9-]*$"},
+        "additionalProperties": {"anyOf": [{"type": "string", "pattern": "^#[0-9a-fA-F]{6}$"}, {"type": "null"}]}
+      }
+    }
+  }
+}

@@ -10,6 +10,7 @@ from pathlib import Path
 
 from .derive import LIVE_ORDER, Roadmap, compute
 from .evaluate import referenced_files, safe_path
+from .tags import TAGS_FILE
 
 TOOL = "tools/roadmap"
 STATE_JSON = "roadmap/state.json"
@@ -24,7 +25,7 @@ def inputs_hash(root, rm: Roadmap) -> str:
     if getattr(rm, "_inputs_hash", None):
         return rm._inputs_hash  # one Roadmap is one reading of the files; hash them once
     h = hashlib.sha256()
-    paths = {n.path for n in rm.nodes.values()}
+    paths = {n.path for n in rm.nodes.values()} | {TAGS_FILE}
     for n in rm.nodes.values():
         paths.update(referenced_files(n))
     for rel in sorted(paths):
@@ -54,10 +55,10 @@ def state_dict(rm: Roadmap, banner_text: str | None = None) -> dict:
             "active": n.active, "signed_off": n.signed_off, "superseded_by": n.superseded_by, "done_when": n.done_when,
             "evaluation": st.evaluation.to_dict() if st.evaluation else None}
     root = rm.root
-    return {"_generated": banner_text if banner_text is not None else banner(root, rm), "generated_by": TOOL, "inputs": ["roadmap/nodes/*.md"], "schema": "roadmap-state/3",
+    return {"_generated": banner_text if banner_text is not None else banner(root, rm), "generated_by": TOOL, "inputs": ["roadmap/nodes/*.md", TAGS_FILE], "schema": "roadmap-state/3",
             "node_count": rm.node_count, "superseded_count": rm.superseded_count, "counts": dict(sorted(rm.counts.items())),
             "frontier": list(rm.frontier), "errors": [e.to_dict() for e in rm.errors], "warnings": [w.to_dict() for w in rm.warnings],
-            "nodes": nodes}
+            "tag_vocabulary": {ns: dict(v) for ns, v in sorted(rm.vocabulary.items())}, "nodes": nodes}
 
 
 def state_json_text(rm: Roadmap) -> str:

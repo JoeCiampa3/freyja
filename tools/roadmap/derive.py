@@ -12,6 +12,7 @@ from __future__ import annotations
 import sys
 from dataclasses import dataclass
 
+from . import tags as tagvocab
 from .evaluate import Evaluation, evaluate
 from .model import Issue, load_nodes
 from .validate import Graph, validate
@@ -32,8 +33,9 @@ class NodeState:
 class Roadmap:
     """Everything computed from one root: nodes, issues, derived states and the relations a viewer or a CLI needs."""
 
-    def __init__(self, root, graph, errors, warnings, states):
+    def __init__(self, root, graph, errors, warnings, states, vocabulary=None):
         self.root, self.graph = root, graph
+        self.vocabulary = vocabulary or {}  # roadmap/tags.yaml: {namespace: {value: colour or None}}
         self.nodes = graph.nodes
         self.errors, self.warnings, self.states = errors, warnings, states
         live = [i for i in self.nodes if not self.nodes[i].superseded]
@@ -183,8 +185,11 @@ def compute(root) -> Roadmap:
     nodes, known, load_issues = load_nodes(root)
     g = Graph(nodes, known)
     errors, warnings = validate(g)
-    errors = load_issues + errors
+    vocabulary, vocab_issues = tagvocab.load_vocabulary(root)
+    tag_errors, tag_warnings = ([], []) if vocab_issues else tagvocab.check(nodes, vocabulary)  # a broken tags.yaml is one error; its tags are not judged against it
+    errors = load_issues + errors + vocab_issues + tag_errors
+    warnings = [*warnings, *tag_warnings]
     states, derived_warnings = derive(g, root)
     warnings = sorted([*warnings, *derived_warnings], key=lambda w: (w.code, w.ids))
     errors = sorted(errors, key=lambda e: (e.code, e.ids, e.message))
-    return Roadmap(root, g, errors, warnings, states)
+    return Roadmap(root, g, errors, warnings, states, vocabulary)
