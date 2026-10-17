@@ -286,11 +286,13 @@ def prepare(root, port, focus):
     if focus is None:
         return url, None
     rm = derive.compute(root)
-    status, got = query.resolve(rm, focus)
+    status, got = query.search(rm, focus)
     if status == "ok":
-        return f"{url}#/node/{got}", got
+        return f"{url}#/node/{got[0]}", got[0]
     if status == "ambiguous":
-        raise FocusError(f"{focus!r} matches {len(got)} nodes (showing up to {query.MAX_CANDIDATES}); be more specific: " + ", ".join(got))
+        shown = got[:query.MAX_CANDIDATES]
+        more = f" (showing {query.MAX_CANDIDATES})" if len(got) > len(shown) else ""
+        raise FocusError(f"{focus!r} matches {len(got)} nodes{more}; be more specific: " + ", ".join(shown))
     raise FocusError(f"no node matches {focus!r}." + (" Close ids: " + ", ".join(got) if got else ""))
 
 

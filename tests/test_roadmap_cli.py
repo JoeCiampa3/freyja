@@ -251,3 +251,20 @@ def test_fixture_command_takes_first_layer(tmp_path):
     assert sum(1 for n in rm.nodes.values() if n.parent == "rm.n000-root") == 4
     code, out, _ = run(["fixture", "--size", "80", "--out", str(tmp_path / "y"), "--first-layer", "0"])
     assert code == 1 and "first-layer" in out
+
+
+def test_an_ambiguous_query_reports_the_true_match_count_not_the_display_cap(fx):
+    rm = roadmap.compute(fx)
+    total = sum(1 for i in rm.nodes if "-" in i.lower() or "-" in rm.nodes[i].title.lower())
+    assert total > 10
+    code, out, _ = run(["show", "-"], fx)
+    assert code == 1 and f"matches {total} nodes (showing 10)" in out, out.splitlines()[0]
+    assert out.count("\n  rm.") == 10
+
+
+def test_a_query_with_few_matches_does_not_claim_a_cap(fx):
+    rm = roadmap.compute(fx)
+    word = next(w for w in ("ankle", "cable", "femur", "spine", "wrist") if 1 < sum(1 for i in rm.nodes if w in i.lower() or w in rm.nodes[i].title.lower()) <= 10)
+    n = sum(1 for i in rm.nodes if word in i.lower() or word in rm.nodes[i].title.lower())
+    code, out, _ = run(["show", word], fx)
+    assert code == 1 and f"matches {n} nodes;" in out and "showing" not in out.splitlines()[0]

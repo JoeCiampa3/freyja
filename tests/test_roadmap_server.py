@@ -306,7 +306,8 @@ def test_prepare_builds_the_url_and_resolves_focus_with_the_cli_query_rules(tmp_
     assert "no node matches" in str(e.value)
     with pytest.raises(server.FocusError) as e:
         server.prepare(root, 8765, "n0")
-    assert "matches" in str(e.value)
+    total = sum(1 for i in ids if "n0" in i.lower() or "n0" in roadmap.compute(root).nodes[i].title.lower())
+    assert f"matches {total} nodes (showing 10)" in str(e.value) and total > 10
 
 
 def test_token_is_random_per_app_and_long_enough(root, tmp_path):

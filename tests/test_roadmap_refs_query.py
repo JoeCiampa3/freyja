@@ -182,3 +182,12 @@ def test_node_file_is_absolute_and_stays_under_the_root(tmp_path):
     assert p.is_absolute() and p == (tmp_path / "roadmap" / "nodes" / "rm.a.md").resolve()
     with pytest.raises(ValueError):
         editor.node_file(tmp_path, "../outside.md")
+
+
+def test_search_returns_every_match_and_resolve_caps_it(tmp_path):
+    nodes = {"rm.root": {"title": "Top"}, **{f"rm.item-{i:02d}": leaf("rm.root") for i in range(14)}}
+    rm = roadmap.compute(make(tmp_path / "r", nodes))
+    status, every = query.search(rm, "item")
+    assert status == "ambiguous" and len(every) == 14 and every == sorted(every)
+    assert query.resolve(rm, "item") == ("ambiguous", every[:query.MAX_CANDIDATES])
+    assert query.search(rm, "item-03") == ("ok", ["rm.item-03"]) and query.resolve(rm, "item-03") == ("ok", "rm.item-03")

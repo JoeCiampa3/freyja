@@ -66,11 +66,12 @@ def _issue_lines(label, items):
 
 
 def _resolve(rm, q, say):
-    status, got = query.resolve(rm, q)
+    status, got = query.search(rm, q)
     if status == "ok":
-        return got
+        return got[0]
     if status == "ambiguous":
-        say(f"{q!r} matches {len(got)} nodes (showing up to {query.MAX_CANDIDATES}); be more specific:")
+        say(f"{q!r} matches {len(got)} nodes" + (f" (showing {query.MAX_CANDIDATES})" if len(got) > query.MAX_CANDIDATES else "") + "; be more specific:")
+        got = got[:query.MAX_CANDIDATES]
     else:
         say(f"no node matches {q!r}." + (" Close ids:" if got else ""))
     for c in got:

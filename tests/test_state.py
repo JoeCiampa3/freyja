@@ -198,3 +198,11 @@ def test_the_latest_gait_record_reads_the_tracked_extract_and_not_the_untracked_
     assert not (repo / "sim" / "gait").exists()  # no gait.json anywhere
     text = state.generate(repo, run=False)
     assert "gait.20260101-0000-x | spec sha256:cccccccccccc | dataset manifest sha256:dddddddddddd" in text
+
+
+def test_briefs_are_listed_recursively_under_docs_briefs(repo):
+    (repo / "docs" / "briefs" / "README.md").write_text("index\n")
+    text = state.generate(repo, run=False)
+    section = text.split("## docs/briefs")[1]
+    assert "- README.md" in section and "- ariadne/b.md" in section and "- architecture/a.md" in section
+    assert section.index("architecture/a.md") < section.index("ariadne/b.md")  # sorted by path

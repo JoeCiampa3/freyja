@@ -114,9 +114,12 @@ def _latest_gait(root) -> str:
     return f"{r['gait_id']} | spec sha256:{r['spec_sha256'][:12]} | dataset manifest sha256:{r['dataset_manifest_sha256'][:12]}"
 
 
-def _names(root, sub) -> list:
+def _names(root, sub, recursive=False) -> list:
     d = Path(root) / sub
-    return sorted(p.name for p in d.iterdir() if p.is_file()) if d.exists() else []
+    if not d.exists():
+        return []
+    files = d.rglob("*") if recursive else d.iterdir()
+    return sorted(p.relative_to(d).as_posix() for p in files if p.is_file())
 
 
 def roadmap_line(root) -> str:
@@ -164,7 +167,7 @@ def generate(root=None, run=True, runner=None) -> str:
     out += [f"- {c} | confirmed {'true' if conf else 'false'} | review by {rb}" for c, conf, rb in sorted(_waivers(root))] or ["none"]
     out += ["", "## Latest run per scenario", ""] + [f"- {r}" for r in _latest_runs(root)] + [
         "", "## Latest gait record", "", _latest_gait(root), "", "## docs/memos", ""] + [f"- {n}" for n in _names(root, "docs/memos")] + [
-        "", "## docs/briefs", ""] + [f"- {n}" for n in _names(root, "docs/briefs")]
+        "", "## docs/briefs", ""] + [f"- {n}" for n in _names(root, "docs/briefs", recursive=True)]
     tracked = [f for f in _git(root, "ls-files").splitlines() if f != STATE_FILE]
     out += ["", f"Tracked files: {len(tracked)} ({STATE_FILE} not counted)", ""]
     if len(out) > MAX_LINES:
