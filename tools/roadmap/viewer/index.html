@@ -1,5 +1,181 @@
 <!doctype html>
-<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="roadmap-token" content="__ROADMAP_TOKEN__"><title>Roadmap</title>
-<p>The roadmap viewer is built in T8.</p>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="roadmap-token" content="__ROADMAP_TOKEN__">
+<title>Freyja roadmap</title>
+<style>
+:root {
+  --bg: #fafaf8; --panel: #ffffff; --panel2: #f1f0ec; --ink: #1d1d1b; --muted: #5d5c57; --line: #cfcdc6; --accent: #0b5cad; --focus-ring: #0b5cad;
+  --card: #ffffff; --shadow: 0 1px 2px rgba(0,0,0,.18);
+  --edge-blocker: #b34700; --edge-dependent: #00513b;
+  --c-done: #0072B2; --c-in_progress: #56B4E9; --c-active: #E69F00; --c-ready: #009E73; --c-expandable: #CC79A7;
+  --c-blocked: #D55E00; --c-not_started: #A6A6A6; --c-unknown: #F0E442; --c-superseded: #D9D9D9; --c-stale: #FFFFFF;
+  --on-done: #ffffff; --on-other: #000000;
+}
+:root[data-theme="dark"] {
+  --bg: #161614; --panel: #1f1f1c; --panel2: #292926; --ink: #ecebe6; --muted: #a9a8a0; --line: #45443f; --accent: #6db2ff; --focus-ring: #6db2ff;
+  --card: #262623; --shadow: 0 1px 2px rgba(0,0,0,.6);
+  --edge-blocker: #ff9a52; --edge-dependent: #4fd9ac;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #161614; --panel: #1f1f1c; --panel2: #292926; --ink: #ecebe6; --muted: #a9a8a0; --line: #45443f; --accent: #6db2ff; --focus-ring: #6db2ff;
+    --card: #262623; --shadow: 0 1px 2px rgba(0,0,0,.6);
+    --edge-blocker: #ff9a52; --edge-dependent: #4fd9ac;
+  }
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; overflow: hidden; }
+button { font: inherit; color: inherit; background: var(--panel2); border: 1px solid var(--line); border-radius: 4px; padding: 3px 9px; cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+input[type=search] { font: inherit; color: inherit; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 5px 8px; width: 100%; }
+code, .mono { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12.5px; }
+
+#app { display: grid; grid-template-columns: var(--side-w, 320px) 5px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) 26px; height: 100%; }
+#sidebar { grid-row: 1; grid-column: 1; background: var(--panel); display: flex; flex-direction: column; min-width: 0; min-height: 0; border-right: 1px solid var(--line); }
+#resizer { grid-row: 1; grid-column: 2; cursor: col-resize; background: var(--panel2); border-right: 1px solid var(--line); touch-action: none; }
+#resizer:hover, #resizer.drag { background: var(--accent); }
+#content { grid-row: 1; grid-column: 3; display: flex; min-width: 0; min-height: 0; }
+#main { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
+#drawer { width: 340px; flex: none; border-left: 1px solid var(--line); background: var(--panel); overflow: auto; padding: 12px 14px; }
+#drawer[hidden] { display: none; }
+#statusbar { grid-row: 2; grid-column: 1 / 4; display: flex; gap: 14px; align-items: center; padding: 0 10px; background: var(--panel2); border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); overflow: hidden; white-space: nowrap; }
+#statusbar .grow { flex: 1; }
+body.maximised #app { grid-template-columns: minmax(0, 1fr) 0 0; }
+body.maximised #resizer, body.maximised #content { display: none; }
+body.maximised #sidebar { border-right: 0; }
+
+.side-top { padding: 8px 10px 6px; border-bottom: 1px solid var(--line); position: relative; }
+.cands { list-style: none; margin: 4px 0 0; padding: 0; max-height: 240px; overflow: auto; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); }
+.cands:empty { display: none; }
+.cands li button { display: flex; width: 100%; gap: 6px; border: 0; border-radius: 0; background: transparent; text-align: left; align-items: baseline; padding: 4px 8px; }
+.cands li.on button, .cands li button:hover { background: var(--panel2); }
+.cands .none { padding: 5px 8px; color: var(--muted); }
+.tabs { display: flex; align-items: stretch; border-bottom: 1px solid var(--line); background: var(--panel2); }
+.tabs [role=tab] { border: 0; border-radius: 0; background: transparent; padding: 7px 10px; border-bottom: 3px solid transparent; white-space: nowrap; }
+.tabs [role=tab][aria-selected=true] { border-bottom-color: var(--accent); font-weight: 600; background: var(--panel); }
+.tabs .spacer { flex: 1; }
+.tabs .max { border: 0; border-radius: 0; background: transparent; padding: 7px 10px; white-space: nowrap; font-size: 15px; }
+.badge { display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 5px; border-radius: 9px; background: var(--c-blocked); color: #000; font-size: 11px; font-weight: 700; text-align: center; }
+.badge.zero { background: var(--panel2); color: var(--muted); border: 1px solid var(--line); }
+#side-body { flex: 1; min-height: 0; overflow: auto; position: relative; }
+.zoombar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 6px 10px; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 2; }
+.zoombar .hint { color: var(--muted); font-size: 12px; }
+svg.icicle { display: block; }
+svg.icicle g.band { cursor: pointer; }
+svg.icicle rect.fill { stroke: var(--bg); stroke-width: 1; }
+svg.icicle text { font-size: 11px; pointer-events: none; }
+svg.icicle g.band.sel rect.fill { stroke: var(--ink); stroke-width: 3; }
+svg.icicle g.band.blocker rect.fill { stroke: var(--edge-blocker); stroke-width: 3; stroke-dasharray: 5 2; }
+svg.icicle g.band.dependent rect.fill { stroke: var(--edge-dependent); stroke-width: 3; stroke-dasharray: 2 2; }
+svg.icicle rect.focus-outline { fill: none; stroke: var(--accent); stroke-width: 3; pointer-events: none; }
+svg.icicle .mark { font-weight: 700; font-size: 12px; }
+svg.icicle .mark.blocker { fill: var(--edge-blocker); } svg.icicle .mark.dependent { fill: var(--edge-dependent); }
+svg.icicle .dim { opacity: .55; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 8px 10px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); }
+.legend span { white-space: nowrap; }
+
+.sw { display: inline-block; width: 1.25em; height: 1.1em; vertical-align: -.2em; margin-right: 3px; border: 1px solid rgba(0,0,0,.35); border-radius: 2px; text-align: center; line-height: 1.05em; font-size: 11px; font-weight: 700; }
+.s-done { background: var(--c-done); color: var(--on-done); } .s-in_progress { background: var(--c-in_progress); color: var(--on-other); }
+.s-active { background: var(--c-active); color: var(--on-other); } .s-ready { background: var(--c-ready); color: var(--on-other); }
+.s-expandable { background: var(--c-expandable); color: var(--on-other); } .s-blocked { background: var(--c-blocked); color: var(--on-other); }
+.s-not_started { background: var(--c-not_started); color: var(--on-other); } .s-unknown { background: var(--c-unknown); color: var(--on-other); }
+.s-superseded { background: var(--c-superseded); color: var(--on-other); } .s-stale { background: var(--c-stale); color: var(--on-other); }
+.sw.stub { background-image: repeating-linear-gradient(45deg, rgba(0,0,0,.45) 0 2px, transparent 2px 5px); }
+
+.list { list-style: none; margin: 0; padding: 0; }
+.list li { border-bottom: 1px solid var(--line); }
+.list li > button { display: block; width: 100%; text-align: left; border: 0; border-radius: 0; background: transparent; padding: 7px 10px; }
+.list li > button:hover { background: var(--panel2); }
+.list .t { font-weight: 600; } .list .m { color: var(--muted); font-size: 12px; }
+.pad { padding: 10px; } .muted { color: var(--muted); }
+h2.sec { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 12px 10px 4px; }
+
+#crumbs { display: flex; flex-wrap: wrap; gap: 2px 4px; align-items: center; padding: 8px 14px; border-bottom: 1px solid var(--line); background: var(--panel); }
+#crumbs button { border: 0; background: transparent; padding: 2px 5px; color: var(--accent); }
+#crumbs button:hover { text-decoration: underline; }
+#crumbs .sep { color: var(--muted); }
+#crumbs .cur { font-weight: 700; padding: 2px 5px; }
+#crumbs .tools { margin-left: auto; display: flex; gap: 6px; align-items: center; color: var(--muted); font-size: 12px; }
+#view { flex: 1; min-height: 0; overflow: auto; position: relative; }
+.canvas { position: relative; margin: 18px; }
+.canvas svg.links { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+.canvas path.link { fill: none; stroke: var(--line); stroke-width: 1.6; }
+.canvas path.edge { fill: none; stroke-width: 2.4; stroke-dasharray: 7 4; }
+.canvas path.edge.blocker { stroke: var(--edge-blocker); } .canvas path.edge.dependent { stroke: var(--edge-dependent); }
+.canvas text.edgelabel { font-size: 11px; font-weight: 700; paint-order: stroke; stroke: var(--bg); stroke-width: 4px; }
+.canvas text.edgelabel.blocker { fill: var(--edge-blocker); } .canvas text.edgelabel.dependent { fill: var(--edge-dependent); }
+.card { position: absolute; width: 190px; height: 74px; background: var(--card); border: 1px solid var(--line); border-left: 8px solid var(--c-unknown); border-radius: 5px; box-shadow: var(--shadow); padding: 4px 8px 4px 7px; overflow: hidden; cursor: pointer; text-align: left; display: block; }
+.card.stub { background-image: repeating-linear-gradient(45deg, rgba(128,128,128,.17) 0 3px, transparent 3px 8px); }
+.card.sel { outline: 3px solid var(--ink); outline-offset: 1px; z-index: 3; }
+.card.blocker { outline: 3px dashed var(--edge-blocker); outline-offset: 1px; } .card.dependent { outline: 3px dotted var(--edge-dependent); outline-offset: 1px; }
+.card .ct { font-weight: 600; font-size: 12.5px; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card .cm { margin-top: 3px; font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card .cm b { color: var(--ink); }
+.card .more { position: absolute; right: 5px; bottom: 3px; font-size: 11px; color: var(--muted); }
+.card.superseded { opacity: .6; }
+.card.superseded .ct { text-decoration: line-through; }
+
+.page { max-width: 980px; margin: 0 auto; padding: 18px 22px 40px; }
+.page h1 { font-size: 22px; margin: 4px 0 6px; line-height: 1.25; }
+.statusline { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 6px 0; }
+.pill { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 11px; font-weight: 600; font-size: 12.5px; border: 1px solid rgba(0,0,0,.35); }
+.btns { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+dl.kv { display: grid; grid-template-columns: max-content 1fr; gap: 3px 12px; margin: 8px 0; }
+dl.kv dt { color: var(--muted); } dl.kv dd { margin: 0; overflow-wrap: anywhere; }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 4px 0 8px; }
+.chip { display: inline-flex; gap: 5px; align-items: center; max-width: 100%; padding: 2px 8px; border: 1px solid var(--line); border-radius: 13px; background: var(--card); }
+.chip .ctext { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 24em; }
+.chip.unc { border-color: var(--c-blocked); }
+.md { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 4px; overflow-wrap: anywhere; }
+.md pre { background: var(--panel2); padding: 8px; overflow: auto; border-radius: 4px; } .md code { background: var(--panel2); padding: 0 3px; border-radius: 3px; }
+.md table { border-collapse: collapse; } .md th, .md td { border: 1px solid var(--line); padding: 3px 8px; }
+.chain { overflow: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); padding: 8px; margin: 6px 0 14px; }
+.chain .card { position: absolute; }
+.refs { list-style: none; padding: 0; margin: 4px 0; } .refs li { margin: 2px 0; overflow-wrap: anywhere; }
+.banner { margin: 10px 14px 0; padding: 8px 12px; border: 1px solid var(--c-blocked); border-radius: 5px; background: var(--panel); }
+#toast { position: fixed; right: 14px; bottom: 36px; max-width: 420px; background: var(--ink); color: var(--bg); padding: 8px 12px; border-radius: 5px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 20; }
+#toast.show { opacity: .96; }
+#tip { position: fixed; z-index: 30; pointer-events: none; background: var(--ink); color: var(--bg); padding: 4px 8px; border-radius: 4px; font-size: 12px; max-width: 360px; display: none; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.kbd { font: 11px ui-monospace, Consolas, monospace; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 3px; padding: 0 4px; background: var(--panel2); }
+</style>
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar" aria-label="Roadmap navigation">
+    <div class="side-top">
+      <input id="search" type="search" placeholder="Search id or title   ( / )" autocomplete="off" aria-label="Search nodes" aria-controls="cands">
+      <ul id="cands" class="cands" role="listbox" aria-label="Matching nodes"></ul>
+    </div>
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tab-tree" aria-selected="true" data-tab="tree">Tree</button>
+      <button role="tab" id="tab-frontier" aria-selected="false" data-tab="frontier">Frontier</button>
+      <button role="tab" id="tab-problems" aria-selected="false" data-tab="problems">Problems<span class="badge zero" id="badge">0</span></button>
+      <span class="spacer"></span>
+      <button class="max" id="maxbtn" title="Maximise the sidebar (m)" aria-label="Maximise or restore the sidebar" aria-pressed="false">&#x26F6;</button>
+    </div>
+    <div id="side-body" role="tabpanel"></div>
+  </aside>
+  <div id="resizer" role="separator" aria-orientation="vertical" aria-label="Resize the sidebar" tabindex="0"></div>
+  <div id="content">
+    <main id="main" aria-label="Focused node">
+      <nav id="crumbs" aria-label="Breadcrumb"></nav>
+      <div id="view"></div>
+    </main>
+    <aside id="drawer" aria-label="Selected node" hidden></aside>
+  </div>
+  <footer id="statusbar" role="status"></footer>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="tip"></div>
+<script src="d3.min.js"></script>
+<script src="marked.min.js"></script>
 <script src="app.js"></script>
+</body>
+</html>
