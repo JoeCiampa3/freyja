@@ -201,6 +201,7 @@ The rejected-options section is the part that matters on a decade horizon.
 7. One commit per task, with the evidence (test output) in the message.
 8. Roadmap nodes: Code never sets `signed_off`. Code never edits the `done_when` of a node that is `active` or that the current brief has Code working on. Code creates or edits nodes only when a brief says so. `done_when` thresholds are authored by Joe or in a brief before the work starts.
 9. Any defect you observe in a path Joe uses (the CLI, the viewer, a hook, a workflow) is a finding and goes in the memo, even when it lies outside the task you are on. Fixing only the test that exposed it, and leaving the path broken, is not reporting it.
+10. When tasks are coupled (one change cannot be built or tested without the other), say so before building and propose one combined commit. Never reconstruct per-task commits after the fact.
 
 ## 10. Open decisions for Joe
 

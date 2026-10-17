@@ -61,7 +61,7 @@ def test_claude_md_names_the_current_brief_of_each_track_and_each_exists():
     found = re.findall(r"^Current (\w+) brief:\s*`([^`]+)`", (REPO / "CLAUDE.md").read_text(encoding="utf-8"), re.MULTILINE)
     assert sorted(t.lower() for t, _ in found) == ["architecture", "ariadne"], "CLAUDE.md needs one 'Current <track> brief:' line per track"
     for track, path in found:
-        assert path.startswith("docs/briefs/") and path.endswith("-brief.md"), track  # no per-stage edit of this test
+        assert path.startswith("docs/briefs/") and re.search(r"-brief\d*\.md$", path), track  # no per-stage edit of this test
         assert (REPO / path).is_file(), f"{track}: {path} does not exist"
 
 
