@@ -10,6 +10,9 @@ local_config.json
 archive/
 data/literature/books
 
+# Roadmap viewer pins: personal, per clone
+roadmap/.pins.json
+
 # Simulation logs
 MUJOCO_LOG.TXT
 

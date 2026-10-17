@@ -1,8 +1,8 @@
 """
 Roadmap viewer server (docs/briefs/architecture/roadmap-brief1.md, T7). Standard library only. `App` is the application: handle() takes a
 method, a request target and the headers and returns a Response, so it is tested without a socket; `Shell` is the thin http.server
-adapter around it. The server binds 127.0.0.1 only and has no write path to the repo: its single POST asks the user's editor to open
-a node file whose path the library supplies, never the request.
+adapter around it. The server binds 127.0.0.1 only. Its only writes are the personal pins file, roadmap/.pins.json (gitignored), and
+a request to the user's editor to open a node file whose path the library supplies, never the request.
 
     GET  /                 the viewer page, with this launch's token in a <meta> tag
     GET  /<file>           a whitelisted file directly inside tools/roadmap/viewer/
@@ -10,6 +10,9 @@ a node file whose path the library supplies, never the request.
     GET  /api/node/<id>    the body Markdown, references and file path of a node in the loaded graph
     GET  /api/events       server-sent events; `changed` when a node file or a record a done_when reads changes
     POST /api/open/<id>    open the node file with the T4 editor resolution (token and Origin required)
+    GET  /api/pins         {"pins": [ids]}, sorted; a pinned node that no longer exists is still listed
+    POST /api/pin/<id>     pin a node in the loaded graph; answers {"pins": [...]} (token and Origin required)
+    POST /api/unpin/<id>   unpin a node in the loaded graph or one already pinned (so a dangling pin can be cleared); same answer
 
 Every request must carry a Host of this server and, when it has an Origin, an Origin of this server. State requests cost a stat of each
 watched file when nothing changed, which is what keeps the first render of a 600-node roadmap under a second.
@@ -30,7 +33,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
-from . import derive, editor, query, refs, render
+from . import derive, editor, pins, query, refs, render
 from .evaluate import referenced_files, safe_path
 from .model import ID_RE, NODES_DIR
 
@@ -206,6 +209,12 @@ class App:
             return self._only("GET", method) or self._node(path[len("/api/node/"):])
         if path.startswith("/api/open/"):
             return self._only("POST", method) or self._open(path[len("/api/open/"):], h)
+        if path == "/api/pins":
+            return self._only("GET", method) or self._pins()
+        if path.startswith("/api/pin/"):
+            return self._only("POST", method) or self._pin(path[len("/api/pin/"):], h, add=True)
+        if path.startswith("/api/unpin/"):
+            return self._only("POST", method) or self._pin(path[len("/api/unpin/"):], h, add=False)
         return _error(404, "no such endpoint")
 
     @staticmethod
@@ -230,6 +239,28 @@ class App:
         rm = self.backend.snapshot().rm
         n = rm.nodes[id]
         return _json(200, {"id": id, "title": n.title, "path": n.path, "body": n.body, "references": refs.references(self.root, id)})
+
+    def _pins(self) -> Response:
+        try:
+            body = {"pins": pins.load(self.root)}
+        except pins.PinsError as e:
+            return _error(500, str(e))
+        return _json(200, body)
+
+    def _pin(self, raw, h, add) -> Response:
+        if not hmac.compare_digest(h.get(TOKEN_HEADER, "").encode("utf-8"), self.token.encode("utf-8")):
+            return _error(403, "forbidden: missing or wrong token")
+        try:
+            id = self._known(raw)
+            if id is None and not add:  # a dangling pin is not in the graph; it may still be cleared, but only if it is really pinned
+                cand = unquote(raw)
+                id = cand if ID_RE.match(cand) and cand in pins.load(self.root) else None
+            if id is None:
+                return _error(404, "no such node")
+            (pins.add if add else pins.remove)(self.root, id)
+            return _json(200, {"pins": pins.load(self.root)})
+        except pins.PinsError as e:
+            return _error(500, str(e))
 
     def _open(self, raw, h) -> Response:
         if not hmac.compare_digest(h.get(TOKEN_HEADER, "").encode("utf-8"), self.token.encode("utf-8")):

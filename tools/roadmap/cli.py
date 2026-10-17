@@ -8,6 +8,8 @@ takes --json.
     frontier                         every ready leaf and expandable stub, with criterion and estimate
     refs <query>                     where the node id is mentioned (log/, docs/memos/, notebook/, commit messages)
     open <query>                     open the node file in an editor (FREYJA_EDITOR, VISUAL, EDITOR, code -g, the file association)
+    pin <query> | unpin <query>      add or remove a personal bookmark (roadmap/.pins.json, gitignored)
+    pins                             list the pins with their current status; ids no longer in the graph are listed as dangling
     fixture --size N --out DIR       write a synthetic roadmap (seeded; --seed S; --first-layer N sets the root's branch count)
     notify --before SHA --after SHA --repo OWNER/NAME [--dry-run]   open GitHub issues for nodes that entered the frontier between two commits
     serve [--port 8765] [--focus QUERY] [--no-browser]   the local viewer (127.0.0.1 only)
@@ -23,7 +25,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from . import editor, fixture, notify, query, refs, render, server
+from . import editor, fixture, notify, pins, query, refs, render, server
 from .derive import compute
 
 REPO = Path(__file__).resolve().parents[2]
@@ -39,10 +41,12 @@ def _parser() -> argparse.ArgumentParser:
     sub = ap.add_subparsers(dest="command", required=True)
     sub.add_parser("validate", parents=[data], help="print errors and warnings")
     sub.add_parser("build", parents=[data], help="write roadmap/state.json and roadmap/STATUS.md")
-    for name, helptext in (("show", "show one node"), ("refs", "list references to a node"), ("open", "open a node file in an editor")):
+    for name, helptext in (("show", "show one node"), ("refs", "list references to a node"), ("open", "open a node file in an editor"),
+                           ("pin", "pin a node (a personal bookmark)"), ("unpin", "remove a pin")):
         p = sub.add_parser(name, parents=[data], help=helptext)
         p.add_argument("query")
     sub.add_parser("frontier", parents=[data], help="list the frontier")
+    sub.add_parser("pins", parents=[data], help="list the pins with their status")
     fx = sub.add_parser("fixture", parents=[common], help="generate a synthetic roadmap")
     fx.add_argument("--size", type=int, required=True)
     fx.add_argument("--out", required=True)
@@ -148,6 +152,37 @@ def install_hooks(root, say) -> int:
     return 0
 
 
+def _pins_command(cmd, ns, root, say, as_json) -> int:
+    rm = compute(root)
+    try:
+        if cmd == "pins":
+            rows = []
+            for id in pins.load(root):
+                n = rm.nodes.get(id)
+                rows.append({"id": id, "status": rm.status(id) if n else "dangling", "title": n.title if n else None})
+            if as_json:
+                say(json.dumps(rows, indent=2, sort_keys=True))
+            elif not rows:
+                say("no pins")
+            for r in rows if not as_json else []:
+                say(f"{r['id']}  {r['status']}  {r['title']}" if r["title"] is not None else f"{r['id']}  DANGLING (no such node in the roadmap; `fy roadmap unpin {r['id']}` removes it)")
+            return 0
+        if cmd == "unpin" and ns.query.strip() in pins.load(root) and ns.query.strip() not in rm.nodes:
+            id = ns.query.strip()  # a dangling pin is removed by its exact id
+        else:
+            id = _resolve(rm, ns.query, say)
+            if id is None:
+                return 1
+        if cmd == "pin":
+            say(f"pinned {id}" if pins.add(root, id) else f"{id} is already pinned")
+        else:
+            say(f"unpinned {id}" if pins.remove(root, id) else f"{id} was not pinned")
+    except pins.PinsError as e:
+        say(f"{cmd}: {e}")
+        return 1
+    return 0
+
+
 def main(argv=None, say=print, opener=None, default_root=None) -> int:
     ns = _parser().parse_args(list(sys.argv[1:] if argv is None else argv))
     cmd = ns.command
@@ -179,6 +214,9 @@ def main(argv=None, say=print, opener=None, default_root=None) -> int:
             say(line)
         say(f"wrote {render.STATE_JSON} and {render.STATUS_MD}: {rm.summary_line()[len('roadmap: '):]}")
         return 0
+
+    if cmd in ("pin", "unpin", "pins"):
+        return _pins_command(cmd, ns, root, say, as_json)
 
     rm = compute(root)
     if cmd == "validate":
