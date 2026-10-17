@@ -5,7 +5,8 @@ records its criteria read and the status it intended for each node in fixture-in
 Deterministic for a given (size, seed). It is deliberately independent of the rest of the library: the records and blockers are built from
 intents (a leaf is meant to be done, ready, active, blocked or expandable) and the intended status of every interior node comes from the
 rules written out again here over those intents, so that comparing the library's derived statuses with the sidecar is a real test.
-The tree has depth up to 8 (the root is depth 0), uneven branching, cross-branch blockers, stubs and retired nodes. Every status appears
+The root has 5 to 10 first-layer branches (`first_layer` overrides the count) of uneven size, each named for a different noun. The tree
+has depth up to 8 (the root is depth 0), uneven branching, cross-branch blockers, stubs and retired nodes. Every status appears
 once the roadmap has a few dozen nodes. Fixtures are not committed; tests generate them into a temporary directory.
 """
 from __future__ import annotations
@@ -39,7 +40,7 @@ def _node_file(path: Path, front: dict, body: str):
     _dump(path, "---\n" + yaml.safe_dump(front, sort_keys=True) + "---\n" + body)
 
 
-def generate(size: int, out, seed: int = 0) -> dict:
+def generate(size: int, out, seed: int = 0, first_layer: int | None = None) -> dict:
     """Write the fixture under `out` (which must be absent or empty). Returns the intended statuses {id: status}."""
     if size < MIN_SIZE:
         raise ValueError(f"size must be at least {MIN_SIZE}")
@@ -50,18 +51,39 @@ def generate(size: int, out, seed: int = 0) -> dict:
     n_super = max(1, size // 20)
     n = size - n_super  # live nodes, indexed 0..n-1; 0 is the root
 
-    # ---- the tree: preferential attachment toward busy and deep nodes gives uneven branching and a long spine
+    if first_layer is None:
+        k = min(rng.randint(5, 10), n - 1)
+    elif 1 <= first_layer <= n - 1:
+        k = first_layer
+    else:
+        raise ValueError(f"--first-layer must be between 1 and {n - 1} for {size} nodes (it is {first_layer})")
+
+    # ---- the tree: k first-layer branches of uneven weight; inside a branch, preferential attachment toward busy and deep nodes gives
+    # uneven branching and a long spine
     parent, depth, kids = [None], [0], [[]]
-    for idx in range(1, n):
-        eligible = [i for i in range(idx) if depth[i] < MAX_DEPTH]
+    members = []  # the nodes of each branch, its head first
+    for b in range(k):
+        parent.append(0)
+        depth.append(1)
+        kids.append([])
+        kids[0].append(1 + b)
+        members.append([1 + b])
+    branch_weight = [rng.lognormvariate(0, 1.0) for _ in range(k)]
+    for idx in range(k + 1, n):
+        b = rng.choices(range(k), branch_weight)[0]
+        eligible = [i for i in members[b] if depth[i] < MAX_DEPTH]
         weights = [(1 + len(kids[i])) ** 1.3 * (1 + depth[i]) ** 1.6 for i in eligible]
         p = rng.choices(eligible, weights)[0]
         parent.append(p)
         depth.append(depth[p] + 1)
         kids.append([])
         kids[p].append(idx)
+        members[b].append(idx)
     ids = [f"rm.n{i:03d}-{rng.choice(NOUNS)}" for i in range(n)]
     ids[0] = "rm.n000-root"
+    head_nouns = rng.sample(NOUNS, min(k, len(NOUNS)))  # a different noun for each branch, so titles are distinct at a glance
+    for b, noun in enumerate(head_nouns):
+        ids[1 + b] = f"rm.n{1 + b:03d}-{noun}"
 
     # ---- depth-first leaf order: every node covers a contiguous run [lo, hi] of it
     leaf_order, lo, hi = [], [0] * n, [0] * n

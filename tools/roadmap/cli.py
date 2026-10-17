@@ -8,7 +8,7 @@ takes --json.
     frontier                         every ready leaf and expandable stub, with criterion and estimate
     refs <query>                     where the node id is mentioned (log/, docs/memos/, notebook/, commit messages)
     open <query>                     open the node file in an editor (FREYJA_EDITOR, VISUAL, EDITOR, code -g, the file association)
-    fixture --size N --out DIR       write a synthetic roadmap (seeded; --seed S)
+    fixture --size N --out DIR       write a synthetic roadmap (seeded; --seed S; --first-layer N sets the root's branch count)
     notify --before SHA --after SHA --repo OWNER/NAME [--dry-run]   open GitHub issues for nodes that entered the frontier between two commits
     serve [--port 8765] [--focus QUERY] [--no-browser]   the local viewer (127.0.0.1 only)
     install-hooks                    git config core.hooksPath .githooks (stops if hooks already exist)
@@ -47,6 +47,7 @@ def _parser() -> argparse.ArgumentParser:
     fx.add_argument("--size", type=int, required=True)
     fx.add_argument("--out", required=True)
     fx.add_argument("--seed", type=int, default=0)
+    fx.add_argument("--first-layer", type=int, default=None, help="number of first-layer branches under the root (default: 5 to 10, seeded)")
     nt = sub.add_parser("notify", parents=[common], help="open issues for nodes that entered the frontier between two commits")
     nt.add_argument("--before", required=True, help="the commit before the push (all zeros or unknown: nothing is opened)")
     nt.add_argument("--after", required=True, help="the commit after the push")
@@ -151,7 +152,7 @@ def main(argv=None, say=print, opener=None, default_root=None) -> int:
     cmd = ns.command
     if cmd == "fixture":
         try:
-            fixture.generate(ns.size, ns.out, seed=ns.seed)
+            fixture.generate(ns.size, ns.out, seed=ns.seed, first_layer=ns.first_layer)
         except (FileExistsError, ValueError) as e:
             say(f"fixture: {e}")
             return 1

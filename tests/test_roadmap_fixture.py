@@ -105,3 +105,61 @@ def test_the_fixture_has_references_to_search_for(tmp_path):
     fixture.generate(120, root, seed=4)
     rm = roadmap.compute(root)
     assert sum(1 for i in rm.nodes if refs.file_references(root, i)) >= 10
+
+
+# ---- brief 2 T3: the root has 5 to 10 first-layer branches of uneven size
+
+def first_layer(rm):
+    return [i for i in rm.nodes if rm.nodes[i].parent == "rm.n000-root"]
+
+
+def subtree_size(rm, i):
+    return 1 + sum(subtree_size(rm, c) for c in rm.graph.all_children[i])
+
+
+@pytest.mark.parametrize("seed", [0, 3, 7, 11, 12])
+def test_the_root_has_five_to_ten_uneven_first_layer_branches_with_distinct_titles(tmp_path, seed):
+    root = tmp_path / "f"
+    fixture.generate(300, root, seed=seed)
+    rm = roadmap.compute(root)
+    layer = first_layer(rm)
+    assert 5 <= len(layer) <= 10, len(layer)
+    titles = [rm.nodes[i].title for i in layer]
+    assert len(set(titles)) == len(titles)
+    assert len({i.split("-", 1)[1] for i in layer}) == len(layer)  # the nouns differ too, so a branch is recognisable at a glance
+    sizes = sorted(subtree_size(rm, i) for i in layer)
+    assert sizes[-1] >= 2 * sizes[0], sizes  # uneven
+    assert sizes[-1] < 0.8 * (len(rm.nodes) - 1), sizes  # and no branch holds almost everything, which was the old shape
+
+
+@pytest.mark.parametrize("size,seed", [(300, 0), (300, 7), (600, 3)])
+def test_the_depth_and_coverage_guarantees_survive_the_new_shape(tmp_path, size, seed):
+    root = tmp_path / "f"
+    fixture.generate(size, root, seed=seed)
+    rm = roadmap.compute(root)
+    assert {rm.status(i) for i in rm.nodes} >= ALL_LIVE | {"superseded"}
+    assert 6 <= max(len(rm.graph.ancestors(i)) for i in rm.nodes) <= 8
+
+
+@pytest.mark.parametrize("n", [1, 3, 5, 12, 20])
+def test_first_layer_overrides_the_branch_count(tmp_path, n):
+    root = tmp_path / "f"
+    fixture.generate(300, root, seed=0, first_layer=n)
+    rm = roadmap.compute(root)
+    assert rm.errors == [] and len(first_layer(rm)) == n
+
+
+def test_first_layer_that_cannot_fit_is_refused(tmp_path):
+    with pytest.raises(ValueError):
+        fixture.generate(10, tmp_path / "a", first_layer=9)  # 10 nodes, 1 retired: 9 live, so at most 8 below the root
+    with pytest.raises(ValueError):
+        fixture.generate(60, tmp_path / "b", first_layer=0)
+
+
+@pytest.mark.parametrize("seed", [0, 3, 7])
+def test_intended_statuses_hold_for_an_overridden_first_layer(tmp_path, seed):
+    root = tmp_path / "f"
+    fixture.generate(300, root, seed=seed, first_layer=12)
+    rm = roadmap.compute(root)
+    want = intended(root)["statuses"]
+    assert {i: (want[i], rm.status(i)) for i in want if rm.status(i) != want[i]} == {}

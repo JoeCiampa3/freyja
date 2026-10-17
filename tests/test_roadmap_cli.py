@@ -242,3 +242,12 @@ def test_open_passes_an_absolute_path(fx):
     some = pick(roadmap.compute(fx), "leaf")
     _, _, opened = run(["open", some], fx)
     assert Path(opened[0]).is_absolute()
+
+
+def test_fixture_command_takes_first_layer(tmp_path):
+    code, out, _ = run(["fixture", "--size", "80", "--out", str(tmp_path / "x"), "--first-layer", "4"])
+    assert code == 0
+    rm = roadmap.compute(tmp_path / "x")
+    assert sum(1 for n in rm.nodes.values() if n.parent == "rm.n000-root") == 4
+    code, out, _ = run(["fixture", "--size", "80", "--out", str(tmp_path / "y"), "--first-layer", "0"])
+    assert code == 1 and "first-layer" in out
