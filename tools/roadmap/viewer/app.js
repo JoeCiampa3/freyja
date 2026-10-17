@@ -1,9 +1,9 @@
 /*
- * Roadmap viewer (docs/briefs/architecture/roadmap-brief1.md, T8). One page, no build step, no framework: d3 v7 for the layouts and marked
- * for node bodies, both vendored beside this file. It only reads: /api/state, /api/node/<id>, /api/events; its single write-shaped call is
- * POST /api/open/<id>, which asks the local editor to open a node file.
+ * Roadmap viewer (docs/briefs/architecture/roadmap-brief1.md T8, roadmap-brief2.md T7). One page, no build step, no framework: d3 v7 for the layouts and marked
+ * for node bodies, both vendored beside this file. It reads /api/state, /api/node/<id>, /api/pins and /api/events; its write-shaped calls are
+ * POST /api/open/<id> (asks the local editor to open a node file) and POST /api/unpin/<id> (the personal pins file).
  *
- * Part 1 is pure logic (index, icicle layout, keyboard navigation, query resolution, blocker chain, Markdown): it touches no DOM and is
+ * Part 1 is pure logic (index, outline, active leaves, keyboard navigation, query resolution, blocker chain, Markdown): it touches no DOM and is
  * exposed as window.RoadmapLogic so that tests/test_roadmap_viewer.py can run it in a headless browser. Part 2 is the interface.
  * Setting window.ROADMAP_TEST before this file loads skips Part 2.
  */
@@ -65,32 +65,6 @@
     return out; // nearest first
   }
 
-  /** Horizontal icicle: depth along x, siblings stacked along y. A leaf or stub is `unit` tall (the height shared out by leaf count) but never under
-   * minBand; an interior band is the sum of its children, so heights are proportional to the count of leaf and stub descendants wherever the
-   * minimum does not bind. When the minimum binds the total exceeds `height` and the caller scrolls. */
-  function icicleRows(index, rootId, height, minBand) {
-    const unit = height / Math.max(1, index.leafCount[rootId] || 1);
-    const need = {};
-    (function f(id) {
-      const kids = index.children[id] || [];
-      if (!kids.length) { need[id] = Math.max(minBand, unit); return need[id]; }
-      let s = 0;
-      for (const k of kids) s += f(k);
-      need[id] = Math.max(minBand, s);
-      return need[id];
-    })(rootId);
-    const rows = [];
-    let maxDepth = 0;
-    (function place(id, depth, y0) {
-      const kids = index.children[id] || [];
-      rows.push({ id, depth, y0, y1: y0 + need[id], leaf: !kids.length });
-      if (depth > maxDepth) maxDepth = depth;
-      let y = y0;
-      for (const k of kids) { place(k, depth + 1, y); y += need[k]; }
-    })(rootId, 0, 0);
-    return { rows, total: need[rootId], maxDepth };
-  }
-
   /** Keyboard selection: Up parent, Down first child, Left/Right previous/next sibling (stopping at the ends). */
   function navigate(index, id, key) {
     if (!index.nodes[id]) return id;
@@ -102,6 +76,43 @@
     const i = sib.indexOf(id);
     if (i < 0) return id;
     return sib[key === "ArrowLeft" ? Math.max(0, i - 1) : Math.min(sib.length - 1, i + 1)];
+  }
+
+  /** Every leaf with `active: true`: what is being worked on, derived from the repo (the same set the memos and Code see). */
+  function activeLeaves(index) {
+    return Object.keys(index.depthOf).filter((id) => !(index.children[id] || []).length && index.nodes[id].kind === "leaf" && index.nodes[id].active === true).sort();
+  }
+
+  /** Outline filter: the ids to show (matches of the text and of any chosen status, plus their ancestors) sorted, or null when no filter is set. */
+  function outlineVisible(index, text, statuses) {
+    const t = String(text || "").trim().toLowerCase();
+    const st = new Set(statuses || []);
+    if (!t && !st.size) return null;
+    const vis = new Set();
+    for (const id of Object.keys(index.depthOf)) {
+      const n = index.nodes[id];
+      if (t && !(id.toLowerCase().includes(t) || String(n.title).toLowerCase().includes(t))) continue;
+      if (st.size && !st.has(n.status)) continue;
+      for (let c = id; c && !vis.has(c); c = index.parent[c]) vis.add(c);
+    }
+    if (vis.size && index.rootId === VROOT) vis.add(VROOT);
+    return Array.from(vis).sort();
+  }
+
+  /** The outline's rows in tree order (children by id). `o.open` is the set of expanded ids; under a filter everything that is shown is expanded. */
+  function outlineRows(index, o) {
+    const rows = [];
+    if (index.rootId === null) return rows;
+    const vis = outlineVisible(index, o.text, o.statuses), visSet = vis && new Set(vis);
+    (function walk(id, depth) {
+      if (visSet && !visSet.has(id)) return;
+      const kids = index.children[id] || [];
+      const shown = visSet ? kids.filter((k) => visSet.has(k)) : kids;
+      const open = kids.length > 0 && (visSet ? shown.length > 0 : o.open.has(id));
+      rows.push({ id, depth, hasKids: kids.length > 0, open });
+      if (open) for (const k of shown) walk(k, depth + 1);
+    })(index.rootId, 0);
+    return rows;
   }
 
   /** The nested object d3.hierarchy reads: `depth` levels below the focus; `hidden` counts children cut off at the limit. */
@@ -238,7 +249,7 @@
   }
   function routeFormat(id) { return "#/node/" + encodeURIComponent(id); }
 
-  window.RoadmapLogic = { VROOT, STATUS, STATUS_ORDER, statusInfo, esc, buildIndex, ancestors, icicleRows, navigate, subtree, relativeDepth, matchRatio, resolveQuery,
+  window.RoadmapLogic = { VROOT, STATUS, STATUS_ORDER, statusInfo, esc, buildIndex, ancestors, navigate, subtree, relativeDepth, activeLeaves, outlineVisible, outlineRows, matchRatio, resolveQuery,
     blockerChain, criterionText, safeHref, renderMarkdown, routeParse, routeFormat };
   if (window.ROADMAP_TEST) return;
 
@@ -249,8 +260,12 @@
   const CARD_W = 190, CARD_H = 74, GAP_X = 22, GAP_Y = 54, PAD = 6;
   const TOKEN = (document.querySelector('meta[name="roadmap-token"]') || {}).content || "";
 
-  const S = { state: null, index: null, focus: null, selected: null, tab: "tree", max: false, zoom: null, depth: 3, showSuperseded: false,
-    connected: null, version: null, centre: false, nodeCache: new Map(), firstRenderMs: null, notice: null, candidates: [], candOn: -1, loadedOnce: false };
+  const TABS = ["outline", "frontier", "problems"];
+  const STATUS_CHIPS = ["ready", "active", "blocked", "expandable", "done"];
+
+  const S = { state: null, index: null, focus: null, selected: null, tab: "outline", depth: 3, showSuperseded: false,
+    connected: null, version: null, centre: false, nodeCache: new Map(), firstRenderMs: null, notice: null, candidates: [], candOn: -1, loadedOnce: false,
+    open: new Set(), closed: new Set(), chips: new Set(), scrollOutline: true, pins: [], pinSet: new Set(), workCollapsed: false };
 
   function pref(key, value) { // per-viewer conveniences only; the page works without storage
     try {
@@ -307,8 +322,6 @@
   /* ---- navigation */
   function go(id) {
     if (!S.index.nodes[id]) { toast("No node " + id); return; }
-    S.max = false;
-    document.body.classList.remove("maximised");
     const hash = routeFormat(id);
     if (location.hash === hash) applyFocus(id);
     else location.hash = hash; // the hashchange handler applies it, so back and forward use the same path
@@ -318,6 +331,8 @@
     S.selected = id;
     S.notice = notice || null;
     S.centre = true; // the next render scrolls the new focus into view
+    S.closed = new Set();
+    S.scrollOutline = true;
     renderAll();
   }
   function select(id) {
@@ -330,6 +345,27 @@
     if (el && el.scrollIntoView) el.scrollIntoView({ block: "nearest", inline: "nearest" });
   }
   const isInterior = (id) => (S.index.children[id] || []).length > 0;
+  const isPinned = (id) => S.pinSet.has(id);
+
+  /* ---- pins */
+  async function loadPins() {
+    try {
+      const r = await fetch("/api/pins", { cache: "no-store" });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || "HTTP " + r.status);
+      setPins(j.pins);
+    } catch (e) { toast("Could not load the pins: " + e.message, true); }
+  }
+  function setPins(list) { S.pins = (list || []).slice().sort(); S.pinSet = new Set(S.pins); }
+  async function setPin(id, on) {
+    try {
+      const r = await fetch((on ? "/api/pin/" : "/api/unpin/") + encodeURIComponent(id), { method: "POST", headers: { "X-Roadmap-Token": TOKEN } });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || "HTTP " + r.status);
+      setPins(j.pins);
+      renderAll();
+    } catch (e) { toast("Could not " + (on ? "pin " : "unpin ") + id + ": " + e.message, true); }
+  }
 
   /* ---- editor and clipboard */
   async function openInEditor(id) {
@@ -439,75 +475,72 @@
     return { blockers: new Set(sel ? sel.effective_blockers || [] : []), dependents: new Set(sel ? sel.dependents || [] : []) };
   }
 
-  function renderTree(body) {
+  function renderWorking() {
+    const box = $("working"), body = $("working-body");
+    box.classList.toggle("collapsed", S.workCollapsed);
+    $("working-toggle").setAttribute("aria-expanded", String(!S.workCollapsed));
+    body.replaceChildren();
+    const row = (id) => {
+      const n = node(id);
+      return h("div", { class: "wrow", "data-id": id, onclick: () => go(id) },
+        h("button", { class: "wmain", title: n.title + " (" + statusInfo(n.status).label + ")" }, swatch(n.status, n.kind === "stub"), h("span", { class: "wt" }, n.title), h("span", { class: "wid mono" }, id)));
+    };
+    const active = activeLeaves(S.index);
+    body.append(h("div", { class: "wgroup", id: "wg-active" }, h("h2", { class: "sec" }, "Active (" + active.length + ")"),
+      active.length ? active.map(row) : h("p", { class: "muted wnone" }, "No leaf is marked active.")));
+    body.append(h("div", { class: "wgroup", id: "wg-pinned" }, h("h2", { class: "sec" }, "Pinned (" + S.pins.length + ")"),
+      S.pins.length ? S.pins.map((id) => {
+        if (!S.state.nodes[id]) {
+          return h("div", { class: "wrow dangling", "data-id": id }, h("span", { class: "wmain" }, h("span", { class: "sw s-unknown", "aria-hidden": "true" }, "?"), h("span", { class: "wt" }, "no longer in the roadmap"), h("span", { class: "wid mono" }, id)),
+            h("button", { class: "unpin", onclick: () => setPin(id, false), title: "Remove this pin" }, "Unpin"));
+        }
+        const r = row(id);
+        r.append(h("button", { class: "unpin", "aria-label": "Unpin " + node(id).title, title: "Unpin", onclick: (ev) => { ev.stopPropagation(); setPin(id, false); } }, "★"));
+        return r;
+      }) : h("p", { class: "muted wnone" }, "Nothing pinned. Press p on a node.")));
+  }
+
+  function effectiveOpen() { // the expanded outline rows: those opened by hand, plus the path to the focus, minus those closed by hand since the focus changed
+    const open = new Set(S.open);
+    for (let c = S.focus; c; c = S.index.parent[c]) open.add(c);
+    for (const c of S.closed) open.delete(c);
+    return open;
+  }
+
+  function renderOutline(body) {
     const idx = S.index;
     body.replaceChildren();
     if (idx.rootId === null) { body.append(h("p", { class: "pad muted" }, "No nodes. Add node files under roadmap/nodes/.")); return; }
-    const treeRoot = S.max && S.zoom && idx.nodes[S.zoom] && idx.children[S.zoom] ? S.zoom : idx.rootId;
-    if (S.max) {
-      const chain = [treeRoot, ...ancestors(idx, treeRoot)].reverse();
-      body.append(h("div", { class: "zoombar" },
-        h("button", { disabled: treeRoot === idx.rootId, onclick: () => { S.zoom = idx.parent[treeRoot] || idx.rootId; renderSidebar(); }, title: "Zoom out one level" }, "↑ Up"),
-        h("button", { disabled: treeRoot === idx.rootId, onclick: () => { S.zoom = idx.rootId; renderSidebar(); } }, "Whole tree"),
-        chain.map((c, i) => [i ? h("span", { class: "muted" }, "›") : null, h("button", { onclick: () => { S.zoom = c; renderSidebar(); } }, node(c).title.slice(0, 28))]),
-        h("button", { onclick: () => go(S.selected && node(S.selected) ? S.selected : treeRoot), title: "Focus on the selected node (Enter)" }, "Focus on selection"),
-        h("span", { class: "hint" }, "click a band with children to zoom in; click a leaf to focus on it")));
+    const text = $("search").value, statuses = Array.from(S.chips);
+    const open = effectiveOpen();
+    const rows = outlineRows(idx, { open, text, statuses });
+    const onpath = new Set(); for (let c = S.focus; c; c = idx.parent[c]) onpath.add(c);
+    body.append(h("div", { class: "chips-status", role: "group", "aria-label": "Filter by status" }, STATUS_CHIPS.map((s) =>
+      h("button", { class: "fchip s-" + s, "data-status": s, "aria-pressed": String(S.chips.has(s)), onclick: () => { if (S.chips.has(s)) S.chips.delete(s); else S.chips.add(s); renderSidebar(); } }, statusInfo(s).glyph + " " + statusInfo(s).label))));
+    if (!rows.length) body.append(h("p", { class: "pad muted" }, "Nothing matches."));
+    const ul = h("ul", { class: "otree", role: "tree", "aria-label": "Roadmap outline" });
+    for (const r of rows) {
+      const n = node(r.id), p = idx.progress[r.id];
+      const filtering = text.trim() || statuses.length;
+      const li = h("li", { class: "orow" + (onpath.has(r.id) ? " onpath" : "") + (r.id === S.focus ? " focus" : "") + (r.id === S.selected ? " sel" : ""), "data-id": r.id, role: "treeitem",
+        "aria-level": String(r.depth + 1), "aria-expanded": r.hasKids ? String(r.open) : null, "aria-selected": String(r.id === S.selected), style: "padding-left:" + (8 + 12 * r.depth) + "px" },
+        r.hasKids && !filtering ? h("button", { class: "otoggle", "aria-label": (r.open ? "Collapse " : "Expand ") + n.title, onclick: (ev) => {
+          ev.stopPropagation();
+          if (r.open) { S.open.delete(r.id); S.closed.add(r.id); } else { S.open.add(r.id); S.closed.delete(r.id); }
+          renderSidebar();
+        } }, r.open ? "▾" : "▸") : h("span", { class: "ospacer" }),
+        swatch(n.status, n.kind === "stub"),
+        h("button", { class: "ot", title: n.title, onclick: () => go(r.id) }, n.title),
+        r.hasKids ? h("span", { class: "frac", title: p.done + " of " + p.total + " leaves and stubs done" }, p.done + "/" + p.total) : null,
+        isPinned(r.id) ? h("span", { class: "star-mark", title: "Pinned", "aria-label": "pinned" }, "★") : null);
+      ul.append(li);
     }
-    const bar = body.querySelector(".zoombar");
-    const width = Math.max(200, body.clientWidth || 300);
-    const height = Math.max(240, (body.clientHeight || 600) - (bar ? bar.offsetHeight : 0) - 4);
-    const L = icicleRows(idx, treeRoot, height, S.max ? 18 : 14);
-    const colW = Math.max(S.max ? 90 : 30, width / (L.maxDepth + 1));
-    const totalW = Math.max(width, colW * (L.maxDepth + 1));
-    const rel = relatedSets();
-    const svg = sv("svg", { class: "icicle", width: totalW, height: L.total + 2, viewBox: "0 0 " + totalW + " " + (L.total + 2), role: "tree", "aria-label": "Roadmap tree" },
-      sv("defs", {}, sv("pattern", { id: "hatch", width: 6, height: 6, patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" },
-        sv("rect", { width: 6, height: 6, fill: "none" }), sv("line", { x1: 0, y1: 0, x2: 0, y2: 6, stroke: "rgba(0,0,0,0.55)", "stroke-width": 2 }))));
-    let focusRow = null;
-    const frag = document.createDocumentFragment();
-    for (const r of L.rows) {
-      const n = node(r.id);
-      const x0 = r.depth * colW, x1 = r.leaf ? totalW : x0 + colW;
-      const w = x1 - x0, hh = r.y1 - r.y0;
-      const info = statusInfo(n.status);
-      const cls = ["band"];
-      if (r.id === S.selected) cls.push("sel");
-      if (rel.blockers.has(r.id)) cls.push("blocker");
-      if (rel.dependents.has(r.id)) cls.push("dependent");
-      const g = sv("g", { class: cls.join(" "), "data-id": r.id, role: "treeitem", "aria-label": n.title + ", " + info.label + (n.kind === "stub" ? ", stub" : "") });
-      g.append(sv("rect", { class: "fill", x: x0, y: r.y0, width: w, height: Math.max(1, hh - 0), style: "fill:var(--c-" + n.status + ")" }));
-      if (n.kind === "stub") g.append(sv("rect", { x: x0, y: r.y0, width: w, height: hh, fill: "url(#hatch)", "pointer-events": "none" }));
-      const chars = Math.floor((w - 10) / 6.1);
-      if (hh >= 13 && chars >= 4) {
-        const label = info.glyph + " " + n.title;
-        g.append(sv("text", { x: x0 + 5, y: r.y0 + Math.min(hh / 2 + 4, 15), style: "fill:var(--" + (n.status === "done" ? "on-done" : "on-other") + ")" }, label.length > chars ? label.slice(0, chars - 1) + "…" : label));
-      }
-      if (rel.blockers.has(r.id) && hh >= 11) g.append(sv("text", { class: "mark blocker", x: x1 - 16, y: r.y0 + Math.min(hh / 2 + 5, 15) }, "◂"));
-      if (rel.dependents.has(r.id) && hh >= 11) g.append(sv("text", { class: "mark dependent", x: x1 - 16, y: r.y0 + Math.min(hh / 2 + 5, 15) }, "▸"));
-      frag.append(g);
-      if (r.id === S.focus) focusRow = { x0, y0: r.y0, y1: r.y1 };
+    body.append(ul, legend());
+    if (S.scrollOutline) {
+      S.scrollOutline = false;
+      const f = body.querySelector(".orow.focus");
+      if (f && f.scrollIntoView) f.scrollIntoView({ block: "nearest" });
     }
-    svg.append(frag);
-    if (focusRow) svg.append(sv("rect", { class: "focus-outline", x: focusRow.x0 + 1.5, y: focusRow.y0 + 1.5, width: totalW - focusRow.x0 - 3, height: Math.max(2, focusRow.y1 - focusRow.y0 - 3) }));
-    svg.addEventListener("click", (ev) => {
-      const g = ev.target.closest("g.band");
-      if (!g) return;
-      const id = g.dataset.id;
-      if (S.max && isInterior(id) && id !== treeRoot) { S.zoom = id; S.selected = id; renderSidebar(); }
-      else go(id);
-    });
-    svg.addEventListener("mousemove", (ev) => {
-      const g = ev.target.closest("g.band");
-      const tip = $("tip");
-      if (!g) { tip.style.display = "none"; return; }
-      const n = node(g.dataset.id);
-      tip.textContent = n.title + " — " + statusInfo(n.status).label + (n.kind === "stub" ? " (stub)" : "");
-      tip.style.display = "block";
-      tip.style.left = Math.min(window.innerWidth - 380, ev.clientX + 14) + "px";
-      tip.style.top = Math.min(window.innerHeight - 30, ev.clientY + 16) + "px";
-    });
-    svg.addEventListener("mouseleave", () => { $("tip").style.display = "none"; });
-    body.append(svg, legend());
   }
 
   function legend() {
@@ -549,19 +582,16 @@
 
   function renderSidebar() {
     const body = $("side-body");
-    const keep = body.scrollTop;
-    for (const t of ["tree", "frontier", "problems"]) $("tab-" + t).setAttribute("aria-selected", String(S.tab === t));
+    const keep = body.scrollTop, scrolling = S.scrollOutline; // a focus change scrolls the outline to the focus row; otherwise the scroll stays
+    renderWorking();
+    for (const t of TABS) $("tab-" + t).setAttribute("aria-selected", String(S.tab === t));
     const nProb = (S.state.errors || []).length + (S.state.warnings || []).length;
     const badge = $("badge");
     badge.textContent = String(nProb);
     badge.className = "badge" + ((S.state.errors || []).length ? "" : " zero");
     badge.setAttribute("aria-label", (S.state.errors || []).length + " errors, " + (S.state.warnings || []).length + " warnings");
-    if (S.max) S.tab = "tree";
-    ({ tree: renderTree, frontier: renderFrontier, problems: renderProblems }[S.tab])(body);
-    body.scrollTop = keep;
-    $("maxbtn").setAttribute("aria-pressed", String(S.max));
-    $("maxbtn").textContent = S.max ? "✕ Restore" : "⛶";
-    $("maxbtn").setAttribute("title", S.max ? "Restore the normal layout (Esc or m)" : "Maximise the sidebar (m)");
+    ({ outline: renderOutline, frontier: renderFrontier, problems: renderProblems }[S.tab])(body);
+    if (!scrolling) body.scrollTop = keep;
   }
 
   /* ---- main view */
@@ -704,14 +734,13 @@
     sb.append(h("span", {}, st.node_count + " nodes"));
     STATUS_ORDER.filter((s) => counts[s]).forEach((s) => sb.append(h("span", {}, swatch(s), counts[s] + " " + statusInfo(s).label)));
     sb.append(h("span", {}, "superseded " + (st.superseded_count || 0)), h("span", { class: "grow" }));
-    sb.append(h("span", {}, "↑↓←→ move · Enter focus · e editor · / search · m maximise · Esc"));
+    sb.append(h("span", {}, "↑↓←→ move · Enter focus · e editor · / search · Esc"));
     if (S.bench) sb.append(h("span", {}, S.bench));
     sb.append(h("span", { title: "Time from navigation start to the first render of this page" }, S.firstRenderMs === null ? "" : "first render " + Math.round(S.firstRenderMs) + " ms"));
     sb.append(h("span", { title: "Live updates from /api/events" }, S.connected === null ? "" : S.connected ? "● live" : "○ reconnecting…"));
   }
 
   function renderAll() {
-    document.body.classList.toggle("maximised", S.max);
     renderSidebar();
     renderCrumbs();
     renderView();
@@ -738,7 +767,8 @@
     });
     if (r.total > r.ids.length) ul.append(h("li", { class: "none" }, (r.total - r.ids.length) + " more; keep typing"));
   }
-  function pick(id) { $("search").value = ""; S.candidates = []; S.candOn = -1; renderCandidates(); $("search").blur(); go(id); }
+  function pick(id) { clearSearch(); go(id); }
+  function clearSearch() { $("search").value = ""; S.candidates = []; S.candOn = -1; renderCandidates(); $("search").blur(); if (S.state) renderSidebar(); }
 
   /* ---- state and live updates */
   function ensureValid() {
@@ -748,7 +778,6 @@
     }
     if (S.focus === null) S.focus = idx.rootId;
     if (S.selected === null || !idx.nodes[S.selected]) S.selected = S.focus;
-    if (S.zoom && !idx.nodes[S.zoom]) S.zoom = null;
   }
 
   function applyState(state, first) {
@@ -779,7 +808,7 @@
   function scheduleRefresh() {
     clearTimeout(refreshTimer);
     refreshTimer = setTimeout(async () => {
-      try { applyState(await fetchState(), false); } catch (e) { toast("Could not refresh: " + e.message); }
+      try { await loadPins(); applyState(await fetchState(), false); } catch (e) { toast("Could not refresh: " + e.message); }
     }, 120);
   }
   function connectEvents() {
@@ -792,17 +821,12 @@
 
   /* ---- keyboard, resize, tabs */
   function typing(t) { return t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable); }
-  function setMax(on) {
-    S.max = on;
-    if (on) { S.tab = "tree"; S.zoom = S.zoom || null; }
-    renderAll();
-  }
   document.addEventListener("keydown", (ev) => {
     if (!S.state || ev.ctrlKey || ev.metaKey || ev.altKey) return;
     const k = ev.key;
-    if (typing(ev.target)) {
+    if (typing(ev.target)) { // keys are ignored while typing, except in the search box
       if (ev.target.id !== "search") return;
-      if (k === "Escape") { ev.target.value = ""; renderCandidates(); ev.target.blur(); ev.preventDefault(); }
+      if (k === "Escape") { clearSearch(); ev.preventDefault(); }
       else if (k === "ArrowDown" || k === "ArrowUp") {
         if (!S.candidates.length) return;
         S.candOn = k === "ArrowDown" ? Math.min(S.candidates.length - 1, S.candOn + 1) : Math.max(0, S.candOn - 1);
@@ -820,13 +844,12 @@
       if (S.selected) go(S.selected);
     } else if (k === "e") { if (S.selected && S.selected !== VROOT) openInEditor(S.selected); }
     else if (k === "/") { ev.preventDefault(); $("search").focus(); $("search").select(); }
-    else if (k === "m") setMax(!S.max);
-    else if (k === "Escape") { if (S.max) setMax(false); }
+    else if (k === "Escape") { if ($("search").value || S.chips.size) { S.chips.clear(); clearSearch(); } }
   });
 
   document.querySelectorAll(".tabs [data-tab]").forEach((b) => b.addEventListener("click", () => { S.tab = b.dataset.tab; pref("tab", S.tab); renderSidebar(); }));
-  $("maxbtn").addEventListener("click", () => setMax(!S.max));
-  $("search").addEventListener("input", () => { S.candOn = 0; renderCandidates(); });
+  $("working-toggle").addEventListener("click", () => { S.workCollapsed = !S.workCollapsed; pref("workcollapsed", S.workCollapsed ? 1 : 0); renderWorking(); });
+  $("search").addEventListener("input", () => { S.candOn = 0; renderCandidates(); renderSidebar(); });
   $("search").addEventListener("blur", () => setTimeout(() => { if (document.activeElement !== $("search")) $("cands").replaceChildren(); }, 150));
   $("search").addEventListener("focus", renderCandidates);
   window.addEventListener("hashchange", () => {
@@ -836,8 +859,6 @@
     else if (id) applyFocus(S.index.rootId, "No node " + id + " in the roadmap; showing the root.");
     else applyFocus(S.index.rootId);
   });
-  let resizeRaf = 0;
-  window.addEventListener("resize", () => { cancelAnimationFrame(resizeRaf); resizeRaf = requestAnimationFrame(() => S.state && renderSidebar()); });
 
   (function sidebarResizer() {
     const bar = $("resizer"), app = $("app");
@@ -847,14 +868,14 @@
     let drag = false;
     bar.addEventListener("pointerdown", (ev) => { drag = true; bar.classList.add("drag"); bar.setPointerCapture(ev.pointerId); });
     bar.addEventListener("pointermove", (ev) => { if (drag) set(ev.clientX); });
-    const end = () => { if (!drag) return; drag = false; bar.classList.remove("drag"); pref("sidew", Math.round($("sidebar").getBoundingClientRect().width)); if (S.state) renderSidebar(); };
+    const end = () => { if (!drag) return; drag = false; bar.classList.remove("drag"); pref("sidew", Math.round($("sidebar").getBoundingClientRect().width)); };
     bar.addEventListener("pointerup", end);
     bar.addEventListener("pointercancel", end);
     bar.addEventListener("keydown", (ev) => {
       if (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight") return;
       ev.preventDefault(); ev.stopPropagation();
       const w = set($("sidebar").getBoundingClientRect().width + (ev.key === "ArrowRight" ? 24 : -24));
-      pref("sidew", Math.round(w)); if (S.state) renderSidebar();
+      pref("sidew", Math.round(w));
     });
   })();
 
@@ -864,14 +885,14 @@
     if (q.get("theme") === "light" || q.get("theme") === "dark") document.documentElement.dataset.theme = q.get("theme"); // for captures; otherwise the system setting decides
     S.depth = Math.max(1, Math.min(12, parseInt(q.get("depth") || pref("depth") || "3", 10) || 3));
     S.showSuperseded = pref("superseded") === "1";
-    S.tab = ["tree", "frontier", "problems"].includes(pref("tab")) ? pref("tab") : "tree";
+    S.workCollapsed = pref("workcollapsed") === "1";
+    S.tab = TABS.includes(pref("tab")) ? pref("tab") : "outline";
     try {
-      applyState(await fetchState(), true);
-      // capture parameters: they only seed the initial view state (maximised, selection, tab, search text), so a screenshot can show it
+      const [state] = await Promise.all([fetchState(), loadPins()]);
+      applyState(state, true);
+      // capture parameters: they only seed the initial view state (selection, tab, search text, depth), so a screenshot can show it
       if (q.has("select") && S.index.nodes[q.get("select")]) S.selected = q.get("select");
-      if (["tree", "frontier", "problems"].includes(q.get("tab"))) S.tab = q.get("tab");
-      if (q.get("max") === "1") S.max = true;
-      if (q.get("zoom") && S.index.nodes[q.get("zoom")]) S.zoom = q.get("zoom");
+      if (TABS.includes(q.get("tab"))) S.tab = q.get("tab");
       renderAll();
       if (q.get("q")) { $("search").value = q.get("q"); renderCandidates(); }
     } catch (e) {

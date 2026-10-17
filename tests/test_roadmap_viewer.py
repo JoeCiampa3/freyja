@@ -4,7 +4,7 @@ Roadmap T8: the viewer (tools/roadmap/viewer/). Two kinds of test.
 Static: the vendored files are the pinned ones, nothing loads from outside the page's own directory, the markup is compatible with the
 server's Content-Security-Policy, and the server serves every file the page needs.
 
-Logic: app.js keeps its pure logic (index, icicle layout, keyboard navigation, query resolution, blocker chain, Markdown) in
+Logic: app.js keeps its pure logic (index, active leaves, outline, keyboard navigation, query resolution, blocker chain, Markdown) in
 window.RoadmapLogic. These tests run it in a headless Chromium-family browser (Edge, Chrome or Chromium) on a generated page, against
 expected values that Python computes independently from the library. They are skipped, with the reason, when no such browser is installed.
 No server and no socket is involved: the page is a file.
@@ -145,24 +145,6 @@ try {
   check("leaf count at the root", idx.leafCount[idx.rootId] === D.leaf_total, [idx.leafCount[idx.rootId], D.leaf_total]);
   const withSup = L.buildIndex(D.state, true);
   check("superseded shown on request", Object.keys(withSup.depthOf).length === Object.keys(D.state.nodes).length);
-  // --- icicle: proportional heights when the minimum does not bind, containment, contiguity, the minimum when it does
-  for (const [height, minBand, proportional] of [[D.leaf_total * 40, 10, true], [D.leaf_total * 3, 12, false]]) {
-    const R = L.icicleRows(idx, idx.rootId, height, minBand);
-    const by = {}; for (const r of R.rows) by[r.id] = r;
-    check("rows cover every live node", R.rows.length === D.live_count, R.rows.length);
-    const unit = height / D.leaf_total;
-    let bad = [];
-    for (const r of R.rows) {
-      const hh = r.y1 - r.y0, kids = idx.children[r.id];
-      if (hh < minBand - 1e-9) bad.push(["under the minimum", r.id, hh]);
-      if (proportional && Math.abs(hh - idx.leafCount[r.id] * unit) > 1e-6) bad.push(["not proportional", r.id, hh, idx.leafCount[r.id] * unit]);
-      let y = r.y0;
-      for (const k of kids) { const c = by[k]; if (Math.abs(c.y0 - y) > 1e-9 || c.y1 > r.y1 + 1e-9 || c.depth !== r.depth + 1) bad.push(["child placement", r.id, k]); y = c.y1; }
-    }
-    check("icicle invariants (proportional=" + proportional + ")", bad.length === 0, bad.slice(0, 3));
-    check("total height", proportional ? Math.abs(R.total - height) < 1e-6 : R.total >= minBand * D.leaf_total - 1e-6, [R.total, height]);
-    check("max depth", R.maxDepth === D.max_depth, [R.maxDepth, D.max_depth]);
-  }
   // --- navigation against Python's graph
   for (const [id, want] of Object.entries(D.nav)) for (const key of ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]) {
     const got = L.navigate(idx, id, key);
@@ -184,6 +166,18 @@ try {
     check("chain flows left to right into " + id, c.edges.every(([b, n]) => col[b] < col[n]) && col[id] === c.cols.length - 1);
   }
   check("a chain is capped", L.blockerChain(D.state.nodes, D.big_chain, 3).count <= 3 && L.blockerChain(D.state.nodes, D.big_chain, 3).truncated === true);
+  // --- brief 2 T7: active leaves and the outline
+  check("active leaves are the leaves marked active", eq(L.activeLeaves(idx), D.active_leaves) && D.active_leaves.length > 0, L.activeLeaves(idx));
+  // --- outline
+  for (const c of D.outline_filters) {
+    const got = L.outlineVisible(idx, c.text, c.statuses);
+    check("outline filter " + JSON.stringify([c.text, c.statuses]), c.visible === null ? got === null : eq(got, c.visible), [got && got.length, c.visible && c.visible.length]);
+  }
+  const rowsOf = (o) => L.outlineRows(idx, o).map((r) => [r.id, r.depth]);
+  check("a collapsed outline shows only the root", eq(rowsOf({ open: new Set(), text: "", statuses: [] }), [[D.root, 0]]));
+  check("an outline opened along a path lists the siblings along it", eq(rowsOf({ open: new Set(D.path_open), text: "", statuses: [] }), D.outline_rows_path));
+  check("under a filter the outline lists matches and their ancestors, in tree order, regardless of what is open", eq(rowsOf({ open: new Set(), text: D.outline_filters[0].text, statuses: [] }), D.outline_rows_filter));
+  check("outline rows know whether they have children", L.outlineRows(idx, { open: new Set(D.path_open), text: "", statuses: [] }).every((r) => r.hasKids === (D.children[r.id].length > 0)));
   // --- subtree and relative depth
   const st = L.subtree(idx, idx.rootId, 2, 0);
   check("subtree depth", st.children.every((c) => c.children.every((g) => g.children.length === 0 && g.hidden === idx.children[g.id].length)));
@@ -210,6 +204,50 @@ try {
 document.getElementById("out").textContent = JSON.stringify({ fails, checks });
 </script>
 """
+
+
+def expected_brief2(rm, live, children, parent, root, depth, deep):
+    """What brief 2's pure sidebar logic must return, computed here from the library's states and the stated rules, never from app.js."""
+    active_leaves = sorted(i for i in live if not children[i] and rm.nodes[i].active)
+
+    def chain(i):  # root .. i
+        out = []
+        while i:
+            out.append(i)
+            i = parent[i]
+        return out[::-1]
+
+    def visible(text, statuses):
+        t = text.strip().lower()
+        if not t and not statuses:
+            return None
+        hit = [i for i in live if (not t or t in i.lower() or t in rm.nodes[i].title.lower()) and (not statuses or rm.status(i) in statuses)]
+        vis = set(hit)
+        for i in hit:
+            vis.update(chain(i))
+        return sorted(vis)
+
+    filters = [{"text": "femur", "statuses": []}, {"text": "", "statuses": ["ready"]}, {"text": "", "statuses": ["done", "blocked"]},
+               {"text": "cable", "statuses": ["ready"]}, {"text": "zzzzzz", "statuses": []}, {"text": "  ", "statuses": []}]
+    for f in filters:
+        f["visible"] = visible(f["text"], f["statuses"])
+    assert filters[0]["visible"] and len(filters[0]["visible"]) > 1 and filters[-1]["visible"] is None
+
+    def rows(open_set, vis):
+        out = []
+
+        def walk(i, d):
+            if vis is not None and i not in vis:
+                return
+            out.append([i, d])
+            if vis is not None or i in open_set:
+                for c in children[i]:
+                    walk(c, d + 1)
+        walk(root, 0)
+        return out
+    path_open = chain(deep)
+    return {"active_leaves": active_leaves, "outline_filters": filters, "path_open": path_open,
+            "outline_rows_path": rows(set(path_open), None), "outline_rows_filter": rows(set(), set(filters[0]["visible"]))}
 
 
 def expected_for(root):
@@ -257,7 +295,7 @@ def expected_for(root):
                         "rm.b": {"title": "B", "status": "ready", "kind": "leaf", "parent": None},
                         "rm.c": {"title": "C", "status": "blocked", "kind": "leaf", "parent": "rm.gone"}}}
     return {"state": state, "root": roots[0], "live_count": len(live), "children": children, "leaf_total": leaf_total, "max_depth": max(depth(i) for i in live),
-            "nav": nav, "queries": expected_q, "chains": chains, "big_chain": big, "deep": deep, "broken": broken, "broken_roots": 3}
+            "nav": nav, "queries": expected_q, "chains": chains, "big_chain": big, "deep": deep, "broken": broken, "broken_roots": 3, **expected_brief2(rm, live, children, parent, roots[0], depth, deep)}
 
 
 @pytest.fixture(scope="module")
