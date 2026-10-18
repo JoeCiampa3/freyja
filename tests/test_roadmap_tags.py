@@ -24,7 +24,7 @@ sys.path.insert(0, str(REPO / "analysis"))
 import tag_palette as pal  # noqa: E402
 
 INVALID = REPO / "tests" / "fixtures" / "roadmap" / "invalid"
-REGION = ["head", "neck", "torso", "spine", "pelvis", "arm-l", "arm-r", "hand-l", "hand-r", "leg-l", "leg-r", "foot-l", "foot-r", "whole-body"]
+REGION = ["head", "neck", "torso", "spine", "pelvis", "arm", "hand", "leg", "foot", "whole-body"]
 PHASE = ["spec", "sim", "design", "fab", "bench", "integrate"]
 VOCAB = {"namespaces": {"region": {"head": "#0072b2", "arm-l": None, "arm-r": "#d55e00"}, "phase": {"spec": "#009e73", "sim": None}}}
 
@@ -76,6 +76,12 @@ def test_the_palette_arithmetic_matches_known_values():
     assert abs(pal.contrast("#000000", "#ffffff") - 21) < 1e-9
     assert abs(pal.lab("#ffffff")[0] - 100) < 0.01 and abs(pal.lab("#000000")[0]) < 0.01
     assert pal.delta_e("#d55e00", "#009e73", "deutan") < pal.delta_e("#d55e00", "#009e73", "normal")
+
+
+def test_running_the_palette_script_reproduces_the_committed_colours():
+    """Provenance: the committed colours are what analysis/tag_palette.py prints (region's kept values are read back from the file, the rest searched)."""
+    v = real()
+    assert pal.vocabulary_colours(v) == {ns: v[ns] for ns in v}
 
 
 def test_the_palette_search_is_deterministic_and_meets_its_contrast_constraint():
@@ -222,7 +228,7 @@ def test_the_fixture_tags_nodes_from_the_vocabulary_without_warnings_it_did_not_
         none = [n for n in live if not any(t.startswith(ns + ":") for t in n.tags)]
         values = {t.split(":", 1)[1] for n in have for t in n.tags if t.startswith(ns + ":")}
         assert 0.3 * len(live) < len(have) < 0.9 * len(live), (ns, len(have))  # some nodes carry none, so the grey fallback is exercised
-        assert none and len(values) >= (10 if ns == "region" else 5), (ns, sorted(values))
+        assert none and len(values) >= len(real()[ns]) // 2, (ns, sorted(values))  # half the vocabulary, so it holds however many values the file has
     assert all(len([t for t in n.tags if t.startswith("region:")]) <= 1 and len([t for t in n.tags if t.startswith("phase:")]) <= 1 for n in live)
 
 

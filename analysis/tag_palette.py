@@ -124,12 +124,31 @@ def search(n: int, fixed=(NEUTRAL,), seed: int = SEED, pool: int = 6000, rounds:
     return chosen
 
 
+# Values whose colour is kept from the committed file when a namespace's vocabulary changes (region, brief roadmap-4: the six non-limb values
+# keep the hex chosen for the 14-value vocabulary; only the four bilateral limb values are searched, against these and the grey).
+KEPT = {"region": ["head", "neck", "torso", "spine", "pelvis", "whole-body"]}
+
+
+def vocabulary_colours(vocab: dict) -> dict:
+    """{namespace: {value: hex}} for a vocabulary {namespace: {value: hex or None}} read from tags.yaml: values in KEPT keep the hex in `vocab`,
+    the others are searched, in file order, against the kept colours and NEUTRAL. Reproduces roadmap/tags.yaml."""
+    out = {}
+    for ns, values in vocab.items():
+        kept = {v: values[v] for v in KEPT.get(ns, []) if v in values}
+        new = [v for v in values if v not in kept]
+        found = dict(zip(new, search(len(new), fixed=(NEUTRAL, *kept.values()))))
+        out[ns] = {v: kept.get(v) or found[v] for v in values}
+    return out
+
+
 def main():
-    for name, values in (("phase", ["spec", "sim", "design", "fab", "bench", "integrate"]),
-                         ("region", ["head", "neck", "torso", "spine", "pelvis", "arm-l", "arm-r", "hand-l", "hand-r", "leg-l", "leg-r", "foot-l", "foot-r", "whole-body"])):
-        colours = search(len(values))
-        print(f"# {name}: smallest separation {min_separation([*colours, NEUTRAL]):.1f} (goal {DELTA_E_MIN[name]}), smallest contrast {min(map(min_contrast, colours)):.2f}")
-        for v, c in zip(values, colours):
+    import pathlib
+    import yaml
+    vocab = yaml.safe_load((pathlib.Path(__file__).resolve().parent.parent / "roadmap" / "tags.yaml").read_text(encoding="utf-8"))["namespaces"]
+    for name, colours in vocabulary_colours(vocab).items():
+        cols = list(colours.values())
+        print(f"# {name}: smallest separation {min_separation([*cols, NEUTRAL]):.1f} (goal {DELTA_E_MIN[name]}), smallest contrast {min(map(min_contrast, cols)):.2f}")
+        for v, c in colours.items():
             print(f"{v}: \"{c}\"")
 
 

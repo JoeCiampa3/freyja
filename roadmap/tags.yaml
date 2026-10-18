@@ -1,6 +1,6 @@
 # The roadmap's controlled tag vocabulary. Authored; Joe owns the values (CONVENTIONS section 2). Schema: docs/schemas/roadmap-tags-1.schema.json.
 #
-# A node tag is free (no colon: never checked) or namespaced (`region:arm-l`). A namespaced tag must name a namespace and value listed
+# A node tag is free (no colon: never checked) or namespaced (`region:arm`). A namespaced tag must name a namespace and value listed
 # here, or the roadmap has an error; a node carrying two values of one namespace draws a warning. A value's colour is optional (null).
 #
 # The colours were chosen by `python analysis/tag_palette.py` and are checked by tests/test_roadmap_tags.py: each keeps 3:1 contrast with
@@ -14,14 +14,10 @@ namespaces:
     torso: "#9155ac"
     spine: "#7e6a2e"
     pelvis: "#cc6add"
-    arm-l: "#c13357"
-    arm-r: "#5f7088"
-    hand-l: "#e462b3"
-    hand-r: "#21a51d"
-    leg-l: "#ad20c8"
-    leg-r: "#2e775d"
-    foot-l: "#9f03fb"
-    foot-r: "#4b78f7"
+    arm: "#5b7081"
+    hand: "#18a825"
+    leg: "#a75359"
+    foot: "#6797b3"
     whole-body: "#bf835e"
   phase:
     spec: "#9029fa"
