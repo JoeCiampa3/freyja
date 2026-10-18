@@ -10,4 +10,4 @@ done_when:
   type: decision
   record: decisions/0002-anthropometric-basis.md
 ---
-Backfill. The values stay in the sheet (one home per quantity); the record states the decision and the rejected options, including the retired MakeHuman-authoritative framing (sheet, 2026-09).
+Records the basis the sheet already uses. The values stay in the sheet (one home per quantity); the record states the decision and the rejected options, including the retired MakeHuman-authoritative framing (sheet, 2026-09).
