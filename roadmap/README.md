@@ -248,6 +248,7 @@ Namespaced tags (`namespace:value`) are checked against `roadmap/tags.yaml`; an 
 - **Actuators lead.** The lower-limb actuators under selection set the electrical architecture, not the reverse. The power and comms architecture records wait on the hip and knee architecture records, and no actuator-selection leaf waits on them; a selection is checked against the architecture when it is made, and a joint that wants a different voltage gets local conversion.
 - **Amend or supersede.** A record that later work only refines (the sensor set, the power budget, the provisional design rules) is amended, so its leaf stays passed. A record whose change invalidates what was built on it (the hip architecture, the bus voltage) is superseded, which reopens its leaf and blocks everything that waits on it.
 - **Trial course.** Acceptance is an out-and-back along a ceiling rail with a turn at the far end, not a single straight 10 m, because the available run is shorter; the protocol record (0033) fixes the leg lengths and how the walked distance is counted against the root. That record supersedes the candidate acceptance test in section 7.
+- **Stage 3 split.** Stage 3a builds the system model (`thread/`: records, stamps, generated dossiers) under `rm.v1-ariadne-system-model`; Stage 3b builds the CAD bridge that writes into it, so `rm.v1-bridge-tooling` waits on `rm.v1-thread-store` and the 3b brief on `rm.v1-thread-core`. The system model is Ariadne-track work: it is the product's data, not repo tooling.
 
 ## 8. How nodes are decomposed
 
