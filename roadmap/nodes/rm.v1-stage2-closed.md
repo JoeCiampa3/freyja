@@ -4,7 +4,7 @@ id: rm.v1-stage2-closed
 title: "Stage 2 decisions applied, loads regenerated once at the final snapshot, and the repo tagged stage2-closed"
 short: Stage 2 closed
 parent: rm.v1-ariadne-walk-loads
-blocked_by: [rm.v1-knee-load-basis, rm.v1-hip-stop-pelvis-pose, rm.v1-toe-joint-decided, rm.v1-trunk-modes-decided, rm.v1-rom-gaps-filled]
+blocked_by: [rm.v1-knee-load-basis, rm.v1-hip-stop-pelvis-pose, rm.v1-toe-joint-decided, rm.v1-trunk-modes-decided, rm.v1-rom-gaps-filled, rm.v1-toe-in-model]
 estimate_days: 2.0
 tags: ["region:whole-body", "phase:sim", "stage2"]
 done_when:
