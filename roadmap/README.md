@@ -4,7 +4,7 @@ The Freyja v1 roadmap: a machine-checked graph of small, verifiable goals.
 
 This is the cold-start document for anyone picking the roadmap up with no prior context (Joe, a Claude chat, Claude Code). Read it fully before authoring or changing anything here.
 
-Written 2026-10-17, at the end of the tooling phase. Briefs 1 to 3 are built and accepted (brief 3 added short labels, the tag vocabulary and colour-by-tag; see memo16). `roadmap/nodes/` is empty. Authoring the real roadmap starts next.
+Written 2026-10-17, at the end of the tooling phase. Briefs 1 to 3 are built and accepted (brief 3 added short labels, the tag vocabulary and colour-by-tag; see memo16). Authoring the real roadmap began the same day: the committed files in `roadmap/nodes/` are the record of what exists, and `roadmap/STATUS.md` is the generated summary.
 
 **Reading order for a fresh session:** this file, then `docs/OVERVIEW.md` for project context, `CONVENTIONS.md` sections 2, 3 and 9, `docs/STATE.md`, and the newest memo in `docs/memos/` (memo16 at the time of writing).
 
