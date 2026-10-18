@@ -221,13 +221,26 @@ A phase-based first layer (sim, design, fab, bench) was rejected because no phas
 
 Namespaced tags (`namespace:value`) are checked against `roadmap/tags.yaml`; an unknown namespace or value is an error naming the node and tag. Free tags (no colon) pass unchecked. A node should carry at most one value per namespace (two is a warning). Superseded nodes are tag-checked too. Initial namespaces: `region` (head, neck, torso, spine, pelvis, arm-l, arm-r, hand-l, hand-r, leg-l, leg-r, foot-l, foot-r, whole-body) and `phase` (spec, sim, design, fab, bench, integrate). Joe owns the values.
 
-### Open decisions (not yet confirmed by Joe)
+### Decisions (confirmed by Joe, 2026-10-17 to 18)
 
-- **Upper-body hardware in v1.** Proposal: actuated shoulders and elbows for arm swing; hands as mass dummies on final interfaces; the head as a mount with harness routing but no vision.
-- **Cognitive architecture** sits outside this tree under the scope rule (the acceptance test does not need it). Proposal: it runs as its own track with its own roadmap later.
-- **Sector titles** are working drafts and may be refined during decomposition.
-- **Which branches are near-term** (Joe names them; those are decomposed to leaf level first).
-- **Existing frozen decisions** (hip, knee, yaw, cable, structure, anthropometry) should appear as done nodes whose `done_when` points at the existing decision record, rather than being redone. Check that each record's format satisfies the `decision` criterion.
+- **Upper-body hardware in v1.** As proposed: actuated shoulders and elbows for arm swing; hands as mass dummies on final interfaces; the head as a mount with harness routing but no vision.
+- **Cognitive architecture** stays outside this tree and runs as its own track with its own roadmap later.
+- **Torso.** v1 has one 3-DOF joint at the lumbosacral joint, unlocked and actuated in gait; thoracic and cervical are rigid. v2 aims at a more human gait with more spinal joints. If lumbosacral actuation becomes a sidetrack (`rm.v1-lsj-concept` refutes the abdomen fit), its branch is re-parented to a later version.
+- **Near-term branches**, decomposed to leaf level first: Ariadne (nearest), Muscular, Skeletal, Workshop.
+- **Sizing scope.** Under the hardware rule, actuators and structure are sized for the full design task set (walking at 1.4 to 1.6 m/s, sit-to-stand, stair ascent and descent), although the acceptance test needs only slow walking. Read the scope rule as: work belongs in v1 if the acceptance test needs it or a final interface needs it. The root's wording is to be updated to match.
+- **Frozen decisions.** No decision records existed when authoring began, apart from adr-0001 (toe joint, proposed). Frozen decisions enter as ADR backfill leaves whose `done_when` is the record, not as done nodes, and Joe confirms each is still current before it is written.
+- **Sector titles** remain working drafts.
+
+### Authoring conventions (batches 1 to 3)
+
+- **Sector boundary.** Ariadne holds the pipeline and the trace: the characterization file that goes into a part and the validation record that comes out. The physical sectors hold design, build and qualification. Muscular: actuators, transmissions and their housings. Skeletal: links, frames and passive joint structure. Nervous: drivers, encoders and harness. Sectors are joined by blocking edges, never by the tree.
+- **Loop first.** Detailed design of any part other than the upper arm is blocked by `rm.v1-upper-arm-validated`, so the pipeline is proven on one part before the rest go through it.
+- **Ids** are `rm.v1-<slug>` with no sector prefix, since re-parenting is a one-line edit and the id is permanent.
+- **Decision records** get numbers in node-creation order; the next free number is one above the highest `decisions/NNNN` referenced in `roadmap/nodes/`. Edit a leaf's `done_when` path if records are written in a different order.
+- **Manual criteria** are used where the evaluator cannot read the evidence: git tags, sheet edits, study work with no record format. Joe signs them off.
+- **Tags.** Region values are side-specific, so bilateral parts (designed once, mirrored) carry no region tag until `tags.yaml` gains bilateral values. Free tags `stage2` and `stage3` mark Ariadne stage work.
+- **Batches.** Each batch is reviewed as two tables (interior nodes and stubs; leaves) before any file is written, then delivered as a zip that includes the sector file rewritten without `stub: true`. Every batch is checked against the validator's structural rules before delivery; `fy roadmap validate` is the real test.
+- **Titles carry the question, not the answer.** A title, id or decision-record filename names what is being decided ("Hip actuation architecture recorded"), never the chosen solution; the answer lives in the record (one home per quantity). Solution-specific subtrees are blocked by the decision that chose them. When a decision is reversed, its record becomes `superseded-by` the new one, the leaf pointing at it evaluates `fail` and reopens, everything blocked by it blocks again, and the solution subtree is retired with `superseded_by`. Done nodes downstream do not reopen; that is the reserved `stale` status, not yet built.
 
 ## 8. How nodes are decomposed
 

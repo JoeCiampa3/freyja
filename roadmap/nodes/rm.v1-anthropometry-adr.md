@@ -1,7 +1,7 @@
 ---
 schema: roadmap-node/2
 id: rm.v1-anthropometry-adr
-title: "Anthropometric basis recorded as an accepted ADR: Dumas 2007 female, Harrington hip centre, landmark knee and ankle centres, LJC pelvis origin, residual-mass rule"
+title: "Anthropometric basis recorded as an accepted ADR"
 short: Anthro ADR
 parent: rm.v1-ariadne
 estimate_days: 0.5
