@@ -137,9 +137,9 @@ def test_fy_dispatches_roadmap(fx):
     assert p.returncode == 1 and "parent-cycle" in p.stdout
 
 
-def test_the_repo_itself_validates_as_an_empty_roadmap():
+def test_the_repo_itself_validates_with_zero_errors():
     p = subprocess.run([sys.executable, str(FY), "roadmap", "validate"], capture_output=True, text=True, cwd=REPO)
-    assert p.returncode == 0 and "no nodes" in p.stdout, p.stdout + p.stderr
+    assert p.returncode == 0 and "0 errors" in p.stdout, p.stdout + p.stderr
 
 
 # ---- the hook ---------------------------------------------------------------------------------
