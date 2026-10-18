@@ -1,6 +1,6 @@
 # Memo 17: roadmap brief 4, bilateral region tags
 
-STATE: PLACEHOLDER
+STATE: base 3b7467dc266e | brief architecture sha256:2ecf3ee5c019, ariadne sha256:0a67a27df03a | snapshot sha256:e5cc96ceed7e | tests 1096/1096 | dirty no
 
 ## Decision summary
 
