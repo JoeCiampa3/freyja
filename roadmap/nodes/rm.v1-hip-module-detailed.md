@@ -8,4 +8,4 @@ blocked_by: [rm.v1-b2-selected, rm.v1-hip-yaw-selected, rm.v1-hip-architecture-a
 stub: true
 tags: ["region:pelvis", "phase:design"]
 ---
-Includes the ACH redesign and its open wall defects. Waits on the Ariadne loop being proven on the upper arm.
+Detailed design of the hip actuator modules the architecture record calls for, from a fresh start: earlier hip-module work is an input, not a commitment, and the open choices are pinned down by the decisions this node is blocked by. The pelvis and thigh structure the modules mount in is Skeletal. Waits on the Ariadne loop being proven on the upper arm.

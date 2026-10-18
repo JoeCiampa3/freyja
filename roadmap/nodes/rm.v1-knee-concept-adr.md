@@ -10,4 +10,4 @@ done_when:
   type: decision
   record: decisions/0014-knee-actuation-concept.md
 ---
-Backfill of a frozen decision; Joe confirms it is current before the record is written.
+Open decision: earlier knee work is an input, not a commitment.

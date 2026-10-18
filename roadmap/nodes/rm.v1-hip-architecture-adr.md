@@ -10,4 +10,4 @@ done_when:
   type: decision
   record: decisions/0010-hip-actuation-architecture.md
 ---
-Backfill of a frozen decision; Joe confirms it is current before the record is written. The answer lives in the record, not in this title.
+Open decision: earlier hip-module work is an input, not a commitment. The answer lives in the record, not in this title.

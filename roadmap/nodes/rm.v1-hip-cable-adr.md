@@ -11,4 +11,4 @@ done_when:
   type: decision
   record: decisions/0011-hip-cable-transmission.md
 ---
-Backfill. Cable type and size are not locked and stay out of the record's decision until they are.
+Open decision, blocked by the architecture it depends on. Cable type and size are not locked and stay out of the record's decision until they are.
