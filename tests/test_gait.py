@@ -82,7 +82,7 @@ def test_two_runs_are_byte_identical_and_md_is_under_the_line_cap(tmp_path):
     out = []
     for name in ("a", "b"):
         res = gait.run_gait(spec, gait_dir=tmp_path / name, now=dt.datetime(2026, 10, 12, 10, 0))
-        out.append((res.json_path.read_bytes(), res.md_path.read_bytes()))
+        out.append((res.json_path.read_bytes(), res.md_path.read_bytes() + res.speed_md_paths["1.4"].read_bytes()))  # the shared file and the speed's file
     assert out[0] == out[1]
     import json
     fe = json.loads(out[0][0])["results"]["1.4"]["rigid"]["feasibility"]
@@ -91,7 +91,7 @@ def test_two_runs_are_byte_identical_and_md_is_under_the_line_cap(tmp_path):
     assert b"Polygon test by band" in out[0][1]
     # Stage 2e T4: the feasibility bins are bins of the stride (frame k of 100), not of each foot's stance; the heading says so
     assert b"by stride-phase bin" in out[0][1] and b"stance-foot phase" not in out[0][1]
-    assert out[0][1].count(b"\n") <= gait.MAX_LINES
+    assert res.md_path.read_bytes().count(b"\n") <= gait.MAX_LINES and res.speed_md_paths["1.4"].read_bytes().count(b"\n") <= gait.MAX_LINES
     assert b"Camargo" in out[0][1].split(b"\n", 6)[2] or b"Camargo" in out[0][1][:1500]  # attribution in the header
 
 
@@ -208,8 +208,8 @@ def test_render_md_takes_the_trunk_mode_order_from_the_spec_not_from_the_stored_
         fresh["sensitivity"][kind] = {str(v): {m: {sp: ordered(d) for sp, d in stored["sensitivity"][kind][str(v)][m].items()} for m in order}
                                       for v in stored["spec"]["sensitivity"][key]}
     assert list(stored["sensitivity"]["cutoff_hz"]) != list(fresh["sensitivity"]["cutoff_hz"])  # sorted as strings: '10' before '4'
-    assert gait.render_md(stored) == gait.render_md(fresh)
-    cols = next(l for l in gait.render_md(stored).splitlines() if l.startswith("| joint | B "))
+    assert gait.render_files(stored) == gait.render_files(fresh)  # the shared file and every per-speed file
+    cols = next(l for l in gait.render_files(stored)["GAIT-1p4.md"].splitlines() if l.startswith("| joint | B "))
     assert cols.index("B " + gait.TRUNK_SHORT[order[0]]) < cols.index("B " + gait.TRUNK_SHORT[order[1]])
 
 
@@ -285,7 +285,7 @@ def test_the_record_gives_every_statistic_and_the_band_without_the_pitch_flagged
     st = d["joints"]["knee_right"]["A_filtered"]["peak_torque_nm"]
     assert set(st) == {"all", "without_offset", "without_pitch_flagged"}
     assert set(d["band"]["A_filtered"]) == {"all", "without_offset", "without_pitch_flagged"}
-    md = (tmp_path / next(p.name for p in tmp_path.iterdir()) / "GAIT.md").read_text(encoding="utf-8")
+    md = (tmp_path / next(p.name for p in tmp_path.iterdir()) / "GAIT-1p4.md").read_text(encoding="utf-8")
     assert "Pitch-flagged subjects (kept" in md and "AB07" in md.split("Pitch-flagged subjects", 1)[1][:400]
     assert "without pitch flagged" in md  # the band row has its third verdict
 
@@ -320,36 +320,41 @@ def test_the_walk_spec_adds_the_acceptance_speed_and_changes_nothing_else():
 
 
 @pytest.mark.skipif(not PROCESSED.exists(), reason="processed Camargo arrays not present")
-def test_a_record_with_the_acceptance_speed_is_finite_ordered_and_under_the_line_cap(tmp_path):
+def test_a_three_speed_record_is_a_shared_file_and_one_file_per_speed_each_under_the_cap(tmp_path):
     import json
     spec = gait.load_spec("walk_treadmill")
-    spec.update({"subjects": ["AB06"], "stride_cap_per_subject": 1, "speeds_mps": [0.5, 1.4]})
+    spec.update({"subjects": ["AB06"], "stride_cap_per_subject": 1, "speeds_mps": [0.5, 1.4, 1.6]})
     spec["sensitivity"] = {"cutoffs_hz": [6], "pitch_offsets_deg": [0], "stride_cap_per_subject": 1}
     res = gait.run_gait(spec, gait_dir=tmp_path, now=dt.datetime(2026, 10, 12, 10, 0))
     rec = json.loads(res.json_path.read_text(encoding="utf-8"))
-    assert list(rec["results"]) == ["0.5", "1.4"] and len(rec["subjects"]) == 1
-    for sp in ("0.5", "1.4"):
+    assert list(rec["results"]) == ["0.5", "1.4", "1.6"] and len(rec["subjects"]) == 1
+    for sp in ("0.5", "1.4", "1.6"):
         d = rec["results"][sp]["rigid"]
         assert d["n_strides"] == 1 and rec["subjects"]["AB06"]["strides"][sp] == 2  # one stride, two trunk modes
         for j, by_method in d["joints"].items():
             for m, stats in by_method.items():
                 assert np.isfinite(stats["peak_torque_nm"]["all"]["max"]), (sp, j, m)
-    md = res.md_path.read_text(encoding="utf-8")
-    assert md.index("## 0.5 m/s") < md.index("## 1.4 m/s")
-    assert md.count("\n") <= gait.MAX_LINES and "(truncated at" not in md
+    assert sorted(p.name for p in res.md_path.parent.glob("GAIT*.md")) == ["GAIT-0p5.md", "GAIT-1p4.md", "GAIT-1p6.md", "GAIT.md"]
+    assert set(res.speed_md_paths) == {"0.5", "1.4", "1.6"}
+    shared = res.md_path.read_text(encoding="utf-8")
+    assert "## 0.5 m/s" not in shared and all(f"GAIT-{t}.md" in shared for t in ("0p5", "1p4", "1p6"))  # the shared file points at the per-speed files
+    assert "## Band" in shared and all(f"| {sp} |" in shared.split("## Band", 1)[1].split("\n## ", 1)[0] for sp in ("0.5", "1.4", "1.6"))  # the band table has every speed
+    for sp, path in res.speed_md_paths.items():
+        text = path.read_text(encoding="utf-8")
+        assert f"## {sp} m/s" in text and "Assumptions:" not in text and "(truncated at" not in text and text.count("\n") <= gait.MAX_LINES
+    assert shared.count("\n") <= gait.MAX_LINES and "(truncated at" not in shared
 
 
-@pytest.mark.xfail(strict=True, reason="Stage 2f finding: the three-speed record renders to 543 lines against gait.MAX_LINES = 399, so the third speed is cut off; "
-                   "Joe decides the layout (memo 21). Remove this marker when GAIT.md fits.")
-def test_the_line_cap_is_not_what_hides_a_speed():
-    """The renderer truncates at MAX_LINES. A record of the walk spec's three speeds must render in full: every speed's heading is present."""
+def test_every_file_of_the_newest_three_speed_record_fits_the_cap_untruncated():
+    """Stage 2f D2: the shared GAIT.md and each GAIT-<speed>.md are under gait.MAX_LINES, so no speed is cut off (the old single file was 543 lines)."""
     import json
     rec_path = max((REPO / "sim" / "gait").glob("*/gait.json"), key=lambda p: p.parent.name, default=None)
     if rec_path is None:
         pytest.skip("no gait record on this machine")
     rec = json.loads(rec_path.read_text(encoding="utf-8"))
     if len(rec["results"]) < 3:
-        pytest.skip("the newest record on this machine predates 0.5 m/s")
-    md = gait.render_md(rec)
-    assert "(truncated at" not in md and md.count("\n") <= gait.MAX_LINES
-    assert all(f"## {sp} m/s" in md for sp in rec["results"])
+        pytest.skip("the newest record on this machine predates the 0.5 m/s layout")
+    files = gait.render_files(rec)
+    assert set(files) == {"GAIT.md"} | {f"GAIT-{gait.speed_tag(sp)}.md" for sp in rec["results"]}
+    for name, text in files.items():
+        assert "(truncated at" not in text and text.count("\n") <= gait.MAX_LINES, name

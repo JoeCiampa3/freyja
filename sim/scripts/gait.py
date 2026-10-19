@@ -10,7 +10,8 @@ retargets the kinematics onto Freyja (retarget.py) and computes joint loads thre
 
     python sim/scripts/gait.py <spec>          (or: fy gait <spec>)
 
-Writes sim/gait/<id>/gait.json (schema docs/schemas/gait-summary-1.schema.json, untracked) and a generated GAIT.md (tracked).
+Writes sim/gait/<id>/gait.json (schema docs/schemas/gait-summary-1.schema.json, untracked) a generated GAIT.md (tracked: header, band table of every
+speed, sensitivity) and one GAIT-<speed>.md per speed (tracked), each under MAX_LINES.
 Both are deterministic: no timestamps beyond the id, sorted keys, fixed rounding. No pass or fail on agreement yet.
 """
 from __future__ import annotations
@@ -83,7 +84,8 @@ class GaitError(ValueError):
 class GaitResult:
     record: dict
     json_path: Path
-    md_path: Path
+    md_path: Path  # the shared GAIT.md
+    speed_md_paths: dict = None  # speed -> its GAIT-<speed>.md
 
 
 # ------------------------------------------------------------------------------ pure arithmetic (tested on synthetic input)
@@ -602,9 +604,14 @@ def run_gait(spec: dict, *, model_path=None, snapshot_path=None, meta_path=None,
     jp, mp = out_dir / "gait.json", out_dir / "GAIT.md"
     with open(jp, "w", encoding="utf-8", newline="\n") as f:
         f.write(runrecord.dumps(record))
-    with open(mp, "w", encoding="utf-8", newline="\n") as f:
-        f.write(render_md(record))
-    return GaitResult(record, jp, mp)
+    speed_paths = {}
+    for name, text in render_files(record).items():
+        path = out_dir / name
+        with open(path, "w", encoding="utf-8", newline="\n") as f:
+            f.write(text)
+        if name != "GAIT.md":
+            speed_paths[name[len("GAIT-"):-len(".md")].replace("p", ".")] = path
+    return GaitResult(record, jp, mp, speed_paths)
 
 
 # ------------------------------------------------------------------------------ baseline (T6)
@@ -719,7 +726,135 @@ def _in_model_order(names):
     return sorted(names, key=lambda j: order.index(j) if j in order else len(order))
 
 
+def speed_tag(speed) -> str:
+    """0.5 -> 0p5 (the file and load-case naming of the repo: `lc.walk-1p4`)."""
+    return str(speed).replace(".", "p")
+
+
+def speed_file_name(speed) -> str:
+    return f"GAIT-{speed_tag(speed)}.md"
+
+
+def _band_lines(rec: dict, modes: list) -> list:
+    """## Band: A_filtered, A_native, B and H against the dataset's moments, every speed, both limbs pooled, the band stems, then the verdict per exclusion set."""
+    methods = [m for m in METHODS_ALL if m in next(iter(next(iter(rec["results"].values()))[modes[0]]["joints"].values()))]
+    cols = _method_cols(modes, methods)
+    L = ["", "## Band: correlation / RMS % of the dataset's peak-to-peak, both limbs pooled, mean over strides", "",
+         f"Band to meet: correlation >= {BAND_CORR} and RMS <= {BAND_RMS_PCT:.0f}% of the dataset's peak-to-peak, for each of {', '.join(BAND_STEMS)}. A row that misses is a finding, not a failure of the run.", "",
+         "| m/s | stem | " + " | ".join(c[0] for c in cols) + " |", "|---|---|" + "---|" * len(cols)]
+    for speed, by_mode in rec["results"].items():
+        by_mode = {m: by_mode[m] for m in modes}
+        d0 = by_mode[modes[0]]
+        if not d0["agreement"]:
+            continue
+        for stem in BAND_STEMS:
+            L.append(f"| {speed} | {stem} | " + " | ".join("{:.2f} / {:.0f}%".format(*_pooled(by_mode[x], m, stem)) for _, m, x in cols) + " |")
+        ks = ("all", "without_offset") + (("without_pitch_flagged",) if d0.get("n_strides_without_pitch_flagged") is not None else ())
+        L.append(f"| {speed} | meets ({' / '.join(k.replace('_', ' ') for k in ks)}) | " + " | ".join(
+            " / ".join("yes" if by_mode[x]["band"][m][k]["meets"] else "no" for k in ks) for _, m, x in cols) + " |")
+    return L
+
+
+def _speed_lines(rec: dict, speed: str) -> list:
+    """The body of one speed's file: its heading and every table of it."""
+    sp = rec["spec"]
+    modes = trunk_modes(sp)  # the spec's order, not the stored key order (a stored record has sorted keys)
+    L = []
+    by_mode = rec["results"][speed]
+    by_mode = {m: by_mode[m] for m in modes}
+    d0 = by_mode[modes[0]]
+    methods = [m for m in METHODS_ALL if m in next(iter(d0["joints"].values()))]  # a stored record has sorted keys
+    cols = _method_cols(list(by_mode), methods)
+    leg = [j for j in _in_model_order(d0["joints"]) if j not in EXTRA_JOINTS]
+    hdr = "| joint | " + " | ".join(c[0] for c in cols) + " |"
+    sep = "|---|" + "---|" * len(cols)
+    L += ["", f"## {speed} m/s ({d0['n_strides']} strides per trunk mode, {d0['n_strides_without_offset']} without the offset subjects)", "",
+          "### Peak joint torque, N m", "", hdr, sep]
+    for j in leg:
+        L.append(f"| {j} | " + " | ".join(_cell(by_mode[x]["joints"][j][m]["peak_torque_nm"]["all"]) for _, m, x in cols) + " |")
+    L += ["", "95th-percentile peak torque without the offset subjects, N m:", "", hdr, sep]
+    for j in leg:
+        L.append(f"| {j} | " + " | ".join(f"{by_mode[x]['joints'][j][m]['peak_torque_nm']['without_offset']['p95']:.1f}" for _, m, x in cols) + " |")
+    if d0["bound"]:
+        dif = lambda x, j: by_mode[x]["bound"][j]["all"]["p95"] - by_mode[x]["joints"][j]["B"]["peak_torque_nm"]["all"]["p95"]
+        L += ["", "Double-support bound minus nominal B, 95th-percentile peak torque, N m (min to max over leg joints): "
+              + "; ".join(f"{_short(x)} {min(dif(x, j) for j in leg):+.1f} to {max(dif(x, j) for j in leg):+.1f}" for x in by_mode) + "."]
+    L += ["", "### Joints above the pelvis, peak torque N m (same for every method; by trunk mode)", "", "| joint | " + " | ".join(by_mode) + " |", "|---|" + "---|" * len(by_mode)]
+    for j in EXTRA_JOINTS:
+        L.append(f"| {j} | " + " | ".join(_cell(by_mode[x]["joints"][j]["B"]["peak_torque_nm"]["all"]) for x in by_mode) + " |")
+    L += ["", "### 95th-percentile peak power, W: positive / regeneration (magnitude of the most negative)", "", hdr, sep]
+    for j in leg:
+        L.append(f"| {j} | " + " | ".join(f"{by_mode[x]['joints'][j][m]['peak_power_pos_w']['all']['p95']:.0f} / {by_mode[x]['joints'][j][m]['peak_regeneration_w']['all']['p95']:.0f}" for _, m, x in cols) + " |")
+    L += ["", "### Peak joint speed, rad/s (kinematics: the same for every method and trunk mode)", "", "| joint | all | w/o offset |", "|---|---|---|"]
+    for j in leg:
+        sd = d0["joints"][j]["B"]["peak_speed_rad_s"]
+        L.append(f"| {j} | {_cell(sd['all'], 2)} | {_cell(sd['without_offset'], 2)} |")
+    L += ["", "### Root residual left by each method (mean over strides)", "",
+          "| method | force rms % BW | force peak % BW | horizontal moment rms N m | horizontal moment peak | vertical moment rms | vertical moment peak |", "|---|---|---|---|---|---|---|"]
+    for m in methods:
+        for x in by_mode:
+            rd = by_mode[x]["residual"][m]
+            g = lambda k: f"{rd[k]['all']['mean']:.2f}"
+            L.append(f"| {m} {_short(x)} | {g('force_rms_pct_bw')} | {g('force_peak_pct_bw')} | {g('moment_h_rms_nm')} | {g('moment_h_peak_nm')} | {g('yaw_rms_nm')} | {g('yaw_peak_nm')} |")
+    if d0["agreement"]:
+        stems = [j[:-6] for j in _in_model_order(d0["agreement"]["B"]) if j.endswith("_right")]
+        L += ["", "### Agreement with the dataset's joint moments: correlation / RMS % of peak-to-peak, both limbs pooled, mean over strides", "", hdr.replace("joint", "stem"), sep]
+        for stem in stems:
+            L.append(f"| {stem}{' (band)' if stem in BAND_STEMS else ''} | " + " | ".join("{:.2f} / {:.0f}%".format(*_pooled(by_mode[x], m, stem)) for _, m, x in cols) + " |")
+        ks = ("all", "without_offset") + (("without_pitch_flagged",) if d0.get("n_strides_without_pitch_flagged") is not None else ())
+        L.append(f"| meets the band ({' / '.join(k.replace('_', ' ') for k in ks)}) | " + " | ".join(
+            " / ".join("yes" if by_mode[x]["band"][m][k]["meets"] else "no" for k in ks) for _, m, x in cols) + " |")
+        if len(ks) == 3:
+            flagged = ", ".join(sp["pitch_flag_subjects"])
+            worst = lambda m, x: max(((abs(by_mode[x]["joints"][j][m]["peak_torque_nm"]["without_pitch_flagged"]["p95"] - by_mode[x]["joints"][j][m]["peak_torque_nm"]["all"]["p95"]), j) for j in leg))
+            L += ["", f"Pitch-flagged subjects (kept; the IK pelvis pitch and the pelvic markers disagree on the static-to-walking change by more than {PITCH_FLAG_DEG:g} deg): {flagged}; "
+                  f"{d0['n_strides_without_pitch_flagged']} of {d0['n_strides']} strides remain without them. Largest change of a leg joint's 95th-percentile peak torque without them, N m: "
+                  + "; ".join(f"{lab} {worst(m, x)[0]:.1f} ({worst(m, x)[1]})" for lab, m, x in cols) + "."]
+    if d0["feasibility"]:
+        pc = lambda v: "-" if v is None else f"{100 * v:.1f}%"
+        f1 = lambda v: "-" if v is None else f"{1000 * v:.0f}"
+        L += ["", "### Feasibility of method B: single-support CoP in its foot's polygon, double-support total CoP in the hull of the two", ""]
+        for x in by_mode:
+            fe = by_mode[x]["feasibility"]
+            e, r = fe.get("single_support_cop_error_mean_xy_m"), fe.get("single_support_cop_error_rms_xy_m")
+            L.append(f"{_short(x)}: {fe['support_frames']} support frames, outside {pc(fe['cop_outside_fraction'])} (single {pc(fe.get('cop_outside_fraction_single_support'))}, "
+                     f"double {pc(fe.get('cop_outside_fraction_double_support'))}); friction above mu {pc(fe['friction_exceeded_fraction'])}; degenerate polygon {pc(fe['hull_degenerate_fraction'])} of single support; "
+                     + (f"single-support CoP error vs measured mean ({1000 * e[0]:.0f}, {1000 * e[1]:.0f}) mm, rms ({1000 * r[0]:.0f}, {1000 * r[1]:.0f}) mm; " if e else "")
+                     + (f"double-support share error rms {fe['double_support_share_error_rms']:.2f}." if "double_support_share_error_rms" in fe else ""))
+            L.append("")
+        L += ["Polygon test by band: rate outside % (median / 95th-percentile outside distance, mm), B beside the measured CoP on Freyja's feet:", "",
+              "| band mm | support | " + " | ".join(f"B {_short(x)}" for x in by_mode) + " | measured |", "|---|---|" + "---|" * (len(by_mode) + 1)]
+        rate = lambda z: "-" if z["outside_fraction"] is None else f"{100 * z['outside_fraction']:.1f} ({f1(z['median_outside_m'])} / {f1(z['p95_outside_m'])})"
+        for b in d0["feasibility"]["polygon"]["B"]:
+            for key in ("single", "double"):
+                L.append(f"| {1000 * float(b):.0f} | {key} | " + " | ".join(rate(by_mode[x]["feasibility"]["polygon"]["B"][b][key]) for x in by_mode)
+                         + f" | {rate(d0['feasibility']['polygon']['measured'][b][key])} |")
+        L += ["", "CoP outside % by stride-phase bin (B), bins of 10% of the stride (frame k of 100, frames with either foot in stance), not of each foot's own stance: 0-10 ... 90-100"]
+        for x in by_mode:
+            L.append(f"{_short(x)}: " + " | ".join(_f(None if v is None else 100 * v) for v in by_mode[x]["feasibility"]["cop_outside_by_phase_bin"]))
+    L += [""]
+    for x in by_mode:
+        fo = by_mode[x]["force"]
+        tp = by_mode[x]["trunk_peak_deg"]
+        L.append(f"Total ground force against the measured one, like for like, {_short(x)}: vertical peak ratio {fo['vert_peak_ratio']['all']['mean']:.2f} (corr {fo['vert_corr']['all']['mean']:.2f}), "
+                 f"fore-aft ptp ratio {fo['ap_ptp_ratio']['all']['mean']:.2f} ({fo['ap_corr']['all']['mean']:.2f}), lateral {fo['lat_ptp_ratio']['all']['mean']:.2f} ({fo['lat_corr']['all']['mean']:.2f}); "
+                 "peak lumbosacral angle deg (mean / p95 / max): " + "; ".join(f"{j} {_cell(tp[j]['all'])}" for j in TRUNK_ANGLE_JOINTS) + " (unlimited, not clipped).")
+        L.append("")
+    h = d0["hip_extension"]
+    L += [f"Peak hip extension against the model's {h['stop_deg']:.1f} deg stop: median {h['median_deg']:.1f}, 95th percentile {h['p95_deg']:.1f}, maximum {h['max_deg']:.1f} deg; "
+          f"{100 * h['fraction_beyond_stop']:.0f}% of strides go beyond it (a finding for the Joint ROM sheet's functional-demand column, not clipped)."]
+    k = d0["kinematics"]
+    if k:
+        f = k["foot"]
+        L += ["", f"Kinematics: strides with a wrap gap above {k['wrap_gap_flag_deg']:.0f} deg in any joint: {k['wrap_gap_flagged_strides']} (flagged, kept). "
+              f"Stance penetration {1000 * f['stance_penetration_max_m']['all']['mean']:.1f} mm mean, float {1000 * f['stance_float_max_m']['all']['mean']:.1f} mm, "
+              f"swing clearance minimum {1000 * f['swing_clearance_min_m']['all']['mean']:.1f} mm, stance slip rms {f['stance_slip_rms_mps']['all']['mean']:.2f} m/s. "
+              "Mean fraction of frames outside the model limit: " + ", ".join(f"{j} {100 * v:.1f}%" for j, v in ((j, k["limit_fraction_mean"][j]) for j in _in_model_order(k["limit_fraction_mean"])) if v > 0) + "."]
+    return L
+
+
 def render_md(rec: dict) -> str:
+    """The shared GAIT.md: header, assumptions, subjects, the band table for every speed, the per-speed files and the sensitivity runs."""
     sp = rec["spec"]
     modes = trunk_modes(sp)  # the spec's order, not the stored key order (a stored record has sorted keys)
     L = [f"<!-- {GENERATED.format(snap=rec['snapshot_sha256'][:12], name=sp['name'])} -->", "",
@@ -735,96 +870,8 @@ def render_md(rec: dict) -> str:
     L += ["## Subjects (mass kg, height m, leg-length ratio, strides at " + " / ".join(str(x) for x in sp["speeds_mps"]) + ")", ""]
     items = [f"{n} {d['mass_kg']:.0f} {d['height_m']:.2f} {d['leg_length_ratio']:.2f} " + "/".join(str(d["strides"][str(x)]) for x in sp["speeds_mps"]) for n, d in rec["subjects"].items()]
     L += ["; ".join(items[i:i + 4]) for i in range(0, len(items), 4)]
-    for speed, by_mode in rec["results"].items():
-        by_mode = {m: by_mode[m] for m in modes}
-        d0 = by_mode[modes[0]]
-        methods = [m for m in METHODS_ALL if m in next(iter(d0["joints"].values()))]  # a stored record has sorted keys
-        cols = _method_cols(list(by_mode), methods)
-        leg = [j for j in _in_model_order(d0["joints"]) if j not in EXTRA_JOINTS]
-        hdr = "| joint | " + " | ".join(c[0] for c in cols) + " |"
-        sep = "|---|" + "---|" * len(cols)
-        L += ["", f"## {speed} m/s ({d0['n_strides']} strides per trunk mode, {d0['n_strides_without_offset']} without the offset subjects)", "",
-              "### Peak joint torque, N m", "", hdr, sep]
-        for j in leg:
-            L.append(f"| {j} | " + " | ".join(_cell(by_mode[x]["joints"][j][m]["peak_torque_nm"]["all"]) for _, m, x in cols) + " |")
-        L += ["", "95th-percentile peak torque without the offset subjects, N m:", "", hdr, sep]
-        for j in leg:
-            L.append(f"| {j} | " + " | ".join(f"{by_mode[x]['joints'][j][m]['peak_torque_nm']['without_offset']['p95']:.1f}" for _, m, x in cols) + " |")
-        if d0["bound"]:
-            dif = lambda x, j: by_mode[x]["bound"][j]["all"]["p95"] - by_mode[x]["joints"][j]["B"]["peak_torque_nm"]["all"]["p95"]
-            L += ["", "Double-support bound minus nominal B, 95th-percentile peak torque, N m (min to max over leg joints): "
-                  + "; ".join(f"{_short(x)} {min(dif(x, j) for j in leg):+.1f} to {max(dif(x, j) for j in leg):+.1f}" for x in by_mode) + "."]
-        L += ["", "### Joints above the pelvis, peak torque N m (same for every method; by trunk mode)", "", "| joint | " + " | ".join(by_mode) + " |", "|---|" + "---|" * len(by_mode)]
-        for j in EXTRA_JOINTS:
-            L.append(f"| {j} | " + " | ".join(_cell(by_mode[x]["joints"][j]["B"]["peak_torque_nm"]["all"]) for x in by_mode) + " |")
-        L += ["", "### 95th-percentile peak power, W: positive / regeneration (magnitude of the most negative)", "", hdr, sep]
-        for j in leg:
-            L.append(f"| {j} | " + " | ".join(f"{by_mode[x]['joints'][j][m]['peak_power_pos_w']['all']['p95']:.0f} / {by_mode[x]['joints'][j][m]['peak_regeneration_w']['all']['p95']:.0f}" for _, m, x in cols) + " |")
-        L += ["", "### Peak joint speed, rad/s (kinematics: the same for every method and trunk mode)", "", "| joint | all | w/o offset |", "|---|---|---|"]
-        for j in leg:
-            sd = d0["joints"][j]["B"]["peak_speed_rad_s"]
-            L.append(f"| {j} | {_cell(sd['all'], 2)} | {_cell(sd['without_offset'], 2)} |")
-        L += ["", "### Root residual left by each method (mean over strides)", "",
-              "| method | force rms % BW | force peak % BW | horizontal moment rms N m | horizontal moment peak | vertical moment rms | vertical moment peak |", "|---|---|---|---|---|---|---|"]
-        for m in methods:
-            for x in by_mode:
-                rd = by_mode[x]["residual"][m]
-                g = lambda k: f"{rd[k]['all']['mean']:.2f}"
-                L.append(f"| {m} {_short(x)} | {g('force_rms_pct_bw')} | {g('force_peak_pct_bw')} | {g('moment_h_rms_nm')} | {g('moment_h_peak_nm')} | {g('yaw_rms_nm')} | {g('yaw_peak_nm')} |")
-        if d0["agreement"]:
-            stems = [j[:-6] for j in _in_model_order(d0["agreement"]["B"]) if j.endswith("_right")]
-            L += ["", "### Agreement with the dataset's joint moments: correlation / RMS % of peak-to-peak, both limbs pooled, mean over strides", "", hdr.replace("joint", "stem"), sep]
-            for stem in stems:
-                L.append(f"| {stem}{' (band)' if stem in BAND_STEMS else ''} | " + " | ".join("{:.2f} / {:.0f}%".format(*_pooled(by_mode[x], m, stem)) for _, m, x in cols) + " |")
-            ks = ("all", "without_offset") + (("without_pitch_flagged",) if d0.get("n_strides_without_pitch_flagged") is not None else ())
-            L.append(f"| meets the band ({' / '.join(k.replace('_', ' ') for k in ks)}) | " + " | ".join(
-                " / ".join("yes" if by_mode[x]["band"][m][k]["meets"] else "no" for k in ks) for _, m, x in cols) + " |")
-            if len(ks) == 3:
-                flagged = ", ".join(sp["pitch_flag_subjects"])
-                worst = lambda m, x: max(((abs(by_mode[x]["joints"][j][m]["peak_torque_nm"]["without_pitch_flagged"]["p95"] - by_mode[x]["joints"][j][m]["peak_torque_nm"]["all"]["p95"]), j) for j in leg))
-                L += ["", f"Pitch-flagged subjects (kept; the IK pelvis pitch and the pelvic markers disagree on the static-to-walking change by more than {PITCH_FLAG_DEG:g} deg): {flagged}; "
-                      f"{d0['n_strides_without_pitch_flagged']} of {d0['n_strides']} strides remain without them. Largest change of a leg joint's 95th-percentile peak torque without them, N m: "
-                      + "; ".join(f"{lab} {worst(m, x)[0]:.1f} ({worst(m, x)[1]})" for lab, m, x in cols) + "."]
-        if d0["feasibility"]:
-            pc = lambda v: "-" if v is None else f"{100 * v:.1f}%"
-            f1 = lambda v: "-" if v is None else f"{1000 * v:.0f}"
-            L += ["", "### Feasibility of method B: single-support CoP in its foot's polygon, double-support total CoP in the hull of the two", ""]
-            for x in by_mode:
-                fe = by_mode[x]["feasibility"]
-                e, r = fe.get("single_support_cop_error_mean_xy_m"), fe.get("single_support_cop_error_rms_xy_m")
-                L.append(f"{_short(x)}: {fe['support_frames']} support frames, outside {pc(fe['cop_outside_fraction'])} (single {pc(fe.get('cop_outside_fraction_single_support'))}, "
-                         f"double {pc(fe.get('cop_outside_fraction_double_support'))}); friction above mu {pc(fe['friction_exceeded_fraction'])}; degenerate polygon {pc(fe['hull_degenerate_fraction'])} of single support; "
-                         + (f"single-support CoP error vs measured mean ({1000 * e[0]:.0f}, {1000 * e[1]:.0f}) mm, rms ({1000 * r[0]:.0f}, {1000 * r[1]:.0f}) mm; " if e else "")
-                         + (f"double-support share error rms {fe['double_support_share_error_rms']:.2f}." if "double_support_share_error_rms" in fe else ""))
-                L.append("")
-            L += ["Polygon test by band: rate outside % (median / 95th-percentile outside distance, mm), B beside the measured CoP on Freyja's feet:", "",
-                  "| band mm | support | " + " | ".join(f"B {_short(x)}" for x in by_mode) + " | measured |", "|---|---|" + "---|" * (len(by_mode) + 1)]
-            rate = lambda z: "-" if z["outside_fraction"] is None else f"{100 * z['outside_fraction']:.1f} ({f1(z['median_outside_m'])} / {f1(z['p95_outside_m'])})"
-            for b in d0["feasibility"]["polygon"]["B"]:
-                for key in ("single", "double"):
-                    L.append(f"| {1000 * float(b):.0f} | {key} | " + " | ".join(rate(by_mode[x]["feasibility"]["polygon"]["B"][b][key]) for x in by_mode)
-                             + f" | {rate(d0['feasibility']['polygon']['measured'][b][key])} |")
-            L += ["", "CoP outside % by stride-phase bin (B), bins of 10% of the stride (frame k of 100, frames with either foot in stance), not of each foot's own stance: 0-10 ... 90-100"]
-            for x in by_mode:
-                L.append(f"{_short(x)}: " + " | ".join(_f(None if v is None else 100 * v) for v in by_mode[x]["feasibility"]["cop_outside_by_phase_bin"]))
-        L += [""]
-        for x in by_mode:
-            fo = by_mode[x]["force"]
-            tp = by_mode[x]["trunk_peak_deg"]
-            L.append(f"Total ground force against the measured one, like for like, {_short(x)}: vertical peak ratio {fo['vert_peak_ratio']['all']['mean']:.2f} (corr {fo['vert_corr']['all']['mean']:.2f}), "
-                     f"fore-aft ptp ratio {fo['ap_ptp_ratio']['all']['mean']:.2f} ({fo['ap_corr']['all']['mean']:.2f}), lateral {fo['lat_ptp_ratio']['all']['mean']:.2f} ({fo['lat_corr']['all']['mean']:.2f}); "
-                     "peak lumbosacral angle deg (mean / p95 / max): " + "; ".join(f"{j} {_cell(tp[j]['all'])}" for j in TRUNK_ANGLE_JOINTS) + " (unlimited, not clipped).")
-            L.append("")
-        h = d0["hip_extension"]
-        L += [f"Peak hip extension against the model's {h['stop_deg']:.1f} deg stop: median {h['median_deg']:.1f}, 95th percentile {h['p95_deg']:.1f}, maximum {h['max_deg']:.1f} deg; "
-              f"{100 * h['fraction_beyond_stop']:.0f}% of strides go beyond it (a finding for the Joint ROM sheet's functional-demand column, not clipped)."]
-        k = d0["kinematics"]
-        if k:
-            f = k["foot"]
-            L += ["", f"Kinematics: strides with a wrap gap above {k['wrap_gap_flag_deg']:.0f} deg in any joint: {k['wrap_gap_flagged_strides']} (flagged, kept). "
-                  f"Stance penetration {1000 * f['stance_penetration_max_m']['all']['mean']:.1f} mm mean, float {1000 * f['stance_float_max_m']['all']['mean']:.1f} mm, "
-                  f"swing clearance minimum {1000 * f['swing_clearance_min_m']['all']['mean']:.1f} mm, stance slip rms {f['stance_slip_rms_mps']['all']['mean']:.2f} m/s. "
-                  "Mean fraction of frames outside the model limit: " + ", ".join(f"{j} {100 * v:.1f}%" for j, v in ((j, k["limit_fraction_mean"][j]) for j in _in_model_order(k["limit_fraction_mean"])) if v > 0) + "."]
+    L += ["", "## Files by speed", ""] + [f"- {sp_} m/s: `{speed_file_name(sp_)}`" for sp_ in rec["results"]]
+    L += _band_lines(rec, modes)
     s = rec["sensitivity"]
     L += ["", f"## Sensitivity: 95th-percentile peak torque of method B, N m ({s['stride_cap_per_subject']} strides per subject)"]
     for speed in rec["results"]:
@@ -836,9 +883,31 @@ def render_md(rec: dict) -> str:
                 if j in EXTRA_JOINTS:
                     continue
                 L.append(f"| {j} | " + " | ".join(f"{s[kind][v][x][speed][j]:.1f}" for v in vs for x in ms) + " |")
+    return _cap(L)
+
+
+def _cap(L: list) -> str:
     if len(L) > MAX_LINES:
         L = L[:MAX_LINES - 1] + [f"(truncated at {MAX_LINES} lines)"]
     return "\n".join(L) + "\n"
+
+
+def render_speed_md(rec: dict, speed: str) -> str:
+    """One speed's file, GAIT-<speed>.md: the tables of that speed. Definitions, assumptions and the band table of every speed are in GAIT.md."""
+    sp = rec["spec"]
+    modes = trunk_modes(sp)
+    L = [f"<!-- {GENERATED.format(snap=rec['snapshot_sha256'][:12], name=sp['name'])} -->", "",
+         f"# Gait loads: {sp['name']}, {speed} m/s", "", rec["attribution"], "",
+         f"Run `{rec['gait_id']}`, commit `{rec['git_commit'][:12]}`{' (dirty)' if rec['git_dirty'] else ''}, model `{rec['model_sha256'][:12]}`, "
+         f"spec `{rec['spec_sha256'][:12]}`, dataset manifest `{rec['dataset_manifest_sha256'][:12]}`.", "",
+         "Cells are mean / 95th percentile / maximum across subject-strides. The assumptions, the definitions of the methods and columns, the band and the band table "
+         "of every speed are in `GAIT.md`. Trunk mode columns: " + ", ".join(f"{_short(m)} = {m}" for m in modes) + "."]
+    return _cap(L + _speed_lines(rec, speed))
+
+
+def render_files(rec: dict) -> dict:
+    """{file name: text}: the shared GAIT.md and one GAIT-<speed>.md per speed of the record."""
+    return {"GAIT.md": render_md(rec), **{speed_file_name(sp_): render_speed_md(rec, sp_) for sp_ in rec["results"]}}
 
 
 # ------------------------------------------------------------------------------ command line
