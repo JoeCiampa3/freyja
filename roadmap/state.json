@@ -2340,8 +2340,8 @@
       "estimate_days": 2.0,
       "evaluation": {
         "measured": null,
-        "reason": "data/falls/sources.md does not exist and its directory data/falls is missing",
-        "result": "unknown"
+        "reason": "data/falls/sources.md does not exist yet",
+        "result": "awaiting"
       },
       "kind": "leaf",
       "parent": "rm.v1-ariadne-fall-loads",
@@ -6527,16 +6527,5 @@
       }
     ]
   },
-  "warnings": [
-    {
-      "code": "criterion-unknown",
-      "ids": [
-        "rm.v1-fall-sources"
-      ],
-      "message": "roadmap/nodes/rm.v1-fall-sources.md: node rm.v1-fall-sources cannot be evaluated: data/falls/sources.md does not exist and its directory data/falls is missing",
-      "paths": [
-        "roadmap/nodes/rm.v1-fall-sources.md"
-      ]
-    }
-  ]
+  "warnings": []
 }
