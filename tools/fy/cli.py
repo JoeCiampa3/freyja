@@ -14,7 +14,7 @@ CONVENTIONS.md, so it works from any directory.
     fy view <scenario> [--set k=v] [--speed x]   watch a scenario live in the MuJoCo viewer
     fy runs list|show|compare|digest|envelope   read run records; digest and envelope write sim/runs/*.md
     fy roadmap validate|build|show|frontier|refs|open|fixture|notify|serve|install-hooks   the roadmap graph (tools/roadmap)
-    fy thread fixture|impact ...         the system model: records, work status, impact (tools/thread)
+    fy thread validate|build|show|impact|why|stamp|fixture   the system model: records, work status, impact (tools/thread)
 """
 from __future__ import annotations
 
@@ -144,7 +144,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("state", help="write docs/STATE.md (--no-run skips the tests and checks)", add_help=False)
     sub.add_parser("view", help="watch a scenario in the MuJoCo viewer", add_help=False)
     sub.add_parser("roadmap", help="the roadmap graph: validate, build, show, frontier, refs, open, fixture, install-hooks", add_help=False)
-    sub.add_parser("thread", help="the system model: records, work status, impact, fixture", add_help=False)
+    sub.add_parser("thread", help="the system model: validate, build, show, impact, why, stamp, fixture", add_help=False)
     sub.add_parser("runs", help="list, show and compare run records; write the digest and envelope", add_help=False)
     chk = sub.add_parser("check", help="run the model checks")
     chk.add_argument("--tier", choices=("gate", "advisory"), help="only results of this tier")
