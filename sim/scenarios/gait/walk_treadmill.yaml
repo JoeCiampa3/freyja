@@ -1,9 +1,9 @@
-# walk_treadmill: level treadmill walking at 1.4 and 1.6 m/s from the Camargo et al. 2021 dataset, loads computed on Freyja's own
+# walk_treadmill: level treadmill walking at 0.5 (v1's acceptance speed; Stage 2f), 1.4 and 1.6 m/s (the sizing speeds) from the Camargo et al. 2021 dataset, loads computed on Freyja's own
 # mass distribution three ways (B, A, H; see docs/briefs/stage2-brief.md). Authored. `fy gait walk_treadmill` runs every
 # subject-stride and writes sim/gait/<id>/gait.json (untracked) and GAIT.md.
 name: walk_treadmill
 dataset: {manifest: data/camargo2021/manifest.json, processed: data/camargo2021/processed}
-speeds_mps: [1.4, 1.6]
+speeds_mps: [0.5, 1.4, 1.6]
 subjects: null                  # null = every subject in the manifest
 stride_cap_per_subject: null    # null = all strides; otherwise the first N of each subject
 methods: [B, A_native, A_filtered, H]

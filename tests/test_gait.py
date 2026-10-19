@@ -296,3 +296,60 @@ def test_the_spec_lists_only_subjects_that_exist():
     manifest = json.loads((REPO / spec["dataset"]["manifest"]).read_text(encoding="utf-8"))
     for key in ("offset_subjects", "pitch_flag_subjects"):
         assert set(spec.get(key, [])) <= set(manifest["subjects"]), key
+
+
+# ------------------------------------------------------------------------------ Stage 2f: 0.5 m/s, v1's acceptance speed
+
+def test_the_walk_spec_adds_the_acceptance_speed_and_changes_nothing_else():
+    import json
+    import yaml
+    spec = gait.load_spec("walk_treadmill")
+    assert spec["speeds_mps"] == [0.5, 1.4, 1.6]
+    ingest = yaml.safe_load((REPO / "data" / "camargo2021" / "ingest_spec.yaml").read_text(encoding="utf-8"))
+    manifest = json.loads((REPO / spec["dataset"]["manifest"]).read_text(encoding="utf-8"))
+    assert set(spec["speeds_mps"]) <= set(ingest["speeds_mps"])  # a speed the gait run asks for was ingested
+    for sp in spec["speeds_mps"]:
+        assert all(s["strides"][str(sp)] > 0 for s in manifest["subjects"].values()), sp
+    # everything the Stage 2f brief leaves alone
+    assert spec["methods"] == ["B", "A_native", "A_filtered", "H"] and spec["trunk"] == ["rigid", "counter_rotate"]
+    assert spec["smoothing"] == {"cutoff_hz": 6.0} and spec["root_rule"] == "pelvis_dataset" and spec["root_reference"] == "hip_midpoint"
+    assert spec["pitch_mean"] == "measured" and spec["pelvis_pitch_offset_deg"] == 0.0 and spec["cop_mode"] == "hip_reference" and spec["cop_scale"] == 1.0
+    assert spec["offset_subjects"] == ["AB13", "AB15"] and spec["pitch_flag_subjects"] == ["AB07", "AB12", "AB18", "AB19"]
+    assert spec["sensitivity"] == {"cutoffs_hz": [4, 6, 10, 15], "pitch_offsets_deg": [-5, 0, 5], "stride_cap_per_subject": 4}
+    assert (gait.BAND_CORR, gait.BAND_RMS_PCT, gait.BAND_STEMS) == (0.9, 15.0, ("hip_fe", "knee", "ankle_pdflex"))
+
+
+@pytest.mark.skipif(not PROCESSED.exists(), reason="processed Camargo arrays not present")
+def test_a_record_with_the_acceptance_speed_is_finite_ordered_and_under_the_line_cap(tmp_path):
+    import json
+    spec = gait.load_spec("walk_treadmill")
+    spec.update({"subjects": ["AB06"], "stride_cap_per_subject": 1, "speeds_mps": [0.5, 1.4]})
+    spec["sensitivity"] = {"cutoffs_hz": [6], "pitch_offsets_deg": [0], "stride_cap_per_subject": 1}
+    res = gait.run_gait(spec, gait_dir=tmp_path, now=dt.datetime(2026, 10, 12, 10, 0))
+    rec = json.loads(res.json_path.read_text(encoding="utf-8"))
+    assert list(rec["results"]) == ["0.5", "1.4"] and len(rec["subjects"]) == 1
+    for sp in ("0.5", "1.4"):
+        d = rec["results"][sp]["rigid"]
+        assert d["n_strides"] == 1 and rec["subjects"]["AB06"]["strides"][sp] == 2  # one stride, two trunk modes
+        for j, by_method in d["joints"].items():
+            for m, stats in by_method.items():
+                assert np.isfinite(stats["peak_torque_nm"]["all"]["max"]), (sp, j, m)
+    md = res.md_path.read_text(encoding="utf-8")
+    assert md.index("## 0.5 m/s") < md.index("## 1.4 m/s")
+    assert md.count("\n") <= gait.MAX_LINES and "(truncated at" not in md
+
+
+@pytest.mark.xfail(strict=True, reason="Stage 2f finding: the three-speed record renders to 543 lines against gait.MAX_LINES = 399, so the third speed is cut off; "
+                   "Joe decides the layout (memo 21). Remove this marker when GAIT.md fits.")
+def test_the_line_cap_is_not_what_hides_a_speed():
+    """The renderer truncates at MAX_LINES. A record of the walk spec's three speeds must render in full: every speed's heading is present."""
+    import json
+    rec_path = max((REPO / "sim" / "gait").glob("*/gait.json"), key=lambda p: p.parent.name, default=None)
+    if rec_path is None:
+        pytest.skip("no gait record on this machine")
+    rec = json.loads(rec_path.read_text(encoding="utf-8"))
+    if len(rec["results"]) < 3:
+        pytest.skip("the newest record on this machine predates 0.5 m/s")
+    md = gait.render_md(rec)
+    assert "(truncated at" not in md and md.count("\n") <= gait.MAX_LINES
+    assert all(f"## {sp} m/s" in md for sp in rec["results"])
