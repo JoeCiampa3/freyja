@@ -6,6 +6,6 @@ short: Rig built
 parent: rm.v1-trial-rig
 blocked_by: [rm.v1-trial-rig-concept, rm.v1-process-plan, rm.v1-shop-sorted]
 stub: true
-tags: ["phase:fab"]
+tags: ["region:whole-body", "phase:fab"]
 ---
 Built and load-tested in place, at the rated arrest load with margin using the dummy mass, before the robot is ever hung from it.

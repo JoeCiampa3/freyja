@@ -6,5 +6,5 @@ short: UA characterized
 parent: rm.v1-upper-arm-trace
 blocked_by: [rm.v1-elbow-load-basis, rm.v1-bridge-tooling, rm.v1-envelope-method]
 stub: true
-tags: ["stage3"]
+tags: ["region:arm", "stage3"]
 ---

@@ -6,5 +6,6 @@ short: Safety chain
 parent: rm.v1-metabolic
 blocked_by: [rm.v1-power-architecture, rm.v1-comms-architecture, rm.v1-bench-estop]
 stub: true
+tags: ["region:whole-body"]
 ---
 The watchdog's signal travels over the comms architecture; the power cut lives here.

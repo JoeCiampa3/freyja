@@ -6,5 +6,5 @@ short: Leg trial
 parent: rm.v1-limb-trials
 blocked_by: [rm.v1-hip-joint-trial, rm.v1-knee-joint-trial, rm.v1-ankle-joint-trial, rm.v1-trial-rig-built, rm.v1-sensors-qualified, rm.v1-toe-actuation]
 stub: true
-tags: ["phase:integrate"]
+tags: ["region:leg", "phase:integrate"]
 ---

@@ -6,5 +6,5 @@ short: Sensors
 parent: rm.v1-nervous
 blocked_by: [rm.v1-sensor-set]
 stub: true
-tags: ["phase:bench"]
+tags: ["region:whole-body", "phase:bench"]
 ---

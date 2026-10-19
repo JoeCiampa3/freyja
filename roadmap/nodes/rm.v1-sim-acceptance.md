@@ -6,6 +6,6 @@ short: Sim acceptance
 parent: rm.v1-mind
 blocked_by: [rm.v1-ariadne-mass-closure, rm.v1-actuator-models, rm.v1-sensor-models, rm.v1-state-estimation, rm.v1-balance, rm.v1-gait, rm.v1-operator-interface, rm.v1-stack-on-target, rm.v1-acceptance-protocol]
 stub: true
-tags: ["phase:sim"]
+tags: ["region:whole-body", "phase:sim"]
 ---
 Waits on CAD masses because passing on the anthropometric model does not verify Freyja. The pass is against the acceptance protocol record (Trials), the same course and thresholds the body trials use.

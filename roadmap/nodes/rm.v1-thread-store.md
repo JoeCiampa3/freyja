@@ -9,5 +9,6 @@ estimate_days: 2.0
 tags: ["stage3"]
 done_when:
   type: manual
+signed_off: true
 ---
 Stage 3a Part B, ending at Checkpoint B. Parts, interfaces and work items enter with the upper arm in Stage 3b. Manual until the roadmap can read the thread's state.

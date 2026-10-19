@@ -5,7 +5,7 @@ title: "The seven Joint ROM values memo12 lists as missing are sourced and enter
 short: ROM gaps
 parent: rm.v1-ariadne-walk-loads
 estimate_days: 1.0
-tags: ["phase:spec", "stage2"]
+tags: ["region:whole-body", "phase:spec", "stage2"]
 done_when:
   type: manual
 ---

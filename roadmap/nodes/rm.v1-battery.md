@@ -6,5 +6,5 @@ short: Battery
 parent: rm.v1-metabolic
 blocked_by: [rm.v1-power-budget, rm.v1-power-architecture, rm.v1-volume-extracted]
 stub: true
-tags: ["phase:bench"]
+tags: ["region:whole-body", "phase:bench"]
 ---

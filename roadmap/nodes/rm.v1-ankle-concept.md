@@ -5,7 +5,7 @@ title: "Ankle actuation concept chosen and recorded: actuated DOF, mechanism, pl
 short: Ankle concept
 parent: rm.v1-ankle-actuation
 estimate_days: 3.0
-tags: ["phase:spec"]
+tags: ["region:foot", "phase:spec"]
 done_when:
   type: decision
   record: decisions/0016-ankle-actuation-concept.md

@@ -6,7 +6,7 @@ short: Knee map
 parent: rm.v1-ariadne-actuator-map
 blocked_by: [rm.v1-map-method, rm.v1-knee-concept-adr, rm.v1-stage2-closed]
 estimate_days: 1.5
-tags: ["phase:sim"]
+tags: ["region:leg", "phase:sim"]
 done_when:
   type: manual
 ---

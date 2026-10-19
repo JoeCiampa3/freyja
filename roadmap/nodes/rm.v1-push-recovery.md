@@ -6,5 +6,5 @@ short: Push recovery
 parent: rm.v1-whole-body-trials
 blocked_by: [rm.v1-quiet-stance]
 stub: true
-tags: ["phase:integrate"]
+tags: ["region:whole-body", "phase:integrate"]
 ---

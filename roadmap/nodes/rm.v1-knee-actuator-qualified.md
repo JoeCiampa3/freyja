@@ -6,5 +6,5 @@ short: Knee qualified
 parent: rm.v1-knee-actuation
 blocked_by: [rm.v1-knee-actuator-sized, rm.v1-upper-arm-validated, rm.v1-actuator-bench, rm.v1-dmc2-qualified]
 stub: true
-tags: ["phase:bench"]
+tags: ["region:leg", "phase:bench"]
 ---

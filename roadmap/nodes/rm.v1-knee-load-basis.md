@@ -6,7 +6,7 @@ short: Knee basis
 parent: rm.v1-ariadne-walk-loads
 blocked_by: [rm.v1-bsip-reverified]
 estimate_days: 0.5
-tags: ["phase:spec", "stage2"]
+tags: ["region:leg", "phase:spec", "stage2"]
 done_when:
   type: decision
   record: decisions/0003-knee-load-basis.md

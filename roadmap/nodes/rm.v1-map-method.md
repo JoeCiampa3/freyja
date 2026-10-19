@@ -6,7 +6,7 @@ short: Map method
 parent: rm.v1-ariadne-actuator-map
 blocked_by: [rm.v1-actuator-sizing-method]
 estimate_days: 1.5
-tags: ["phase:spec"]
+tags: ["region:whole-body", "phase:spec"]
 done_when:
   type: decision
   record: decisions/0035-actuator-map-method.md

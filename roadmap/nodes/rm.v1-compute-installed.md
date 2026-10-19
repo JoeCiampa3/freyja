@@ -6,6 +6,6 @@ short: Compute
 parent: rm.v1-nervous
 blocked_by: [rm.v1-comms-architecture, rm.v1-power-architecture, rm.v1-compute-selected]
 stub: true
-tags: ["phase:integrate"]
+tags: ["region:whole-body", "phase:integrate"]
 ---
 The hardware is Nervous; the software that runs on it is Mind.

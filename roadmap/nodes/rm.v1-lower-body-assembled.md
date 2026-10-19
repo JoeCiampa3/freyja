@@ -6,5 +6,5 @@ short: Lower assembled
 parent: rm.v1-lower-body-trials
 blocked_by: [rm.v1-leg-trial, rm.v1-lsj-joint-trial, rm.v1-torso-structure, rm.v1-trial-rig-built]
 stub: true
-tags: ["phase:integrate"]
+tags: ["region:leg", "phase:integrate"]
 ---

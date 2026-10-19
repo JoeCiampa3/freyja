@@ -6,5 +6,5 @@ short: UA validated
 parent: rm.v1-upper-arm-trace
 blocked_by: [rm.v1-upper-arm-characterized, rm.v1-fea-route, rm.v1-upper-arm-requirements, rm.v1-upper-arm-designed]
 stub: true
-tags: ["stage3"]
+tags: ["region:arm", "stage3"]
 ---

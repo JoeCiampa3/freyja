@@ -6,4 +6,5 @@ short: FEA studies
 parent: rm.v1-ariadne-validation
 blocked_by: [rm.v1-fea-route]
 stub: true
+tags: ["region:whole-body"]
 ---

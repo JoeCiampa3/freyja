@@ -6,5 +6,5 @@ short: Ankle qualified
 parent: rm.v1-ankle-actuation
 blocked_by: [rm.v1-ankle-concept, rm.v1-actuator-sizing-method, rm.v1-upper-arm-validated, rm.v1-actuator-bench, rm.v1-dmc2-qualified, rm.v1-ankle-actuator-map]
 stub: true
-tags: ["phase:bench"]
+tags: ["region:foot", "phase:bench"]
 ---

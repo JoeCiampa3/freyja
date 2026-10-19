@@ -5,7 +5,7 @@ title: "Method for extracting available volume from the body envelope decided an
 short: Envelope method
 parent: rm.v1-ariadne-body-envelope
 estimate_days: 1.5
-tags: ["phase:spec", "stage3"]
+tags: ["region:whole-body", "phase:spec", "stage3"]
 done_when:
   type: decision
   record: decisions/0007-envelope-extraction.md

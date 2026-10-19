@@ -6,7 +6,7 @@ short: UA designed
 parent: rm.v1-upper-arm-structure
 blocked_by: [rm.v1-elbow-actuator-selected, rm.v1-upper-arm-characterized, rm.v1-upper-arm-requirements, rm.v1-upper-arm-connectors, rm.v1-provisional-design-rules]
 estimate_days: 3.0
-tags: ["phase:design", "stage3"]
+tags: ["region:arm", "phase:design", "stage3"]
 done_when:
   type: manual
 ---

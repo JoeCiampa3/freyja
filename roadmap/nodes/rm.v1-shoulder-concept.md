@@ -5,7 +5,7 @@ title: "Shoulder actuation concept chosen and recorded: actuated DOF for v1 arm 
 short: Shoulder concept
 parent: rm.v1-shoulder-actuation
 estimate_days: 2.0
-tags: ["phase:spec", "stage3"]
+tags: ["region:arm", "phase:spec", "stage3"]
 done_when:
   type: decision
   record: decisions/0025-shoulder-actuation-concept.md

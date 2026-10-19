@@ -6,6 +6,6 @@ short: Joint control
 parent: rm.v1-nervous
 blocked_by: [rm.v1-comms-architecture, rm.v1-power-architecture, rm.v1-actuator-sizing-method, rm.v1-electronics-bench]
 stub: true
-tags: ["phase:bench"]
+tags: ["region:whole-body", "phase:bench"]
 ---
 Where an actuator ships with an integrated driver, this node is the integration and the firmware, not the driver hardware.

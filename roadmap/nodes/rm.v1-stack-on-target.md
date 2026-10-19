@@ -6,6 +6,6 @@ short: On target
 parent: rm.v1-mind
 blocked_by: [rm.v1-compute-selected, rm.v1-control-interface]
 stub: true
-tags: ["phase:sim"]
+tags: ["region:whole-body", "phase:sim"]
 ---
 Where timing margin is measured; a stack that passes on the desktop but misses its rate on the target fails here.

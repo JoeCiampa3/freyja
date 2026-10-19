@@ -6,7 +6,7 @@ short: Elbow map
 parent: rm.v1-ariadne-actuator-map
 blocked_by: [rm.v1-map-method, rm.v1-elbow-load-basis]
 estimate_days: 1.0
-tags: ["phase:sim", "stage3"]
+tags: ["region:arm", "phase:sim", "stage3"]
 done_when:
   type: manual
 ---

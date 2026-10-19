@@ -6,7 +6,7 @@ short: Control loop
 parent: rm.v1-control-sim
 blocked_by: [rm.v1-control-architecture]
 estimate_days: 2.0
-tags: ["phase:sim"]
+tags: ["region:whole-body", "phase:sim"]
 done_when:
   type: manual
 ---

@@ -6,5 +6,5 @@ short: Ankle trial
 parent: rm.v1-joint-trials
 blocked_by: [rm.v1-ankle-actuator-qualified, rm.v1-shank-structure, rm.v1-foot-structure, rm.v1-joint-controllers, rm.v1-safety-chain]
 stub: true
-tags: ["phase:integrate"]
+tags: ["region:foot", "phase:integrate"]
 ---

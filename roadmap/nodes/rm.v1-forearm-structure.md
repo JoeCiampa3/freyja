@@ -6,5 +6,6 @@ short: Forearm and hand
 parent: rm.v1-skeletal
 blocked_by: [rm.v1-upper-arm-validated, rm.v1-volume-extracted]
 stub: true
+tags: ["region:arm"]
 ---
 Its elbow connector is fixed by the upper arm's connector record. Loads follow the elbow load basis (0008); if that record does not cover the forearm, add rm.v1-ariadne-task-loads here.

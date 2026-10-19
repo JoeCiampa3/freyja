@@ -6,5 +6,5 @@ short: Arm trial
 parent: rm.v1-limb-trials
 blocked_by: [rm.v1-shoulder-joint-trial, rm.v1-elbow-joint-trial]
 stub: true
-tags: ["phase:integrate"]
+tags: ["region:arm", "phase:integrate"]
 ---

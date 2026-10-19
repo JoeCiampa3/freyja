@@ -5,7 +5,7 @@ title: "Toe-joint question settled: adr-0001 accepted, with its Decision section
 short: Toe joint
 parent: rm.v1-ariadne-walk-loads
 estimate_days: 0.5
-tags: ["phase:spec", "stage2"]
+tags: ["region:foot", "phase:spec", "stage2"]
 done_when:
   type: decision
   record: decisions/0001-toe-joint.md

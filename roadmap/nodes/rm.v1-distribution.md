@@ -6,5 +6,5 @@ short: Distribution
 parent: rm.v1-metabolic
 blocked_by: [rm.v1-power-architecture]
 stub: true
-tags: ["phase:bench"]
+tags: ["region:whole-body", "phase:bench"]
 ---

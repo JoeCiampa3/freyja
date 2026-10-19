@@ -6,6 +6,6 @@ short: Balance
 parent: rm.v1-mind
 blocked_by: [rm.v1-control-interface]
 stub: true
-tags: ["phase:sim"]
+tags: ["region:whole-body", "phase:sim"]
 ---
 Expanded once the control architecture is recorded.

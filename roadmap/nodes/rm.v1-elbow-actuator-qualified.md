@@ -6,5 +6,5 @@ short: Elbow qualified
 parent: rm.v1-elbow-actuation
 blocked_by: [rm.v1-elbow-actuator-selected, rm.v1-actuator-bench, rm.v1-dmc2-qualified]
 stub: true
-tags: ["phase:bench", "stage3"]
+tags: ["region:arm", "phase:bench", "stage3"]
 ---

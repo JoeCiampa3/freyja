@@ -6,7 +6,7 @@ short: UA requirements
 parent: rm.v1-upper-arm-trace
 blocked_by: [rm.v1-upper-arm-characterized, rm.v1-structural-method]
 estimate_days: 1.0
-tags: ["phase:spec", "stage3"]
+tags: ["region:arm", "phase:spec", "stage3"]
 done_when:
   type: manual
 ---

@@ -6,7 +6,7 @@ short: Elbow selected
 parent: rm.v1-elbow-actuation
 blocked_by: [rm.v1-elbow-load-basis, rm.v1-actuator-sizing-method, rm.v1-elbow-actuator-map]
 estimate_days: 2.0
-tags: ["phase:spec", "stage3"]
+tags: ["region:arm", "phase:spec", "stage3"]
 done_when:
   type: decision
   record: decisions/0018-elbow-actuator.md

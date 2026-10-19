@@ -6,7 +6,7 @@ short: UA connectors
 parent: rm.v1-upper-arm-structure
 blocked_by: [rm.v1-elbow-actuator-selected, rm.v1-upper-arm-requirements, rm.v1-provisional-design-rules, rm.v1-shoulder-concept]
 estimate_days: 1.0
-tags: ["phase:spec", "stage3"]
+tags: ["region:arm", "phase:spec", "stage3"]
 done_when:
   type: decision
   record: decisions/0020-upper-arm-connectors.md

@@ -6,7 +6,7 @@ short: Toe in model
 parent: rm.v1-ariadne-walk-loads
 blocked_by: [rm.v1-toe-joint-decided]
 estimate_days: 2.0
-tags: ["phase:sim", "stage2"]
+tags: ["region:foot", "phase:sim", "stage2"]
 done_when:
   type: manual
 ---

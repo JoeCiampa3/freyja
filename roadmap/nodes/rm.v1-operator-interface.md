@@ -6,6 +6,6 @@ short: Operator
 parent: rm.v1-mind
 blocked_by: [rm.v1-control-architecture]
 stub: true
-tags: ["phase:sim"]
+tags: ["region:whole-body", "phase:sim"]
 ---
 The channel the acceptance protocol's operator velocity command arrives on.

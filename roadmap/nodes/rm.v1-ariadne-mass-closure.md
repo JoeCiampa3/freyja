@@ -6,5 +6,6 @@ short: Mass closure
 parent: rm.v1-ariadne
 blocked_by: [rm.v1-bridge-tooling, rm.v1-ariadne-part-traces]
 stub: true
+tags: ["region:whole-body"]
 ---
 Waits on every part's validated CAD, not only on the bridge: the masses it closes over come from those models.

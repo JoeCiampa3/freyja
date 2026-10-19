@@ -5,7 +5,7 @@ title: "FEA route for v1 parts decided and recorded: tool, how load cases enter,
 short: FEA route
 parent: rm.v1-ariadne-validation
 estimate_days: 1.5
-tags: ["phase:spec", "stage3"]
+tags: ["region:whole-body", "phase:spec", "stage3"]
 done_when:
   type: decision
   record: decisions/0006-fea-route.md

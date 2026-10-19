@@ -6,7 +6,7 @@ short: Knee sized
 parent: rm.v1-knee-actuation
 blocked_by: [rm.v1-actuator-sizing-method, rm.v1-knee-concept-adr, rm.v1-knee-load-basis, rm.v1-stage2-closed, rm.v1-knee-actuator-map]
 estimate_days: 2.0
-tags: ["phase:spec"]
+tags: ["region:leg", "phase:spec"]
 done_when:
   type: decision
   record: decisions/0015-knee-actuator-sizing.md

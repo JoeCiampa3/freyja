@@ -6,5 +6,5 @@ short: Quiet stance
 parent: rm.v1-whole-body-trials
 blocked_by: [rm.v1-whole-body-assembled, rm.v1-lower-body-held-standing, rm.v1-acceptance-protocol]
 stub: true
-tags: ["phase:integrate"]
+tags: ["region:whole-body", "phase:integrate"]
 ---

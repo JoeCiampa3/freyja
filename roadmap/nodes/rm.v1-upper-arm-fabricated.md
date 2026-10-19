@@ -6,6 +6,6 @@ short: UA fabricated
 parent: rm.v1-upper-arm-structure
 blocked_by: [rm.v1-upper-arm-validated, rm.v1-dmc2-qualified, rm.v1-design-rules]
 stub: true
-tags: ["phase:fab", "stage3"]
+tags: ["region:arm", "phase:fab", "stage3"]
 ---
 No functional part is cut before the DMC2 is qualified and the design rules are confirmed against it. If the confirmed rules changed a rule this design used, the design is rechecked first.

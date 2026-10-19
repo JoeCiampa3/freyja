@@ -6,4 +6,5 @@ short: Thermal
 parent: rm.v1-metabolic
 blocked_by: [rm.v1-power-budget]
 stub: true
+tags: ["region:whole-body"]
 ---

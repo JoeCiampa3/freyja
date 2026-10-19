@@ -6,6 +6,6 @@ short: Sensor models
 parent: rm.v1-control-sim
 blocked_by: [rm.v1-sensor-set]
 stub: true
-tags: ["phase:sim"]
+tags: ["region:whole-body", "phase:sim"]
 ---
 Reads the sensor set record (0027); amended with it when the estimator is specified.
