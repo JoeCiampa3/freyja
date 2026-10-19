@@ -18,7 +18,7 @@ from pathlib import Path
 
 import yaml
 
-from . import addr, edges, render
+from . import addr, edges, refs, render
 from . import store as st
 from .store import Issue, error, warning
 
@@ -171,6 +171,8 @@ class Build:
             return addr.hash_value(next((d for d in self.store.decisions if d["path"] == source), None))
         if source.startswith(st.STAMPS_DIR + "/"):
             return addr.hash_value(self._stamp_docs.get(source))
+        if source.startswith("refs/"):
+            return addr.hash_value(self.references.get(source[len("refs/"):]))
         return self.address_hash(a) or "unresolved"
 
     # ---- the run --------------------------------------------------------------------------
@@ -530,6 +532,7 @@ class Build:
             for t in self._consumed_targets.get(wid, ()):
                 involved[t].setdefault(wid, set()).add("consumes")
         self.graph_final = self._graph(self.work)
+        self.references = refs.scan(self.root, recs)
         for id, doc in self.core.items():
             final = dict(doc)
             if recs[id]["kind"] == "work_item":
@@ -545,7 +548,7 @@ class Build:
         paths = {}
         for id in sorted(self.docs):
             paths[f"thread/derived/{id}.json"] = self._src[id]
-            paths[f"thread/dossiers/{id}.md"] = self._src[id]
+            paths[f"thread/dossiers/{id}.md"] = self._src[id] | {f"refs/{id}#"}  # the references are the dossier's alone, not the derived file's
         everything = set().union(*paths.values()) if paths else set()
         paths["thread/graph.json"] = everything
         paths["thread/STATUS.md"] = everything

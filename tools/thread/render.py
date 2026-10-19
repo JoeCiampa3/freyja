@@ -13,6 +13,8 @@ from . import addr, edges
 
 TOOL = "tools/thread (fy thread build)"
 FROM = "thread/records, thread/stamps, decisions, params/snapshot.csv and sim/models/freyja.xml"
+MERMAID_CAP = 25  # nodes in the neighbourhood graph, the record itself included; above it the dossier lists the neighbours instead
+MAX_REFERENCES = 20  # references listed per dossier; the rest are counted
 SHOW_CHARS = 100  # a value in STATUS.md or a dossier is shown at most this long; `fy thread why` shows it whole
 KIND_TITLES = {"segment": "segments", "joint": "joints", "part": "parts", "interface": "interfaces", "load_case": "load cases",
                "harness_run": "harness runs", "work_item": "work items"}
@@ -34,6 +36,29 @@ def shown(value, hash=None) -> str:
     if value is None:
         return f"(not stored, hash {hash})" if hash else "(does not resolve)"
     return f"`{short(value)}`"
+
+
+def neighbourhood(b, id: str):
+    """(nodes, edges) one hop from the record, read from its own document: the authored references, the derived relations, the work items
+    that own or consume it and, for a work item, the records it consumes. Nodes: the record first, then the others sorted. Edges: (from, label, to)."""
+    d = b.docs[id]
+    es = set()
+    for f in REFERENCE_FIELDS:
+        if f in d:
+            for t in (d[f] if isinstance(d[f], list) else [d[f]]):
+                es.add((id, f, t))
+    for n, t in edges.BY_NAME.items():
+        if t.origin == "derived" and n in d:
+            for to in d[n]:
+                es.add((id, n, to))
+    if d["kind"] == "work_item":
+        for t in b._consumed_targets.get(id, ()):
+            es.add((id, "consumes", t))
+    else:
+        for w in d["work"]:
+            es.add((id, "work: " + " and ".join(w["role"]), w["id"]))
+    others = sorted({x for a, _, c in es for x in (a, c)} - {id})
+    return [id] + others, sorted(es)
 
 
 class Context:
@@ -117,6 +142,25 @@ class Context:
         L += ["## Decisions", ""]
         L += [f"- {x['id']} ({x['status']})" for x in d["decisions"]] or ["None."]
         L.append("")
+        L += ["## References", ""]
+        refs = self.b.references.get(id, [])
+        for r in refs[:MAX_REFERENCES]:
+            L.append(f"- `{r['path']}:{r['line']}` {r['text']}")
+        if len(refs) > MAX_REFERENCES:
+            L.append(f"- and {len(refs) - MAX_REFERENCES} more")
+        if not refs:
+            L.append("None.")
+        L += ["", "## Neighbourhood", ""]
+        nodes, es = neighbourhood(self.b, id)
+        if len(nodes) <= MERMAID_CAP:
+            ix = {n: f"n{i}" for i, n in enumerate(nodes)}
+            L += ["```mermaid", "graph LR"]
+            L += [f'  {ix[n]}["{n}"]' for n in nodes]
+            L += [f"  {ix[a]} -->|{label}| {ix[c]}" for a, label, c in es]
+            L += ["```"]
+        else:
+            L += [f"{len(nodes)} nodes (cap {MERMAID_CAP}), listed instead of drawn:", ""]
+            L += [f"- {label}: {self.link(c)}" for a, label, c in es]
         return ("\n".join(L).rstrip("\n") + "\n").encode("utf-8")
 
     def _derived_keys(self, d):
