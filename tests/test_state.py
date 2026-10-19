@@ -206,3 +206,11 @@ def test_briefs_are_listed_recursively_under_docs_briefs(repo):
     section = text.split("## docs/briefs")[1]
     assert "- README.md" in section and "- ariadne/b.md" in section and "- architecture/a.md" in section
     assert section.index("architecture/a.md") < section.index("ariadne/b.md")  # sorted by path
+
+
+def test_the_documented_suite_time_matches_claude_md():
+    import re
+    doc = (Path(__file__).resolve().parents[1] / "sim" / "scripts" / "state.py").read_text(encoding="utf-8").split('"""')[1]
+    claude = (Path(__file__).resolve().parents[1] / "CLAUDE.md").read_text(encoding="utf-8")
+    assert "about six minutes" in doc and "minute and a half" not in doc
+    assert re.search(r"takes about six minutes", claude)
