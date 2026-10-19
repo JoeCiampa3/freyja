@@ -512,3 +512,12 @@ def test_the_defaults_are_the_t3c2_medians_at_each_speed():
     d = retarget.FIRST_HARMONIC_DEFAULTS
     assert d["1.4"]["roll"]["median"] == (0.57, 101.0) and d["1.4"]["yaw"]["median"] == (0.93, 70.0)
     assert d["1.6"]["roll"]["median"] == (0.63, 116.0) and d["1.6"]["yaw"]["median"] == (0.76, 65.0)
+
+
+def test_the_0p5_defaults_are_the_trunk_imu_medians_at_0p5_and_every_walk_speed_has_an_entry():
+    import yaml
+    d = retarget.FIRST_HARMONIC_DEFAULTS
+    assert d["0.5"]["roll"] == {"median": (1.68, -24.0), "q1": (0.69, -118.0), "q3": (2.14, 84.0)}
+    assert d["0.5"]["yaw"] == {"median": (1.25, 29.0), "q1": (1.01, 21.0), "q3": (1.40, 52.0)}
+    spec = yaml.safe_load((Path(__file__).resolve().parents[1] / "sim" / "scenarios" / "gait" / "walk_treadmill.yaml").read_text(encoding="utf-8"))
+    assert {str(s) for s in spec["speeds_mps"]} <= set(d)  # gait_extract indexes the table by speed

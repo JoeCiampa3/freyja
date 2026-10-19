@@ -63,6 +63,11 @@ FIRST_HARMONIC_DEFAULTS = {
             "yaw": {"median": (0.93, 70.0), "q1": (0.67, 53.0), "q3": (1.42, 75.0)}},
     "1.6": {"roll": {"median": (0.63, 116.0), "q1": (0.56, 68.0), "q3": (0.79, 123.0)},
             "yaw": {"median": (0.76, 65.0), "q1": (0.62, 53.0), "q3": (1.30, 80.0)}},
+    # 0.5 m/s (Stage 2f D3), the same command: `python sim/scripts/gait_diag.py trunk-imu --speeds 0.5`. It keeps 15 of 17 subjects, because its default
+    # --min-quality 0 drops the two whose accelerometer alignment correlation is negative on an axis at this speed (the pelvis moves little). The roll
+    # row is poorly determined (gain 1.68 with quartiles 0.69 to 2.14, lag -24 with -118 to 84 deg): a trunk roll amplitude of about 2.7 deg on a pelvis roll of 1.7.
+    "0.5": {"roll": {"median": (1.68, -24.0), "q1": (0.69, -118.0), "q3": (2.14, 84.0)},
+            "yaw": {"median": (1.25, 29.0), "q1": (1.01, 21.0), "q3": (1.40, 52.0)}},
 }
 
 
