@@ -1,6 +1,6 @@
 # Memo 20: Stage 3a follow-up to memo 19
 
-STATE: (filled in by the commit that regenerates docs/STATE.md)
+STATE: base 6f8d350128ec | brief architecture sha256:2ecf3ee5c019, ariadne sha256:8d7d8b12174c | snapshot sha256:e5cc96ceed7e | tests 1332/1332 | dirty no
 
 ## Decision summary
 
