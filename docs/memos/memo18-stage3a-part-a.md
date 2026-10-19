@@ -1,6 +1,6 @@
 # Memo 18: Stage 3a Part A, the system model library
 
-STATE: (filled in by the commit that regenerates docs/STATE.md)
+STATE: base b0eda6ea64f6 | brief architecture sha256:2ecf3ee5c019, ariadne sha256:8d7d8b12174c | snapshot sha256:e5cc96ceed7e | tests 1274/1274 | dirty no
 
 ## Decision summary
 
