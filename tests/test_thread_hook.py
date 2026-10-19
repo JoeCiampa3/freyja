@@ -76,7 +76,7 @@ def test_the_state_line_counts_records_work_items_rework_and_errors(tmp_path):
     from thread import fixture
     sys.path.insert(0, str(REPO / "sim" / "scripts"))
     import state
-    assert state.thread_line(REPO).startswith("Thread: 23 records | 0 work items | rework 0 | errors 0")
+    assert state.thread_line(REPO).startswith("Thread: 24 records | 0 work items | rework 0 | errors 0")
     fixture.generate(tmp_path / "f", 0)
     assert state.thread_line(tmp_path / "f") == "Thread: 45 records | 6 work items | rework 3 | errors 0"
     edit_record(tmp_path / "f", "part.hip.m1", housed_in="seg.nowhere")

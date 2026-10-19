@@ -16,6 +16,7 @@ from thread import build, fixture
 
 JOINTS = {"ankle", "cervicothoracic", "elbow", "hip", "knee", "lumbosacral", "shoulder", "thoracolumbar", "wrist"}
 LOAD_CASES = {"lc.stand-static": {"scenario": "stand_static"},
+              "lc.walk-0p5": {"gait_spec": "walk_treadmill", "condition": "0.5 m/s level treadmill walking"},
               "lc.walk-1p4": {"gait_spec": "walk_treadmill", "condition": "1.4 m/s level treadmill walking"},
               "lc.walk-1p6": {"gait_spec": "walk_treadmill", "condition": "1.6 m/s level treadmill walking"},
               "lc.gravity-hold-rom": {"scenario": "rom_sweep"}}
@@ -62,6 +63,20 @@ def test_the_load_cases_are_proposed_and_do_not_require_an_independent_source(re
     for r in got.values():
         name = r["source"].get("scenario") or r["source"]["gait_spec"]
         assert (REPO / "sim" / "scenarios" / f"{name}.yaml").is_file() or (REPO / "sim" / "scenarios" / "gait" / f"{name}.yaml").is_file(), name
+
+
+def test_the_acceptance_speed_case_says_what_it_is_and_states_no_verdict_and_no_number(real):
+    """Stage 2f D1: lc.walk-0p5 is v1's acceptance speed, not a sizing speed; trust at this speed is carried by the envelope rows' band flags, so the
+    record restates neither the band verdict nor any number."""
+    r = real.recs["lc.walk-0p5"]
+    assert r["status"] == "proposed" and r["independent_source_required"] is False
+    assert "acceptance speed" in r["purpose"] and "not a sizing speed" in r["purpose"] and r["purpose"].count(". ") == 0
+    notes = r["notes"].lower()
+    assert "band flag" in notes and "acceptance speed" in notes and "not a sizing speed" in notes
+    assert "no contact solver" in notes and "inverse dynamics" in notes  # the reasons the other walking cases give
+    assert not any(ch.isdigit() for ch in r["notes"])  # no number
+    for word in ("meets", "misses", "fails", "passes", "outside", "within", "correlation"):
+        assert word not in notes, word  # no verdict
 
 
 def test_no_hardware_records_exist_yet(real):

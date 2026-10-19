@@ -1,0 +1,13 @@
+id: lc.walk-0p5
+independent_source_required: false
+kind: load_case
+notes: 'Not an impact or other contact transient: the loads come from rigid-body inverse dynamics with the ground reaction supplied explicitly
+  (no contact solver), so the simulation''s physics is not the untrusted part. This is the acceptance speed, not a sizing speed. The envelope rows
+  are provisional (method A with the measured centre of pressure); trust at this speed is carried by the band flags on the envelope rows, and
+  that trust stays on those rows and in the load-basis decision records.'
+purpose: Level walking at 0.5 m/s, v1's acceptance speed and not a sizing speed.
+schema: thread-record/1
+source:
+  condition: 0.5 m/s level treadmill walking
+  gait_spec: walk_treadmill
+status: proposed
