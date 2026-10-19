@@ -1,6 +1,6 @@
 # Freyja: orientation for a reader with no prior context
 
-Authored. Owner: Joe. Written 2026-10-11 for a Claude session that has never seen this project. Where this file and `CONVENTIONS.md` disagree, `CONVENTIONS.md` wins. This file describes what is stable; for where the repo is right now, read `docs/STATE.md` and the highest-numbered file in `docs/memos/`. Items marked **(confirm)** are my reading of Joe's intent and should be checked with him before anything depends on them.
+Authored. Owner: Joe. Written 2026-10-11, updated 2026-10-18 (Stage 3a), for a Claude session that has never seen this project. Where this file and `CONVENTIONS.md` disagree, `CONVENTIONS.md` wins. This file describes what is stable; for where the repo is right now, read `docs/STATE.md` and the highest-numbered file in `docs/memos/`. Items marked **(confirm)** are my reading of Joe's intent and should be checked with him before anything depends on them.
 
 ## 1. What Freyja is
 
@@ -9,7 +9,7 @@ Freyja is a biomimetic humanoid android, 170 cm and 65 kg, built by one person (
 Two things shape every engineering decision:
 
 - **The aesthetic envelope is a hard constraint.** Slim legs, specific pelvic dimensions and a 0.68 waist-to-hip ratio are design invariants, more foundational than any single subsystem choice. Mechanisms must fit inside the form; they do not get to reshape it.
-- **Locomotion target:** brisk indoor walking, 1.4 to 1.6 m/s. Running is out of scope. The design envelope also covers sit-to-stand and stair ascent and descent; excess range of motion beyond these is for articulation only.
+- **Locomotion target:** brisk indoor walking, 1.4 to 1.6 m/s. Running is out of scope. The design envelope also covers sit-to-stand and stair ascent and descent; excess range of motion beyond these is for articulation only. v1's acceptance trial walks at 0.5 m/s, but the hardware is sized to the 1.4 to 1.6 m/s target so that v1 does not underbuild the structure.
 
 Joe is a physicist by training and is learning CAD, machining and controls through this project. He is rigorous, checks claims, and has caught real errors (cable tension physics, strain estimates, which load case governs the ankle). Give numbers and sources, say how sure you are, and expect to be verified.
 
@@ -24,14 +24,16 @@ Freyja Anthropometric Reference (Google Sheet, ground truth)
    -> checks/            (gate the build; named, executable, each with a mutation test)
    -> sim/ scenarios     -> sim/runs/*/summary.json -> DIGEST.md, ENVELOPE.md
    -> sim/ gait          -> sim/gait/<id>/GAIT.md      (Stage 2)
-   -> [planned] actuator sizing, load cases, CAD parameters, FEA
+   -> thread/            (system model: one record per segment, joint, load case and, later, part,
+                          interface and work item; generated dossiers; stale work)   (Stage 3a)
+   -> [planned] CAD parameters (Stage 3b bridge), actuator sizing, FEA
 ```
 
 Three goals, in order of maturity:
 
 1. **Documented, traceable, rigorous.** `CONVENTIONS.md` fixes naming, IDs, file kinds and checks so that a file or variable named today is unambiguous in ten years. Every number has a citation or a script that reproduces it.
 2. **A pipeline that feeds itself.** A value changed in the sheet propagates to the model, the sims, the load envelopes and, later, CAD and FEA, with no retyping. Sim results become actuator and part requirements.
-3. **More agency for Claude.** Joe used to be the copy-paste bridge between a chat assistant and his tools. The intended workflow now: a brief is written, committed under `docs/briefs/`, and Claude Code executes it using everything in the repo (run sims, tests, benchmarks) with little supervision, then reports in a memo. Planned extension: the pipeline builds a "characterization" file per part (loads from sim, spatial limits from CAD) that Claude reads, and Claude hands back CAD briefs and parameters. Fusion 360 has a scripting API (`cad/fusion_addin/`, `cad/sidecars/*.json` in the layout); whether CAD and FEA can be automated beyond parameters and export is an open question, not an assumption.
+3. **More agency for Claude.** Joe used to be the copy-paste bridge between a chat assistant and his tools. The intended workflow now: a brief is written, committed under `docs/briefs/`, and Claude Code executes it using everything in the repo (run sims, tests, benchmarks) with little supervision, then reports in a memo. The system model in `thread/` (Stage 3a) is the data layer for the next step: every segment, joint and load case is a record, relations are stored once, and every per-record document (a dossier) is generated, so moving a part between segments is a one-line edit whose consequences are computed. Planned extension: per part, the pipeline adds loads from sim and spatial limits from CAD to what the model derives, Claude reads it and hands back CAD briefs and parameters, and the Stage 3b bridge records what each CAD export consumed so a changed input marks it stale. Fusion 360 has a scripting API (`cad/fusion_addin/`, `cad/sidecars/*.json` in the layout); whether CAD and FEA can be automated beyond parameters and export is an open question, not an assumption.
 
 The simulation-first build order: **simulate to derive loads and envelopes, then select actuators, then build CAD parametrically around the results.** The earlier habit of working the hardware passively is deliberately replaced by this.
 
@@ -41,7 +43,7 @@ The simulation-first build order: **simulate to derive loads and envelopes, then
 - **A Claude chat session (the planning and review side)** discusses, analyses reports and writes briefs. It sees the repo only through a Project copy that Joe refreshes by hand, so it can be stale. `docs/STATE.md` exists so it can tell.
 - **Claude Code (you, probably)** executes a brief: tests first, one commit per task, evidence in the commit message, a memo at each checkpoint.
 
-The loop: Joe and the planning session write `docs/briefs/<stage>-brief.md`; Joe points Code at it; Code works and stops at the stated checkpoint; Code writes `docs/memos/memoN-<slug>.md` opening with the STATE line from `fy state`; Joe and the planning session review; the brief is revised and overwritten; repeat. Joe should never have to paste a report into chat. Put it in the repo.
+The loop: Joe and the planning session write `docs/briefs/<track>/<name>-brief.md`; Joe points Code at it; Code works and stops at the stated checkpoint; Code writes `docs/memos/memoN-<slug>.md` opening with the STATE line from `fy state`; Joe and the planning session review; the brief is revised and overwritten; repeat. Joe should never have to paste a report into chat. Put it in the repo.
 
 Different Claude accounts may do this work. Nothing carries between sessions except what is in the repo. If something you need is not in a file, it is not known: check the memos and `notebook/`, then ask Joe.
 
@@ -67,12 +69,14 @@ Full table: `CONVENTIONS.md` section 2. Where you will spend time:
 | `docs/briefs/` | task specs for Code; Joe overwrites them between rounds |
 | `docs/memos/` | numbered checkpoint reports; the project's narrative |
 | `docs/STATE.md` | generated snapshot of the repo (commit, tests, checks, waivers); `fy state` |
-| `docs/schemas/` | JSON Schemas for run, sweep and gait records |
+| `docs/schemas/` | JSON Schemas for run, sweep, gait, roadmap and thread records |
 | `params/` | generated parameter snapshot |
 | `sim/models/` | `freyja_template.xml` (authored), `freyja.xml` (generated) |
 | `sim/scripts/` | pre-processor, runner, solvers, gait pipeline |
 | `sim/scenarios/` | authored scenario and sweep specs; `scenarios/gait/` for the gait spec and dataset mapping |
 | `sim/runs/`, `sim/sweeps/`, `sim/gait/` | records; `DIGEST.md`, `ENVELOPE.md` and `GAIT.md` are what to read |
+| `thread/` | the system model: authored records in `thread/records/`, stamps in `thread/stamps/`; generated dossiers, derived JSON, `graph.json` and `STATUS.md` (read `STATUS.md` and the dossiers) |
+| `roadmap/` | the v1 roadmap: authored node files in `roadmap/nodes/`, the rest generated; `fy roadmap` |
 | `checks/` | executable checks, joint polarity file, waivers |
 | `analysis/` | scripts that produce numbers entering the sheet or the records |
 | `data/camargo2021/` | the open gait dataset (CC BY 4.0): manifest, audit, attribution; raw files stay outside the repo |
@@ -81,7 +85,7 @@ Full table: `CONVENTIONS.md` section 2. Where you will spend time:
 | `decisions/` | decision records (`adr-NNNN`) with a "rejected options" section |
 | `cad/` | Fusion add-in and sidecars (early) |
 
-`fy` is run as `python tools/fy <command>` (on Windows `tools/fy/fy.cmd` uses the repo `.venv` when present). Commands: `build`, `watch`, `test`, `check`, `run`, `sweep`, `gait`, `view`, `runs list|show|compare|digest|envelope`, `state`.
+`fy` is run as `python tools/fy <command>` (on Windows `tools/fy/fy.cmd` uses the repo `.venv` when present). Commands: `build`, `watch`, `test`, `check`, `run`, `sweep`, `gait`, `view`, `runs list|show|compare|digest|envelope`, `roadmap`, `thread`, `state`.
 
 ## 6. How we got here (stable history)
 
@@ -89,6 +93,7 @@ Full table: `CONVENTIONS.md` section 2. Where you will spend time:
 - **Stage 1, 1b, 1c** (memo 3): every sim run leaves a stamped machine-readable record; a standing pose that actually balances; a gain-independent static solve; posture sweeps; the digest and the envelope.
 - **Stage 2** (memos 4 to 6, `docs/briefs/stage2-brief.md`, closed): walking loads at 1.4 and 1.6 m/s on Freyja's mass distribution, driven by measured human kinematics from the Camargo et al. 2021 dataset, computed three ways (B Freyja's own dynamics, A measured ground force, H a hybrid) and compared with the dataset's own joint moments. Only A with the filtered force meets the agreement band, so the envelope's gait rows rest on it, flagged provisional. B's failure stands as a finding whose cause is unattributed. The brief and the memos are the record of what worked and what did not; read them rather than trusting any summary here.
 - **Stage 2b** (`docs/briefs/stage2b-brief.md`): two checks on numbers from memo 6 that are not yet believed (hip extension, the ankle torque), a tracked gait extract so the envelope reproduces from a clean clone, and wording clean-up.
+- **Stage 3a** (memos 18 and 19, `docs/briefs/ariadne/stage3a-brief.md`): the system model in `thread/`. Records for the 10 segments and 9 joints, each bound to its model bodies or hinges and read from the snapshot, plus proposed load cases; a dependency graph that marks stamped work stale when an input it consumed changes; mass budgets per segment; generated dossiers, rebuilt by the pre-commit hook. Proven on a fixture in which moving a hip actuator from the thigh to the pelvis changes exactly the outputs that depend on it.
 
 ## 7. Hard-won lessons
 
@@ -123,6 +128,13 @@ Blunt, technically dense, peer to peer. Findings first, with the measured number
 - **rigid / counter_rotate / first_harmonic:** the three trunk modes of Stage 2, modelling a locked spine, an actuated lumbosacral roll and yaw, and a human-like reference.
 - **Method A / B / H:** the three Stage 2 ways of computing gait joint loads (measured force at measured CoP; Freyja's own dynamics with a solved CoP; Freyja's force at the measured CoP).
 - **Brief, memo, STATE, ADR:** a task spec for Code; a checkpoint report; the generated repo snapshot; a decision record.
+- **Thread / system model:** the records of Freyja's segments, joints, parts, interfaces, load cases, harness runs and work items, with the relations between them stored once and everything else derived (`thread/`).
+- **Record, binding:** one authored YAML file; a binding ties a segment to its model body and a joint to its hinges and ROM keys.
+- **Load case:** a named design condition (`lc.`), bound to the scenario or gait condition that computes it. `independent_source_required: true` marks a case whose simulation physics is itself untrusted (impacts and other contact transients), so it cannot size anything on simulation alone.
+- **Address:** `<source>#<JSON pointer>`; its hash is 12 hex of the canonical JSON of its value.
+- **Work item, stamp, pinned:** assisted or manual work whose output depends on addresses; a stamp records the hashes it was made against; a pinned stamp makes a difference `drifted` instead of `stale`.
+- **Work status:** `unstamped`, `current`, `stale`, `drifted`, `unknown` (`reverified` is reserved).
+- **Rework queue, impact, budget, dossier:** the stale, drifted and unknown work items with the values that moved; what an address touches; a segment's provision against its claims (mass first); the generated per-record document.
 
 ## 10. Your first session
 
