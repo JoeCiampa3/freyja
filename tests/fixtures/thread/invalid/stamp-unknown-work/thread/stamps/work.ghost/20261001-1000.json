@@ -1,0 +1,15 @@
+{
+  "schema": "thread-stamp/1",
+  "work": "work.ghost",
+  "stamp": "20261001-1000",
+  "consumes": [
+    {
+      "address": "snapshot#/pelvis_mass",
+      "hash": "536549599ec6",
+      "value": "10"
+    }
+  ],
+  "note": "",
+  "pinned": false,
+  "by": "test"
+}

@@ -1,0 +1,7 @@
+schema: thread-record/1
+id: jnt.lumbosacral
+kind: joint
+status: active
+purpose: The lumbosacral joint.
+hinges: [lsj_fe]
+rom_keys: []

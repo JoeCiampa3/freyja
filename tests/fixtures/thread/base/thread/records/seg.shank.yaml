@@ -1,0 +1,7 @@
+schema: thread-record/1
+id: seg.shank
+kind: segment
+status: active
+purpose: The shank, knee to ankle.
+body: shank
+sides: [left, right]

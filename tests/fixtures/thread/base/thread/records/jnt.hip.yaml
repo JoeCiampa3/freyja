@@ -1,0 +1,8 @@
+schema: thread-record/1
+id: jnt.hip
+kind: joint
+status: active
+purpose: The hip joint.
+hinges: [hip_fe]
+rom_keys: [hip_flexion, hip_extension]
+sides: [left, right]

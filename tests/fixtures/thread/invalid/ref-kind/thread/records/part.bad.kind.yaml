@@ -1,0 +1,8 @@
+schema: thread-record/1
+id: "part.bad.kind"
+kind: "part"
+status: "proposed"
+purpose: "A test part."
+housed_in: "jnt.hip"
+mass: {"kg": 0.5, "source": "test", "reserved": true}
+category: "test"

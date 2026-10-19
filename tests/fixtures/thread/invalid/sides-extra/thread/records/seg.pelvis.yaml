@@ -1,0 +1,7 @@
+schema: thread-record/1
+id: "seg.pelvis"
+kind: "segment"
+status: "active"
+purpose: "The pelvis."
+body: "pelvis"
+sides: ["left", "right"]

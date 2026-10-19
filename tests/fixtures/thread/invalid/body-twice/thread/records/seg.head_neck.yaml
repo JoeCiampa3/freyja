@@ -1,0 +1,6 @@
+schema: thread-record/1
+id: "seg.head_neck"
+kind: "segment"
+status: "active"
+purpose: "Head."
+body: "pelvis"

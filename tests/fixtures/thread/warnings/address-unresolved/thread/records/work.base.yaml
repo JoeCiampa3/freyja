@@ -1,0 +1,8 @@
+schema: thread-record/1
+id: "work.base"
+kind: "work_item"
+status: "proposed"
+purpose: "A test work item."
+of: "seg.pelvis"
+mode: "manual"
+consumes: ["snapshot#/nope", "snapshot#/pelvis_mass"]

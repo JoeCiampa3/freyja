@@ -1,0 +1,6 @@
+schema: thread-record/1
+id: "seg.thigh"
+kind: "segment"
+status: "active"
+purpose: "The thigh."
+body: "thigh"

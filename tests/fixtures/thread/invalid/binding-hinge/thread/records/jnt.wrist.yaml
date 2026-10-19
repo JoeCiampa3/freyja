@@ -1,0 +1,7 @@
+schema: thread-record/1
+id: "jnt.wrist"
+kind: "joint"
+status: "active"
+purpose: "The wrist."
+hinges: ["wrist"]
+rom_keys: []

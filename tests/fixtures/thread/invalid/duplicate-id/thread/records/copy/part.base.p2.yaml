@@ -1,0 +1,8 @@
+schema: thread-record/1
+id: part.base.p2
+kind: part
+status: proposed
+purpose: A test controller in the pelvis.
+housed_in: seg.pelvis
+mass: {kg: 2.0, source: test, reserved: true}
+category: electronics

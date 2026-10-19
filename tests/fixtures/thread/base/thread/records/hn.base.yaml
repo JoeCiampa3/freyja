@@ -1,0 +1,7 @@
+schema: thread-record/1
+id: hn.base
+kind: harness_run
+status: proposed
+purpose: A test run.
+path: [seg.pelvis, seg.thigh, seg.shank]
+carries: power

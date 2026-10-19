@@ -1,0 +1,6 @@
+schema: thread-record/1
+id: seg.pelvis
+kind: segment
+status: active
+purpose: The bony pelvis and the soft tissue around it.
+body: pelvis

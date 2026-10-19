@@ -1,0 +1,24 @@
+<mujoco model="tiny">
+  <!-- A hand-written model for the thread tests: a pelvis, a lumbar link, and a right and left leg. -->
+  <worldbody>
+    <body name="pelvis">
+      <joint type="free"/>
+      <body name="abdomen">
+        <joint name="lsj_fe" type="hinge" axis="0 1 0"/>
+      </body>
+      <body name="thigh_right">
+        <joint name="hip_fe_right" type="hinge" axis="0 -1 0"/>
+        <body name="shank_right">
+          <joint name="knee_right" type="hinge" axis="0 1 0"/>
+        </body>
+      </body>
+      <body name="thigh_left">
+        <joint name="hip_fe_left" type="hinge" axis="0 -1 0"/>
+        <body name="shank_left">
+          <joint name="knee_left" type="hinge" axis="0 1 0"/>
+        </body>
+      </body>
+      <body name="forearm_right"/>
+    </body>
+  </worldbody>
+</mujoco>

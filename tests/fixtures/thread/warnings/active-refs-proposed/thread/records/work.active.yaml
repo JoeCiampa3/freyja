@@ -1,0 +1,8 @@
+schema: thread-record/1
+id: "work.active"
+kind: "work_item"
+status: "active"
+purpose: "Active, owned by a proposed part."
+of: "part.base.p1"
+mode: "manual"
+consumes: []

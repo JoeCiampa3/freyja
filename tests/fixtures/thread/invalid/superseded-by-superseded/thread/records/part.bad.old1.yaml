@@ -1,0 +1,9 @@
+schema: thread-record/1
+id: "part.bad.old1"
+kind: "part"
+status: "superseded"
+purpose: "A test part."
+housed_in: "seg.pelvis"
+mass: {"kg": 0.5, "source": "test", "reserved": true}
+category: "test"
+superseded_by: "part.bad.old2"

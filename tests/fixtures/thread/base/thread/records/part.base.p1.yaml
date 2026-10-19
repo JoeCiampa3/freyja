@@ -1,0 +1,11 @@
+schema: thread-record/1
+id: part.base.p1
+kind: part
+status: proposed
+purpose: A test actuator in the thigh.
+housed_in: seg.thigh
+acts_across: jnt.hip
+reacts_into: seg.pelvis
+mass: {kg: 1.5, source: test, reserved: false}
+category: actuator
+sides: [left, right]

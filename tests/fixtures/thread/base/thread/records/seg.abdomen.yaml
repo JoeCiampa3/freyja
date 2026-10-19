@@ -1,0 +1,6 @@
+schema: thread-record/1
+id: seg.abdomen
+kind: segment
+status: active
+purpose: The lumbar and abdominal block above the pelvis.
+body: abdomen

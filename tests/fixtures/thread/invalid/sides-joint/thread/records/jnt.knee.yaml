@@ -1,0 +1,7 @@
+schema: thread-record/1
+id: "jnt.knee"
+kind: "joint"
+status: "active"
+purpose: "The knee."
+hinges: ["knee"]
+rom_keys: ["knee_flexion", "knee_extension"]

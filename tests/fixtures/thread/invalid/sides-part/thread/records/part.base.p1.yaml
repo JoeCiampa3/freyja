@@ -1,0 +1,8 @@
+schema: thread-record/1
+id: "part.base.p1"
+kind: "part"
+status: "proposed"
+purpose: "A test part."
+housed_in: "seg.thigh"
+mass: {"kg": 0.5, "source": "test", "reserved": true}
+category: "test"

@@ -1,0 +1,6 @@
+schema: thread-record/1
+id: "seg.thorax"
+kind: "segment"
+status: "active"
+purpose: "The thorax."
+body: "thorax"

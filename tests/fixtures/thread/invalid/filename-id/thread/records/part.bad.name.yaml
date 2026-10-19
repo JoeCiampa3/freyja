@@ -1,0 +1,8 @@
+schema: thread-record/1
+id: "part.bad.other"
+kind: "part"
+status: "proposed"
+purpose: "A test part."
+housed_in: "seg.pelvis"
+mass: {"kg": 0.5, "source": "test", "reserved": true}
+category: "test"

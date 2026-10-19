@@ -1,0 +1,13 @@
+placeholder,value,sheet_source
+abdomen_mass,2,'T'!A1
+hip_extension,20,'T'!A2
+hip_flexion,120,'T'!A3
+knee_extension,2,'T'!A4
+knee_flexion,140,'T'!A5
+pelvis_length,0.2,'T'!A6
+pelvis_mass,10,'T'!A7
+shank_left_mass,3,'T'!A8
+shank_right_mass,3,'T'!A9
+target_mass,30,'T'!A10
+thigh_left_mass,5,'T'!A11
+thigh_right_mass,5,'T'!A12
