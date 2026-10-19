@@ -243,6 +243,22 @@ def test_the_tracked_extract_exists_validates_and_has_memo6s_lateral_lumbosacral
     assert e["results"]["1.4"]["rigid"]["n_strides"] == 469 and e["results"]["1.6"]["rigid"]["n_strides"] == 519
 
 
+def test_the_tracked_extract_has_the_acceptance_speed_beside_the_sizing_speeds_and_agrees_with_the_manifest_on_disk():
+    """Stage 2f: 0.5 m/s is in the extract (297 strides, A_filtered misses the band at hip and knee, as measured, and meets it at the ankle); the
+    1.4 and 1.6 strides are unchanged; the manifest hash it carries is that of the LF file on disk, so a clean clone reproduces it (D4)."""
+    e = json.loads(TRACKED.read_text(encoding="utf-8"))
+    assert e["spec"]["speeds_mps"] == [0.5, 1.4, 1.6] and set(e["results"]) == {"0.5", "1.4", "1.6"}
+    assert set(e["lumbosacral"]) == set(e["a_filtered_sagittal"]) == set(e["hip_demand"]) == {"0.5", "1.4", "1.6"}
+    assert e["results"]["0.5"]["rigid"]["n_strides"] == 297
+    band = e["results"]["0.5"]["rigid"]["band"]["A_filtered"]["all"]
+    assert band["meets"] is False and band["joints"]["ankle_pdflex"]["meets"] is True
+    assert band["joints"]["hip_fe"]["meets"] is False and band["joints"]["knee"]["meets"] is False
+    for sp in ("1.4", "1.6"):
+        assert e["results"][sp]["rigid"]["band"]["A_filtered"]["all"]["meets"] is True
+    manifest = REPO / "data" / "camargo2021" / "manifest.json"
+    assert e["dataset_manifest_sha256"] == hashlib.sha256(manifest.read_bytes()).hexdigest()
+
+
 def test_the_tracked_envelope_is_what_the_tracked_extract_and_run_records_produce():
     """The clean-clone property: `fy runs envelope` needs no untracked file."""
     meta = json.loads((REPO / "params" / "snapshot.meta.json").read_text(encoding="utf-8"))

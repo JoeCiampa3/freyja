@@ -4,7 +4,7 @@
 
 Worst case per joint across the latest run of every scenario, with the run that drives it. Joint torque is about the model's own hinge axes (the decoupled hip architecture), not actuator torque.
 
-Scenario classes included: rom_sweep (run.20261014-1955-rom_sweep), stand_static (run.20261014-1955-stand_static), walk_treadmill (gait.20261014-1929-walk_treadmill, gait rows below).
+Scenario classes included: rom_sweep (run.20261014-1955-rom_sweep), stand_static (run.20261014-1955-stand_static), walk_treadmill (gait.20261019-1424-walk_treadmill, gait rows below).
 Not yet included: stairs, sit-to-stand, overground walking, ramps (they need reference kinematics with citable provenance; running is out of scope).
 This is not a complete sizing basis: do not size an actuator from it.
 Excluded latest runs: run.20261014-1955-hold_pose (hold_pose): verification only (envelope: false), so it never drives a row.
@@ -45,9 +45,11 @@ Excluded latest runs: run.20261014-1955-hold_pose (hold_pose): verification only
 
 Joints with no ROM data (unlimited, so never swept; each row reflects the static standing solve only, or no data): cj_ax, cj_fe, cj_lat, lsj_ax, lsj_fe, lsj_lat, shoulder_aa_left, shoulder_aa_right, shoulder_ier_left, shoulder_ier_right, tj_ax, tj_fe, tj_lat.
 
-## Gait: walk_treadmill (gait.20261014-1929-walk_treadmill)
+## Gait: walk_treadmill (gait.20261019-1424-walk_treadmill)
 
-Level treadmill walking at 1.4 and 1.6 m/s from the Camargo et al. 2021 kinematics (CC BY 4.0) on Freyja's mass distribution, 17 subjects; each cell is the 95th percentile across subject-strides with the maximum beside it (offset subjects AB13, AB15 included; `sim/benchmarks/gait_extract.json` also keeps the statistics without them and without the pitch-flagged subjects). Rigid at the standing pose from stand_static, arms at the sides; arm swing is not modelled; the arms are excluded. Trunk modes of the record: rigid, counter_rotate (`rigid` is a locked spine; `counter_rotate` is an actuated lumbosacral roll and yaw cancelling the pelvis's roll and yaw by feed-forward; `first_harmonic` is a human-like reference point from the trunk IMU, a diagnostic and never a record mode; no mode is the v1 headline, so every row that depends on the trunk names its mode). Gait torque is about the model's hinge axes and is a different statistic from the worst-case rows above; the two are not merged.
+Level treadmill walking at 0.5, 1.4 and 1.6 m/s from the Camargo et al. 2021 kinematics (CC BY 4.0) on Freyja's mass distribution, 17 subjects; each cell is the 95th percentile across subject-strides with the maximum beside it (offset subjects AB13, AB15 included; `sim/benchmarks/gait_extract.json` also keeps the statistics without them and without the pitch-flagged subjects). Rigid at the standing pose from stand_static, arms at the sides; arm swing is not modelled; the arms are excluded. Trunk modes of the record: rigid, counter_rotate (`rigid` is a locked spine; `counter_rotate` is an actuated lumbosacral roll and yaw cancelling the pelvis's roll and yaw by feed-forward; `first_harmonic` is a human-like reference point from the trunk IMU, a diagnostic and never a record mode; no mode is the v1 headline, so every row that depends on the trunk names its mode). Gait torque is about the model's hinge axes and is a different statistic from the worst-case rows above; the two are not merged.
+
+0.5 m/s is v1's acceptance speed, not a sizing speed: its rows are shown beside the others, labelled `acceptance speed, not for sizing`, and enter no sizing statistic (the sizing speeds are 1.4 and 1.6). At an acceptance speed where no method meets the band, A_filtered's sagittal rows are listed with each row's own verdict (`within band` or `outside band`), as hip ab/adduction and rotation are, and are not for sizing; at a sizing speed that misses the band the rows are not entered.
 
 Band for a torque or power row to enter: correlation >= 0.9 and RMS <= 15% of the dataset's peak-to-peak, sagittal hip, knee and ankle, both limbs pooled (the band is not widened after seeing results). A's leg rows do not depend on the trunk mode (tested), so they name the first. `provisional`: A borrows the human centre of pressure, so its agreement verifies the pipeline against the dataset's own inverse dynamics and does not validate Freyja's loads.
 
@@ -55,6 +57,16 @@ Band for a torque or power row to enter: correlation >= 0.9 and RMS <= 15% of th
 
 | source | joint | m/s | method | trunk mode | torque p95 Nm | torque max Nm | A_native max Nm | power+ p95 W | power+ max W | regen p95 W | regen max W | speed p95 rad/s | speed max rad/s | corr | rms % ptp | flags |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| gait | hip_fe_right | 0.5 (acceptance speed, not for sizing) | A_filtered | rigid | 47.7 | 62.2 | 81.7 | 36 | 47 | 11 | 39 | 2.51 | 2.77 | 0.86 | 20 | provisional, outside band |
+| gait | hip_fe_left | 0.5 (acceptance speed, not for sizing) | A_filtered | rigid | 46.1 | 60.8 | 80.8 | 37 | 54 | 16 | 41 | 2.54 | 2.69 | 0.86 | 20 | provisional, outside band |
+| gait | knee_right | 0.5 (acceptance speed, not for sizing) | A_filtered | rigid | 46.1 | 61.2 | 61.8 | 39 | 69 | 44 | 61 | 4.69 | 5.19 | 0.89 | 20 | provisional, outside band |
+| gait | knee_left | 0.5 (acceptance speed, not for sizing) | A_filtered | rigid | 50.2 | 62.0 | 62.1 | 41 | 61 | 38 | 82 | 5.10 | 5.67 | 0.89 | 20 | provisional, outside band |
+| gait | ankle_pdflex_right | 0.5 (acceptance speed, not for sizing) | A_filtered | rigid | 98.0 | 110.6 | 111.1 | 102 | 150 | 50 | 58 | 3.42 | 4.22 | 0.98 | 9 | provisional, within band |
+| gait | ankle_pdflex_left | 0.5 (acceptance speed, not for sizing) | A_filtered | rigid | 104.0 | 120.4 | 120.1 | 105 | 148 | 55 | 69 | 3.45 | 5.15 | 0.98 | 9 | provisional, within band |
+| gait | hip_aa_right | 0.5 (acceptance speed, not for sizing) | A_filtered | rigid | 73.4 | 79.5 | 79.8 | 56 | 93 | 35 | 56 | 1.54 | 3.22 | 0.99 | 19 | provisional, outside band |
+| gait | hip_aa_left | 0.5 (acceptance speed, not for sizing) | A_filtered | rigid | 72.3 | 83.3 | 78.1 | 49 | 82 | 30 | 46 | 1.40 | 2.54 | 0.99 | 19 | provisional, outside band |
+| gait | hip_ier_right | 0.5 (acceptance speed, not for sizing) | A_filtered | rigid | 11.6 | 13.9 | 14.4 | 3 | 12 | 6 | 10 | 1.65 | 2.93 | 0.91 | 19 | provisional, outside band |
+| gait | hip_ier_left | 0.5 (acceptance speed, not for sizing) | A_filtered | rigid | 10.7 | 21.1 | 13.4 | 3 | 8 | 5 | 12 | 1.95 | 2.55 | 0.91 | 19 | provisional, outside band |
 | gait | hip_fe_right | 1.4 | A_filtered | rigid | 68.3 | 113.9 | 235.3 | 157 | 280 | 52 | 71 | 4.50 | 4.88 | 0.91 | 14 | provisional |
 | gait | hip_fe_left | 1.4 | A_filtered | rigid | 75.4 | 137.7 | 220.4 | 202 | 412 | 79 | 152 | 4.68 | 5.33 | 0.91 | 14 | provisional |
 | gait | knee_right | 1.4 | A_filtered | rigid | 87.0 | 120.2 | 117.1 | 114 | 155 | 213 | 447 | 7.01 | 7.83 | 0.93 | 13 | provisional |
@@ -82,6 +94,12 @@ No threshold and no flag. `dataset-direct scaled peak` is the dataset's own peak
 
 | source | joint | m/s | dataset-direct scaled peak mean / p95 / max Nm | OLS slope | peak ratio |
 |---|---|---|---|---|---|
+| gait dataset-direct | hip_fe_right | 0.5 (acceptance speed, not for sizing) | 20.6 / 45.1 / 50.3 | 0.808 | 1.00 |
+| gait dataset-direct | hip_fe_left | 0.5 (acceptance speed, not for sizing) | 20.6 / 46.0 / 51.9 | 0.781 | 1.07 |
+| gait dataset-direct | knee_right | 0.5 (acceptance speed, not for sizing) | 21.2 / 38.4 / 49.0 | 1.083 | 1.28 |
+| gait dataset-direct | knee_left | 0.5 (acceptance speed, not for sizing) | 23.0 / 40.9 / 44.8 | 0.967 | 1.18 |
+| gait dataset-direct | ankle_pdflex_right | 0.5 (acceptance speed, not for sizing) | 74.0 / 101.1 / 109.6 | 0.948 | 0.96 |
+| gait dataset-direct | ankle_pdflex_left | 0.5 (acceptance speed, not for sizing) | 74.7 / 106.2 / 111.6 | 0.920 | 0.95 |
 | gait dataset-direct | hip_fe_right | 1.4 | 51.1 / 66.7 / 75.6 | 0.674 | 0.85 |
 | gait dataset-direct | hip_fe_left | 1.4 | 52.5 / 66.2 / 81.6 | 0.664 | 0.93 |
 | gait dataset-direct | knee_right | 1.4 | 48.0 / 67.2 / 79.3 | 1.047 | 1.32 |
@@ -101,6 +119,8 @@ The dataset's moment is about an oblique subtalar axis and Freyja's `ankle_ie` i
 
 | source | joint | m/s | A_filtered | B rigid | B counter_rotate | H rigid | H counter_rotate | flags |
 |---|---|---|---|---|---|---|---|---|
+| gait | ankle_ie_right | 0.5 (acceptance speed, not for sizing) | 27.0 / 43.9 | 138.4 / 206.9 | 62.9 / 159.8 | 25.8 / 43.8 | 28.1 / 47.6 | unverified, not comparable with the dataset |
+| gait | ankle_ie_left | 0.5 (acceptance speed, not for sizing) | 25.2 / 38.0 | 134.1 / 277.9 | 63.3 / 226.5 | 25.9 / 34.0 | 26.5 / 35.8 | unverified, not comparable with the dataset |
 | gait | ankle_ie_right | 1.4 | 47.7 / 112.6 | 304.8 / 421.8 | 130.4 / 228.1 | 41.1 / 65.8 | 48.5 / 71.9 | unverified, not comparable with the dataset |
 | gait | ankle_ie_left | 1.4 | 48.0 / 95.3 | 294.3 / 369.9 | 131.6 / 199.9 | 44.1 / 88.6 | 51.2 / 94.1 | unverified, not comparable with the dataset |
 | gait | ankle_ie_right | 1.6 | 51.1 / 72.9 | 357.4 / 493.5 | 171.6 / 393.9 | 45.3 / 82.1 | 54.2 / 85.7 | unverified, not comparable with the dataset |
@@ -112,6 +132,11 @@ The torques depend on the kinematics and the trunk mode alone (the foot Jacobian
 
 | source | joint | m/s | torque p95 Nm (min .. max over modes) | torque max Nm | power+ p95 W | speed p95 rad/s | speed max rad/s | flags |
 |---|---|---|---|---|---|---|---|---|
+| gait | cj_fe | 0.5 (acceptance speed, not for sizing) | 4.5 .. 4.7 | 15.7 | 0 .. 0 | 0.00 .. 0.00 | 0.00 | kinematics only, bracket |
+| gait | lsj_ax | 0.5 (acceptance speed, not for sizing) | 0.5 .. 5.4 | 33.3 | 0 .. 0 | 0.00 .. 0.89 | 2.40 | kinematics only, bracket |
+| gait | lsj_fe | 0.5 (acceptance speed, not for sizing) | 44.3 .. 45.2 | 120.5 | 0 .. 0 | 0.00 .. 0.00 | 0.00 | kinematics only, bracket |
+| gait | lsj_lat | 0.5 (acceptance speed, not for sizing) | 16.1 .. 59.2 | 139.2 | 0 .. 7 | 0.00 .. 0.80 | 1.62 | kinematics only, bracket |
+| gait | tj_fe | 0.5 (acceptance speed, not for sizing) | 28.0 .. 28.3 | 87.3 | 0 .. 0 | 0.00 .. 0.00 | 0.00 | kinematics only, bracket |
 | gait | cj_fe | 1.4 | 8.6 .. 8.9 | 11.6 | 0 .. 0 | 0.00 .. 0.00 | 0.00 | kinematics only, bracket |
 | gait | lsj_ax | 1.4 | 0.6 .. 8.2 | 20.0 | 0 .. 0 | 0.00 .. 1.37 | 1.81 | kinematics only, bracket |
 | gait | lsj_fe | 1.4 | 83.0 .. 84.1 | 105.8 | 0 .. 0 | 0.00 .. 0.00 | 0.00 | kinematics only, bracket |
@@ -129,6 +154,12 @@ Over every subject-stride, from the trunk-mode diagnostic's code (`gait_diag.py 
 
 | source | joint | m/s | trunk mode | angle med / p95 / max deg | torque med / p95 / max Nm | speed p95 rad/s | power+ p95 W | regen p95 W | quartile-corner spread (p95): angle deg; torque Nm |
 |---|---|---|---|---|---|---|---|---|---|
+| gait | lsj_lat | 0.5 (acceptance speed, not for sizing) | rigid | 0.0 / 0.0 / 0.0 | 30.1 / 59.2 / 139.2 | 0.00 | 0 | 0 | - |
+| gait | lsj_lat | 0.5 (acceptance speed, not for sizing) | counter_rotate | 3.6 / 6.8 / 8.5 | 11.6 / 16.1 / 55.4 | 0.80 | 7 | 5 | - |
+| gait | lsj_lat | 0.5 (acceptance speed, not for sizing) | first_harmonic | 3.4 / 6.9 / 9.3 | 13.4 / 25.3 / 56.6 | 0.80 | 12 | 7 | angle 7.3 .. 12.9; torque 18.5 .. 30.4 |
+| gait | lsj_ax | 0.5 (acceptance speed, not for sizing) | rigid | 0.0 / 0.0 / 0.0 | 2.9 / 5.4 / 33.3 | 0.00 | 0 | 0 | - |
+| gait | lsj_ax | 0.5 (acceptance speed, not for sizing) | counter_rotate | 6.5 / 11.8 / 18.0 | 0.4 / 0.5 / 1.5 | 0.89 | 0 | 0 | - |
+| gait | lsj_ax | 0.5 (acceptance speed, not for sizing) | first_harmonic | 5.1 / 10.3 / 13.7 | 0.7 / 1.3 / 1.7 | 0.67 | 0 | 1 | angle 8.4 .. 13.5; torque 1.0 .. 1.7 |
 | gait | lsj_lat | 1.4 | rigid | 0.0 / 0.0 / 0.0 | 70.0 / 92.7 / 112.3 | 0.00 | 0 | 0 | - |
 | gait | lsj_lat | 1.4 | counter_rotate | 5.7 / 7.8 / 8.9 | 16.1 / 23.3 / 31.6 | 1.43 | 16 | 16 | - |
 | gait | lsj_lat | 1.4 | first_harmonic | 6.7 / 8.9 / 10.4 | 20.8 / 31.8 / 38.6 | 1.55 | 15 | 30 | angle 7.2 .. 10.0; torque 25.8 .. 35.8 |
@@ -144,6 +175,10 @@ Over every subject-stride, from the trunk-mode diagnostic's code (`gait_diag.py 
 
 ### Findings for the Joint ROM sheet's functional-demand column (not clipped; the lumbosacral joints are unlimited today)
 
+- 0.5 m/s (acceptance speed, not for sizing), rigid: the lumbosacral lateral and axial joints are held at the standing pose (0 by construction).
+- 0.5 m/s (acceptance speed, not for sizing), counter_rotate: peak lumbosacral lateral bending angle mean / p95 / max 3.8 / 6.8 / 8.5 deg; axial rotation 7.0 / 11.8 / 18.0 deg.
+- 0.5 m/s (acceptance speed, not for sizing): peak hip extension median 13.7, p95 29.1, max 32.9 deg against the model's 31.0 deg stop; 2% of strides go beyond it.
+- 0.5 m/s (acceptance speed, not for sizing): the dataset's own peak hip extension (inverse kinematics, not retargeted) median / p95 / max, from the vertical 9.1 / 14.6 / 16.3 deg; relative to the pelvis 13.9 / 29.2 / 32.7 deg; median posterior pelvic tilt of the IK pelvis 5.8 deg. The pelvis-referenced figure is the vertical one plus that tilt: the functional demand is the vertical figure plus whatever posterior tilt the gait policy allows, and the pelvis-referenced figure is a finding about the IK pitch, not a ROM requirement.
 - 1.4 m/s, rigid: the lumbosacral lateral and axial joints are held at the standing pose (0 by construction).
 - 1.4 m/s, counter_rotate: peak lumbosacral lateral bending angle mean / p95 / max 5.8 / 7.8 / 8.9 deg; axial rotation 7.9 / 12.7 / 16.4 deg.
 - 1.4 m/s: peak hip extension median 23.1, p95 36.8, max 39.5 deg against the model's 31.0 deg stop; 32% of strides go beyond it.

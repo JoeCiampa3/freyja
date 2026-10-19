@@ -74,15 +74,21 @@ def _verdict(corr, rms, meets=None):
     return {"meets": ok, "joints": {s: {"corr": corr, "rms_pct_ptp": rms, "meets": ok} for s in ("hip_fe", "knee", "ankle_pdflex")}}
 
 
-def gait_record(model_sha=None, a_filtered_meets=True, h_meets=False, ids="gait.20261012-0900-walk_treadmill"):
+ZERO_P5_VERDICT = {"meets": False, "joints": {"hip_fe": {"corr": 0.861, "rms_pct_ptp": 20.1, "meets": False}, "knee": {"corr": 0.892, "rms_pct_ptp": 20.2, "meets": False},
+                                              "ankle_pdflex": {"corr": 0.975, "rms_pct_ptp": 8.7, "meets": True}}}
+
+
+def gait_record(model_sha=None, a_filtered_meets=True, h_meets=False, ids="gait.20261012-0900-walk_treadmill", acceptance=False):
     """A synthetic gait-summary: B p95 100, A_native 50, A_filtered 40, H 70 N m at every leg joint (x1.1 at 1.6 m/s); spine rows differ by trunk mode."""
     base = {"B": 100.0, "A_native": 50.0, "A_filtered": 40.0, "H": 70.0}
     results = {}
-    for sp in ("1.4", "1.6"):
+    speeds = ("0.5", "1.4", "1.6") if acceptance else ("1.4", "1.6")  # 0.5 m/s: v1's acceptance speed; A_filtered misses the band there at hip and knee, as measured
+    for sp in speeds:
+        k_sp = {"0.5": 0.6, "1.4": 1.0, "1.6": 1.1}[sp]
         results[sp] = {}
         for mode in MODES:
             f = 1.0 if mode == "rigid" else 0.5
-            joints = {j: {m: {"peak_torque_nm": _stats(base[m] * (1.1 if sp == "1.6" else 1.0)), "peak_speed_rad_s": _stats(3.0), "peak_power_pos_w": _stats(200.0),
+            joints = {j: {m: {"peak_torque_nm": _stats(base[m] * k_sp), "peak_speed_rad_s": _stats(3.0), "peak_power_pos_w": _stats(200.0),
                               "peak_regeneration_w": _stats(120.0)} for m in GAIT_METHODS} for j in LEG_JOINTS}
             for j in EXTRA:
                 joints[j] = {m: {"peak_torque_nm": _stats(60.0 * f), "peak_speed_rad_s": _stats(1.5 * f), "peak_power_pos_w": _stats(30.0 * f),
@@ -92,22 +98,28 @@ def gait_record(model_sha=None, a_filtered_meets=True, h_meets=False, ids="gait.
             for j in LEG_JOINTS:  # the off-band stems of A_filtered, as measured: hip ab/adduction 0.97 / 18%, hip rotation 0.86 / 18%, ankle inversion -0.12 / 108%
                 c, r = {"hip_aa": (0.97, 18.0), "hip_ier": (0.86, 18.0), "ankle_ie": (-0.12, 108.0)}.get(j[:-6] if j.endswith("_right") else j[:-5], (0.95, 12.0))
                 agree["A_filtered"][j].update(corr=c, rms_pct_ptp=r, corr_without_offset=c, rms_pct_ptp_without_offset=r)
+            if sp == "0.5":
+                for j in LEG_JOINTS:
+                    c, r = {"hip_fe": (0.861, 20.1), "knee": (0.892, 20.2), "ankle_pdflex": (0.975, 8.7)}.get(j[:-6] if j.endswith("_right") else j[:-5], (None, None))
+                    if c is not None:
+                        agree["A_filtered"][j].update(corr=c, rms_pct_ptp=r, corr_without_offset=c, rms_pct_ptp_without_offset=r)
             results[sp][mode] = {
                 "n_strides": 10, "n_strides_without_offset": 9, "joints": joints, "agreement": agree,
                 "band": {"B": {"all": _verdict(0.3, 60.0), "without_offset": _verdict(0.3, 60.0)}, "A_native": {"all": _verdict(0.88, 17.0), "without_offset": _verdict(0.88, 17.0)},
-                         "A_filtered": {"all": _verdict(0.95, 12.0, a_filtered_meets), "without_offset": _verdict(0.95, 12.0, a_filtered_meets)},
+                         "A_filtered": ({"all": ZERO_P5_VERDICT, "without_offset": ZERO_P5_VERDICT} if sp == "0.5"
+                                        else {"all": _verdict(0.95, 12.0, a_filtered_meets), "without_offset": _verdict(0.95, 12.0, a_filtered_meets)}),
                          "H": {"all": _verdict(0.95, 10.0) if h_meets else _verdict(0.7, 30.0), "without_offset": _verdict(0.7, 30.0)}},
                 "trunk_peak_deg": {"lsj_lat": _stats(7.4 * f), "lsj_ax": _stats(11.9 * f)},
                 "hip_extension": {"median_deg": 23.0, "p95_deg": 36.0, "max_deg": 39.0, "stop_deg": -18.1, "fraction_beyond_stop": 0.85}}
     results = {sp: dict(sorted(by.items())) for sp, by in results.items()}  # written records have sorted keys: the spec's order is rec["trunk"]
     return {"schema": "gait-summary/1", "gait_id": ids, "git_commit": "b" * 40, "git_dirty": False, "snapshot_sha256": sha("snap1"),
             "model_sha256": model_sha or sha("model1"), "trunk": list(MODES), "hybrid_methods": [],
-            "spec": {"name": "walk_treadmill", "offset_subjects": ["AB13", "AB15"], "speeds_mps": [1.4, 1.6]},
+            "spec": {"name": "walk_treadmill", "offset_subjects": ["AB13", "AB15"], "speeds_mps": [float(x) for x in speeds]},
             "assumptions": ["rigid at the standing pose, arms at the sides; arm swing is not modelled"],
-            "subjects": {f"AB{i}": {"strides": {"1.4": 1, "1.6": 1}} for i in range(10)}, "results": results}
+            "subjects": {f"AB{i}": {"strides": {x: 1 for x in speeds}} for i in range(10)}, "results": results}
 
 
-def gait_extras():
+def gait_extras(acceptance=False):
     """Synthetic lumbosacral, A_filtered-sagittal and hip-demand tables in the shapes `gait_extract` computes (known numbers, no MuJoCo)."""
     import gait_extract as ge
     dist = lambda med, p95, mx: {"median": med, "p95": p95, "max": mx}
@@ -115,25 +127,25 @@ def gait_extras():
     p95 = {"rigid": 93.0, "counter_rotate": 23.5, "first_harmonic median": 32.1, "first_harmonic q1 gain, q1 lag": 28.0, "first_harmonic q1 gain, q3 lag": 30.0,
            "first_harmonic q3 gain, q1 lag": 34.0, "first_harmonic q3 gain, q3 lag": 36.0}
     lsj = {}
-    for sp, k in (("1.4", 1.0), ("1.6", 1.2)):
+    for sp, k in ((("0.5", 0.5),) if acceptance else ()) + (("1.4", 1.0), ("1.6", 1.2)):
         lsj[sp] = {j: {v: {"peak_angle_deg": dist(5.0, 8.9 * (0.0 if v == "rigid" else 1.0), 11.0), "peak_torque_nm": dist(0.5 * x * k * s, x * k * s, 1.5 * x * k * s),
                             "peak_speed_rad_s": dist(1.0, 1.8, 2.5), "peak_power_pos_w": dist(5.0, 31.0, 60.0), "peak_regen_w": dist(4.0, 20.0, 40.0)}
                        for v, x in p95.items()} for j, s in (("lsj_lat", 1.0), ("lsj_ax", 0.1))}
     a = {}
-    for sp, k in (("1.4", 1.0), ("1.6", 1.02)):
+    for sp, k in ((("0.5", 0.55),) if acceptance else ()) + (("1.4", 1.0), ("1.6", 1.02)):
         a[sp] = {}
         for stem, base in (("hip_fe", 50.0), ("knee", 48.0), ("ankle_pdflex", 102.5)):
             for side in ("right", "left"):
                 a[sp][f"{stem}_{side}"] = {"scaled_peak_nm": {"mean": base * k, "p95": 1.2 * base * k, "max": 1.32 * base * k}, "ols_slope": 1.185 if stem == "ankle_pdflex" else 0.68, "peak_ratio": 1.24 if stem == "ankle_pdflex" else 0.9}
             a[sp][stem] = {"scaled_peak_nm": {"mean": base * k, "p95": 1.2 * base * k, "max": 1.32 * base * k}, "ols_slope": 1.185 if stem == "ankle_pdflex" else 0.68, "peak_ratio": 1.24 if stem == "ankle_pdflex" else 0.9}
-    demand = {sp: {"vertical_deg": dist(16.9, 22.0, 25.3), "pelvis_relative_deg": dist(23.3, 37.3, 39.4), "posterior_pelvic_tilt_median_deg": 7.6} for sp in ("1.4", "1.6")}
+    demand = {sp: {"vertical_deg": dist(16.9, 22.0, 25.3), "pelvis_relative_deg": dist(23.3, 37.3, 39.4), "posterior_pelvic_tilt_median_deg": 7.6} for sp in (("0.5",) if acceptance else ()) + ("1.4", "1.6")}
     assert tuple(lsj["1.4"]["lsj_lat"]) == ge.VARIANTS
     return lsj, a, demand
 
 
 def gait_extract_fixture(**kw):
     import gait_extract as ge
-    return ge.assemble(gait_record(**kw), *gait_extras())
+    return ge.assemble(gait_record(**kw), *gait_extras(acceptance=kw.get("acceptance", False)))
 
 
 class GaitEnvelope(unittest.TestCase):
@@ -536,6 +548,74 @@ class Query(unittest.TestCase):
             self.assertEqual(code, 0)
             self.assertIn("no runs", (Path(empty) / "DIGEST.md").read_text(encoding="utf-8").lower())
 
+
+
+class AcceptanceSpeedEnvelope(unittest.TestCase):
+    """Stage 2f T3: 0.5 m/s is v1's acceptance speed. Its rows are shown beside 1.4 and 1.6, labelled, and enter no sizing statistic; where A_filtered
+    misses the band at hip and knee (as measured) those rows carry the existing per-row outside-band flag, as hip ab/adduction and rotation do."""
+
+    def text(self, extract=None, **kw):
+        return rp.envelope([summary("run.20261002-0900-sweep", "sweep")], gait=extract or gait_extract_fixture(acceptance=True, **kw))
+
+    def rows(self, text, prefix="| gait "):
+        return [l for l in text.splitlines() if l.startswith(prefix)]
+
+    def test_the_extract_with_the_acceptance_speed_validates_against_the_schema_without_a_version_bump(self):
+        import gait_extract as ge
+        ge.validate(gait_extract_fixture(acceptance=True))  # gait-extract/1 takes any speed key
+        self.assertEqual(gait_extract_fixture(acceptance=True)["schema"], "gait-extract/1")
+
+    def test_the_acceptance_rows_are_labelled_and_a_filtered_hip_and_knee_are_outside_band_by_the_per_row_flag(self):
+        t = self.text()
+        for stem in ("hip_fe", "knee"):
+            row = next(l for l in self.rows(t) if f"{stem}_right" in l and "| 0.5 " in l and "A_filtered" in l)
+            self.assertIn("outside band", row)
+            self.assertIn("acceptance speed, not for sizing", row)
+        ankle = next(l for l in self.rows(t) if "ankle_pdflex_right" in l and "| 0.5 " in l and "A_filtered" in l)
+        self.assertIn("within band", ankle)  # the ankle meets the band at 0.5: the flag is per row, not per speed
+        self.assertIn("acceptance speed, not for sizing", ankle)
+        knee = next(l for l in self.rows(t) if "knee_right" in l and "| 0.5 " in l and "A_filtered" in l)
+        self.assertIn("0.89", knee)  # the row's own numbers
+        self.assertIn("24.0", knee)  # the 95th percentile, 0.6 x 40 N m
+
+    def test_every_table_labels_the_acceptance_speed_and_says_what_it_is(self):
+        t = self.text()
+        self.assertIn("acceptance speed", t.split("## Gait", 1)[1].split("###", 1)[0])
+        for prefix_joint in ("lsj_lat", "ankle_ie_right", "hip_aa_right", "knee_right"):
+            row = next(l for l in self.rows(t) if prefix_joint in l and "| 0.5 " in l)
+            self.assertIn("acceptance", row, prefix_joint)
+        self.assertTrue(any("0.5 m/s" in l and "acceptance" in l for l in t.splitlines() if l.startswith("- ")))  # the functional-demand findings
+
+    def test_the_1p4_and_1p6_rows_are_unchanged_by_the_presence_of_0p5(self):
+        with_05 = self.text()
+        without = rp.envelope([summary("run.20261002-0900-sweep", "sweep")], gait=gait_extract_fixture())
+        pick = lambda text: [l for l in text.splitlines() if "| 1.4 |" in l or "| 1.6 |" in l or l.startswith("- 1.4 m/s") or l.startswith("- 1.6 m/s")]
+        self.assertEqual(pick(with_05), pick(without))
+        self.assertGreater(len(pick(without)), 20)
+        before, after = without.split("## Gait", 1)[0], with_05.split("## Gait", 1)[0]
+        self.assertEqual(before, after)  # every worst-case row above the gait section is untouched
+
+    def test_the_header_says_the_acceptance_speed_enters_no_sizing_statistic_and_names_the_sizing_speeds(self):
+        intro = self.text().split("## Gait", 1)[1].split("###", 1)[0]
+        self.assertIn("0.5, 1.4 and 1.6 m/s", intro)
+        self.assertIn("acceptance speed", intro)
+        self.assertIn("enter no sizing statistic", intro)
+        self.assertIn("sizing speeds are 1.4 and 1.6", intro)
+        self.assertNotIn("acceptance", rp.envelope([summary("run.20261002-0900-sweep", "sweep")], gait=gait_extract_fixture()))  # no acceptance speed, no such wording
+
+    def test_mutation_changing_one_0p5_value_changes_the_envelope(self):
+        ex = gait_extract_fixture(acceptance=True)
+        base = self.text(extract=ex)
+        ex["results"]["0.5"]["rigid"]["joints"]["knee_right"]["A_filtered"]["peak_torque_nm"]["all"]["p95"] = 41.5
+        changed = self.text(extract=ex)
+        self.assertNotEqual(base, changed)
+        self.assertIn("41.5", next(l for l in self.rows(changed) if "knee_right" in l and "| 0.5 " in l and "A_filtered" in l))
+
+    def test_a_sizing_speed_that_misses_the_band_still_has_its_rows_dropped(self):
+        t = self.text(a_filtered_meets=False)  # 1.4 and 1.6 miss; 0.5 is listed per row, the sizing speeds are not
+        self.assertEqual([l for l in self.rows(t) if "knee_right" in l and "A_filtered" in l and ("| 1.4 |" in l or "| 1.6 |" in l)], [])
+        self.assertIn("no method meets the band at 1.4 m/s", t)
+        self.assertTrue([l for l in self.rows(t) if "knee_right" in l and "A_filtered" in l and "| 0.5 " in l])
 
 if __name__ == "__main__":
     unittest.main()

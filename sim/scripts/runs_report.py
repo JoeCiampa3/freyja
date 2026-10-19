@@ -291,6 +291,9 @@ GAIT_OFF_BAND = ("hip_aa", "hip_ier")  # listed with their agreement numbers, fl
 GAIT_UNVERIFIED = "ankle_ie"  # the dataset's moment is about an oblique subtalar axis: no comparison
 GAIT_METHOD_ORDER = ("A_filtered", "A_native", "H", "B")
 NOT_INCLUDED_GAIT = ("stairs", "sit-to-stand", "overground walking", "ramps")
+# v1's acceptance speed (Stage 2f): its rows are shown beside the sizing speeds, labelled, and enter no sizing statistic (none of these rows is a maximum across speeds).
+GAIT_ACCEPTANCE_SPEEDS = ("0.5",)
+ACCEPTANCE_LABEL = "acceptance speed, not for sizing"
 # The trunk modes named for what they model (stage 2b Decisions, "Spine plan"). No mode is the v1 headline until Joe decides.
 TRUNK_WORDING = ("`rigid` is a locked spine; `counter_rotate` is an actuated lumbosacral roll and yaw cancelling the pelvis's roll and yaw by feed-forward; "
                  "`first_harmonic` is a human-like reference point from the trunk IMU, a diagnostic and never a record mode; no mode is the v1 headline, "
@@ -300,6 +303,19 @@ TRUNK_WORDING = ("`rigid` is a locked spine; `counter_rotate` is an actuated lum
 def _g(x, nd=1):
     t = f"{x:.{nd}f}"
     return t[1:] if t.startswith("-") and float(t) == 0 else t  # no "-0"
+
+
+def _sp(speed):
+    """A speed as a table cell: an acceptance speed carries its label in every row."""
+    return f"{speed} ({ACCEPTANCE_LABEL})" if speed in GAIT_ACCEPTANCE_SPEEDS else speed
+
+
+def _acc(speed):
+    return f" ({ACCEPTANCE_LABEL})" if speed in GAIT_ACCEPTANCE_SPEEDS else ""
+
+
+def _speeds_phrase(speeds):
+    return " and ".join([", ".join(speeds[:-1]), speeds[-1]]) if len(speeds) > 2 else " and ".join(speeds)
 
 
 def _pool(d, m, stem):
@@ -328,12 +344,16 @@ def gait_section(rec: dict) -> list:
     speeds = sorted(rec["results"], key=float)
     off = ", ".join(rec["spec"]["offset_subjects"])
     L = ["", f"## Gait: {rec['spec']['name']} ({rec['gait_id']})", "",
-         f"Level treadmill walking at {' and '.join(speeds)} m/s from the Camargo et al. 2021 kinematics (CC BY 4.0) on Freyja's mass distribution, {rec['subjects']['count']} subjects; "
+         f"Level treadmill walking at {_speeds_phrase(speeds)} m/s from the Camargo et al. 2021 kinematics (CC BY 4.0) on Freyja's mass distribution, {rec['subjects']['count']} subjects; "
          f"each cell is the 95th percentile across subject-strides with the maximum beside it (offset subjects {off} included; `sim/benchmarks/gait_extract.json` also keeps the statistics without them and without the pitch-flagged subjects). "
          f"{rec['assumption'][0].upper() + rec['assumption'][1:]}; the arms are excluded. Trunk modes of the record: " + ", ".join(modes) + " ("
          + TRUNK_WORDING + "). "
          "Gait torque is about the model's hinge axes and is a different statistic from the worst-case rows above; the two are not merged.",
          "",
+         *([f"{', '.join(a for a in speeds if a in GAIT_ACCEPTANCE_SPEEDS)} m/s is v1's acceptance speed, not a sizing speed: its rows are shown beside the others, labelled `{ACCEPTANCE_LABEL}`, "
+            f"and enter no sizing statistic (the sizing speeds are {_speeds_phrase([a for a in speeds if a not in GAIT_ACCEPTANCE_SPEEDS])}). At an acceptance speed where no method meets the band, "
+            "A_filtered's sagittal rows are listed with each row's own verdict (`within band` or `outside band`), as hip ab/adduction and rotation are, and are not for sizing; at a sizing speed "
+            "that misses the band the rows are not entered.", ""] if any(a in GAIT_ACCEPTANCE_SPEEDS for a in speeds) else []),
          f"Band for a torque or power row to enter: correlation >= {GAIT_BAND_CORR} and RMS <= {GAIT_BAND_RMS_PCT:.0f}% of the dataset's peak-to-peak, sagittal hip, knee and ankle, both limbs pooled "
          "(the band is not widened after seeing results). A's leg rows do not depend on the trunk mode (tested), so they name the first. `provisional`: A borrows the human centre of pressure, so its agreement verifies the pipeline against the dataset's "
          "own inverse dynamics and does not validate Freyja's loads.", ""]
@@ -347,7 +367,7 @@ def gait_section(rec: dict) -> list:
         stem = j[:-6] if j.endswith("_right") else j[:-5]
         corr, rms = _pool(d, m, stem)
         nat = _g(by_mode[modes[0]]["joints"][j]["A_native"]["peak_torque_nm"]["all"]["max"]) if with_native else "-"
-        return (f"| gait | {j} | {sp} | {m} | {mode} | {_g(jd['peak_torque_nm']['all']['p95'])} | {_g(jd['peak_torque_nm']['all']['max'])} | {nat} | "
+        return (f"| gait | {j} | {_sp(sp)} | {m} | {mode} | {_g(jd['peak_torque_nm']['all']['p95'])} | {_g(jd['peak_torque_nm']['all']['max'])} | {nat} | "
                 f"{_g(jd['peak_power_pos_w']['all']['p95'], 0)} | {_g(jd['peak_power_pos_w']['all']['max'], 0)} | {_g(jd['peak_regeneration_w']['all']['p95'], 0)} | "
                 f"{_g(jd['peak_regeneration_w']['all']['max'], 0)} | {_g(jd['peak_speed_rad_s']['all']['p95'], 2)} | {_g(jd['peak_speed_rad_s']['all']['max'], 2)} | "
                 f"{corr:.2f} | {rms:.0f} | {flags} |")
@@ -360,7 +380,13 @@ def gait_section(rec: dict) -> list:
                 j = f"{stem}_{side}"
                 for m, mode in enter:
                     L.append(leg_row(sp, by_mode, j, m, mode, "provisional" if m.startswith("A") else "meets the band", m == "A_filtered"))
-        if not enter:
+        if not enter and sp in GAIT_ACCEPTANCE_SPEEDS:
+            for stem in GAIT_SAGITTAL:
+                for side in ("right", "left"):
+                    corr, rms = _pool(by_mode[modes[0]], "A_filtered", stem)
+                    inside = corr >= GAIT_BAND_CORR and rms <= GAIT_BAND_RMS_PCT
+                    L.append(leg_row(sp, by_mode, f"{stem}_{side}", "A_filtered", modes[0], "provisional, " + ("within band" if inside else "outside band"), True))
+        elif not enter:
             L.append(f"| gait | no method meets the band at {sp} m/s: the sagittal rows are not entered | {sp} | - | - | - | - | - | - | - | - | - | - | - | - | - | - |")
         for stem in GAIT_OFF_BAND:
             for side in ("right", "left"):
@@ -378,7 +404,7 @@ def gait_section(rec: dict) -> list:
         for stem in GAIT_SAGITTAL:
             for side in ("right", "left"):
                 a = rec["a_filtered_sagittal"][sp][f"{stem}_{side}"]
-                L.append(f"| gait dataset-direct | {stem}_{side} | {sp} | " + " / ".join(_g(a["scaled_peak_nm"][k]) for k in ("mean", "p95", "max")) + f" | {a['ols_slope']:.3f} | {a['peak_ratio']:.2f} |")
+                L.append(f"| gait dataset-direct | {stem}_{side} | {_sp(sp)} | " + " / ".join(_g(a["scaled_peak_nm"][k]) for k in ("mean", "p95", "max")) + f" | {a['ols_slope']:.3f} | {a['peak_ratio']:.2f} |")
     L += ["", "### Ankle inversion (unverified)", "",
           "The dataset's moment is about an oblique subtalar axis and Freyja's `ankle_ie` is a pure anteroposterior axis, so no method agrees with it and it is not in the agreement table. "
           "Loads from A_filtered, B and H, torque p95 / max Nm; the sign mapping rests on the kinematic mapping and the hip ab/adduction and rotation agreement.", "",
@@ -388,7 +414,7 @@ def gait_section(rec: dict) -> list:
         cell = lambda m, mode, j: f"{_g(by_mode[mode]['joints'][j][m]['peak_torque_nm']['all']['p95'])} / {_g(by_mode[mode]['joints'][j][m]['peak_torque_nm']['all']['max'])}"
         for side in ("right", "left"):
             j = f"{GAIT_UNVERIFIED}_{side}"
-            L.append(f"| gait | {j} | {sp} | {cell('A_filtered', modes[0], j)} | " + " | ".join(cell("B", x, j) for x in modes) + " | " + " | ".join(cell("H", x, j) for x in modes)
+            L.append(f"| gait | {j} | {_sp(sp)} | {cell('A_filtered', modes[0], j)} | " + " | ".join(cell("B", x, j) for x in modes) + " | " + " | ".join(cell("H", x, j) for x in modes)
                      + " | unverified, not comparable with the dataset |")
     L += ["", "### Joints above the pelvis (kinematics only: the bracket across trunk modes)", "",
           "The torques depend on the kinematics and the trunk mode alone (the foot Jacobians have no columns above the pelvis; tested to 1e-9 across A, B and H), so there is one row per joint: "
@@ -399,7 +425,7 @@ def gait_section(rec: dict) -> list:
         for j in above:
             v = {x: rec["results"][sp][x]["joints"][j]["B"] for x in modes}
             rng = lambda key, nd=1: f"{_g(min(v[x][key]['all']['p95'] for x in modes), nd)} .. {_g(max(v[x][key]['all']['p95'] for x in modes), nd)}"
-            L.append(f"| gait | {j} | {sp} | {rng('peak_torque_nm')} | {_g(max(v[x]['peak_torque_nm']['all']['max'] for x in modes))} | {rng('peak_power_pos_w', 0)} | "
+            L.append(f"| gait | {j} | {_sp(sp)} | {rng('peak_torque_nm')} | {_g(max(v[x]['peak_torque_nm']['all']['max'] for x in modes))} | {rng('peak_power_pos_w', 0)} | "
                      f"{rng('peak_speed_rad_s', 2)} | {_g(max(v[x]['peak_speed_rad_s']['all']['max'] for x in modes), 2)} | kinematics only, bracket |")
     L += ["", "### Lumbosacral lateral and axial joints, three trunk modes", "",
           "Over every subject-stride, from the trunk-mode diagnostic's code (`gait_diag.py harmonic`), angles in degrees about the joint, torque N m, speed rad/s, power W. " + TRUNK_WORDING[0].upper() + TRUNK_WORDING[1:]
@@ -416,7 +442,7 @@ def gait_section(rec: dict) -> list:
                 if label == "first_harmonic":
                     rg = lambda k: f"{_g(min(rec['lumbosacral'][sp][j][c][k]['p95'] for c in corners))} .. {_g(max(rec['lumbosacral'][sp][j][c][k]['p95'] for c in corners))}"
                     spread = f"angle {rg('peak_angle_deg')}; torque {rg('peak_torque_nm')}"
-                L.append(f"| gait | {j} | {sp} | {label} | {tri('peak_angle_deg')} | {tri('peak_torque_nm')} | {_g(t['peak_speed_rad_s']['p95'], 2)} | {_g(t['peak_power_pos_w']['p95'], 0)} | "
+                L.append(f"| gait | {j} | {_sp(sp)} | {label} | {tri('peak_angle_deg')} | {tri('peak_torque_nm')} | {_g(t['peak_speed_rad_s']['p95'], 2)} | {_g(t['peak_power_pos_w']['p95'], 0)} | "
                          f"{_g(t['peak_regen_w']['p95'], 0)} | {spread} |")
     L += ["", "### Findings for the Joint ROM sheet's functional-demand column (not clipped; the lumbosacral joints are unlimited today)", ""]
     for sp in speeds:
@@ -424,16 +450,16 @@ def gait_section(rec: dict) -> list:
             d = rec["results"][sp][x]
             tp = d["trunk_peak_deg"]
             if tp["lsj_lat"]["all"]["max"] == 0 and tp["lsj_ax"]["all"]["max"] == 0:
-                L.append(f"- {sp} m/s, {x}: the lumbosacral lateral and axial joints are held at the standing pose (0 by construction).")
+                L.append(f"- {sp} m/s{_acc(sp)}, {x}: the lumbosacral lateral and axial joints are held at the standing pose (0 by construction).")
                 continue
-            L.append(f"- {sp} m/s, {x}: peak lumbosacral lateral bending angle mean / p95 / max "
+            L.append(f"- {sp} m/s{_acc(sp)}, {x}: peak lumbosacral lateral bending angle mean / p95 / max "
                      + " / ".join(_g(tp["lsj_lat"]["all"][k]) for k in ("mean", "p95", "max")) + " deg; axial rotation "
                      + " / ".join(_g(tp["lsj_ax"]["all"][k]) for k in ("mean", "p95", "max")) + " deg.")
         h = rec["results"][sp][modes[0]]["hip_extension"]
-        L.append(f"- {sp} m/s: peak hip extension median {_g(h['median_deg'])}, p95 {_g(h['p95_deg'])}, max {_g(h['max_deg'])} deg against the model's {abs(h['stop_deg']):.1f} deg stop; "
+        L.append(f"- {sp} m/s{_acc(sp)}: peak hip extension median {_g(h['median_deg'])}, p95 {_g(h['p95_deg'])}, max {_g(h['max_deg'])} deg against the model's {abs(h['stop_deg']):.1f} deg stop; "
                  f"{100 * h['fraction_beyond_stop']:.0f}% of strides go beyond it.")
         hd = rec["hip_demand"][sp]
-        L.append(f"- {sp} m/s: the dataset's own peak hip extension (inverse kinematics, not retargeted) median / p95 / max, from the vertical "
+        L.append(f"- {sp} m/s{_acc(sp)}: the dataset's own peak hip extension (inverse kinematics, not retargeted) median / p95 / max, from the vertical "
                  + " / ".join(_g(hd["vertical_deg"][k]) for k in ("median", "p95", "max")) + " deg; relative to the pelvis "
                  + " / ".join(_g(hd["pelvis_relative_deg"][k]) for k in ("median", "p95", "max"))
                  + f" deg; median posterior pelvic tilt of the IK pelvis {_g(hd['posterior_pelvic_tilt_median_deg'])} deg. The pelvis-referenced figure is the vertical one plus that tilt: "
