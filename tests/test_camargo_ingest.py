@@ -72,6 +72,43 @@ def test_steady_plateaus_split_on_speed_change():
     assert ic.steady_segments(t, sp, target=1.6, tol=0.01, ptp=0.001)[0][0] > 11.9
 
 
+def test_steady_plateau_at_half_a_metre_per_second():
+    t = np.arange(0, 30, 0.01)
+    sp = np.where(t < 10, 0.5, np.where(t < 12, 0.5 + 0.45 * (t - 10), 1.4))
+    segs = ic.steady_segments(t, sp, target=0.5, tol=0.01, ptp=0.001)
+    assert len(segs) == 1 and abs(segs[0][0] - 0.0) < 0.02 and abs(segs[0][1] - 10.0) < 0.02
+    assert ic.steady_segments(t, sp, target=1.4, tol=0.01, ptp=0.001)[0][0] > 11.9
+    assert ic.steady_segments(t, np.full_like(t, 1.4), target=0.5, tol=0.01, ptp=0.001) == []  # no 0.5 plateau in a 1.4 trace
+
+
+# ---------- the stride-duration range is per speed ----------
+
+MEDIAN_STRIDE_0P5_S = 1.552  # pooled median over every accepted 0.5 m/s stride of the 17 subjects (T1 of the Stage 2f brief), the centre of the 0.5 range
+
+
+def test_stride_range_is_per_speed_and_unchanged_at_1p4_and_1p6():
+    assert ic.stride_range(SPEC, 1.4) == (0.7, 1.6) and ic.stride_range(SPEC, 1.6) == (0.7, 1.6)
+    assert set(float(s) for s in SPEC["stride_s"]) == set(float(s) for s in SPEC["speeds_mps"])  # every speed has a range, no speed lacks one
+
+
+def test_range_around_a_median_keeps_the_relative_half_width():
+    lo, hi = ic.range_around(2.0, 0.7, 1.6)
+    assert (hi - lo) / (hi + lo) == pytest.approx((1.6 - 0.7) / (1.6 + 0.7), abs=1e-12)
+    assert (lo + hi) / 2 == pytest.approx(2.0, abs=1e-12)
+
+
+def test_the_0p5_range_is_the_existing_width_around_the_measured_median():
+    lo, hi = ic.stride_range(SPEC, 0.5)
+    assert (lo, hi) == tuple(round(x, 3) for x in ic.range_around(MEDIAN_STRIDE_0P5_S, 0.7, 1.6))
+    assert lo < MEDIAN_STRIDE_0P5_S < hi and hi > 1.6  # slow gait has longer strides than the 1.4 to 1.6 m/s range admits
+
+
+@pytest.mark.skipif(not (REPO / "data" / "camargo2021" / "processed" / "AB23.npz").exists(), reason="processed arrays not present")
+def test_the_median_stride_duration_at_0p5_is_the_one_the_range_is_centred_on():
+    d = np.concatenate([np.load(f)["0.5_duration_s"] for f in sorted((REPO / "data" / "camargo2021" / "processed").glob("*.npz"))])
+    assert d.size >= 100 and abs(np.median(d) - MEDIAN_STRIDE_0P5_S) < 0.0005
+
+
 # ---------- raw folder resolution ----------
 
 def test_raw_dir_order_env_then_config_key_then_default(tmp_path, monkeypatch):
@@ -128,15 +165,33 @@ def test_read_table_decodes_a_matlab_table():
     assert t["Header"].size > 1000 and abs(np.diff(t["Header"]).mean() - 0.005) < 1e-6
 
 
+# Plausible mean stride duration per speed, from adult walking (about 1.0 to 1.2 s at 1.4 to 1.6 m/s; 1.3 to 1.9 s at 0.5 m/s, where stride length is about 0.8 m).
+MEAN_STRIDE_S = {0.5: (1.3, 1.9), 1.4: (0.9, 1.25), 1.6: (0.9, 1.25)}
+
+
 @data_needed
 def test_stride_counts_and_durations_are_plausible(ab06):
+    assert set(SPEC["speeds_mps"]) == set(MEAN_STRIDE_S)
     for speed in SPEC["speeds_mps"]:
         s = ab06["strides"][speed]
         assert 15 <= s["n"] <= 60, (speed, s["n"])
-        lo, hi = SPEC["stride_s"]
+        lo, hi = ic.stride_range(SPEC, speed)
         assert lo <= s["duration_s"].min() and s["duration_s"].max() <= hi
-        assert 0.9 < s["duration_s"].mean() < 1.25  # 1.4-1.6 m/s adult walking
-    assert ab06["strides"][1.6]["duration_s"].mean() < ab06["strides"][1.4]["duration_s"].mean()
+        mlo, mhi = MEAN_STRIDE_S[speed]
+        assert mlo < s["duration_s"].mean() < mhi, (speed, s["duration_s"].mean())
+    d = {sp: ab06["strides"][sp]["duration_s"].mean() for sp in (0.5, 1.4, 1.6)}
+    assert d[1.6] < d[1.4] < d[0.5]  # strides lengthen as the belt slows
+
+
+@data_needed
+def test_adding_a_speed_leaves_the_other_speeds_byte_identical(ab06):
+    old = {**SPEC, "speeds_mps": [1.4, 1.6], "stride_s": {1.4: SPEC["stride_s"][1.4], 1.6: SPEC["stride_s"][1.6]}}
+    r = ic.ingest_subject(RAW, "AB06", old)
+    for speed in (1.4, 1.6):
+        assert set(r["strides"][speed]) == set(ab06["strides"][speed])
+        for k, v in r["strides"][speed].items():
+            assert np.array_equal(v, ab06["strides"][speed][k], equal_nan=True), (speed, k)  # fp holds NaN where a plate is unloaded
+        assert r["rejects"][speed] == ab06["rejects"][speed]
 
 
 @data_needed

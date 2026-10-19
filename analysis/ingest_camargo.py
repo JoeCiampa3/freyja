@@ -1,5 +1,5 @@
 """
-Stage 2 T1: ingest the Camargo et al. 2021 treadmill walking trials (1.4 and 1.6 m/s) into per-stride, phase-normalised
+Stage 2 T1: ingest the Camargo et al. 2021 treadmill walking trials (the speeds in the spec: 1.4 and 1.6 m/s, and 0.5 m/s since Stage 2f) into per-stride, phase-normalised
 arrays. Reads trials on demand from the per-subject zip archives (random access), never the whole dataset, and never writes
 into the raw folder. Processed arrays go to data/camargo2021/processed/ (gitignored); the manifest is tracked.
 
@@ -138,6 +138,23 @@ def wrap_gap(x):
     return np.abs(x[-1] - x[0])
 
 
+def relative_half_width(lo: float, hi: float) -> float:
+    """(hi - lo) / (hi + lo): the half-width of [lo, hi] as a fraction of its midpoint."""
+    return (hi - lo) / (hi + lo)
+
+
+def range_around(median: float, lo: float, hi: float) -> tuple:
+    """[lo, hi] moved to be centred on `median` with the same relative half-width."""
+    w = relative_half_width(lo, hi)
+    return median * (1 - w), median * (1 + w)
+
+
+def stride_range(spec: dict, speed) -> tuple:
+    """The plausible heel-strike-to-heel-strike duration (lo, hi) in seconds at a target speed: `stride_s` is keyed by speed."""
+    lo, hi = spec["stride_s"][speed]
+    return float(lo), float(hi)
+
+
 def steady_segments(t, speed, target: float, tol: float, ptp: float, min_s: float = 1.0):
     """[(t_start, t_end)] plateaus of the belt speed: maximal runs whose speed varies by at most `ptp`, with mean within
     `tol` of `target`, lasting at least min_s."""
@@ -230,7 +247,7 @@ def ingest_subject(raw: Path, subject: str, spec: dict) -> dict:
                     if not (p0 + spec["settle_s"] <= t0 and t1 <= p1):
                         continue  # outside this plateau (counted once per plateau where it applies, so only in-range strides get reasons)
                     T = t1 - t0
-                    if not spec["stride_s"][0] <= T <= spec["stride_s"][1]:
+                    if not stride_range(spec, s)[0] <= T <= stride_range(spec, s)[1]:
                         reject(s, "duration"); continue
                     if np.ptp(speed_at[a:b + 1]) > spec["speed_ptp_mps"]:
                         reject(s, "speed_not_steady"); continue

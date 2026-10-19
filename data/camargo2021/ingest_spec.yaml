@@ -6,14 +6,19 @@ dataset:
   parts: {1: 10.17632/fcgm3chfff.2, 2: 10.17632/k9kvm5tn3f.2, 3: 10.17632/jj3r5f9pnf.2}
   retrieved: 2026-10-11     # date stamp of the downloaded archives
 subjects: [AB06, AB07, AB08, AB09, AB10, AB11, AB12, AB13, AB14, AB15, AB16, AB17, AB18, AB19, AB20, AB21, AB23]
-speeds_mps: [1.4, 1.6]
+speeds_mps: [0.5, 1.4, 1.6]   # 0.5 m/s is v1's acceptance speed (Stage 2f); the other two size the hardware
 # Stride acceptance. Every constant is a named quantity; a stride failing any test is counted by reason, never silently dropped.
 speed_tol_mps: 0.01       # plateau speed within this of the target
 speed_ptp_mps: 0.001      # belt speed constant across the whole stride
 settle_s: 5.0             # strides starting less than this after the plateau began are discarded (belt/gait adaptation)
 contact_force_n: 20.0     # vertical force above which a foot is in contact (about 3% of body weight)
 min_contact_s: 0.25       # shorter contacts (cross-over steps on the wrong belt) are not stance phases
-stride_s: [0.7, 1.6]      # plausible heel-strike-to-heel-strike duration
+stride_s:                 # plausible heel-strike-to-heel-strike duration, s, per target speed (a stride outside it is mis-segmented)
+  1.4: [0.7, 1.6]         # the original range, unchanged
+  1.6: [0.7, 1.6]
+  0.5: [0.945, 2.159]     # the original range's relative half-width, (1.6 - 0.7) / (1.6 + 0.7) = 0.391, around the pooled median stride duration
+                          # measured at 0.5 m/s, 1.552 s over 297 strides (Stage 2f T0, range opened to 0..100 s): 1.552 * (1 -/+ 0.391), rounded to 3 places.
+                          # It rejects none of the 297 (shortest 1.285 s, longest 1.971 s). The 1.4 to 1.6 range would have rejected 99 (33%), all too long.
 toe_off_phase: [0.5, 0.75]       # ipsilateral toe-off, fraction of stride
 contra_heel_strike_phase: [0.4, 0.65]
 contra_toe_off_phase: [0.0, 0.25]

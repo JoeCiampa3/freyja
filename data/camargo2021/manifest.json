@@ -11,6 +11,12 @@
  },
  "files_sha256": {
   "AB06/static_01/ik": "41ee8776fc5afd712f9a28f2d8792c3e58a76bd53e60d91f5c77146787dec2da",
+  "AB06/treadmill_01_01/conditions": "945a79e8f59c1d393ba023b8cb1b6773748cbf2d1869c6dd02df8798b111d6ec",
+  "AB06/treadmill_01_01/fp": "9a2641af8214f367198751ee7fd0ea1f766ca928fb02d83b7a79228f460cfb4b",
+  "AB06/treadmill_01_01/id": "93ae2bc9db81d76755802c4c60ac2735bc91fb1957ec907a29c744aa5c5aaa0c",
+  "AB06/treadmill_01_01/ik": "08f9cd51656e3ec19046cbdbbfc494c2e95038f4b5b8c8ec8242c953a6a6cacd",
+  "AB06/treadmill_01_01/imu": "143686d5f10dcdaf55a81ad2109ceaf802541b9f184701b8f978d0a3d14fbec7",
+  "AB06/treadmill_01_01/markers": "8277699fcd410be5841ad5ebcfeaa7f1919fd01af7e22c7258fa89f570c90e09",
   "AB06/treadmill_03_01/conditions": "cb62b6bb6f4c66b584d63d49d0f80096ee18c2c26f4376bc09baa801d3ad4b9f",
   "AB06/treadmill_03_01/fp": "7068b115bc327785c20b699624dce15a243a3059a44b868d803c605157e153b8",
   "AB06/treadmill_03_01/id": "6dfe959320387322f8b180e7f4357160102803831f671e105d890bcd7cf9d14d",
@@ -24,6 +30,12 @@
   "AB06/treadmill_07_01/imu": "de702e6ede45e8c65e669356c51f098365607f2d000f391bbd0992910c3bdfad",
   "AB06/treadmill_07_01/markers": "1dc34df29f077e065bff37e1cfe4c67823d1d8936b630b9fc2010e6dd6691eb5",
   "AB07/static01/ik": "a734cccfc2e227948a8b0f13c7744838dfb98386f7e7abdcb84e8f102de84579",
+  "AB07/treadmill_01_01/conditions": "bb52bc718a8a0b487c17759b4394e7989d2cce0b321238acc2ffc9d42a1d84d2",
+  "AB07/treadmill_01_01/fp": "13ab12d3c02e01d5e5fbdbf63649f40f9eaaa4aade1ee03f171a1c8001928987",
+  "AB07/treadmill_01_01/id": "e843a156b46b32fe5e9e6b604f2be1c4d262df20d0ba1044e530bbdaf4b9cfb6",
+  "AB07/treadmill_01_01/ik": "cd3750dcd74987b2d3ab6c3191e0b811fb8d66959c09afb2aed49ad1276ba571",
+  "AB07/treadmill_01_01/imu": "91cce23f93f4f3d9bb3ba9cc729e7c6c460c05238697c1a3e484ec25caba4dba",
+  "AB07/treadmill_01_01/markers": "6bd480443e3e45920d8c71db71d2bdf5b44b45227fa5174c784747b27b19b5cf",
   "AB07/treadmill_03_01/conditions": "6b9ac7bf4fb071b4fa09a61974532dccdd80134f067a8e9efe97d645b1f6aea6",
   "AB07/treadmill_03_01/fp": "ea035199f6b4b11084318e0401cec58c7dd110f034eb6763140deb5e94ede640",
   "AB07/treadmill_03_01/id": "a987bdbe3697aa930c71e9fafe9e994bffca83a1f10f9de7d7e9031c217784c3",
@@ -37,6 +49,12 @@
   "AB07/treadmill_07_01/imu": "6c75eb533396a64ef169a569ca0d31f6cd4b17d87f6dca7079d03012ee79de5d",
   "AB07/treadmill_07_01/markers": "e2b78fe3a1acb6c5055496d31eeda81841e6c7860c34a54ed451d8a852cdec5d",
   "AB08/static01/ik": "53a7a0f3307ea2e42210287c341318be53363ed7868dffdfef18f866048c8c4d",
+  "AB08/treadmill_01_01/conditions": "7f754966ed122ef0465675d5b628a6e7bf7ad4711e14ab5d26f52ec1fb1364b7",
+  "AB08/treadmill_01_01/fp": "f90f998391f513996e9ec0323f12645ba803b792aad46c4debf51b9eb930533b",
+  "AB08/treadmill_01_01/id": "019ad6ab3954e3ad72fd565de5a7d5f1e404ea6953b175f0fb07a4e26df7fbe1",
+  "AB08/treadmill_01_01/ik": "0d811ecf191f29acb444fbc2c3e238fe87a4941bfb2e993c9f342c515882f582",
+  "AB08/treadmill_01_01/imu": "0db1f42afd1b29e855b01ed8eab5b38f7b1b3f84e1943557668c189a3e93a745",
+  "AB08/treadmill_01_01/markers": "047c51d8b59e6018e4483d9f5fc429332d068618928fb1911d299b0c58778768",
   "AB08/treadmill_02_01/conditions": "011f4412a3559089a71ecaa1954ca160aa394b5fea8e313b2f04b9c973ebf181",
   "AB08/treadmill_02_01/fp": "f1fed9013bb682ec6d6e618cea7efb28810206c2669fbeddb327339117c23215",
   "AB08/treadmill_02_01/id": "54d8dd9dd6ef5ecbdaaa949d419e3b208b65322f52cb48c2a76623a247d42c9f",
@@ -50,6 +68,12 @@
   "AB08/treadmill_05_01/imu": "a91fdc047c0b257ed72caa6ce3fb8f3ec59e5e550f60bc1517982d3de53edb35",
   "AB08/treadmill_05_01/markers": "9f9754269038e4b5562e9d98d6424c5ca7123c2ce54889a9e7fdd5ee8ec2f7d3",
   "AB09/static01/ik": "90740ac0d19dd4ea7818212985094d640ee3167a4b6ba97e8c7ff6d83a8243c2",
+  "AB09/treadmill_01_01/conditions": "2b8668b5e20db4af1527363950883f3e104b44826d29cecadd13e58f7fa2f2d8",
+  "AB09/treadmill_01_01/fp": "3b67beb2f4f1b1b28f3f9a33bb758f0816ee2e603da273fcdc21ad84b63f0683",
+  "AB09/treadmill_01_01/id": "c29d57fcb3519a24ebe350d2cc926e086013684b55235fa1086905a23e10d989",
+  "AB09/treadmill_01_01/ik": "f70b781127889ef2892904669b77ce8681af112a97241a990aa24ec8235cd15e",
+  "AB09/treadmill_01_01/imu": "261ac09e7ccea61acba0fc13fd82283f55b9a84c139d87cb70d4af90b7b05ce3",
+  "AB09/treadmill_01_01/markers": "7692c9aaaef5f26a27fac2edc1bf645d1ca96b37b4f5ef9d2517c8b5bdb25a6b",
   "AB09/treadmill_02_01/conditions": "d53ba6ada86618c5da9c324de6b433a1a9c8d585eea98bfd138ec8fadb48f24b",
   "AB09/treadmill_02_01/fp": "101f6c4fbd1dfe1791a22dded3537ae203516878e0e2f0c95ed2e4cdd1ea66b0",
   "AB09/treadmill_02_01/id": "570b42be3bc4f25fd47ebecc9ed314d2ebc58f28ce9e9a5f05ad4fff0ea121ee",
@@ -63,6 +87,12 @@
   "AB09/treadmill_05_01/imu": "58b666fae14fed91b1ec8438c0c99110a2900b1f45ba50661ec0ea203ab2ba5f",
   "AB09/treadmill_05_01/markers": "9607cabc465a51b824f80f8009f3994d6669c380edbcda145c66d5d1e3cf693c",
   "AB10/static01/ik": "2411f826ca4bc271f9cd15f48d0abdd66fb6c6c26db613f50f03dd35fff93d7d",
+  "AB10/treadmill_01_01/conditions": "c20e4e838322bc4e4af011b0a3d6ba9544959d930964a080d8a5ff3b1a5ad55d",
+  "AB10/treadmill_01_01/fp": "077d5a3fe701473892e1dbf3a1c8b593021dd8a088f88cd5f836457e60e5ccf6",
+  "AB10/treadmill_01_01/id": "88f19b2fc060fa06228e9acef0aaf93eb596c0e042382b25eb55d7defb363d44",
+  "AB10/treadmill_01_01/ik": "8515c86e22d9b254844b4e75081135b7e0b39c10d147006f885de343a821e416",
+  "AB10/treadmill_01_01/imu": "3b821db7013c2ab710b4d74ed511127bb8c62ec199a0ae31ab4d3810be806e45",
+  "AB10/treadmill_01_01/markers": "055008b4d128e238bcc7577172f828bbb28db880cc5ba5ed3a03fa898d4cb1b4",
   "AB10/treadmill_02_01/conditions": "a068dbb9cebed779d92e58a6de1fdc7c112d15447e7a5bd75a507331b5c98bb7",
   "AB10/treadmill_02_01/fp": "cbd6a5e3f4988c044afaea6d60cb8f43a208c7864ff9ba31a666d69365d0bd48",
   "AB10/treadmill_02_01/id": "0d411300cf8ee9d268f83b0eebaa53023e8028391b12c5f422d53f364183fa1f",
@@ -76,6 +106,12 @@
   "AB10/treadmill_05_01/imu": "53ee1757d7f772ee53f86b0a6de02fc34504da3ce1f50a0d5faea486bc91eb44",
   "AB10/treadmill_05_01/markers": "81b90e3287ecf4375e431269d50b521399bb62074832ac591f24e23801f18d57",
   "AB11/static01/ik": "955f72db5131bd8d6a9299b6547359c339f2ed28e9f4a46be46dc21b56c8e823",
+  "AB11/treadmill_01_01/conditions": "85c191d7071667b1965f2606517173de2f8f1fb76b9d58d179c23e15dcb9324a",
+  "AB11/treadmill_01_01/fp": "93cfe8f5d3f4f09f29691ef630b3eacfbf840e382683c3eefd2c806f079cecc8",
+  "AB11/treadmill_01_01/id": "34c4f6d85043c22edf673c99a2d55d706f59deca8511c442246ad2f16105c79e",
+  "AB11/treadmill_01_01/ik": "3e6963a652ce1d2dc748ffb958389bf688312d09d5eebada111e13d7f6eb0b7d",
+  "AB11/treadmill_01_01/imu": "a002bb95ae90f8f5438d1991b2576d7cce825bab3d84700c63b088f784784c93",
+  "AB11/treadmill_01_01/markers": "85b5ffbea1e2d11e83eb6b012053b23e8247b73fcf7f79986955e8b67fb38844",
   "AB11/treadmill_02_01/conditions": "c0f23d975f082d6129b06ff8a034f8c7ef957ee7601fa6a69580061a09a8fbf3",
   "AB11/treadmill_02_01/fp": "45ef44db813022bd25ee414679d965be360dbfa698c5da157eda5f2c3c1496ed",
   "AB11/treadmill_02_01/id": "492a84b0c0b6030bd263410697b347458c49e5a2c0418f8297c71b2c3fbe4ba7",
@@ -89,6 +125,12 @@
   "AB11/treadmill_05_01/imu": "8718785e9e69f63aa669248052ac782fd36280fa9224cb37031a28102a02db65",
   "AB11/treadmill_05_01/markers": "05645e5d15411363382a40ee3a103f2a04b71b4cc46a24fbcd0eed1454de8b63",
   "AB12/static_01/ik": "decbd7726c21decac2fb56840f6bbd86dadaa079594d37139700cc4f0db668e9",
+  "AB12/treadmill_01_01/conditions": "88f3574e6d6e22b8cd13f114b6aceb7752970973ae95d9afa9a7e9450a102cf2",
+  "AB12/treadmill_01_01/fp": "8536cd9ae2859287c36400e677693729bd47ac1f0894ac37627b1fa3f1c37d99",
+  "AB12/treadmill_01_01/id": "0673b615c9c856b421c06263d50d702a2bf7ca271bef20af6748b537a0363731",
+  "AB12/treadmill_01_01/ik": "44fbd7d790812bdbdbac3658254876cb2d44813403979f02ffc160e178241de1",
+  "AB12/treadmill_01_01/imu": "095acfcd00444ee6dbdbd0252db9ab04bf2eed4dd83ca47039e470a2b8f404ad",
+  "AB12/treadmill_01_01/markers": "b7db739d653460dc6d26ec3f1e5f2891f434ce44c4ef50f07c17fe45719cdde7",
   "AB12/treadmill_02_01/conditions": "9bd8b3a38066092de03f2d876d4dbcafee99b4da295e69fdf8e102f2692b17ec",
   "AB12/treadmill_02_01/fp": "5bb4d899cd5597c5ef2429043704b204dbafaa081d8d30cfb7f5aa30be059e00",
   "AB12/treadmill_02_01/id": "f110c8001f56c405105996d4ca6dc356f04fd2fb27d18d0fcad11615e7ccabe8",
@@ -102,6 +144,12 @@
   "AB12/treadmill_05_01/imu": "0c2092b1f6c0f992014d31cfe00a85c66ad3f0bbbb49af31c9d59d0218037a8b",
   "AB12/treadmill_05_01/markers": "196a655aaf30e565307547b5896b248740aea26e10ea68090942b52eff258632",
   "AB13/static_01/ik": "74bab1c69c69536b7a2b7f348112e966e3c58a8c40a3c8edb182c8ce80dc4251",
+  "AB13/treadmill_01_01/conditions": "5ceda04775fdc02a76f7ec066bf17592d4be3291d8284cdb6b27fc5e79513ca9",
+  "AB13/treadmill_01_01/fp": "30241988d695e8dc48052afa17dd90e09ac5184f35390e5f635877554bc88292",
+  "AB13/treadmill_01_01/id": "66747472d8e9a42f0336d1de70128f39e9ca6fd23f6ca9f504a01349aa41d7b4",
+  "AB13/treadmill_01_01/ik": "e11f0d454d2f6a0fed2522ea8582097417806e357db09d6cb4df0592acd6e82a",
+  "AB13/treadmill_01_01/imu": "f33d15ce9a9fb96ca2503c640f0ce81af4a29d8bc544180f829b4990fd69a3d4",
+  "AB13/treadmill_01_01/markers": "68c52da01c21d3abad05ba1f6d95b441db2131163d54211798b0184813087428",
   "AB13/treadmill_02_01/conditions": "7f7ccc153934acc444277b2843b22485defbeda30f929c5c679d9e2265aa85af",
   "AB13/treadmill_02_01/fp": "2cff47fb60fc7e8539f4fff8cb0c4b16d64e422f7b16460fa0b875ed8c05a88c",
   "AB13/treadmill_02_01/id": "32048e487ee3f8a31379bd2af768a23cabad419060501f1ff78f851c9232cba6",
@@ -115,6 +163,12 @@
   "AB13/treadmill_05_01/imu": "ce5313b5663d4463edc190c843dbc4ca1a79ad0fee72ebaa9b09fa78981cbf85",
   "AB13/treadmill_05_01/markers": "9016dfb1cbf45f27cf20cd77b462e41d87dc0982a3afca831efb1cf7c95fbdd6",
   "AB14/static_01/ik": "2a57ac2f4c59a59ee6141699708581740f714bc0e8a4f98dab1c4772cf0e2b2e",
+  "AB14/treadmill_01_01/conditions": "2b9d206d30da23901cad2000a9025978794a5c0eb28662c9cbb6f9c0f0b24013",
+  "AB14/treadmill_01_01/fp": "1d9fce514f27c8a85ae4b7893b578eb3dd82a7a510e83a311f8294886d6481ce",
+  "AB14/treadmill_01_01/id": "e114b8ef0a3430df1be0871d50ac67ddd7c7c4e4039cecce835474200c1b29e1",
+  "AB14/treadmill_01_01/ik": "36b1f7b1d24b60e38e8a272c3cc83bafc804e45e0bbdee41962b7cc6f4945ec6",
+  "AB14/treadmill_01_01/imu": "970edece0869bc1d174a1dc7422e000faed008316c51f3a9a9fad5ecfcf272f6",
+  "AB14/treadmill_01_01/markers": "ffd59ad9496cb60e7851f2bc0e937055314a8e62aba85f28a18417df10376b9c",
   "AB14/treadmill_02_01/conditions": "80ef68424f280a3b461710c9ad82219b49399453b90a5e738c7f7f15121a8a7c",
   "AB14/treadmill_02_01/fp": "e3ba7531cb8cbc9b9484c25381f632923b9fa2a26c3aeb8170bf57a4c58aed15",
   "AB14/treadmill_02_01/id": "bcb56ab49d25b346de2b795188e594b6df087c628d38db46a090a4cb667a6bb4",
@@ -128,6 +182,12 @@
   "AB14/treadmill_05_01/imu": "4a2678da18943f053a191f9af6b63fe3569e1bca46396527aa00020760f5c55a",
   "AB14/treadmill_05_01/markers": "3006e1d95765f8fa6018eb863a29f9b49ee96a9398a4a535446a7564d2d4146b",
   "AB15/static_01/ik": "0d533302c5c2adf56a8aa8d02b74ac08e6e0b9f5615891597cd42df870b76f86",
+  "AB15/treadmill_01_01/conditions": "f6d6a9896104f1c19f5d2dee5b4ae7eda15c1a44f913c687d8480a639d8526c8",
+  "AB15/treadmill_01_01/fp": "bf01710c3c5c6ae2d2ef021e9de8922557f3298bb6612ad19710fc7971f478ed",
+  "AB15/treadmill_01_01/id": "441637aa9db3f1680ad48f658893f42e283962ef49ba2a2a6330e97bd47d8e5a",
+  "AB15/treadmill_01_01/ik": "90decb7ee7741685a2123df081229097560a9572223f55993cf9d97b8e0be49a",
+  "AB15/treadmill_01_01/imu": "7660f690fa3b17da4ea4cdbf94f04b36b7b69c05c3aa751d2079d4b5c45fa666",
+  "AB15/treadmill_01_01/markers": "d106ce738145cbdf02aaf1035d764b1b7106b6ded711064f179a6f29b9eda294",
   "AB15/treadmill_02_01/conditions": "1a8afad4dd5b5f86f46c29d23f0f1c10a075b1ccb0cce8a91e59fe19cfcfdb23",
   "AB15/treadmill_02_01/fp": "5a1e80257c7926860551c989974e0bd1e438c503f4af43766e8356b9b777a47c",
   "AB15/treadmill_02_01/id": "eef3f3a605b7eda89b81af11065cd411d89c984d1ee211ee6e2165bba9dea75b",
@@ -141,6 +201,12 @@
   "AB15/treadmill_05_01/imu": "d1d47cab18b611654c6527372f1115f20125a6189baa43bb20ce715da7f1b549",
   "AB15/treadmill_05_01/markers": "ba49c54ffeee1d92825f4cf7da38a0c10563c6aa12ac2964138503e4abc6265c",
   "AB16/static_01/ik": "530e553bfee92b444438885da3227c0f69cc52c277087c1641cfea31f2eac8dc",
+  "AB16/treadmill_01_01/conditions": "435c6626b4d207fa0352a3bd243355e92082622237f8028f6aa787e929b52e37",
+  "AB16/treadmill_01_01/fp": "3cb39022455105367d1a1809bdc852ce3b511cd320dc6532da383aab1b55846e",
+  "AB16/treadmill_01_01/id": "b15583d3df6cd0b69699589e4387442eb944f203672504fd1615c0abd52c1d68",
+  "AB16/treadmill_01_01/ik": "0a974042c04d69f2509a6b79c8975c01ab4d52f9e32f043438c44e2514dcc848",
+  "AB16/treadmill_01_01/imu": "0b8a5233cadeeb2c6122cce1c6933abe74a53c24ec5994690f46faa75793b937",
+  "AB16/treadmill_01_01/markers": "63607628d64b2a53d097f0903813ccc4fc5376b2f6d5055edfffa69cd97c6b8d",
   "AB16/treadmill_02_01/conditions": "0189dc94e3357615a415d3e886416bd1b4bc34baa53cd89bad6d0e53a6c95ef9",
   "AB16/treadmill_02_01/fp": "c4096973283c65b4a5ac4929fa5d22f5f88a14dd928fd899f036bcceb2a48bd6",
   "AB16/treadmill_02_01/id": "1ad95328654d2b9245252ddb124c978550ff45d12d90a9e9ac743b665663334b",
@@ -154,6 +220,12 @@
   "AB16/treadmill_05_01/imu": "4e84926facaac0bec8e93d58c89449f8aff75409baf1fb5215f34daaba31af50",
   "AB16/treadmill_05_01/markers": "d96c0ce6d342dd3a7eb7bc9f19769534f3f8dfe2f671717d99a90a4fe6dc659e",
   "AB17/static_01/ik": "022aa828ff9d770efa018379967a7e47ec6d5a841761e7dd740e28dac61a73e8",
+  "AB17/treadmill_01_01/conditions": "d1515e8b4b675bc97abb1c4fedd73414b20d51342c8d6dc20a35f0bb8b17f543",
+  "AB17/treadmill_01_01/fp": "589c2e6e374f97ba1a3bd18096ce7c0e52e34f694b3c6f416fc5a9e275a24f5c",
+  "AB17/treadmill_01_01/id": "a78f95e264cda08c3ce808a802fe316b2e84045b8d2451504a2a9e237af913c2",
+  "AB17/treadmill_01_01/ik": "7becec1ca745c6171c835b05fd2fe4ef9f116f407bcc69e2172f0ebcc8a79cb5",
+  "AB17/treadmill_01_01/imu": "afe03ccf3531f78b10a61f0310c85252bb93ea8d5b9a95c487d8686f6151fe94",
+  "AB17/treadmill_01_01/markers": "76b1d115527ae03f4fd272d35ba4adb9d45fc9d6b845b838ed111a0b511d360b",
   "AB17/treadmill_02_01/conditions": "5efddd6f3cce99cb0fdb581772e5fb5d8ea8d4b6d85bee42df528860bf39f558",
   "AB17/treadmill_02_01/fp": "77a5ad2a2dbc81d944d51d405db788ddc4c610c937bcd511fd01286b13b386d3",
   "AB17/treadmill_02_01/id": "c9007a4015b7ddc65fd207f41953442691a90414563b93f4b8d9f4d3558163aa",
@@ -167,6 +239,12 @@
   "AB17/treadmill_05_01/imu": "41db436789c809c955ccd862d8164671114266c99b5d0e74231c6a8607615495",
   "AB17/treadmill_05_01/markers": "c379be71bcbacb09ff6a912d05341bbedacc74c2a81c824861c100075590c56a",
   "AB18/static_01/ik": "ab6afc8ac46b13a5eda9c27d1d882c2bb47bcb9ca87b3aebeb31b7589f35be81",
+  "AB18/treadmill_01_01/conditions": "000c853ad33dc75b8d3ef7583b898ccdfde2d9225d48961f0f742a129be194e7",
+  "AB18/treadmill_01_01/fp": "f0242def7112d465084e029860d334f4eff25e168796b8cef5c1742a91a47892",
+  "AB18/treadmill_01_01/id": "c8df9dfe43188f89d7339caed5504424ff3bc3fbc4e6c67c56459db5e6d731ae",
+  "AB18/treadmill_01_01/ik": "b2bfeecaf5b699180d0dcc83e1e8a4fdd8d31892283677a1b86988d2b0a6bfe9",
+  "AB18/treadmill_01_01/imu": "c0475070dda2dbeae33973054fb92d7d152c5571b15156f7635265a1569eec80",
+  "AB18/treadmill_01_01/markers": "9a638aa1c79680b49fe9ce7e21121cdbdecd70edd62c3b065d62622ff9ad131a",
   "AB18/treadmill_02_01/conditions": "47a358cf92003736e0dc5fe3a7574c4033d884707dd1d7cef4953e10a3def6de",
   "AB18/treadmill_02_01/fp": "af837710531a56f4264b20bc27b85eb2b553b3557bddfd6051b2cb5932d4c8c8",
   "AB18/treadmill_02_01/id": "79daac239865df8fe309d9f4a9ed2d2f534ccb7ba3be130834f194a83d6f9773",
@@ -180,6 +258,12 @@
   "AB18/treadmill_05_01/imu": "3421dfa4f4d5999db7eec5adde38bf6d21b561439b60bb23403e9537433785ac",
   "AB18/treadmill_05_01/markers": "23244f7ec2374b21cc064bf373d62ed7ffed3021ae3ce7d2a852fd12f6f900d2",
   "AB19/static_01/ik": "3db05303d8124c267ef4d28546a4f1eb6d1bb14657d963ed420335a6c3cbfed9",
+  "AB19/treadmill_01_01/conditions": "565b58a15f4e92e907a22a760c4bfbc253b55f999125629b1189c41c7f08fe12",
+  "AB19/treadmill_01_01/fp": "2ab2e214643dbbcffdc117d280b69487aad0ca8ca3a70d252fa437db18b55ae8",
+  "AB19/treadmill_01_01/id": "a45c40b69a9a30d559d321ef68276371083e888a02a16a06557740e8e26b63fc",
+  "AB19/treadmill_01_01/ik": "7cefcadd29eb111cb2ae68ba52d2c83e1734e62f23441a136bc87c58dd8d0288",
+  "AB19/treadmill_01_01/imu": "cb73c2ef04a481fbd35e7295087f24f2e990667771958e261d5a671c8c47fe4c",
+  "AB19/treadmill_01_01/markers": "59467c0d40b6f73e0c92720a43efda356a8078d377e259523a3587c21f00482a",
   "AB19/treadmill_02_01/conditions": "94ca8db7cc7a7bac14fc65fd3cbc338f1b020852d7cdfaaaa7ce36498edfdc86",
   "AB19/treadmill_02_01/fp": "b79f4532dcb281c8945aff5c66b98fa4c7db21e881b994c47f8dc19097d9fc85",
   "AB19/treadmill_02_01/id": "d33201f10bb051b2a62b96434888929f2c6d27413ee6bc31466797c31bf7bc67",
@@ -193,6 +277,12 @@
   "AB19/treadmill_05_01/imu": "3a0d1a5ecd662cf4e696f15300f744941cbf6556594ba5fa9a43d84e2a475e2d",
   "AB19/treadmill_05_01/markers": "58388f403621916f182bf3e2e5569e0f08586f2be02bee5fa48624ac606912f1",
   "AB20/static_01/ik": "a69d1aec34d4a610c7824a1aad90d2526a299efc5bb0abe7165f23049893d6e0",
+  "AB20/treadmill_01_01/conditions": "4fd3f2d67834861d8f3177f80de9df0bfa7bb240307146aab07c0a109245641c",
+  "AB20/treadmill_01_01/fp": "134554ea66eef191fd496940ac25a6b889d52a14dbedb4f05649ce49f961084d",
+  "AB20/treadmill_01_01/id": "0379af2a1bb01b8c99ebeb937f15128eacf139b50b42c67ed85c25bcd4b117e4",
+  "AB20/treadmill_01_01/ik": "d199674b64a56aec47693613795a6c6bab0cd837f87d5c2b56e53b2ac7c34e9d",
+  "AB20/treadmill_01_01/imu": "85d00f88e9f321fc807cf1d9f8cfb491b01163ae3c9aacb63a7c5d3ae613aecd",
+  "AB20/treadmill_01_01/markers": "4fb66ee1af6cd0d7af8d413d7694b69bd483ee928d4ec4a732cfa4f5746d9447",
   "AB20/treadmill_02_01/conditions": "5aeb464887a48181177a36b4c68a60eed47486591e11cfba4fe9dc20e942875f",
   "AB20/treadmill_02_01/fp": "54c6c0af6ea14ead443ad682154664b6f9e8cbc6784f745fff3293e2f228dc60",
   "AB20/treadmill_02_01/id": "5c47d4eb18cd08091b9f39f61efe661269e2274ffbe9a60416ee88736365543a",
@@ -206,6 +296,12 @@
   "AB20/treadmill_05_01/imu": "1fe0c3ae27b0b00aeb526e625fd1aa7048e4ce8c0d17a39d00e95a5b57d549e3",
   "AB20/treadmill_05_01/markers": "6ef0cae49501d2688666d734f1f03bbaa2311857772f04a4e96f6715d1f87594",
   "AB21/static_01/ik": "f791b2201218b79944fbe40da875ab8337b3a68368d7b4b3b12ce9b16f71bd6f",
+  "AB21/treadmill_01_01/conditions": "b9db926d031e131d861a1d895a4701aeb6db6d587827f830b3867a77959095fc",
+  "AB21/treadmill_01_01/fp": "a506f15037b0b208d79746d53861c59b6311fb62b18ddbe59a4a2b347afd337b",
+  "AB21/treadmill_01_01/id": "52258083efe6e978a9e4e6492e381e64b1c47d8245d0b9c95e7e17e56ca1c570",
+  "AB21/treadmill_01_01/ik": "837a7f3e7a24e1b6d5371b5db4870161ddfe4f75128d4160108e23b5737c2d44",
+  "AB21/treadmill_01_01/imu": "38735e674ccdc92e164e23b7879883d811db5c6e7e122f572e041d8c9965c687",
+  "AB21/treadmill_01_01/markers": "74eae7f4f4a6363a844fbfb07e8239db2cc85861e3a323889f3136a7a6ae2bb7",
   "AB21/treadmill_02_01/conditions": "49acb03aed6595985ffd5c49c9638a3478a1f2aee94572ac05932b2441062e49",
   "AB21/treadmill_02_01/fp": "9995c5122fa046edd8874a2d4fd8160e2d70a5257f4065330a7462b84c2fb2e6",
   "AB21/treadmill_02_01/id": "7f8a1e58e10e6651503953032b61b0938a1e7166b4e48fc206b5086777a06f88",
@@ -219,6 +315,12 @@
   "AB21/treadmill_05_01/imu": "537c10920ad470249c030eb9a8200dc6ec5de039af3c844398bbca12d1b1abdc",
   "AB21/treadmill_05_01/markers": "01880665f2d3edf5ca1061ef3029289c73beae9e8da2c89074af1b3d32d9094e",
   "AB23/static_01/ik": "b2215e58d24ba41a6a7011024558480bf1ce1d3582d22b1f25c25e1dcdeaab7d",
+  "AB23/treadmill_01_01/conditions": "615b5cf096db2fa5136e98dda989157c4b0d737581a7bfea226b49e21694d91a",
+  "AB23/treadmill_01_01/fp": "4ce58752a11658a7b6358c5b8461b04411e155711dd571e90d231f9841d8eee4",
+  "AB23/treadmill_01_01/id": "8dff4ca26f1084089c45e4617b9826c2c35059350309906baa37be52a67c7670",
+  "AB23/treadmill_01_01/ik": "dc2523e2da4ce78450ae2a16ea07d3c4c51a44087ea0d783e3c17fc8364a3bb7",
+  "AB23/treadmill_01_01/imu": "f47f6b4343c14a7fab4564af17ba77438517577d5c63b4fa4e163d71ce101e15",
+  "AB23/treadmill_01_01/markers": "e8e7c2064ac65b5aa112ac30d44cf36e2feb1d1acd9e3c0aa49aab88cfaef718",
   "AB23/treadmill_02_01/conditions": "be797b0bc39af486869e0b3c7dfe618132be1d9cf0caf48f5f70629d7a797f4f",
   "AB23/treadmill_02_01/fp": "413f4fe2f1fc3c15c005c63e4fe75a462e7d5e17247bde1f33deb44021d305dc",
   "AB23/treadmill_02_01/id": "be619235820370ded17605479c578227fa9a313124754bdaa73d08cb262d4074",
@@ -241,7 +343,7 @@
  "schema": "camargo-manifest/1",
  "script": "analysis/ingest_camargo.py",
  "script_version": "1",
- "spec_sha256": "eef4351efcc12e18eed455da52bf7313a74e05183a2b9a4448ed7d566598dce8",
+ "spec_sha256": "5083e9fef1535b9851187428eafdb52731d0b81d65f438b5e57f0499321b3370",
  "subjects": {
   "AB06": {
    "age": 20.0,
@@ -253,6 +355,7 @@
    ],
    "mass_kg": 74.84,
    "rejected": {
+    "0.5": {},
     "1.4": {},
     "1.6": {}
    },
@@ -260,14 +363,17 @@
    "static_pelvis_pitch_deg": -0.23177636965000004,
    "static_pelvis_roll_deg": -0.44864347495000007,
    "strides": {
+    "0.5": 17,
     "1.4": 27,
     "1.6": 28
    },
    "walking_pelvis_pitch_deg": {
+    "0.5": 1.2280009093483168,
     "1.4": -0.7404313747968378,
     "1.6": -0.3984984267335932
    },
    "walking_pelvis_roll_deg": {
+    "0.5": 0.8094203295017358,
     "1.4": -0.5411095331895113,
     "1.6": -0.39199115806420093
    }
@@ -282,6 +388,7 @@
    ],
    "mass_kg": 55.34,
    "rejected": {
+    "0.5": {},
     "1.4": {},
     "1.6": {}
    },
@@ -289,14 +396,17 @@
    "static_pelvis_pitch_deg": 0.7555161524770643,
    "static_pelvis_roll_deg": 2.100764688440367,
    "strides": {
+    "0.5": 17,
     "1.4": 25,
     "1.6": 27
    },
    "walking_pelvis_pitch_deg": {
+    "0.5": -5.903254369271335,
     "1.4": -12.428457232646046,
     "1.6": -11.281322727534532
    },
    "walking_pelvis_roll_deg": {
+    "0.5": -0.1458476600873039,
     "1.4": -0.9417334895462462,
     "1.6": -1.2311078090061107
    }
@@ -311,6 +421,7 @@
    ],
    "mass_kg": 72.57,
    "rejected": {
+    "0.5": {},
     "1.4": {},
     "1.6": {}
    },
@@ -318,14 +429,17 @@
    "static_pelvis_pitch_deg": -0.05895357208074535,
    "static_pelvis_roll_deg": -0.1300608010248447,
    "strides": {
+    "0.5": 18,
     "1.4": 27,
     "1.6": 30
    },
    "walking_pelvis_pitch_deg": {
+    "0.5": -0.8408903867505724,
     "1.4": -3.976376817936617,
     "1.6": -3.9052390609060277
    },
    "walking_pelvis_roll_deg": {
+    "0.5": 0.02777233490940633,
     "1.4": 0.37525039120255227,
     "1.6": 1.0743901217134524
    }
@@ -340,6 +454,7 @@
    ],
    "mass_kg": 63.5,
    "rejected": {
+    "0.5": {},
     "1.4": {},
     "1.6": {}
    },
@@ -347,14 +462,17 @@
    "static_pelvis_pitch_deg": -0.10304069706840391,
    "static_pelvis_roll_deg": 0.39114015301302935,
    "strides": {
+    "0.5": 15,
     "1.4": 27,
     "1.6": 31
    },
    "walking_pelvis_pitch_deg": {
+    "0.5": -1.5394395363571483,
     "1.4": -2.464603044622855,
     "1.6": -1.9313566161715938
    },
    "walking_pelvis_roll_deg": {
+    "0.5": -0.7178800240889096,
     "1.4": -0.1395629698478504,
     "1.6": -0.4825891609980154
    }
@@ -369,6 +487,7 @@
    ],
    "mass_kg": 83.91,
    "rejected": {
+    "0.5": {},
     "1.4": {},
     "1.6": {}
    },
@@ -376,14 +495,17 @@
    "static_pelvis_pitch_deg": 0.5374336982943144,
    "static_pelvis_roll_deg": -1.0029243627424749,
    "strides": {
+    "0.5": 18,
     "1.4": 28,
     "1.6": 30
    },
    "walking_pelvis_pitch_deg": {
+    "0.5": -1.9375306149104383,
     "1.4": -4.212107054581908,
     "1.6": -1.9456958498932135
    },
    "walking_pelvis_roll_deg": {
+    "0.5": -2.4727153086968747,
     "1.4": -2.627785903898282,
     "1.6": -2.477069539942896
    }
@@ -398,6 +520,7 @@
    ],
    "mass_kg": 77.11,
    "rejected": {
+    "0.5": {},
     "1.4": {},
     "1.6": {}
    },
@@ -405,14 +528,17 @@
    "static_pelvis_pitch_deg": -6.357720020870535,
    "static_pelvis_roll_deg": -2.114576956875,
    "strides": {
+    "0.5": 19,
     "1.4": 27,
     "1.6": 30
    },
    "walking_pelvis_pitch_deg": {
+    "0.5": -10.457733793161001,
     "1.4": -11.247207813337695,
     "1.6": -10.836027658181337
    },
    "walking_pelvis_roll_deg": {
+    "0.5": -0.9388687667387913,
     "1.4": -1.3890136017661305,
     "1.6": -1.2743643446989585
    }
@@ -427,6 +553,7 @@
    ],
    "mass_kg": 86.18,
    "rejected": {
+    "0.5": {},
     "1.4": {},
     "1.6": {}
    },
@@ -434,14 +561,17 @@
    "static_pelvis_pitch_deg": 0.33493138091463415,
    "static_pelvis_roll_deg": 8.57642573969512,
    "strides": {
+    "0.5": 17,
     "1.4": 26,
     "1.6": 29
    },
    "walking_pelvis_pitch_deg": {
+    "0.5": -16.430448397881666,
     "1.4": -14.380623243549108,
     "1.6": -12.33702492824485
    },
    "walking_pelvis_roll_deg": {
+    "0.5": 2.320406054973035,
     "1.4": 0.24842474352949975,
     "1.6": -0.11976014864300531
    }
@@ -456,6 +586,7 @@
    ],
    "mass_kg": 58.97,
    "rejected": {
+    "0.5": {},
     "1.4": {},
     "1.6": {}
    },
@@ -463,14 +594,17 @@
    "static_pelvis_pitch_deg": 4.9678647574764145,
    "static_pelvis_roll_deg": -0.5076327529009433,
    "strides": {
+    "0.5": 19,
     "1.4": 28,
     "1.6": 32
    },
    "walking_pelvis_pitch_deg": {
+    "0.5": -2.059937745418697,
     "1.4": -4.20442130535171,
     "1.6": -3.3435982044039454
    },
    "walking_pelvis_roll_deg": {
+    "0.5": 0.14033677256808663,
     "1.4": -0.6561999657259201,
     "1.6": -0.7950761524943053
    }
@@ -485,6 +619,7 @@
    ],
    "mass_kg": 58.41,
    "rejected": {
+    "0.5": {},
     "1.4": {},
     "1.6": {}
    },
@@ -492,14 +627,17 @@
    "static_pelvis_pitch_deg": 2.0159008976791477,
    "static_pelvis_roll_deg": -0.6592794160006457,
    "strides": {
+    "0.5": 17,
     "1.4": 30,
     "1.6": 33
    },
    "walking_pelvis_pitch_deg": {
+    "0.5": 2.234326100903622,
     "1.4": 1.0430427861167728,
     "1.6": 1.698919368991685
    },
    "walking_pelvis_roll_deg": {
+    "0.5": 0.4196743204723589,
     "1.4": 1.034387043593612,
     "1.6": 0.8191076927068064
    }
@@ -514,6 +652,7 @@
    ],
    "mass_kg": 96.16,
    "rejected": {
+    "0.5": {},
     "1.4": {},
     "1.6": {}
    },
@@ -521,14 +660,17 @@
    "static_pelvis_pitch_deg": -6.351363836953124,
    "static_pelvis_roll_deg": 6.944398643854167,
    "strides": {
+    "0.5": 18,
     "1.4": 29,
     "1.6": 33
    },
    "walking_pelvis_pitch_deg": {
+    "0.5": -13.57004100697977,
     "1.4": -13.46549355759675,
     "1.6": -10.18403963394054
    },
    "walking_pelvis_roll_deg": {
+    "0.5": 1.589259442003653,
     "1.4": 1.3674353820361898,
     "1.6": 1.5485466819084046
    }
@@ -543,6 +685,7 @@
    ],
    "mass_kg": 55.79,
    "rejected": {
+    "0.5": {},
     "1.4": {},
     "1.6": {}
    },
@@ -550,14 +693,17 @@
    "static_pelvis_pitch_deg": -1.9906421637228262,
    "static_pelvis_roll_deg": 3.898589915597826,
    "strides": {
+    "0.5": 17,
     "1.4": 29,
     "1.6": 32
    },
    "walking_pelvis_pitch_deg": {
+    "0.5": -6.279905579752836,
     "1.4": -6.971961750562427,
     "1.6": -5.908986827808183
    },
    "walking_pelvis_roll_deg": {
+    "0.5": -2.162619606051997,
     "1.4": -2.232983701240624,
     "1.6": -1.7380886282177812
    }
@@ -572,6 +718,7 @@
    ],
    "mass_kg": 61.23,
    "rejected": {
+    "0.5": {},
     "1.4": {},
     "1.6": {}
    },
@@ -579,14 +726,17 @@
    "static_pelvis_pitch_deg": -5.66612012987676,
    "static_pelvis_roll_deg": 1.7512373402816899,
    "strides": {
+    "0.5": 19,
     "1.4": 27,
     "1.6": 30
    },
    "walking_pelvis_pitch_deg": {
+    "0.5": -7.596668509979792,
     "1.4": -11.80502984326831,
     "1.6": -10.804226263995556
    },
    "walking_pelvis_roll_deg": {
+    "0.5": -0.5770915775436908,
     "1.4": -0.8575667063108694,
     "1.6": -0.8812353278061492
    }
@@ -601,6 +751,7 @@
    ],
    "mass_kg": 60.13,
    "rejected": {
+    "0.5": {},
     "1.4": {},
     "1.6": {}
    },
@@ -608,14 +759,17 @@
    "static_pelvis_pitch_deg": -0.6137447089125799,
    "static_pelvis_roll_deg": 3.795380240618337,
    "strides": {
+    "0.5": 17,
     "1.4": 27,
     "1.6": 30
    },
    "walking_pelvis_pitch_deg": {
+    "0.5": -7.914942918493943,
     "1.4": -10.121477516500004,
     "1.6": -9.40033983644938
    },
    "walking_pelvis_roll_deg": {
+    "0.5": -0.5849027805420739,
     "1.4": -1.374967249394973,
     "1.6": -1.713182015933175
    }
@@ -630,6 +784,7 @@
    ],
    "mass_kg": 68.04,
    "rejected": {
+    "0.5": {},
     "1.4": {},
     "1.6": {}
    },
@@ -637,14 +792,17 @@
    "static_pelvis_pitch_deg": -1.014982917223043,
    "static_pelvis_roll_deg": 7.906468224165435,
    "strides": {
+    "0.5": 17,
     "1.4": 28,
     "1.6": 31
    },
    "walking_pelvis_pitch_deg": {
+    "0.5": -11.439406495476144,
     "1.4": -14.079422691185291,
     "1.6": -12.937096682443334
    },
    "walking_pelvis_roll_deg": {
+    "0.5": 0.0178845187781824,
     "1.4": -0.09873191847499996,
     "1.6": 0.5387062716595951
    }
@@ -659,6 +817,7 @@
    ],
    "mass_kg": 68.04,
    "rejected": {
+    "0.5": {},
     "1.4": {},
     "1.6": {}
    },
@@ -666,14 +825,17 @@
    "static_pelvis_pitch_deg": -3.2183015840413534,
    "static_pelvis_roll_deg": -0.13217292545112783,
    "strides": {
+    "0.5": 20,
     "1.4": 29,
     "1.6": 32
    },
    "walking_pelvis_pitch_deg": {
+    "0.5": -5.533459032136782,
     "1.4": -7.5506353438339096,
     "1.6": -6.962301175070394
    },
    "walking_pelvis_roll_deg": {
+    "0.5": 0.16742202904156317,
     "1.4": -1.2285683748438179,
     "1.6": -1.2127224880200664
    }
@@ -688,6 +850,7 @@
    ],
    "mass_kg": 58.06,
    "rejected": {
+    "0.5": {},
     "1.4": {},
     "1.6": {}
    },
@@ -695,14 +858,17 @@
    "static_pelvis_pitch_deg": 1.6474111163136014,
    "static_pelvis_roll_deg": -3.7187977266818453,
    "strides": {
+    "0.5": 16,
     "1.4": 28,
     "1.6": 30
    },
    "walking_pelvis_pitch_deg": {
+    "0.5": 0.4705329348936387,
     "1.4": -1.1526501126885982,
     "1.6": -0.3666665775888596
    },
    "walking_pelvis_roll_deg": {
+    "0.5": -0.2618731175813369,
     "1.4": -1.3571584425082104,
     "1.6": -1.0491993196521803
    }
@@ -717,6 +883,7 @@
    ],
    "mass_kg": 76.82,
    "rejected": {
+    "0.5": {},
     "1.4": {},
     "1.6": {}
    },
@@ -724,14 +891,17 @@
    "static_pelvis_pitch_deg": -3.98377690635054,
    "static_pelvis_roll_deg": 0.3746202390780312,
    "strides": {
+    "0.5": 16,
     "1.4": 27,
     "1.6": 31
    },
    "walking_pelvis_pitch_deg": {
+    "0.5": -10.785378131280716,
     "1.4": -14.40763572200061,
     "1.6": -13.483717786339994
    },
    "walking_pelvis_roll_deg": {
+    "0.5": -0.17037886543628775,
     "1.4": 0.7700583223152051,
     "1.6": 1.1544903303934408
    }
