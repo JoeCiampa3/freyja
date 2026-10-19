@@ -63,6 +63,15 @@ def is_bilateral_segment(id: str) -> bool:
     return segment_name(id) in pre_processor().BILATERAL
 
 
+def _claim(pid: str, p: dict, counted: list) -> dict:
+    """A part's mass claim, with its arithmetic. `mass.kg` is the mass of one unit and `sides` gives one unit per side; `counted` is the
+    sides whose units this budget counts."""
+    kg = round(p["mass"]["kg"], MASS_DIGITS)
+    n = max(len(counted), 1)
+    where = f"{pid} {' and '.join(counted)}" if counted else pid
+    return {"part": pid, "kg": kg, "sides": counted, "total_kg": round(kg * n, MASS_DIGITS), "arithmetic": f"{n} x {kg} kg, {where}"}
+
+
 def keys_of(items):
     return [(i["id"] if isinstance(i, dict) else i) for i in items]
 
@@ -267,8 +276,9 @@ class Build:
         for key, ids in sorted(key_owner.items()):
             if len(set(ids)) > 1:
                 self._err("key-duplicate", f"the snapshot key {key} is bound by {', '.join(sorted(set(ids)))}", tuple(sorted(set(ids))))
-        self.body_owner = {b: ids[0] for b, ids in body_owner.items()}
-        self.hinge_owner = {h: ids[0] for h, ids in hinge_owner.items()}
+        self.body_claimed, self.hinge_claimed = set(body_owner), set(hinge_owner)
+        self.body_owner = {b: ids[0] for b, ids in body_owner.items() if len(ids) == 1}  # a doubly bound body has no owner, so nothing cascades from it
+        self.hinge_owner = {h: ids[0] for h, ids in hinge_owner.items() if len(ids) == 1}
         # sides of joints and parts, which need the segment bindings
         for id, r in sorted(self.recs.items()):
             if r["kind"] == "joint":
@@ -280,9 +290,26 @@ class Build:
                         self._err("sides", f"{id}: sides {'given' if 'sides' in r else 'missing'}, but its child segment "
                                            f"{', '.join(children)} is {'' if bilateral else 'not '}bilateral in pre_processor.BILATERAL", (id,))
             elif r["kind"] == "part":
+                if "acts_across" in r and r["acts_across"] in self.jnt_hinges and self.jnt_children.get(r["acts_across"]):
+                    j = r["acts_across"]
+                    ends = set(self.jnt_children[j]) | set(self._parents_of(j))
+                    if r["reacts_into"] not in ends and not self._ambiguous_ends(j):
+                        self._err("reaction-path", f"{id}: reacts_into {r['reacts_into']} is neither the parent nor the child segment of {j} "
+                                                   f"({', '.join(sorted(ends))})", (id,))
                 seg = r["housed_in"]
                 if seg in self.recs and self.recs[seg]["kind"] == "segment" and is_bilateral_segment(seg) and "sides" not in r:
                     self._err("sides", f"{id}: housed in the bilateral segment {seg}, so it needs sides [left, right]", (id,))
+
+    def _parents_of(self, jnt: str) -> list:
+        model = self.store.model
+        return sorted({self.body_owner[model.bodies[model.hinges[h]]] for h in self.jnt_hinges[jnt]
+                       if model.bodies.get(model.hinges[h]) in self.body_owner})
+
+    def _ambiguous_ends(self, jnt: str) -> bool:
+        """True when an end of the joint is a body that two records bind (already an error), so the end cannot be named."""
+        model = self.store.model
+        bodies = {model.hinges[h] for h in self.jnt_hinges[jnt]} | {model.bodies.get(model.hinges[h]) for h in self.jnt_hinges[jnt]}
+        return any(b in self.body_claimed and b not in self.body_owner for b in bodies)
 
     def _check_stamps(self):
         for work in sorted(self.store.stamp_dirs):
@@ -292,10 +319,10 @@ class Build:
     def _static_warnings(self):
         model = self.store.model
         for b in model.bodies:
-            if b not in getattr(self, "body_owner", {}):
+            if b not in getattr(self, "body_claimed", ()):
                 self._warn("unbound-body", f"the model body {b} has no segment record", (b,))
         for h in model.hinges:
-            if h not in getattr(self, "hinge_owner", {}):
+            if h not in getattr(self, "hinge_claimed", ()):
                 self._warn("unbound-hinge", f"the model hinge {h} has no joint record", (h,))
         for id, r in sorted(self.recs.items()):
             if r["status"] != "active":
@@ -436,18 +463,20 @@ class Build:
             claims = []
             for pid, p in sorted(recs.items()):
                 if p["kind"] == "part" and p["housed_in"] == id and p["status"] in ("active", "proposed"):
-                    count = 2 if ("sides" in p and not bil) else 1
-                    claims.append({"part": pid, "kg": round(p["mass"]["kg"], MASS_DIGITS), "count": count})
+                    counted = (["right"] if bil else list(p["sides"])) if "sides" in p else []
+                    claims.append(_claim(pid, p, counted))
                     src[id].update(f"{pid}#/{f}" for f in ("housed_in", "status", "mass", "sides"))
-            claimed = round(sum(c["kg"] * c["count"] for c in claims), MASS_DIGITS)
+            claimed = round(sum(c["total_kg"] for c in claims), MASS_DIGITS)
             over = target is not None and claimed - target > MASS_EPS_KG
             segs[id] = {"target_kg": target, "claimed_kg": claimed, "remaining_kg": None if target is None else round(target - claimed, MASS_DIGITS),
                         "over": bool(over), "claims": claims}
             if over:
                 self._warn("budget-over", f"{id} claims {claimed} kg against a target of {target} kg", (id,))
-        total = round(sum(b["claimed_kg"] * (2 if is_bilateral_segment(i) else 1) for i, b in segs.items()), MASS_DIGITS)
+        body_claims = [_claim(pid, p, list(p["sides"]) if "sides" in p else []) for pid, p in sorted(recs.items())
+                       if p["kind"] == "part" and p["status"] in ("active", "proposed")]
+        total = round(sum(c["total_kg"] for c in body_claims), MASS_DIGITS)
         target = float(s.snapshot["target_mass"][0]) if "target_mass" in s.snapshot else None
-        body = {"target_kg": target, "claimed_kg": total, "over": bool(target is not None and total - target > MASS_EPS_KG)}
+        body = {"target_kg": target, "claimed_kg": total, "over": bool(target is not None and total - target > MASS_EPS_KG), "claims": body_claims}
         if body["over"]:
             self._warn("budget-over", f"the parts claim {total} kg against a body target of {target} kg", ("body",))
         return {"segments": segs, "body": body}

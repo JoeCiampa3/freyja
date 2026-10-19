@@ -96,7 +96,7 @@ class Context:
             m = d["budgets"]["mass"]
             L += [self._mass_line(m)]
             for c in m["claims"]:
-                L.append(f"  - {self.link(c['part'])}: {c['kg']} kg x {c['count']}")
+                L.append(f"  - {self.link(c['part'])}: {c['arithmetic']} = {c['total_kg']} kg")
             L.append("")
         else:
             L += ["None.", ""]
@@ -162,7 +162,11 @@ class Context:
             L.append(f"| {i} | {self._num(m['target_kg'])} | {m['claimed_kg']} | {self._num(m['remaining_kg'])} | {'OVER' if m['over'] else ''} |")
         bd = b.budgets["body"]
         L.append(f"| whole body | {self._num(bd['target_kg'])} | {bd['claimed_kg']} | | {'OVER' if bd['over'] else ''} |")
-        L += ["", "Mass is the one budget so far. A bilateral segment is compared on its right side; the whole body counts each bilateral claim twice.", ""]
+        L += ["", "Mass is the one budget so far. `mass.kg` is the mass of one unit and `sides` gives one unit per side. A bilateral segment is compared on its right side.", ""]
+        L += ["Claims with their arithmetic:", ""]
+        rows = [(i, c) for i, m in sorted(b.budgets["segments"].items()) for c in m["claims"]]
+        L += [f"- {i}: {c['arithmetic']} = {c['total_kg']} kg" for i, c in rows] or ["- none"]
+        L += ["- whole body: " + (", ".join(f"{c['arithmetic']} = {c['total_kg']} kg" for c in bd["claims"]) or "none"), ""]
         L += ["## Proposed records", ""]
         proposed = [f"- {self.link(i).replace('](', '](dossiers/')} ({r['kind']})" for i, r in sorted(b.recs.items()) if r["status"] == "proposed"]
         L += proposed or ["None."]

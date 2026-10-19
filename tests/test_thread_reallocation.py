@@ -117,6 +117,10 @@ def test_moving_m2_changes_exactly_the_expected_files_and_statuses(root):
     assert after.docs["seg.pelvis"]["budgets"]["mass"]["over"] is True and first.docs["seg.pelvis"]["budgets"]["mass"]["over"] is False
     assert [(i.code, i.ids) for i in after.warnings] == [("budget-over", ("seg.pelvis",))]
     assert "budget-over" not in [i.code for i in first.warnings]
+    # the arithmetic is shown for the bilateral claim
+    claims = {c["part"]: c["arithmetic"] for c in after.docs["seg.pelvis"]["budgets"]["mass"]["claims"]}
+    assert claims["part.hip.m2"] == f"2 x {m2} kg, part.hip.m2 left and right"
+    assert f"2 x {m2} kg, part.hip.m2 left and right" in after.outputs["thread/STATUS.md"].decode()
     # the dossiers say so
     assert "**OVER**" in after.outputs["thread/dossiers/seg.pelvis.md"].decode()
     assert "drifted" in after.outputs["thread/STATUS.md"].decode()

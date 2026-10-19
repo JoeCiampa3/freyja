@@ -1,0 +1,11 @@
+schema: thread-record/1
+id: part.bad.react
+kind: part
+status: proposed
+purpose: A hip actuator whose reaction goes to a segment that is neither end of the hip.
+housed_in: seg.pelvis
+acts_across: jnt.hip
+reacts_into: seg.abdomen
+mass: {kg: 0.5, source: test, reserved: true}
+category: test
+sides: [left, right]

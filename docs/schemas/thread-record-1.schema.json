@@ -200,7 +200,7 @@
               "kg": {
                 "type": "number",
                 "minimum": 0,
-                "description": "Per side for a bilateral part."
+                "description": "The mass of one unit. `sides` gives one unit per side."
               },
               "source": {
                 "type": "string",
@@ -383,7 +383,7 @@
           },
           "independent_source_required": {
             "type": "boolean",
-            "description": "True: simulation alone may not size from this case, as for fall impact."
+            "description": "True only where the simulation's physics is itself the untrusted part (impacts and other contact transients). Provisional envelope rows and per-joint trust stay on the envelope rows and in the load-basis decision records."
           }
         },
         "required": [

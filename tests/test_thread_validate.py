@@ -31,6 +31,7 @@ ERRORS = {
     "sides-extra": [("sides", ("seg.pelvis",))],
     "sides-joint": [("sides", ("jnt.knee",))],
     "sides-part": [("sides", ("part.base.p1",))],
+    "reaction-path": [("reaction-path", ("part.bad.react",))],
     "stamp-unknown-work": [("stamp-unknown-work", ("work.ghost",))],
     "stamp-schema": [("stamp-schema", ("work.base",))],
 }

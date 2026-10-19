@@ -90,7 +90,7 @@ def test_mass_budget_per_segment_and_for_the_whole_body(root):
     b = docs(root)
     m = b.docs["seg.thigh"]["budgets"]["mass"]
     assert (m["target_kg"], m["claimed_kg"], m["remaining_kg"], m["over"]) == (5.0, 1.5, 3.5, False)
-    assert m["claims"] == [{"part": "part.base.p1", "kg": 1.5, "count": 1}]
+    assert m["claims"] == [{"part": "part.base.p1", "kg": 1.5, "sides": ["right"], "total_kg": 1.5, "arithmetic": "1 x 1.5 kg, part.base.p1 right"}]
     p = b.docs["seg.pelvis"]["budgets"]["mass"]
     assert (p["target_kg"], p["claimed_kg"], p["over"]) == (10.0, 2.0, False)
     body = json.loads(b.outputs["thread/graph.json"])["budgets"]["mass"]["body"]
@@ -101,7 +101,11 @@ def test_a_bilateral_part_in_a_unilateral_segment_claims_each_side(root):
     edit_record(root, "part.base.p1", housed_in="seg.pelvis")
     p = docs(root).docs["seg.pelvis"]["budgets"]["mass"]
     assert p["claimed_kg"] == 5.0
-    assert {c["part"]: c["count"] for c in p["claims"]} == {"part.base.p1": 2, "part.base.p2": 1}
+    assert {c["part"]: c["arithmetic"] for c in p["claims"]} == {"part.base.p1": "2 x 1.5 kg, part.base.p1 left and right", "part.base.p2": "1 x 2.0 kg, part.base.p2"}
+    body = json.loads(docs(root).outputs["thread/graph.json"])["budgets"]["mass"]["body"]
+    assert [c["arithmetic"] for c in body["claims"]] == ["2 x 1.5 kg, part.base.p1 left and right", "1 x 2.0 kg, part.base.p2"]
+    text = docs(root).outputs["thread/STATUS.md"].decode()
+    assert "seg.pelvis: 2 x 1.5 kg, part.base.p1 left and right = 3.0 kg" in text
 
 
 def test_superseded_parts_claim_nothing_and_proposed_parts_claim(root):
