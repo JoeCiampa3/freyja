@@ -184,3 +184,31 @@ def test_stamp_refuses_to_overwrite_a_stamp_made_in_the_same_minute(fx, monkeypa
 def test_stamp_by_defaults_to_a_name_and_the_stamp_validates(fx):
     assert run(["stamp", "work.thigh-cad"], fx)[0] == 0
     assert build.build_root(fx).errors == []
+
+
+# ---- refs
+
+def test_refs_lists_prose_mentions_uncapped_newest_file_first(fx):
+    import os
+    for d, name, body in (("docs/memos", "memo1.md", "a seg.thigh here\nand seg.thigh2 not\n"), ("notebook", "n.md", "seg.thigh\n"), ("log", "e.log", "x seg.thigh\n")):
+        (fx / d).mkdir(parents=True, exist_ok=True)
+        (fx / d / name).write_text(body, encoding="utf-8")
+    for n, f in enumerate(("docs/memos/memo1.md", "notebook/n.md", "log/e.log")):
+        os.utime(fx / f, (1_700_000_000 + n * 100, 1_700_000_000 + n * 100))  # the log is newest
+    for i in range(30):
+        (fx / "notebook" / f"b{i:02d}.md").write_text("seg.thigh\n", encoding="utf-8")
+        os.utime(fx / "notebook" / f"b{i:02d}.md", (1_600_000_000 + i, 1_600_000_000 + i))
+    code, out = run(["refs", "seg.thigh"], fx)
+    lines = [ln.strip() for ln in out.splitlines()[1:]]
+    assert code == 0 and "33 mention(s)" in out.splitlines()[0]  # not capped
+    assert [ln.split(" ")[0] for ln in lines[:3]] == ["log/e.log:1", "notebook/n.md:1", "docs/memos/memo1.md:1"]
+    assert lines[3].startswith("notebook/b29.md") and "thigh2" not in out
+    code, out = run(["refs", "--json", "thigh"], fx)
+    assert code == 0 and len(json.loads(out)["references"]) == 33
+
+
+def test_refs_does_not_write_and_reports_unknown_queries(fx):
+    before = tree(fx)
+    assert run(["refs", "seg.thigh"], fx)[0] == 0 and tree(fx) == before
+    code, out = run(["refs", "zzzz"], fx)
+    assert code == 2 and "no record" in out

@@ -79,24 +79,49 @@ def test_budget_rows_show_the_arithmetic_of_a_bilateral_claim(fx):
     assert json.loads(text(fx, "thread/derived/seg.pelvis.json"))["budgets"]["mass"]["claims"][0]["arithmetic"].startswith("2 x ")
 
 
-def test_references_are_files_only_with_whole_token_matching(fx):
+def test_the_dossier_lists_roadmap_nodes_only_and_points_at_the_live_command(fx):
     t = text(fx, "thread/dossiers/seg.thigh.md").split("## References")[1].split("## Neighbourhood")[0]
-    for needle in ("docs/memos/memo1.md:3", "docs/memos/memo1.md:5", "notebook/n.md:1", "log/events.log:1", "roadmap/nodes/rm.x.md:4"):
-        assert needle in t, needle
-    assert "memo1.md:4" not in t  # seg.thigh2 and xseg.thigh are other tokens
-    assert "commit" not in t.lower()
-    assert "None." in text(fx, "thread/dossiers/seg.shank.md").split("## References")[1]
+    assert "roadmap/nodes/rm.x.md:4" in t
+    for prose in ("docs/memos/memo1.md", "notebook/n.md", "log/events.log"):
+        assert prose not in t
+    assert "python tools/fy thread refs seg.thigh" in t and "memos, notebook and log" in t
+    assert "None in roadmap/nodes/." in text(fx, "thread/dossiers/seg.shank.md").split("## References")[1]
 
 
-def test_a_changed_reference_changes_that_dossier_and_the_two_summary_files_only(fx):
+def test_roadmap_mentions_use_whole_tokens_and_are_capped_at_twenty(tmp_path):
+    root = make_root(tmp_path / "r")
+    d = root / "roadmap" / "nodes"
+    d.mkdir(parents=True)
+    for i in range(25):
+        (d / f"rm.n{i:02d}.md").write_text("see seg.thigh and not seg.thigh2\n", encoding="utf-8")
+    t = text(build.build_root(root), "thread/dossiers/seg.thigh.md").split("## References")[1].split("## Neighbourhood")[0]
+    assert t.count("`roadmap/nodes/") == 20 and "- and 5 more" in t
+
+
+def test_changing_prose_files_changes_no_generated_output(fx):
     root = fx.root
     before = dict(fx.outputs)
-    note = root / "notebook" / "n.md"
+    files = [root / "notebook" / "n.md", root / "docs" / "memos" / "memo1.md", root / "log" / "events.log"]
+    old = [f.read_text(encoding="utf-8") for f in files]
     try:
-        note.write_text("seg.thigh changed\n", encoding="utf-8")
+        for f in files:
+            f.write_text("seg.thigh changed, jnt.hip too\n", encoding="utf-8")
+        assert build.build_root(root).outputs == before
+    finally:
+        for f, o in zip(files, old):
+            f.write_text(o, encoding="utf-8")
+
+
+def test_a_changed_roadmap_node_changes_that_dossier_and_the_two_summary_files_only(fx):
+    root = fx.root
+    before = dict(fx.outputs)
+    node = root / "roadmap" / "nodes" / "rm.x.md"
+    old = node.read_text(encoding="utf-8")
+    try:
+        node.write_text(old.replace("needs", "still needs"), encoding="utf-8")
         after = build.build_root(root).outputs
     finally:
-        note.write_text("seg.thigh again\n", encoding="utf-8")
+        node.write_text(old, encoding="utf-8")
     changed = sorted(p for p in after if after[p] != before.get(p))
     # the derived JSON does not carry references; graph.json and STATUS.md hash every input in their banner
     assert changed == ["thread/STATUS.md", "thread/dossiers/seg.thigh.md", "thread/graph.json"]

@@ -149,7 +149,8 @@ class Context:
         if len(refs) > MAX_REFERENCES:
             L.append(f"- and {len(refs) - MAX_REFERENCES} more")
         if not refs:
-            L.append("None.")
+            L.append("None in roadmap/nodes/.")
+        L += ["", f"Mentions in memos, notebook and log are not part of this file: run `python tools/fy thread refs {id}`."]
         L += ["", "## Neighbourhood", ""]
         nodes, es = neighbourhood(self.b, id)
         if len(nodes) <= MERMAID_CAP:

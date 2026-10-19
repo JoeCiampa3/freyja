@@ -48,7 +48,9 @@ None.
 
 ## References
 
-None.
+None in roadmap/nodes/.
+
+Mentions in memos, notebook and log are not part of this file: run `python tools/fy thread refs jnt.ankle`.
 
 ## Neighbourhood
 

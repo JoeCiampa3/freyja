@@ -4,6 +4,8 @@
     validate [--json]                       errors and warnings; exit 1 on errors
     build                                   validate, then write the generated outputs under thread/ (nothing on errors; exit 1)
     show <query> [--json]                   one record's derived view in the terminal
+    refs <query> [--json]                   where the record id is mentioned in docs/memos/, notebook/ and log/ (live, uncapped, newest file
+                                            first; the dossiers list roadmap/nodes/ only)
     impact [<address>] [--edit <address>=<YAML value> ...] [--json]   the work items and outputs an address touches; with --edit, the
                                             in-memory what-if. Writes nothing. Either an address or at least one --edit is needed.
     why <work query> [--json]               a work item's status and, for each moved address, the stamped value against the current one
@@ -21,7 +23,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from . import addr, build, fixture, query
+from . import addr, build, fixture, query, refs
 from . import impact as impact_mod
 from . import store as st
 
@@ -39,6 +41,8 @@ def _parser() -> argparse.ArgumentParser:
     sub.add_parser("build", parents=[common], help="write the generated outputs")
     sh = sub.add_parser("show", parents=[data], help="show one record")
     sh.add_argument("query")
+    rf = sub.add_parser("refs", parents=[data], help="mentions of a record id in memos, notebook and log")
+    rf.add_argument("query")
     wy = sub.add_parser("why", parents=[data], help="why a work item has its status")
     wy.add_argument("query")
     sp = sub.add_parser("stamp", parents=[common], help="stamp a work item")
@@ -138,6 +142,24 @@ def cmd_show(args, default_root, say) -> int:
         return 0
     text = b.outputs[f"thread/dossiers/{id}.md"].decode().split("\n", 1)[1]
     say(text.split("## References")[0].strip("\n"))
+    return 0
+
+
+def cmd_refs(args, default_root, say) -> int:
+    got = _load(args, default_root, say)
+    if got is None:
+        return 0
+    root, b = got
+    id = _pick(b, args.query, say)
+    if id is None:
+        return 2
+    found = refs.live(root, id)
+    if args.json:
+        say(json.dumps({"id": id, "references": found}, indent=2, sort_keys=True, ensure_ascii=False))
+        return 0
+    say(f"{id}: {len(found)} mention(s) in docs/memos/, notebook/ and log/ (newest file first)")
+    for r in found:
+        say(f"  {r['path']}:{r['line']} {r['text']}")
     return 0
 
 
@@ -262,7 +284,7 @@ def cmd_impact(args, default_root, say) -> int:
     return 0
 
 
-COMMANDS = {"validate": cmd_validate, "build": cmd_build, "show": cmd_show, "why": cmd_why, "stamp": cmd_stamp, "fixture": cmd_fixture, "impact": cmd_impact}
+COMMANDS = {"validate": cmd_validate, "build": cmd_build, "show": cmd_show, "refs": cmd_refs, "why": cmd_why, "stamp": cmd_stamp, "fixture": cmd_fixture, "impact": cmd_impact}
 
 
 def main(argv=None, default_root=None, say=print) -> int:
