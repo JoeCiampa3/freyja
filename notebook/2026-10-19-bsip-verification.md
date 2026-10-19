@@ -1,5 +1,18 @@
-Over the course of building out the repo and simulation, I have realized that the workflow I have been pursuing of trying to get information into claude chat by hand is too slow and unstructured. Iteration for cad takes too long. 
+---
+origin: me
+---
 
-Currently, I want to automate parts of cad, fea, and every other aspect apart from fabrication and physical testing (even those will use a workflow, but I will need to perform the physical actions myself).
+## What it is
 
-The ideal scenario is allowing Claude to build and experiment with parts and configurations, iterate and test with minimal oversight as code does. The next layer down from that is likely more realistic and involves using our digital thread to quickly, efficiently, and holistically characterizie each part. From the loads involved (modeled in sim) to the available space within the makehuman mesh, which we would need a good way of extracting, to the log of things we have tried and what has failed, all of the info for the part must be easily put into Claude for analysis. Claude then generates a prompt for Claude Code to execute, probably adding and altering parameters and anything else that is useful and may help in CAD creation, so that I have as much support as possible even if I need to design and implement the parts. 
+Errors were noticed in the BSIP table of the anthropometric reference sheet. They were corredted but their presence warrants a full manual sweep over each row of the table to verify they match the papers drawn from 
+
+## Findings
+
+Every row was checked against the corresponding paper. Dumas 2007 page 548 is the principle source (pelvis, thigh, shank, foot, upper arm, forearm, hand), the corrigendum (availavle on ScienceDirect) for head and neck, Dumas 2015 page 116 for thorax and abdomen. Our radii of gyration entries are out of order with the paper's (ours is r_yz before r_xz). Every number was verified by manually matching it to the corresponding entry in Dumas. There were no numerical discrepancies identified.
+
+Two non-numerical problems were found. 
+
+(1) The upper arm, forearm, hand, and foot segments do not have a scale applied. They are the unaltered Dumas lengths. Our model is a 170cm woman with the arm and foot lengths of a 162cm woman. The currently proposed fix: apply the scale to each of the remaining segments. 
+
+(2) The scale factor is computed assuming every segment is lined up with the segment length along the vertical. In reality, human posture is quite difference, especially for the pelvis. The posture needs to be decided upon so the scale factor matches what it is intended for. 
+
