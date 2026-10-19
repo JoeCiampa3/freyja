@@ -1,6 +1,6 @@
 # Memo 19: Stage 3a Part B, the real store, the commands and the hook
 
-STATE: (filled in by the commit that regenerates docs/STATE.md)
+STATE: base 9555575e6312 | brief architecture sha256:2ecf3ee5c019, ariadne sha256:8d7d8b12174c | snapshot sha256:e5cc96ceed7e | tests 1326/1326 | dirty no
 
 ## Decision summary
 
