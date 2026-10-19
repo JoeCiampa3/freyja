@@ -20,7 +20,7 @@ from pathlib import Path
 
 import yaml
 
-from . import addr, build, seed
+from . import addr, build
 from . import store as st
 
 REPO = Path(__file__).resolve().parents[2]
@@ -50,14 +50,17 @@ def _prepare(out) -> Path:
 
 
 def _structural(out: Path):
-    """A segment record per segment and a joint record per joint, as the proposal in seed.py has them."""
-    pp = build.pre_processor()
-    model = st.Model.parse((out / st.MODEL_PATH).read_bytes())
-    rec = out / st.RECORDS_DIR
-    for name in seed.SEGMENTS:
-        _yaml(rec / f"seg.{name}.yaml", seed.segment_record(name, name in pp.BILATERAL))
-    for name in seed.JOINTS:
-        _yaml(rec / f"jnt.{name}.yaml", seed.joint_record(name, seed.joint_is_bilateral(name, model.hinges)))
+    """The real segment and joint records (thread/records/seg.*.yaml and jnt.*.yaml), copied. Stops with a message that names the real store
+    when it is invalid, so a failing fixture or acceptance test says where the cause is."""
+    real = build.build_root(REPO)
+    if real.errors or not (REPO / st.RECORDS_DIR).is_dir():
+        why = "; ".join(f"{i.code}: {i.message}" for i in real.errors[:3]) or f"{st.RECORDS_DIR} is missing"
+        raise ValueError(f"the real thread store (thread/records) is invalid, so no fixture can be built from it: {why}")
+    dest = out / st.RECORDS_DIR
+    dest.mkdir(parents=True, exist_ok=True)
+    for kind in ("seg", "jnt"):
+        for p in sorted((REPO / st.RECORDS_DIR).glob(f"{kind}.*.yaml")):
+            shutil.copyfile(p, dest / p.name)
 
 
 def _record(kind, id, purpose, **f) -> dict:

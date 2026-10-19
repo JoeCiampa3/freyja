@@ -1,0 +1,9 @@
+body: forearm
+id: seg.forearm
+kind: segment
+purpose: The forearm, from the elbow to the wrist.
+schema: thread-record/1
+sides:
+- left
+- right
+status: active

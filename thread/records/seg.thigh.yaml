@@ -1,0 +1,9 @@
+body: thigh
+id: seg.thigh
+kind: segment
+purpose: The thigh, from the hip to the knee.
+schema: thread-record/1
+sides:
+- left
+- right
+status: active

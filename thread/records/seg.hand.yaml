@@ -1,0 +1,9 @@
+body: hand
+id: seg.hand
+kind: segment
+purpose: The hand, distal to the wrist.
+schema: thread-record/1
+sides:
+- left
+- right
+status: active

@@ -1,0 +1,9 @@
+body: upper_arm
+id: seg.upper_arm
+kind: segment
+purpose: The upper arm, from the shoulder to the elbow.
+schema: thread-record/1
+sides:
+- left
+- right
+status: active

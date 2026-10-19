@@ -1,0 +1,6 @@
+body: abdomen
+id: seg.abdomen
+kind: segment
+purpose: The lumbar spine and abdominal wall between the pelvis and the thorax.
+schema: thread-record/1
+status: active

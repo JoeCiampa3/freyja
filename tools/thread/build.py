@@ -72,6 +72,15 @@ def _claim(pid: str, p: dict, counted: list) -> dict:
     return {"part": pid, "kg": kg, "sides": counted, "total_kg": round(kg * n, MASS_DIGITS), "arithmetic": f"{n} x {kg} kg, {where}"}
 
 
+def expand(base: str, names) -> tuple:
+    """(bound names, missing names) for a binding: the name itself when the model has it, else both sides (all of which must exist)."""
+    if base in names:
+        return [base], []
+    both = [f"{base}_left", f"{base}_right"]
+    present = [n for n in both if n in names]
+    return (present, [n for n in both if n not in names]) if present else ([], [base])
+
+
 def keys_of(items):
     return [(i["id"] if isinstance(i, dict) else i) for i in items]
 
@@ -225,12 +234,7 @@ class Build:
                     self._err("superseded-by", f"{id}: superseded_by names {t}, which is itself superseded", (id,))
 
     def _expand(self, base: str, names: dict):
-        """(bound names, missing names) for a binding: the name itself when the model has it, else both sides."""
-        if base in names:
-            return [base], []
-        both = [f"{base}_left", f"{base}_right"]
-        present = [n for n in both if n in names]
-        return (present, [n for n in both if n not in names]) if present else ([], [base])
+        return expand(base, names)
 
     def _bind(self):
         s, pp = self.store, pre_processor()

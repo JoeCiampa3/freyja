@@ -1,0 +1,9 @@
+body: foot
+id: seg.foot
+kind: segment
+purpose: The foot, distal to the ankle.
+schema: thread-record/1
+sides:
+- left
+- right
+status: active

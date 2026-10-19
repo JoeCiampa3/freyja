@@ -1,0 +1,19 @@
+hinges:
+- hip_fe
+- hip_aa
+- hip_ier
+id: jnt.hip
+kind: joint
+purpose: The hip, a ball-and-socket joint between the pelvis and the thigh, modelled as three hinges.
+rom_keys:
+- hip_flexion
+- hip_extension
+- hip_abduction
+- hip_adduction
+- hip_external_rotation
+- hip_internal_rotation
+schema: thread-record/1
+sides:
+- left
+- right
+status: active

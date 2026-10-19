@@ -5,5 +5,6 @@ Executable checks (CONVENTIONS section 7). `python -m pytest checks` runs them a
 - `checklib.py` registry, model context, waivers and `run_checks`
 - `mjcf_checks.py` the `check.mjcf.*` checks
 - `sim_checks.py` the `check.sim.*` checks, which read run summaries (`check.sim.rom_reachable`)
+- `thread_checks.py` the `check.thread.*` checks, which read the thread records (`check.thread.coverage`, advisory; `fy check` and pytest run it, the model build gate does not)
 - `joint_polarity.yaml` expected sign of every hinge (DRAFT until Joe approves it)
 - `waivers.yaml` known deviations; `confirmed: false` entries are proposals and do nothing

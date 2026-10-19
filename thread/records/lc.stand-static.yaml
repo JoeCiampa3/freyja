@@ -1,0 +1,11 @@
+id: lc.stand-static
+independent_source_required: false
+kind: load_case
+notes: 'Not an impact or other contact transient: the loads come from rigid-body statics with the ground reaction supplied explicitly (no contact
+  solver), so the simulation''s physics is not the untrusted part. The CoM position over the ankle is a design choice, not a measurement; that
+  stays on the envelope row.'
+purpose: 'Quiet standing at the design pose: the joint torques that hold it, from statics alone.'
+schema: thread-record/1
+source:
+  scenario: stand_static
+status: proposed

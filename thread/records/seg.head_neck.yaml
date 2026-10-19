@@ -1,0 +1,6 @@
+body: head_and_neck
+id: seg.head_neck
+kind: segment
+purpose: The head and the cervical spine above the thorax.
+schema: thread-record/1
+status: active

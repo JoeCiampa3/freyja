@@ -1,0 +1,637 @@
+{
+  "budgets": {
+    "mass": {
+      "body": {
+        "claimed_kg": 0,
+        "claims": [],
+        "over": false,
+        "target_kg": 65.0
+      },
+      "segments": {
+        "seg.abdomen": {
+          "claimed_kg": 0,
+          "over": false,
+          "target_kg": 2.665
+        },
+        "seg.foot": {
+          "claimed_kg": 0,
+          "over": false,
+          "target_kg": 0.65
+        },
+        "seg.forearm": {
+          "claimed_kg": 0,
+          "over": false,
+          "target_kg": 0.845
+        },
+        "seg.hand": {
+          "claimed_kg": 0,
+          "over": false,
+          "target_kg": 0.325
+        },
+        "seg.head_neck": {
+          "claimed_kg": 0,
+          "over": false,
+          "target_kg": 4.355
+        },
+        "seg.pelvis": {
+          "claimed_kg": 0,
+          "over": false,
+          "target_kg": 9.49
+        },
+        "seg.shank": {
+          "claimed_kg": 0,
+          "over": false,
+          "target_kg": 2.925
+        },
+        "seg.thigh": {
+          "claimed_kg": 0,
+          "over": false,
+          "target_kg": 9.49
+        },
+        "seg.thorax": {
+          "claimed_kg": 0,
+          "over": false,
+          "target_kg": 17.095
+        },
+        "seg.upper_arm": {
+          "claimed_kg": 0,
+          "over": false,
+          "target_kg": 1.43
+        }
+      }
+    }
+  },
+  "edge_types": [
+    {
+      "doc": "Inverse of `acts_across`: the parts acting across a joint.",
+      "from_kinds": [
+        "joint"
+      ],
+      "name": "acted_on_by",
+      "origin": "derived",
+      "to_kinds": [
+        "part"
+      ]
+    },
+    {
+      "doc": "The joint a part drives or loads. Stored on the part, optional. Derives `acted_on_by` on the joint. Requires `reacts_into`.",
+      "from_kinds": [
+        "part"
+      ],
+      "name": "acts_across",
+      "origin": "authored",
+      "to_kinds": [
+        "joint"
+      ]
+    },
+    {
+      "doc": "The two ends of an interface, a contract between two parts or a part and a segment. Stored on the interface. Derives `interfaces` on both ends.",
+      "from_kinds": [
+        "interface"
+      ],
+      "name": "between",
+      "origin": "authored",
+      "to_kinds": [
+        "part",
+        "segment"
+      ]
+    },
+    {
+      "doc": "The joint whose cut wrench passes through an interface. Stored on the interface, optional. Derives `interfaces` on the joint.",
+      "from_kinds": [
+        "interface"
+      ],
+      "name": "carries_cut_of",
+      "origin": "authored",
+      "to_kinds": [
+        "joint"
+      ]
+    },
+    {
+      "doc": "From the model's body tree: the segment(s) that contain the joint's hinges. Not stored in any record.",
+      "from_kinds": [
+        "joint"
+      ],
+      "name": "child_segments",
+      "origin": "derived",
+      "to_kinds": [
+        "segment"
+      ]
+    },
+    {
+      "doc": "Inverse of `consumes`: the work items that consume an address in a record.",
+      "from_kinds": [
+        "segment",
+        "joint",
+        "part",
+        "interface",
+        "load_case",
+        "harness_run",
+        "work_item"
+      ],
+      "name": "consumed_by",
+      "origin": "derived",
+      "to_kinds": [
+        "work_item"
+      ]
+    },
+    {
+      "doc": "A record that holds an address the work item consumes (the address itself is in the item's `consumes` list; an address into a record or its derived file counts). Derives `consumed_by`, and the work status from the hash of every consumed address against the baseline stamp.",
+      "from_kinds": [
+        "work_item"
+      ],
+      "name": "consumes",
+      "origin": "authored",
+      "to_kinds": [
+        "segment",
+        "joint",
+        "part",
+        "interface",
+        "load_case",
+        "harness_run",
+        "work_item"
+      ]
+    },
+    {
+      "doc": "Inverse of `path`: the harness runs that pass through a segment.",
+      "from_kinds": [
+        "segment"
+      ],
+      "name": "crossed_by",
+      "origin": "derived",
+      "to_kinds": [
+        "harness_run"
+      ]
+    },
+    {
+      "doc": "A cable run the part is wired into. Stored on the part. Derives `used_by` on the run.",
+      "from_kinds": [
+        "part"
+      ],
+      "name": "harness",
+      "origin": "authored",
+      "to_kinds": [
+        "harness_run"
+      ]
+    },
+    {
+      "doc": "The segment a part sits in. Stored on the part. Derives `houses` on the segment, the mass claim in the segment's budget, and where the part appears in the segment's dossier.",
+      "from_kinds": [
+        "part"
+      ],
+      "name": "housed_in",
+      "origin": "authored",
+      "to_kinds": [
+        "segment"
+      ]
+    },
+    {
+      "doc": "Inverse of `housed_in`: the parts housed in a segment, proposed and superseded ones included. Only active and proposed parts claim mass.",
+      "from_kinds": [
+        "segment"
+      ],
+      "name": "houses",
+      "origin": "derived",
+      "to_kinds": [
+        "part"
+      ]
+    },
+    {
+      "doc": "Inverse of `between` and `carries_cut_of`: the interfaces that touch a record.",
+      "from_kinds": [
+        "segment",
+        "joint",
+        "part",
+        "interface",
+        "load_case",
+        "harness_run",
+        "work_item"
+      ],
+      "name": "interfaces",
+      "origin": "derived",
+      "to_kinds": [
+        "interface"
+      ]
+    },
+    {
+      "doc": "From the model's body tree: the joints whose hinges sit in this segment's body. Not stored in any record.",
+      "from_kinds": [
+        "segment"
+      ],
+      "name": "joints_as_child",
+      "origin": "derived",
+      "to_kinds": [
+        "joint"
+      ]
+    },
+    {
+      "doc": "From the model's body tree: the joints whose hinges sit in a child body of this segment's body. Not stored in any record.",
+      "from_kinds": [
+        "segment"
+      ],
+      "name": "joints_as_parent",
+      "origin": "derived",
+      "to_kinds": [
+        "joint"
+      ]
+    },
+    {
+      "doc": "The record a work item belongs to (a CAD model of a part, an FEA study of a segment). Stored on the work item. The owner's dossier lists the item with its status.",
+      "from_kinds": [
+        "work_item"
+      ],
+      "name": "of",
+      "origin": "authored",
+      "to_kinds": [
+        "segment",
+        "joint",
+        "part",
+        "interface",
+        "load_case",
+        "harness_run",
+        "work_item"
+      ]
+    },
+    {
+      "doc": "From the model's body tree: the segment(s) the joint's hinges hang from. Not stored in any record.",
+      "from_kinds": [
+        "joint"
+      ],
+      "name": "parent_segments",
+      "origin": "derived",
+      "to_kinds": [
+        "segment"
+      ]
+    },
+    {
+      "doc": "The ordered segments a harness run passes through. Stored on the run. Derives `crossed_by` on every segment on the path.",
+      "from_kinds": [
+        "harness_run"
+      ],
+      "name": "path",
+      "origin": "authored",
+      "to_kinds": [
+        "segment"
+      ]
+    },
+    {
+      "doc": "Inverse of `reacts_into`: the parts whose reaction torque a segment takes.",
+      "from_kinds": [
+        "segment"
+      ],
+      "name": "reacted_by",
+      "origin": "derived",
+      "to_kinds": [
+        "part"
+      ]
+    },
+    {
+      "doc": "The segment that takes the reaction torque of a part acting across a joint, which sets the load path. Stored on the part; required with `acts_across`. Derives `reacted_by` on the segment.",
+      "from_kinds": [
+        "part"
+      ],
+      "name": "reacts_into",
+      "origin": "authored",
+      "to_kinds": [
+        "segment"
+      ]
+    },
+    {
+      "doc": "A retired record points at its live replacement of the same kind. IDs are permanent, so a superseded record stays.",
+      "from_kinds": [
+        "segment",
+        "joint",
+        "part",
+        "interface",
+        "load_case",
+        "harness_run",
+        "work_item"
+      ],
+      "name": "superseded_by",
+      "origin": "authored",
+      "to_kinds": [
+        "segment",
+        "joint",
+        "part",
+        "interface",
+        "load_case",
+        "harness_run",
+        "work_item"
+      ]
+    },
+    {
+      "doc": "Inverse of `harness`: the parts wired into a run.",
+      "from_kinds": [
+        "harness_run"
+      ],
+      "name": "used_by",
+      "origin": "derived",
+      "to_kinds": [
+        "part"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "jnt.ankle",
+      "to": "seg.foot",
+      "type": "child_segments"
+    },
+    {
+      "from": "jnt.cervicothoracic",
+      "to": "seg.head_neck",
+      "type": "child_segments"
+    },
+    {
+      "from": "jnt.elbow",
+      "to": "seg.forearm",
+      "type": "child_segments"
+    },
+    {
+      "from": "jnt.hip",
+      "to": "seg.thigh",
+      "type": "child_segments"
+    },
+    {
+      "from": "jnt.knee",
+      "to": "seg.shank",
+      "type": "child_segments"
+    },
+    {
+      "from": "jnt.lumbosacral",
+      "to": "seg.abdomen",
+      "type": "child_segments"
+    },
+    {
+      "from": "jnt.shoulder",
+      "to": "seg.upper_arm",
+      "type": "child_segments"
+    },
+    {
+      "from": "jnt.thoracolumbar",
+      "to": "seg.thorax",
+      "type": "child_segments"
+    },
+    {
+      "from": "jnt.wrist",
+      "to": "seg.hand",
+      "type": "child_segments"
+    },
+    {
+      "from": "seg.abdomen",
+      "to": "jnt.lumbosacral",
+      "type": "joints_as_child"
+    },
+    {
+      "from": "seg.foot",
+      "to": "jnt.ankle",
+      "type": "joints_as_child"
+    },
+    {
+      "from": "seg.forearm",
+      "to": "jnt.elbow",
+      "type": "joints_as_child"
+    },
+    {
+      "from": "seg.hand",
+      "to": "jnt.wrist",
+      "type": "joints_as_child"
+    },
+    {
+      "from": "seg.head_neck",
+      "to": "jnt.cervicothoracic",
+      "type": "joints_as_child"
+    },
+    {
+      "from": "seg.shank",
+      "to": "jnt.knee",
+      "type": "joints_as_child"
+    },
+    {
+      "from": "seg.thigh",
+      "to": "jnt.hip",
+      "type": "joints_as_child"
+    },
+    {
+      "from": "seg.thorax",
+      "to": "jnt.thoracolumbar",
+      "type": "joints_as_child"
+    },
+    {
+      "from": "seg.upper_arm",
+      "to": "jnt.shoulder",
+      "type": "joints_as_child"
+    },
+    {
+      "from": "seg.abdomen",
+      "to": "jnt.thoracolumbar",
+      "type": "joints_as_parent"
+    },
+    {
+      "from": "seg.forearm",
+      "to": "jnt.wrist",
+      "type": "joints_as_parent"
+    },
+    {
+      "from": "seg.pelvis",
+      "to": "jnt.hip",
+      "type": "joints_as_parent"
+    },
+    {
+      "from": "seg.pelvis",
+      "to": "jnt.lumbosacral",
+      "type": "joints_as_parent"
+    },
+    {
+      "from": "seg.shank",
+      "to": "jnt.ankle",
+      "type": "joints_as_parent"
+    },
+    {
+      "from": "seg.thigh",
+      "to": "jnt.knee",
+      "type": "joints_as_parent"
+    },
+    {
+      "from": "seg.thorax",
+      "to": "jnt.cervicothoracic",
+      "type": "joints_as_parent"
+    },
+    {
+      "from": "seg.thorax",
+      "to": "jnt.shoulder",
+      "type": "joints_as_parent"
+    },
+    {
+      "from": "seg.upper_arm",
+      "to": "jnt.elbow",
+      "type": "joints_as_parent"
+    },
+    {
+      "from": "jnt.ankle",
+      "to": "seg.shank",
+      "type": "parent_segments"
+    },
+    {
+      "from": "jnt.cervicothoracic",
+      "to": "seg.thorax",
+      "type": "parent_segments"
+    },
+    {
+      "from": "jnt.elbow",
+      "to": "seg.upper_arm",
+      "type": "parent_segments"
+    },
+    {
+      "from": "jnt.hip",
+      "to": "seg.pelvis",
+      "type": "parent_segments"
+    },
+    {
+      "from": "jnt.knee",
+      "to": "seg.thigh",
+      "type": "parent_segments"
+    },
+    {
+      "from": "jnt.lumbosacral",
+      "to": "seg.pelvis",
+      "type": "parent_segments"
+    },
+    {
+      "from": "jnt.shoulder",
+      "to": "seg.thorax",
+      "type": "parent_segments"
+    },
+    {
+      "from": "jnt.thoracolumbar",
+      "to": "seg.abdomen",
+      "type": "parent_segments"
+    },
+    {
+      "from": "jnt.wrist",
+      "to": "seg.forearm",
+      "type": "parent_segments"
+    }
+  ],
+  "generated_by": "GENERATED by tools/thread (fy thread build) from thread/records, thread/stamps, decisions, params/snapshot.csv and sim/models/freyja.xml (snapshot sha256:e5cc96ceed7e). Do not edit; change the inputs and rebuild.",
+  "inputs": "sha256:c68f18d4710f",
+  "nodes": [
+    {
+      "id": "jnt.ankle",
+      "kind": "joint",
+      "status": "active"
+    },
+    {
+      "id": "jnt.cervicothoracic",
+      "kind": "joint",
+      "status": "active"
+    },
+    {
+      "id": "jnt.elbow",
+      "kind": "joint",
+      "status": "active"
+    },
+    {
+      "id": "jnt.hip",
+      "kind": "joint",
+      "status": "active"
+    },
+    {
+      "id": "jnt.knee",
+      "kind": "joint",
+      "status": "active"
+    },
+    {
+      "id": "jnt.lumbosacral",
+      "kind": "joint",
+      "status": "active"
+    },
+    {
+      "id": "jnt.shoulder",
+      "kind": "joint",
+      "status": "active"
+    },
+    {
+      "id": "jnt.thoracolumbar",
+      "kind": "joint",
+      "status": "active"
+    },
+    {
+      "id": "jnt.wrist",
+      "kind": "joint",
+      "status": "active"
+    },
+    {
+      "id": "lc.gravity-hold-rom",
+      "kind": "load_case",
+      "status": "proposed"
+    },
+    {
+      "id": "lc.stand-static",
+      "kind": "load_case",
+      "status": "proposed"
+    },
+    {
+      "id": "lc.walk-1p4",
+      "kind": "load_case",
+      "status": "proposed"
+    },
+    {
+      "id": "lc.walk-1p6",
+      "kind": "load_case",
+      "status": "proposed"
+    },
+    {
+      "id": "seg.abdomen",
+      "kind": "segment",
+      "status": "active"
+    },
+    {
+      "id": "seg.foot",
+      "kind": "segment",
+      "status": "active"
+    },
+    {
+      "id": "seg.forearm",
+      "kind": "segment",
+      "status": "active"
+    },
+    {
+      "id": "seg.hand",
+      "kind": "segment",
+      "status": "active"
+    },
+    {
+      "id": "seg.head_neck",
+      "kind": "segment",
+      "status": "active"
+    },
+    {
+      "id": "seg.pelvis",
+      "kind": "segment",
+      "status": "active"
+    },
+    {
+      "id": "seg.shank",
+      "kind": "segment",
+      "status": "active"
+    },
+    {
+      "id": "seg.thigh",
+      "kind": "segment",
+      "status": "active"
+    },
+    {
+      "id": "seg.thorax",
+      "kind": "segment",
+      "status": "active"
+    },
+    {
+      "id": "seg.upper_arm",
+      "kind": "segment",
+      "status": "active"
+    }
+  ],
+  "schema": "thread-graph/1",
+  "work_statuses": {}
+}

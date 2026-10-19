@@ -1,0 +1,11 @@
+id: lc.gravity-hold-rom
+independent_source_required: false
+kind: load_case
+notes: 'Not an impact or other contact transient: the loads come from rigid-body inverse dynamics at zero velocity on a gantry with the ground
+  reaction supplied explicitly (no contact solver), so the simulation''s physics is not the untrusted part. It records the gravity-torque curve
+  over each joint''s range.'
+purpose: Any joint held anywhere in its range of motion against gravity, with the rest of the body supported.
+schema: thread-record/1
+source:
+  scenario: rom_sweep
+status: proposed

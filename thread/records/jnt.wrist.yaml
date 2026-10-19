@@ -1,0 +1,13 @@
+hinges:
+- wrist
+id: jnt.wrist
+kind: joint
+purpose: The wrist, between the forearm and the hand, modelled as one hinge.
+rom_keys:
+- wrist_flexion
+- wrist_extension
+schema: thread-record/1
+sides:
+- left
+- right
+status: active

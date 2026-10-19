@@ -1,0 +1,13 @@
+hinges:
+- elbow
+id: jnt.elbow
+kind: joint
+purpose: The elbow, a hinge between the upper arm and the forearm.
+rom_keys:
+- elbow_flexion
+- elbow_extension
+schema: thread-record/1
+sides:
+- left
+- right
+status: active

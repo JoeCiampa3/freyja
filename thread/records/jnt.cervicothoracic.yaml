@@ -1,0 +1,10 @@
+hinges:
+- cj_fe
+- cj_lat
+- cj_ax
+id: jnt.cervicothoracic
+kind: joint
+purpose: The cervicothoracic junction between the neck and the thorax, modelled as three hinges.
+rom_keys: []
+schema: thread-record/1
+status: active

@@ -84,6 +84,7 @@ def default_runner(root) -> dict:
     import checklib
     import mjcf_checks  # noqa: F401
     import sim_checks  # noqa: F401
+    import thread_checks  # noqa: F401
     report = checklib.run_checks(checklib.Context.from_files(), waivers=checklib.load_waivers())
     return {"tests": tests, "checks": [(r.id, r.tier, r.status) for r in report.results]}
 

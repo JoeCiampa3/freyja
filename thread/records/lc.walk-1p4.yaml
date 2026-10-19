@@ -1,0 +1,12 @@
+id: lc.walk-1p4
+independent_source_required: false
+kind: load_case
+notes: 'Not an impact or other contact transient: the loads come from rigid-body inverse dynamics with the ground reaction supplied explicitly
+  (no contact solver), so the simulation''s physics is not the untrusted part. The envelope rows are provisional (method A with the measured centre
+  of pressure); that trust stays on the envelope rows and in the load-basis decision records.'
+purpose: Level walking at the 1.4 m/s design speed.
+schema: thread-record/1
+source:
+  condition: 1.4 m/s level treadmill walking
+  gait_spec: walk_treadmill
+status: proposed

@@ -1,0 +1,10 @@
+hinges:
+- tj_fe
+- tj_lat
+- tj_ax
+id: jnt.thoracolumbar
+kind: joint
+purpose: The thoracolumbar junction between the lumbar spine and the thorax, modelled as three hinges.
+rom_keys: []
+schema: thread-record/1
+status: active

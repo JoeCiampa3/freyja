@@ -1,0 +1,19 @@
+hinges:
+- shoulder_fe
+- shoulder_aa
+- shoulder_ier
+id: jnt.shoulder
+kind: joint
+purpose: The shoulder, between the thorax and the upper arm, modelled as three hinges.
+rom_keys:
+- shoulder_flexion
+- shoulder_extension
+- shoulder_abduction
+- shoulder_adduction
+- shoulder_external_rotation
+- shoulder_internal_rotation
+schema: thread-record/1
+sides:
+- left
+- right
+status: active

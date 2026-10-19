@@ -1,0 +1,6 @@
+body: pelvis
+id: seg.pelvis
+kind: segment
+purpose: The pelvic girdle, which carries the hip joints.
+schema: thread-record/1
+status: active

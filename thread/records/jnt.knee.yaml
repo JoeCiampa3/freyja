@@ -1,0 +1,13 @@
+hinges:
+- knee
+id: jnt.knee
+kind: joint
+purpose: The knee, a hinge between the thigh and the shank.
+rom_keys:
+- knee_flexion
+- knee_extension
+schema: thread-record/1
+sides:
+- left
+- right
+status: active

@@ -1,0 +1,6 @@
+body: thorax
+id: seg.thorax
+kind: segment
+purpose: The rib cage and thoracic spine.
+schema: thread-record/1
+status: active

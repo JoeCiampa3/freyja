@@ -1,0 +1,16 @@
+hinges:
+- ankle_pdflex
+- ankle_ie
+id: jnt.ankle
+kind: joint
+purpose: The ankle, between the shank and the foot, modelled as plantar-dorsiflexion and inversion-eversion hinges.
+rom_keys:
+- ankle_dorsiflexion
+- ankle_plantarflexion
+- ankle_inversion
+- ankle_eversion
+schema: thread-record/1
+sides:
+- left
+- right
+status: active

@@ -1,0 +1,14 @@
+hinges:
+- lsj_fe
+- lsj_lat
+- lsj_ax
+id: jnt.lumbosacral
+kind: joint
+purpose: The lumbosacral joint between the pelvis and the lumbar spine, modelled as three hinges.
+rom_keys:
+- lumbosacral_flexion
+- lumbosacral_extension
+- lumbosacral_lateral_bending
+- lumbosacral_axial_rotation
+schema: thread-record/1
+status: active
