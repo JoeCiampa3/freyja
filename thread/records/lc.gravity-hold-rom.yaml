@@ -1,10 +1,12 @@
 id: lc.gravity-hold-rom
 independent_source_required: false
 kind: load_case
-notes: 'Not an impact or other contact transient: the loads come from rigid-body inverse dynamics at zero velocity on a gantry with the ground
-  reaction supplied explicitly (no contact solver), so the simulation''s physics is not the untrusted part. It records the gravity-torque curve
-  over each joint''s range.'
-purpose: Any joint held anywhere in its range of motion against gravity, with the rest of the body supported.
+notes: 'Not an impact or other contact transient: the loads come from rigid-body inverse dynamics at zero velocity on a gantry that holds the pelvis (no
+  contact solver), so the simulation''s physics is not the untrusted part. It records the gravity-torque curve over each joint''s range. The 13 unlimited
+  hinges are skipped, not invented: the lumbosacral, shoulder abduction-adduction and shoulder rotation hinges lack sheet ROM values (the seven missing
+  sheet ROM values) and the thoracolumbar and cervicothoracic hinges are the template''s bare joints. Sweeping one joint at a time is near-worst, not a
+  bound, for a proximal joint whose distal pose matters.'
+purpose: Each limited joint swept through its range against gravity, one at a time, with the other joints at the reference pose and the pelvis held by the gantry.
 schema: thread-record/1
 source:
   scenario: rom_sweep

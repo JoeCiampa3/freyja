@@ -97,3 +97,18 @@ def test_the_fixture_reads_the_real_structural_records_and_names_an_invalid_real
     for make in (lambda: fixture.generate(tmp_path / "bad1", 0), lambda: fixture.reallocation(tmp_path / "bad2")):
         with pytest.raises(ValueError, match="real thread store.*invalid.*binding-missing"):
             make()
+
+
+def test_the_gravity_hold_load_case_describes_the_rom_sweep_as_it_is(real):
+    r = real.recs["lc.gravity-hold-rom"]
+    assert r["status"] == "proposed" and r["independent_source_required"] is False
+    assert r["purpose"] == ("Each limited joint swept through its range against gravity, one at a time, with the other joints at the reference pose "
+                            "and the pelvis held by the gantry.")
+    n = r["notes"]
+    assert "ground reaction" not in n and "ground-reaction" not in n  # the gantry holds the body
+    assert "13 unlimited hinges" in n and "seven missing sheet ROM values" in n and "bare joints" in n
+    assert "near-worst, not a bound" in n and "proximal" in n
+    model = real.store.model
+    import re
+    limited = len(re.findall(r'<joint[^>]*type="hinge"[^>]*\brange=', (REPO / "sim" / "models" / "freyja.xml").read_text(encoding="utf-8")))
+    assert len(model.hinges) - limited == 13  # the number the notes state
