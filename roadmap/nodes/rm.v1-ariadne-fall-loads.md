@@ -6,4 +6,4 @@ short: Fall loads
 parent: rm.v1-ariadne
 tags: ["region:whole-body"]
 ---
-Simulation can rank falls but cannot give their magnitudes: soft-contact peaks depend on solver parameters and the timestep. So these cases rest on independent sources. Whether v1 is designed to touch the ground at all is decided first (rm.v1-fall-intent). If it is not, this subtree is superseded and what remains is the arrest load on the harness points, which the rig and torso records carry.
+Simulation can rank falls but cannot give their magnitudes: soft-contact peaks depend on solver parameters and the timestep. So these cases rest on independent sources. rm.v1-fall-intent sets the protocol (nothing but the feet touch the floor in v1 trials) and the rule that each segment carries its fall case or reserves for it; rm.v1-fall-design-basis, decided after the literature bracket, sets the cases, the factors and the reservations.

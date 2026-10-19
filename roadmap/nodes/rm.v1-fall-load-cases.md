@@ -4,7 +4,7 @@ id: rm.v1-fall-load-cases
 title: "Fall load cases in the thread, each with an independent source attached: simulation ranks which segments meet the floor first and how severe each direction is, the sources give the magnitudes"
 short: Fall cases
 parent: rm.v1-ariadne-fall-loads
-blocked_by: [rm.v1-fall-sources, rm.v1-thread-sources]
+blocked_by: [rm.v1-fall-design-basis, rm.v1-thread-sources]
 stub: true
 tags: ["region:whole-body", "phase:sim"]
 ---
