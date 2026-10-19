@@ -349,7 +349,8 @@ def main(argv=None) -> int:
             "rejected": {str(s): res["rejects"][s] for s in res["rejects"]}}
         manifest["files_sha256"].update(res["files"])
         print(subject, {s: d["n"] for s, d in res["strides"].items()}, file=sys.stderr)
-    (REPO / "data" / "camargo2021" / "manifest.json").write_text(json.dumps(manifest, indent=1, sort_keys=True) + "\n")
+    with open(REPO / "data" / "camargo2021" / "manifest.json", "w", encoding="utf-8", newline="\n") as f:  # LF on every platform: the bytes are hashed into gait records
+        f.write(json.dumps(manifest, indent=1, sort_keys=True) + "\n")
     return 0
 
 

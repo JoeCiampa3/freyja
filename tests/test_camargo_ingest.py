@@ -278,3 +278,14 @@ def test_trunk_imu_is_ingested_with_gravity_of_about_one_g(ab06):
     assert imu.shape == (n, 101, 6) and not np.isnan(imu).any()
     g = np.linalg.norm(imu[:, :, :3].mean(axis=(0, 1)))
     assert 0.9 < g < 1.1  # the mean specific force of a trunk walking steadily is gravity
+
+
+def test_the_manifest_on_disk_has_lf_line_endings_only():
+    """gait records hash the manifest's bytes (dataset_manifest_sha256): a CRLF file on Windows would make the hash differ from a clean clone's."""
+    assert b"\r" not in (REPO / "data" / "camargo2021" / "manifest.json").read_bytes()
+
+
+def test_the_ingest_opens_the_manifest_with_an_lf_newline():
+    src = (REPO / "analysis" / "ingest_camargo.py").read_text(encoding="utf-8")
+    opening = next(line for line in src.splitlines() if '"manifest.json", "w"' in line)
+    assert 'newline="\\n"' in opening  # Path.write_text would write CRLF on Windows
