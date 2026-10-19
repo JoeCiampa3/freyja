@@ -9,7 +9,7 @@ __pycache__/
 local_config.json
 archive/
 data/literature/books
-
+data/ansur2/raw
 # Roadmap viewer pins: personal, per clone
 roadmap/.pins.json
 

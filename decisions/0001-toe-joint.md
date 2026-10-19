@@ -1,6 +1,6 @@
 ---
 id: adr-0001
-status: proposed
+status: accepted
 date: 2026-10-19
 links: []
 ---
