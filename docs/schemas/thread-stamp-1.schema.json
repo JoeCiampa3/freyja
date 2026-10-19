@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "thread-stamp/1",
+  "title": "thread-stamp/1",
+  "description": "A stamp: an event record at thread/stamps/<work id>/<YYYYMMDD-HHMM>.json saying that a work item's output was produced or checked against these values. The stamp id (the filename stem, repeated in `stamp`) encodes the time and nothing else in it is time-dependent. Written only by `fy thread stamp`, never edited. The newest stamp by name is the baseline. `value` is the address's value when its canonical JSON is at most 2 KB, otherwise null beside the hash.",
+  "type": "object",
+  "required": [
+    "schema",
+    "work",
+    "stamp",
+    "consumes",
+    "note",
+    "pinned",
+    "by"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "thread-stamp/1"
+    },
+    "work": {
+      "type": "string",
+      "pattern": "^work[.][a-z0-9_-]+$"
+    },
+    "stamp": {
+      "type": "string",
+      "pattern": "^[0-9]{8}-[0-9]{4}$"
+    },
+    "consumes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "address",
+          "hash",
+          "value"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "address": {
+            "type": "string",
+            "pattern": "^[^#\\s]+#(/[^\\s]*)?$"
+          },
+          "hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{12}$"
+          },
+          "value": {}
+        }
+      }
+    },
+    "note": {
+      "type": "string"
+    },
+    "pinned": {
+      "type": "boolean",
+      "description": "A pinned baseline turns a difference into `drifted` (a disposition for Joe) instead of `stale`."
+    },
+    "by": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}
