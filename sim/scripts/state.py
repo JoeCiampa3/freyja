@@ -134,6 +134,22 @@ def roadmap_line(root) -> str:
     return f"Roadmap: {nodes} | frontier {len(rm.frontier)} | errors {len(rm.errors)}"
 
 
+def thread_line(root) -> str:
+    """One line for the thread (tools/thread): records, work items, work items to rework (stale, drifted, unknown) and errors. Work statuses are
+    only derived when the thread has no errors, so rework reads 0 beside a non-zero error count."""
+    root = Path(root)
+    if not (root / "thread").is_dir():
+        return "Thread: no thread/"
+    tools = str(REPO / "tools")
+    if tools not in sys.path:
+        sys.path.insert(0, tools)
+    from thread import build
+    b = build.build_root(root)
+    work = sum(1 for r in b.recs.values() if r["kind"] == "work_item")
+    rework = sum(1 for w in b.work.values() if w["status"] in ("stale", "drifted", "unknown"))
+    return f"Thread: {len(b.recs)} records | {work} work items | rework {rework} | errors {len(b.errors)}"
+
+
 def generate(root=None, run=True, runner=None) -> str:
     root = Path(root or REPO)
     head = _git(root, "rev-parse", "HEAD").strip()
@@ -156,7 +172,7 @@ def generate(root=None, run=True, runner=None) -> str:
            f"Base commit: {head}", f"Branch: {branch}", f"Tree dirty: {'yes' if dirty else 'no'}",
            f"Diff hash (git diff HEAD, {STATE_FILE} excluded): {diff or 'none'}",
            *[l for t, p in paths.items() for l in (f"Brief ({t}): {p}", f"Brief sha256 ({t}, line endings normalised to LF): {bh[t]}")],
-           f"Snapshot sha256: {snap}", f"Model sha256: {model}", roadmap_line(root), "", "## Tests", ""]
+           f"Snapshot sha256: {snap}", f"Model sha256: {model}", roadmap_line(root), thread_line(root), "", "## Tests", ""]
     if results:
         t = results["tests"]
         out.append(f"passed {t['passed']}, failed {t['failed']}, skipped {t['skipped']}")
