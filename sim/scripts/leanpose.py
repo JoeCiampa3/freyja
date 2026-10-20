@@ -122,9 +122,20 @@ def solve_pose(model, pose: dict, feet: dict) -> Lean:
     return solve_lean(model, float(pose["com_x_rel_ankle_m"]), feet, pose_offsets(model, pose))
 
 
-def solve_lean(model, com_x_rel_ankle_m: float, feet: dict, offsets: dict | None = None) -> Lean:
+def design_stance(model, tilt_deg: float, feet: dict, com_x_rel_ankle_m: float = 0.0, upright: bool = False) -> Lean:
+    """The design standing posture (decisions/0004): the pelvis tilted forward by `tilt_deg`, the hips flexed by it (the thighs then hang plumb) and the lumbosacral joint
+    extended by it (the trunk stack is plumb). Then the rigid lean about the ankle that puts the CoM `com_x_rel_ankle_m` in front of it, as solve_lean does; with
+    `upright` there is no lean (ankle at zero, soles flat), the posture a stature is measured in. A tilt past a joint's range is an error."""
+    offsets = pose_offsets(model, {"pelvic_tilt_deg": tilt_deg, "lsj_fe_deg": -tilt_deg})
+    if upright:
+        return solve_lean(model, None, feet, offsets, ankle_rad=0.0)
+    return solve_lean(model, com_x_rel_ankle_m, feet, offsets)
+
+
+def solve_lean(model, com_x_rel_ankle_m: float | None, feet: dict, offsets: dict | None = None, ankle_rad: float | None = None) -> Lean:
     """`feet` maps each foot body name to its ankle dorsiflexion joint name. `offsets` ({joint: rad}) are set before the
-    lean is solved. Returns the pose."""
+    lean is solved. With `ankle_rad` the ankle angle is given and there is no CoM target (`com_x_rel_ankle_m` may be None): the pose at that
+    angle, soles flat, lowest point on the floor. Returns the pose."""
     offsets = {k: float(v) for k, v in (offsets or {}).items() if float(v) != 0.0}
     set_q = []
     for name, value in offsets.items():
@@ -177,6 +188,11 @@ def solve_lean(model, com_x_rel_ankle_m: float, feet: dict, offsets: dict | None
         fk(theta, pitch, shift)
         return pitch, shift, float(data.subtree_com[0][0] - data.xpos[first][0])
 
+    if ankle_rad is not None:
+        if not lo <= ankle_rad <= hi:
+            raise LeanError(f"ankle angle {np.degrees(ankle_rad):+.2f} deg is outside the ankle range {np.degrees(lo):.1f} to {np.degrees(hi):.1f} deg")
+        pitch, shift, achieved = pose(float(ankle_rad))
+        return Lean(data.qpos.copy(), float(ankle_rad), achieved, float(pitch), offsets)
     offset = lambda th: pose(th)[2]  # noqa: E731
     o_lo, o_hi = offset(lo), offset(hi)
     target = float(com_x_rel_ankle_m)

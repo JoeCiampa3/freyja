@@ -235,13 +235,30 @@ def _sha(x) -> str:
     return hashlib.sha256(_canon(x).encode()).hexdigest()
 
 
+def snapshot_stand_tilt_deg(path=None) -> float:
+    """stand_pelvis_tilt_deg of the snapshot (0 when the snapshot has no such key)."""
+    path = Path(path or simrun.SNAPSHOT_FILE)
+    if not path.exists():
+        return 0.0
+    import csv
+    with path.open(encoding="utf-8", newline="") as f:
+        for row in csv.DictReader(f):
+            if row["placeholder"] == "stand_pelvis_tilt_deg":
+                return float(row["value"])
+    return 0.0
+
+
 class Context:
     """Model, mapping and standing pose, built once per process."""
 
-    def __init__(self, model_path, mapping_path=MAPPING_FILE):
+    def __init__(self, model_path, mapping_path=MAPPING_FILE, stand_tilt_deg=None):
         self.model = mujoco.MjModel.from_xml_path(str(model_path))
         self.mapping = yaml.safe_load(Path(mapping_path).read_text(encoding="utf-8"))
-        self.stand = leanpose.solve_lean(self.model, 0.0, STANDING_FEET).qpos
+        # The standing pose: the design stance of decisions/0004 (pelvis tilted, hips flexed and lumbosacral joint extended by the sheet's stand_pelvis_tilt_deg, then the
+        # lean that puts the CoM over the ankle). A snapshot without the key (before Stage 2g) gives the old pose, a rigid lean about the ankle with every other joint at zero.
+        tilt = stand_tilt_deg if stand_tilt_deg is not None else snapshot_stand_tilt_deg()
+        self.stand_tilt_deg = float(tilt)
+        self.stand = (leanpose.design_stance(self.model, tilt, STANDING_FEET) if tilt else leanpose.solve_lean(self.model, 0.0, STANDING_FEET)).qpos
         self.mass = float(self.model.body_mass.sum())
         self.weight = self.mass * abs(float(self.model.opt.gravity[2]))
         m = self.model

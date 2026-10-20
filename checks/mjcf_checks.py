@@ -5,6 +5,7 @@ pose and the snapshot. Every tolerance is a named constant with its unit and its
 from __future__ import annotations
 
 import math
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -241,6 +242,37 @@ def stature_chain(ctx):
                   f"vertex at {height * 1000:.1f} mm against stature {target * 1000:.1f} mm: {off * 1000:+.1f} mm "
                   f"(limit {STATURE_TOL_M * 1000:g} mm; the sheet records a definitional -14.684 mm)",
                   {"vertex_height_m": height, "target_stature_m": target, "offset_mm": off * 1000})
+
+
+# ================================================================================ top_of_head
+
+TOP_OF_HEAD_TOL_M = 0.003  # m. The brief (Stage 2g T4) asks for the built model's top of head within 3 mm of the target stature at the standing pose. The sheet closes the
+#                            stack on vertical heights at the design tilt (decisions/0038), so the residual should be the rounding of the snapshot, far below 3 mm.
+FEET = {"foot_right": "ankle_pdflex_right", "foot_left": "ankle_pdflex_left"}
+
+
+@check("check.mjcf.top_of_head", ADVISORY)
+def top_of_head(ctx):
+    """The top of the head (site_vertex) above the floor in the upright design stance (the pelvis tilted by stand_pelvis_tilt_deg, the thighs and trunk plumb, soles flat
+    on the floor, no lean about the ankle) minus the target stature. Advisory, not a gate."""
+    tilt, stature = ctx.snapshot.get("stand_pelvis_tilt_deg"), ctx.snapshot.get("target_stature")
+    if tilt is None or stature is None:
+        return Result("check.mjcf.top_of_head", ADVISORY, SKIP, "no stand_pelvis_tilt_deg or target_stature in the snapshot (the sheet's 'design' or 'targets' range is absent)")
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "sim" / "scripts"))
+    import leanpose
+    mj, m = _mj(), ctx.model
+    try:
+        lean = leanpose.design_stance(m, tilt, FEET, upright=True)
+    except leanpose.LeanError as e:
+        return Result("check.mjcf.top_of_head", ADVISORY, FAIL, f"the design stance at a tilt of {tilt:g} degrees cannot be set: {e}")
+    d = mj.MjData(m)
+    d.qpos[:] = lean.qpos
+    mj.mj_forward(m, d)
+    height = float(d.site_xpos[m.site("site_vertex").id][2])
+    off = height - stature
+    return Result("check.mjcf.top_of_head", ADVISORY, PASS if abs(off) <= TOP_OF_HEAD_TOL_M else FAIL,
+                  f"top of head at {height * 1000:.1f} mm in the upright stance (pelvis tilt {tilt:g} deg) against stature {stature * 1000:.1f} mm: {off * 1000:+.1f} mm "
+                  f"(limit {TOP_OF_HEAD_TOL_M * 1000:g} mm)", {"top_of_head_m": height, "target_stature_m": stature, "offset_mm": off * 1000, "tilt_deg": tilt})
 
 
 # ================================================================================ com

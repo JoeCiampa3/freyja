@@ -25,11 +25,31 @@ import gait  # noqa: E402
 
 REPO = gait.REPO
 
-OFF_FLAT_DEG = 6.0  # the pitch at which the 25 mm contact-polygon band changes shape on the 206 mm foot box: asin(25/206) = 7.0 deg, the brief's 6 deg is the round number below it
 TRIGGER_MEAN_DEG = 1.0  # the brief's trigger: pooled mean difference over 30 to 60% of stance exceeds this in magnitude ...
 TRIGGER_SD_DEG = 2.0  # ... and the standard deviation of the subject means is below this
 WINDOW = (3, 4, 5)  # deciles 30 to 60% of stance
 N_DEC = 10
+
+
+# ------------------------------------------------------------------------------ the flat-foot threshold
+
+def sole_length_m(model) -> float:
+    """Length of the model's sole at neutral: the foot's boxes (the foot and its toe) from the rearmost to the foremost corner, along x."""
+    import dynamics
+    import mujoco
+    d = mujoco.MjData(model)
+    mujoco.mj_forward(model, d)
+    corners, _ = dynamics._foot_boxes(model, d, model.body("foot_right").id)
+    return float(corners[:, 0].max() - corners[:, 0].min())
+
+
+def off_flat_deg(model=None) -> float:
+    """The foot pitch at which the contact polygon's band (dynamics.HULL_BAND_M, 25 mm) changes shape on the model's sole: asin(band / sole length), derived from the model's foot
+    geometry and never typed (Stage 2g T4; it was 6 degrees, the round number below asin(25/206), for the old box)."""
+    import dynamics
+    import mujoco
+    model = model if model is not None else mujoco.MjModel.from_xml_path(str(gait.simrun.MODEL_FILE))
+    return float(np.degrees(np.arcsin(dynamics.HULL_BAND_M / sole_length_m(model))))
 
 
 # ------------------------------------------------------------------------------ pure helpers
@@ -87,10 +107,12 @@ def stance_deciles(stance) -> np.ndarray:
     return out
 
 
-def by_decile(rows, off_flat_deg=OFF_FLAT_DEG) -> dict:
+def by_decile(rows, off_flat_deg=None) -> dict:
     """Per decile of stance: frames, mean model pitch, mean dataset pitch, mean difference (model minus dataset) and the standard deviation across
     subjects of the subject means (every subject counts once, however many strides it has), and the fractions of frames more than `off_flat_deg`
-    off flat. `rows` are dicts with subject, dec, model, data."""
+    off flat (default: the flat-foot threshold derived from the model's foot, `off_flat_deg()`). `rows` are dicts with subject, dec, model, data."""
+    if off_flat_deg is None:
+        off_flat_deg = globals()["off_flat_deg"]()
     out = {}
     for dec in sorted({r["dec"] for r in rows}):
         sel = [r for r in rows if r["dec"] == dec]
@@ -302,7 +324,9 @@ def report(args):
     speeds = list(args.speeds)
     nomap = getattr(args, "no_mapping_offset", False)
     rows = collect(speeds, args.workers, args.cap, False, pitch_offset_deg=args.pitch_offset_deg, ankle_offset_deg=args.ankle_offset_deg, ignore_mapping_offset=nomap)
-    print(f"foot box: 206 mm long (165 mm ahead of the ankle, 41 mm behind); a 25 mm band changes shape at asin(25/206) = 7.0 deg, the brief's 6 deg is used for 'off flat'")
+    model = gait._ctx(gait.simrun.MODEL_FILE).model
+    sole = sole_length_m(model)
+    print(f"sole: {sole * 1000:.0f} mm long in the model; a {gait.dynamics.HULL_BAND_M * 1000:.0f} mm band changes shape at asin({gait.dynamics.HULL_BAND_M * 1000:.0f}/{sole * 1000:.0f}) = {off_flat_deg(model):.2f} deg, used for 'off flat'")
     allrows = []
     for sp in speeds:
         single = [r for r in rows[sp] if r["support"] == "single"]
