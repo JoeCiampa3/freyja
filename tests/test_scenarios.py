@@ -281,7 +281,13 @@ class StandStatic(unittest.TestCase):
         self.assertEqual(rr.dumps(a), rr.dumps(b))
 
     def test_an_infeasible_pose_is_recorded_with_its_reason(self):
-        scn = simrun.apply_overrides(simrun.load_scenario("stand_static"), ["pose.com_x_rel_ankle_m=0.2"])  # beyond the toe edge at 0.165
+        import dynamics
+        model = mujoco.MjModel.from_xml_path(str(REPO / "sim" / "models" / "freyja.xml"))
+        d = mujoco.MjData(model)
+        mujoco.mj_forward(model, d)
+        corners, _ = dynamics._foot_boxes(model, d, model.body("foot_right").id)
+        beyond = float(corners[:, 0].max() - d.xpos[model.body("foot_right").id][0]) + 0.035  # 35 mm beyond the toe edge of the foot box
+        scn = simrun.apply_overrides(simrun.load_scenario("stand_static"), [f"pose.com_x_rel_ankle_m={beyond}"])
         with tempfile.TemporaryDirectory() as d:
             rec = simrun.run_scenario(scn, runs_dir=d, now=NOW).record
         rr.validate(rec)

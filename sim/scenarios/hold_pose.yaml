@@ -4,7 +4,7 @@
 # The pose is the rigid lean about the ankle (sim/scripts/leanpose.py) that puts the whole-body CoM
 # pose.com_x_rel_ankle_m in front of the ankle; every other joint is neutral. The neutral pose itself has no
 # static equilibrium (CoM 40 mm behind the ankle, see notebook/2026-10-10-stage1-findings.md). The default 0.0 is
-# a design choice, not a measurement: the ankle torque is then near zero and the heel edge is 41 mm behind the CoM; no
+# a design choice, not a measurement: the ankle torque is then near zero and the CoM is over the ankle, with the heel edge of the foot box (the model, from the sheet's design range) behind it; no
 # cited quiet-standing CoM position is in the repo, and the standing ankle torque is a function of it. Override from the command
 # line with `fy run hold_pose --set pose.com_x_rel_ankle_m=0.02`; the override is recorded in the summary.
 #

@@ -337,7 +337,7 @@ def foot_command(args):
         sc = np.array([x * stature / man[s]["height_m"] for x, s in zip(per[c], sub)]) * 1000
         print(f"  {c:24s} at Freyja's scale: {sc.mean():6.1f} mm (SD {sc.std(ddof=1):4.1f}, range {sc.min():.1f} to {sc.max():.1f}); unscaled mean {1000 * np.mean(per[c]):.1f}")
     sc = np.array([x * stature / man[s]["height_m"] for x, s in zip(per["foot_length_m"], sub)])
-    print(f"  (the dataset's mean stature is {np.mean([man[s]['height_m'] for s in sub]):.3f} m; the sheet's foot_length is 165 mm and the foot box reaches 165 mm ahead of the ankle)")
+    print(f"  (the dataset's mean stature is {np.mean([man[s]['height_m'] for s in sub]):.3f} m; the sheet's foot_length is the BSIP normaliser, heel to the midpoint of the metatarsal heads, and the model's foot box is read from the model)")
     tr = [n for n in names if n in trunk_marker_names(names)]
     print("D7 trunk and head markers: " + (", ".join(tr) if tr else "none in the static trials (pelvis and lower limb only), so no chord inclination can be computed"))
 

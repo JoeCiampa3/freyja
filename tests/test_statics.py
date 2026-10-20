@@ -29,6 +29,16 @@ def freyja():
     return mujoco.MjModel.from_xml_path(str(REPO / "sim" / "models" / "freyja.xml"))
 
 
+def foot_edges(model):
+    """(front, rear) edges of the right foot's sole relative to the ankle, along x at neutral, read from the model's boxes (the foot and its toe)."""
+    import dynamics
+    d = mujoco.MjData(model)
+    mujoco.mj_forward(model, d)
+    corners, _ = dynamics._foot_boxes(model, d, model.body("foot_right").id)
+    ankle = d.xpos[model.body("foot_right").id][0]
+    return float(corners[:, 0].max() - ankle), float(corners[:, 0].min() - ankle)
+
+
 def pose_data(model, target=0.0):
     lean = leanpose.solve_lean(model, target, FEET2)
     data = mujoco.MjData(model)
@@ -142,13 +152,15 @@ class Feasibility(unittest.TestCase):
         self.assertEqual(result.reasons, [])
 
     def test_com_beyond_the_toe_edge_is_infeasible_with_a_negative_margin(self):
-        result = statics.solve_static(self.model, pose_data(self.model, 0.19))  # toe edge is 0.165 m in front of the ankle
+        front, _ = foot_edges(self.model)
+        result = statics.solve_static(self.model, pose_data(self.model, front + 0.025))  # 25 mm beyond the toe edge of the foot box
         self.assertFalse(result.feasible)
         self.assertLess(result.support_margin_m, 0.0)
         self.assertTrue(any("support" in r for r in result.reasons))
 
     def test_com_behind_the_heel_is_infeasible(self):
-        result = statics.solve_static(self.model, pose_data(self.model, -0.06))  # heel edge is 0.04125 m behind
+        _, rear = foot_edges(self.model)
+        result = statics.solve_static(self.model, pose_data(self.model, rear - 0.019))  # 19 mm behind the heel edge of the foot box
         self.assertFalse(result.feasible)
         self.assertLess(result.support_margin_m, 0.0)
 

@@ -133,14 +133,15 @@ def test_polygon_outside_distance_single_and_double_support(model):
     d.qpos[:] = q
     mujoco.mj_kinematics(model, d)
     corners, _ = dynamics._foot_boxes(model, d, mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "foot_right"))
-    front = corners[:, 0].max()  # the box reaches 165 mm ahead of the ankle
-    inside = np.array([0.057, -0.092])
-    ahead = np.array([front + 0.10, -0.092])
+    front = corners[:, 0].max()  # the foot's front edge, from the model
+    ankle_x, ankle_y = d.xpos[model.body("foot_right").id][:2]
+    inside = np.array([ankle_x, ankle_y])  # directly over the ankle: inside the sole whatever its length
+    ahead = np.array([front + 0.10, ankle_y])
     assert dynamics.polygon_outside_m(model, q, ("foot_right",), inside) == 0.0
     assert dynamics.polygon_outside_m(model, q, ("foot_right",), ahead) == pytest.approx(0.10, abs=1e-6)
     assert dynamics.polygon_outside_m(model, q, ("foot_left",), inside) == pytest.approx(0.1343, abs=1e-3)  # the right foot's spot, 134 mm from the left foot's inner edge
     both = ("foot_right", "foot_left")
-    assert dynamics.polygon_outside_m(model, q, both, np.array([0.057, 0.0])) == 0.0  # between the feet: inside their hull
+    assert dynamics.polygon_outside_m(model, q, both, np.array([ankle_x, 0.0])) == 0.0  # between the feet: inside their hull
     assert dynamics.polygon_outside_m(model, q, both, ahead) == pytest.approx(0.10, abs=1e-6)
 
 
@@ -152,7 +153,10 @@ def test_the_band_decides_which_vertices_make_the_polygon(model):
     ankle = model.jnt_qposadr[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "ankle_pdflex_right")]
     q[ankle] = -0.35  # plantarflexed about 20 degrees: the toe edge is lowest
     q[2] += 0.05
-    point = np.array([0.057, -0.092])  # over the ankle: behind the toe edge
+    d.qpos[:] = q
+    mujoco.mj_kinematics(model, d)
+    ankle_xy = d.xpos[model.body("foot_right").id][:2]
+    point = np.array([ankle_xy[0], ankle_xy[1]])  # over the ankle: behind the toe edge
     narrow = dynamics.polygon_outside_m(model, q, ("foot_right",), point, band_m=0.010)
     wide = dynamics.polygon_outside_m(model, q, ("foot_right",), point, band_m=0.200)
     assert narrow > 0.05 and wide == 0.0

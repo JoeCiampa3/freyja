@@ -48,7 +48,8 @@ def test_the_com_offset_default_is_unchanged_and_described_as_a_design_choice():
         text = path.read_text(encoding="utf-8")
         assert yaml.safe_load(text)["pose"] == {"com_x_rel_ankle_m": 0.0}
         head = " ".join(l.lstrip("# ") for l in text.splitlines() if l.startswith("#"))  # comment words, wrapped lines joined
-        assert "design choice" in head and "41 mm" in head and "not a measurement" in head, name
+        assert "design choice" in head and "heel" in head and "not a measurement" in head, name
+        assert "41" not in head and "165" not in head, name  # no foot dimension typed into a scenario header: the box is in the model
         assert "uncited" in head or "no cited" in head, name
 
 
