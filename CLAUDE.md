@@ -4,7 +4,7 @@ Read in this order at the start of a session: `CONVENTIONS.md` (the contract for
 
 Tracks. **Ariadne** is the digital thread: the pipeline from the sheet to the model, sims, load envelopes and later CAD and FEA (Stages 2, 3 and on), with the system model in `thread/` as its data layer. **Architecture** is repo tooling, such as the roadmap.
 
-Current Ariadne brief: `docs/briefs/ariadne/stage2f-brief.md`.
+Current Ariadne brief: `docs/briefs/ariadne/stage2g-brief.md`.
 Current architecture brief: `docs/briefs/architecture/roadmap-brief4.md`.
 
 The prompt names which brief to execute; if it does not, ask. If the prompt gives a hash prefix, check `sha256sum` of the brief against it before starting; on a mismatch look for CRLF line endings, report the actual hash, and stop if it still differs. Never edit a brief; Joe overwrites them.
