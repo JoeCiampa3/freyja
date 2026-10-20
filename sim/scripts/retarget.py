@@ -208,10 +208,13 @@ class Cycle:
 
     def __init__(self, model, mapping, stand_qpos, ik, T, scale, cutoff_hz=CUTOFF_HZ,
                  pitch_offset_deg=0.0, root_rule="pelvis_dataset", hip_in_pelvis_os=None, root_ref=None, trunk="rigid", pitch_mean="measured",
-                 trunk_gain=None, trunk_lag_deg=None):
+                 trunk_gain=None, trunk_lag_deg=None, pelvis_frame_offset_deg=0.0):
         if root_rule not in ROOT_RULES:
             raise ValueError(f"root_rule must be one of {ROOT_RULES}")
+        if isinstance(pelvis_frame_offset_deg, bool) or not isinstance(pelvis_frame_offset_deg, (int, float)) or not np.isfinite(pelvis_frame_offset_deg):
+            raise ValueError("pelvis_frame_offset_deg must be a finite number of degrees")
         self.root_rule = root_rule
+        self.frame_offset_deg = float(pelvis_frame_offset_deg)
         if root_ref is None:
             root_ref = "hip_midpoint" if hip_in_pelvis_os is not None else "pelvis_origin"
         if root_ref not in ROOT_REFS or (root_ref == "hip_midpoint" and hip_in_pelvis_os is None):
@@ -225,9 +228,24 @@ class Cycle:
         self.lab_to_model = np.array(mapping["frame"]["lab_to_model"], float)
         self.B = np.array(mapping["frame"]["osim_pelvis_to_model"], float)
         self.joint_adr, series = [], []
+        # The pelvis frame offset (decisions/0004, point 2): the dataset's IK pelvis sits delta degrees posterior of the Dumas frame the model's pelvis is built
+        # in. The pelvis body is turned forward by delta about its own lateral axis (self._C, applied on the body side of the root rotation), the hip flexion
+        # gains delta (the thigh keeps its world orientation: the hip flexion axis is the outermost hip joint and shares the pelvis's lateral axis) and the
+        # lumbosacral flexion becomes delta of extension (the trunk keeps its world orientation). Signs come from checks/joint_polarity.yaml.
+        delta = self.frame_offset_deg
+        self._C = np.eye(3)
+        self._lsj_fe = _hinge_adr(model, "lsj_fe")
+        if delta != 0.0:
+            import leanpose
+            a = np.deg2rad(delta)
+            self._C = np.array([[np.cos(a), 0.0, np.sin(a)], [0.0, 1.0, 0.0], [-np.sin(a), 0.0, np.cos(a)]])  # forward (anterior) pitch is a positive turn about +y
+            self.stand[self._lsj_fe] = -leanpose.flexion_sign(model, "lsj_fe") * a
         for joint, spec in mapping["joints"].items():
             self.joint_adr.append(_hinge_adr(model, joint))
-            series.append(np.deg2rad(spec["sign"] * col(spec["dataset"]) + spec.get("offset", 0.0)))  # offset: model degrees, optional (camargo_mapping.yaml)
+            shift = 0.0
+            if delta != 0.0 and joint in ("hip_fe_right", "hip_fe_left"):
+                shift = leanpose.flexion_sign(model, joint) * delta
+            series.append(np.deg2rad(spec["sign"] * col(spec["dataset"]) + spec.get("offset", 0.0) + shift))  # offset: model degrees, optional (camargo_mapping.yaml)
         eul = [np.deg2rad(col(n)) for n in mapping["frame"]["pelvis_euler"]]
         self.h_f = model_hip_offset(model)
         if root_ref == "hip_midpoint":
@@ -345,14 +363,14 @@ class Cycle:
             q[adr], qd[dof], qdd[dof] = v[col], d1[col], d2[col]
         nj = self._nj
         E, dE, ddE = euler_zxy(v[nj:nj + 3], d1[nj:nj + 3], d2[nj:nj + 3])
-        Rm = self._R_world @ self.lab_to_model @ E @ self.B.T
+        Rm = self._R_world @ self.lab_to_model @ E @ self.B.T @ self._C
         quat = np.zeros(4)
         mujoco.mju_mat2Quat(quat, Rm.ravel())
         w_os = _vee(E.T @ dE)
         a_os = _vee(dE.T @ dE + E.T @ ddE)
         if self.root_ref == "hip_midpoint":
-            dRm = self._R_world @ self.lab_to_model @ dE @ self.B.T
-            ddRm = self._R_world @ self.lab_to_model @ ddE @ self.B.T
+            dRm = self._R_world @ self.lab_to_model @ dE @ self.B.T @ self._C
+            ddRm = self._R_world @ self.lab_to_model @ ddE @ self.B.T @ self._C
             off, doff, ddoff = Rm @ self.h_f, dRm @ self.h_f, ddRm @ self.h_f
             pos = np.array([v[nj + 3] - off[0], v[nj + 4] - off[1], z[0] - off[2]])
             vel = np.array([d1[nj + 3] - doff[0], d1[nj + 4] - doff[1], z[1] - doff[2]])
@@ -364,9 +382,9 @@ class Cycle:
         q[:3] = pos
         q[3:7] = quat
         qd[:3] = vel
-        qd[3:6] = self.B @ w_os
+        qd[3:6] = self._C.T @ (self.B @ w_os)  # the body-frame angular velocity and acceleration, in the turned pelvis frame
         qdd[:3] = acc
-        qdd[3:6] = self.B @ a_os
+        qdd[3:6] = self._C.T @ (self.B @ a_os)
         return q, qd, qdd
 
     def eval(self, t):

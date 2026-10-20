@@ -243,6 +243,16 @@ def test_the_tracked_extract_exists_validates_and_has_memo6s_lateral_lumbosacral
     assert e["results"]["1.4"]["rigid"]["n_strides"] == 469 and e["results"]["1.6"]["rigid"]["n_strides"] == 519
 
 
+def pre_stage2g_manifest_sha256(path):
+    """sha256 of the manifest with the keys Stage 2g T1 added removed, written the way the ingestion writes it (sorted keys, indent 1, LF, final newline)."""
+    import re
+    m = json.loads(Path(path).read_text(encoding="utf-8"))
+    for subject in m["subjects"].values():
+        subject.pop("static_dumas_tilt_deg", None)
+    m["files_sha256"] = {k: v for k, v in m["files_sha256"].items() if not re.search(r"/static[^/]*/markers$", k)}
+    return hashlib.sha256((json.dumps(m, indent=1, sort_keys=True) + "\n").encode("utf-8")).hexdigest()
+
+
 def test_the_tracked_extract_has_the_acceptance_speed_beside_the_sizing_speeds_and_agrees_with_the_manifest_on_disk():
     """Stage 2f: 0.5 m/s is in the extract (297 strides, A_filtered misses the band at hip and knee, as measured, and meets it at the ankle); the
     1.4 and 1.6 strides are unchanged; the manifest hash it carries is that of the LF file on disk, so a clean clone reproduces it (D4)."""
@@ -256,7 +266,10 @@ def test_the_tracked_extract_has_the_acceptance_speed_beside_the_sizing_speeds_a
     for sp in ("1.4", "1.6"):
         assert e["results"][sp]["rigid"]["band"]["A_filtered"]["all"]["meets"] is True
     manifest = REPO / "data" / "camargo2021" / "manifest.json"
-    assert e["dataset_manifest_sha256"] == hashlib.sha256(manifest.read_bytes()).hexdigest()
+    # Stage 2g T1 added keys to the manifest (each subject's static Dumas tilt and the hash of its static marker file) and nothing else, so an extract written
+    # before that carries the hash of the manifest without them. The final regeneration (Stage 2g T8) rewrites the extract on the new manifest; until then the
+    # extract is accepted if it matches the manifest as it was, rebuilt by dropping exactly those keys.
+    assert e["dataset_manifest_sha256"] in (hashlib.sha256(manifest.read_bytes()).hexdigest(), pre_stage2g_manifest_sha256(manifest))
 
 
 def test_the_tracked_envelope_is_what_the_tracked_extract_and_run_records_produce():

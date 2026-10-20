@@ -178,6 +178,21 @@ def steady_segments(t, speed, target: float, tol: float, ptp: float, min_s: floa
     return out
 
 
+def dumas_pelvic_tilt_deg(asis_r, asis_l, psis_r, psis_l):
+    """Pelvic tilt per frame in the Dumas (ISB) pelvic frame, degrees, anterior positive: from marker positions (N, 3) in a lab frame with y up. The frame's
+    mediolateral axis Z runs from the left to the right ASIS; its anterior axis X lies in the plane through the ASIS and the midpoint of the PSIS,
+    perpendicular to Z, pointing forward. The tilt is the dip of X below the horizontal, so it is positive when the ASIS are below the PSIS
+    plane's horizontal and independent of the direction the subject faces. (A full Cardan sequence differs by the small coupling with the lateral tilt;
+    for a few degrees of obliquity that is under 0.1 degree.) NaN markers give NaN frames."""
+    ar, al, pr, pl = (np.asarray(v, float) for v in (asis_r, asis_l, psis_r, psis_l))
+    Z = ar - al
+    Z = Z / np.linalg.norm(Z, axis=1, keepdims=True)
+    v = 0.5 * (ar + al) - 0.5 * (pr + pl)
+    X = v - np.sum(v * Z, axis=1, keepdims=True) * Z
+    X = X / np.linalg.norm(X, axis=1, keepdims=True)
+    return np.degrees(np.arcsin(np.clip(-X[:, 1], -1.0, 1.0)))
+
+
 # ------------------------------------------------------------------ one subject
 
 def _find(names, subject_zip_names, sensor, trial):
@@ -216,6 +231,16 @@ def ingest_subject(raw: Path, subject: str, spec: dict) -> dict:
         static_pitch.append(-float(np.mean(tbl["pelvis_list"])))
     static_roll = float(np.mean(static_roll)) if static_roll else None
     static_pitch = float(np.mean(static_pitch)) if static_pitch else None
+    # The same standing pelvis in the Dumas (ISB) frame, from the ASIS and PSIS markers of the static trial(s): the model's pelvis frame
+    # (decisions/0004-hip-stop-pelvis-pose.md). Its difference from the IK pitch above is the frame offset the retargeting can apply.
+    static_dumas = []
+    for n in sorted(x for x in names if re.search(r"/static/markers/.*\.mat$", x)):
+        blob = zf.read(n)
+        files[f"{subject}/{Path(n).stem}/markers"] = hashlib.sha256(blob).hexdigest()
+        tbl = read_table(blob)
+        static_dumas.append(dumas_pelvic_tilt_deg(*(np.stack([tbl[f"{m}_{c}"] for c in "xyz"], axis=1) / 1000.0
+                                                    for m in ("R_ASIS", "L_ASIS", "R_PSIS", "L_PSIS"))))
+    static_dumas_tilt = float(np.nanmean(np.concatenate(static_dumas))) if static_dumas else None
     hip_in_pelvis = hip_centre_in_pelvis(zf, subject)
 
     def reject(s, why):
@@ -304,7 +329,7 @@ def ingest_subject(raw: Path, subject: str, spec: dict) -> dict:
                       **{k: np.array(d[k]) for k in ("t0", "duration_s", "toe_off_phase", "contra_hs_phase", "contra_to_phase", "trial")}}
     return {"subject": subject, "mass_kg": info["mass_kg"], "height_m": info["height_m"], "sex": info["sex"], "age": info["age"],
             "strides": strides, "rejects": rejects, "files": files,
-            "static_pelvis_roll_deg": static_roll, "static_pelvis_pitch_deg": static_pitch,
+            "static_pelvis_roll_deg": static_roll, "static_pelvis_pitch_deg": static_pitch, "static_dumas_tilt_deg": static_dumas_tilt,
             "hip_in_pelvis_os_m": hip_in_pelvis}
 
 
@@ -336,12 +361,13 @@ def main(argv=None) -> int:
                 if k != "n":
                     arrays[f"{s}_{k}"] = v
         arrays["hip_in_pelvis_os_m"] = np.array(res["hip_in_pelvis_os_m"])
-        for key in ("static_pelvis_roll_deg", "static_pelvis_pitch_deg"):
+        for key in ("static_pelvis_roll_deg", "static_pelvis_pitch_deg", "static_dumas_tilt_deg"):
             arrays[key] = np.array(np.nan if res[key] is None else res[key])
         np.savez(out_dir / f"{subject}.npz", **arrays)
         manifest["subjects"][subject] = {
             "mass_kg": res["mass_kg"], "height_m": res["height_m"], "sex": res["sex"], "age": res["age"],
             "static_pelvis_roll_deg": res["static_pelvis_roll_deg"], "static_pelvis_pitch_deg": res["static_pelvis_pitch_deg"],
+            "static_dumas_tilt_deg": res["static_dumas_tilt_deg"],
             "walking_pelvis_roll_deg": {str(s): float(d["ik"][:, :, IK_CHANNELS.index("pelvis_tilt")].mean()) for s, d in res["strides"].items()},
             "walking_pelvis_pitch_deg": {str(s): -float(d["ik"][:, :, IK_CHANNELS.index("pelvis_list")].mean()) for s, d in res["strides"].items()},
             "hip_in_pelvis_os_m": res["hip_in_pelvis_os_m"],

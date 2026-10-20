@@ -1,0 +1,30 @@
+# stage2g_offset_measured: the Stage 2g T1 experiment (docs/briefs/ariadne/stage2g-brief.md): walk_treadmill at 1.4 m/s only, every subject, each subject's pelvis turned by its static Dumas tilt minus its static IK pitch (decisions/0004). Authored; the two experiment specs differ in
+# the `pelvis_frame_offset` line and nothing else. `fy gait stage2g_offset_measured`. Not a record of the headline run: `fy runs envelope` and the extract read walk_treadmill only.
+name: stage2g_offset_measured
+dataset: {manifest: data/camargo2021/manifest.json, processed: data/camargo2021/processed}
+speeds_mps: [1.4]
+subjects: null                  # null = every subject in the manifest
+stride_cap_per_subject: null    # null = all strides; otherwise the first N of each subject
+methods: [B, A_native, A_filtered, H]
+smoothing: {cutoff_hz: 6.0}     # zero-lag Butterworth on the kinematics (and on the measured force for A_filtered)
+root_rule: pelvis_dataset       # retargeting rule (foot_min is a diagnostic only)
+root_reference: hip_midpoint    # the dataset's translation and the measured CoP are referenced to the midpoint of the hip joint centres (pelvis_origin = the earlier behaviour)
+pitch_mean: measured            # mean sagittal pelvis pitch: "measured" (the subject's own) or a number of degrees (anterior positive, relative to the stand_static pose). A and H allow "measured" only; a number marks them hybrid
+pelvis_pitch_offset_deg: 0.0    # added to the pitch mean (anterior positive): the sensitivity knob
+pelvis_frame_offset: measured         # none | measured: the dataset IK pelvis frame against the model's Dumas pelvis frame (decisions/0004, point 2)
+trunk: [rigid, counter_rotate]  # a mode or a list of modes; the record keys every result by mode. rigid | counter_rotate (lumbosacral lateral and axial joints cancel the pelvis roll and yaw)
+cop_mode: hip_reference          # hip_reference: the measured CoP relative to the hip-centre midpoint, scaled; foot_frame: placed at the same normalised place on Freyja's foot (heel and toe-tip markers)
+cop_scale: 1.0                  # scales the measured CoP relative to the pelvis (methods A and H)
+offset_subjects: [AB13, AB15]   # subject-level ankle offsets (T0): every statistic is also given without them
+pitch_flag_subjects: [AB07, AB12, AB18, AB19]  # kept, and every statistic is also given without them (T9.3): the IK pelvis pitch and the pelvic markers disagree on the static-to-walking change by more than gait.PITCH_FLAG_DEG at either speed. Reproduce: python sim/scripts/gait_diag.py pitch
+wrap_gap_flag_deg: 10.0         # strides with a joint's drift above this are flagged, never dropped
+upper_body: "rigid at the standing pose from stand_static, arms at the sides; arm swing is not modelled"
+double_support:
+  rule: force split proportional to the CoM's position between the feet; CoPs at a common normalised offset along each box with a shared lateral shift
+  bound: sweep the right-foot share over its feasible range and keep the worst case per joint
+  sweep_points: 21
+  hull_band_m: 0.025
+sensitivity:
+  cutoffs_hz: [4, 6, 10, 15]
+  pitch_offsets_deg: [-5, 0, 5]
+  stride_cap_per_subject: 4     # the sensitivity runs use method B on this many strides per subject

@@ -137,6 +137,23 @@ def hybrid_methods(spec: dict) -> list:
     return [m for m in spec["methods"] if m.startswith("A") or m == "H"]
 
 
+FRAME_OFFSETS = ("none", "measured")
+
+
+def frame_offset_deg(mode: str, info: dict) -> float:
+    """The pelvis frame offset delta (degrees) the retargeting applies for a subject: 0 for `none`, the subject's static Dumas-frame tilt minus its
+    static IK pitch for `measured` (decisions/0004, point 2; both are stored by the ingestion). A missing tilt is an error, never a silent zero."""
+    if mode not in FRAME_OFFSETS:
+        raise GaitError(f"pelvis_frame_offset must be one of {FRAME_OFFSETS}, got {mode!r}")
+    if mode == "none":
+        return 0.0
+    tilt, pitch = info.get("static_dumas_tilt_deg"), info.get("static_pelvis_pitch_deg")
+    if tilt is None or pitch is None:
+        raise GaitError("pelvis_frame_offset: measured needs static_dumas_tilt_deg and static_pelvis_pitch_deg in the dataset manifest "
+                        "(rerun `python analysis/ingest_camargo.py`; the subject needs static marker and IK trials)")
+    return float(tilt) - float(pitch)
+
+
 def trunk_modes(spec: dict) -> list:
     """The spec's `trunk` as a list of modes: a name or a list of distinct names from TRUNK_MODES (default rigid)."""
     t = spec.get("trunk", "rigid")
@@ -255,7 +272,8 @@ def run_stride(task: dict) -> dict:
     ref = task["root_reference"] if hip is not None else "pelvis_origin"
     cyc = retarget.Cycle(model, mapping, c.stand, ik, T, ratio, cutoff_hz=cut, pitch_offset_deg=task["pitch_offset_deg"],
                          root_rule=task["root_rule"], hip_in_pelvis_os=hip, root_ref=ref,
-                         pitch_mean=task["pitch_mean"], trunk=task["trunk"])
+                         pitch_mean=task["pitch_mean"], trunk=task["trunk"],
+                         pelvis_frame_offset_deg=frame_offset_deg(task.get("pelvis_frame_offset", "none"), sub))
     q, qd, qdd = cyc.grid()
     methods = task["methods"]
     joints = c.joints
@@ -401,7 +419,7 @@ def _tasks(spec, manifest, model_path, processed, methods, cutoff, pitch_offset,
                 tasks.append({"model_path": str(model_path), "processed": str(processed), "subject": s, "speed": str(speed), "index": i,
                               "subject_info": manifest["subjects"][s], "cutoff_hz": cutoff, "pitch_offset_deg": pitch_offset,
                               "root_rule": spec["root_rule"], "root_reference": spec.get("root_reference", "hip_midpoint"), "cop_mode": spec.get("cop_mode", "hip_reference"), "pitch_mean": spec.get("pitch_mean", "measured"),
-                              "trunk": trunk, "methods": methods, "sweep": sweep, "cop_scale": spec["cop_scale"],
+                              "pelvis_frame_offset": spec.get("pelvis_frame_offset", "none"), "trunk": trunk, "methods": methods, "sweep": sweep, "cop_scale": spec["cop_scale"],
                               "agreement": agreement_on, "kinematics": kin})
     return tasks
 
@@ -561,6 +579,8 @@ def _round(x):
 def run_gait(spec: dict, *, model_path=None, snapshot_path=None, meta_path=None, gait_dir=None, manifest_path=None, processed=None,
              now=None, repo=None, workers=1) -> GaitResult:
     model_path, snapshot_path = Path(model_path or simrun.MODEL_FILE), Path(snapshot_path or simrun.SNAPSHOT_FILE)
+    if spec.get("pelvis_frame_offset", "none") not in FRAME_OFFSETS:  # refuse an unknown mode before any work (a manifest without the tilt is refused per subject)
+        raise GaitError(f"pelvis_frame_offset must be one of {FRAME_OFFSETS}, got {spec['pelvis_frame_offset']!r}")
     gait_dir = Path(gait_dir or GAIT_DIR)
     manifest_path = Path(manifest_path or REPO / spec["dataset"]["manifest"])
     processed = Path(processed or REPO / spec["dataset"]["processed"])
@@ -593,6 +613,7 @@ def run_gait(spec: dict, *, model_path=None, snapshot_path=None, meta_path=None,
         "spec": spec,
         "assumptions": [spec["upper_body"], f"root rule {spec['root_rule']}: the dataset's pelvis translation scaled by leg-length ratio",
                         f"pelvis pitch mean: {spec.get('pitch_mean', 'measured')} (anterior-positive offset {spec['pelvis_pitch_offset_deg']} deg); trunk mode(s): {', '.join(trunk_modes(spec))}",
+                        f"pelvis frame offset: {spec.get('pelvis_frame_offset', 'none')} (the dataset's IK pelvis frame against the model's Dumas pelvis frame; decisions/0004)",
                         "treadmill: the model walks in place, the belt carries the ground backward; no friction-cone or slip enforcement on the kinematics",
                         "methods A and H take the CoP relative to the subject's pelvis, scaled by leg-length ratio",
                         "joint limits and contacts are disabled in inverse dynamics; frames past a limit are not clipped"],

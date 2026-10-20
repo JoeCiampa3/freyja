@@ -111,19 +111,7 @@ def osim_foot_points(osim_xml: bytes, side: str) -> dict:
 
 # ------------------------------------------------------------------------------ the pelvis
 
-def dumas_pelvic_tilt_deg(asis_r, asis_l, psis_r, psis_l):
-    """Pelvic tilt per frame in the Dumas (ISB) pelvic frame, degrees, anterior positive: from marker positions (N, 3) in a lab frame with y up. The frame's
-    mediolateral axis Z runs from the left to the right ASIS; its anterior axis X lies in the plane through the ASIS and the midpoint of the PSIS,
-    perpendicular to Z, pointing forward. The tilt is the dip of X below the horizontal, so it is positive when the ASIS are below the PSIS
-    plane's horizontal and independent of the direction the subject faces. (A full Cardan sequence differs by the small coupling with the lateral tilt;
-    for a few degrees of obliquity that is under 0.1 degree.) NaN markers give NaN frames."""
-    ar, al, pr, pl = (np.asarray(v, float) for v in (asis_r, asis_l, psis_r, psis_l))
-    Z = ar - al
-    Z = Z / np.linalg.norm(Z, axis=1, keepdims=True)
-    v = 0.5 * (ar + al) - 0.5 * (pr + pl)
-    X = v - np.sum(v * Z, axis=1, keepdims=True) * Z
-    X = X / np.linalg.norm(X, axis=1, keepdims=True)
-    return np.degrees(np.arcsin(np.clip(-X[:, 1], -1.0, 1.0)))
+from ingest_camargo import dumas_pelvic_tilt_deg  # noqa: E402,F401  (moved to the ingestion, which stores the static tilt per subject; re-exported here)
 
 
 def trunk_marker_names(names) -> list:

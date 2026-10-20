@@ -103,7 +103,8 @@ def _lsj_task(task: dict) -> dict:
     hip = sub.get("hip_in_pelvis_os_m")
     cyc = retarget.Cycle(c.model, c.mapping, c.stand, z[f"{sp}_ik"][i], float(z[f"{sp}_duration_s"][i]), retarget.leg_length_ratio(c.model, sub["height_m"]),
                          cutoff_hz=retarget.CUTOFF_HZ, root_rule="pelvis_dataset", hip_in_pelvis_os=hip, root_ref="hip_midpoint" if hip is not None else "pelvis_origin",
-                         pitch_mean="measured", **_variant_kwargs(task["variant"], sp))
+                         pitch_mean="measured", pelvis_frame_offset_deg=gait.frame_offset_deg(task.get("pelvis_frame_offset", "none"), sub),
+                         **_variant_kwargs(task["variant"], sp))
     q, qd, qdd = cyc.grid()
     nf = gait.N_FRAMES
     qfrc = np.array([dynamics.inverse_frame(c.model, q[k], qd[k], qdd[k]) for k in range(nf)])
@@ -114,7 +115,7 @@ def _lsj_task(task: dict) -> dict:
     return {"subject": task["subject"], "speed": sp, "variant": task["variant"], "metrics": out}
 
 
-def lsj_tasks(speeds, cap=0, manifest=None) -> list:
+def lsj_tasks(speeds, cap=0, manifest=None, frame_offset="none") -> list:
     """Every subject-stride x variant cycle of the speeds (the first `cap` strides of each subject when cap is non-zero)."""
     manifest = manifest or json.loads((REPO / "data/camargo2021/manifest.json").read_text(encoding="utf-8"))
     tasks = []
@@ -125,7 +126,7 @@ def lsj_tasks(speeds, cap=0, manifest=None) -> list:
                     continue
                 for v in VARIANTS:
                     tasks.append({"model_path": str(gait.simrun.MODEL_FILE), "processed": str(REPO / "data/camargo2021/processed"), "subject": s, "speed": sp,
-                                  "index": i, "subject_info": manifest["subjects"][s], "variant": v})
+                                  "index": i, "subject_info": manifest["subjects"][s], "variant": v, "pelvis_frame_offset": frame_offset})
     return tasks
 
 
@@ -142,9 +143,9 @@ def lsj_table(rows, speeds, variants=VARIANTS, joints=LSJ) -> dict:
     return out
 
 
-def compute_lumbosacral(speeds, cap=0, workers=1) -> tuple:
-    """(table, rows): the lumbosacral rows of every variant over every subject-stride of the speeds."""
-    rows = _pool(_lsj_task, lsj_tasks(speeds, cap), workers)
+def compute_lumbosacral(speeds, cap=0, workers=1, frame_offset="none") -> tuple:
+    """(table, rows): the lumbosacral rows of every variant over every subject-stride of the speeds, with the spec's pelvis frame offset."""
+    rows = _pool(_lsj_task, lsj_tasks(speeds, cap, frame_offset=frame_offset), workers)
     return lsj_table(rows, speeds), rows
 
 
@@ -186,11 +187,11 @@ def a_sagittal_rows(S, mass) -> dict:
     return out
 
 
-def a_filtered_strides(speed, workers, ignore_mapping_offset=False):
+def a_filtered_strides(speed, workers, ignore_mapping_offset=False, spec=None):
     """Every subject-stride at one speed through method A_filtered (rigid trunk: A's leg torques do not depend on the mode) with the per-frame
     joint torques kept, the dataset's own moment per kg of the subject, and the scaling factors of the stride. Returns (strides, Freyja's mass, spec)."""
     import retarget
-    spec = gait.load_spec("walk_treadmill")
+    spec = spec or gait.load_spec("walk_treadmill")
     processed = REPO / spec["dataset"]["processed"]
     manifest = json.loads((REPO / spec["dataset"]["manifest"]).read_text(encoding="utf-8"))
     tasks = gait._tasks(spec, manifest, gait.simrun.MODEL_FILE, processed, ["A_filtered"], float(spec["smoothing"]["cutoff_hz"]),
@@ -209,8 +210,8 @@ def a_filtered_strides(speed, workers, ignore_mapping_offset=False):
     return out, c.mass, spec
 
 
-def compute_a_sagittal(speeds, workers=1) -> dict:
-    return {sp: a_sagittal_rows(*a_filtered_strides(sp, workers)[:2]) for sp in speeds}
+def compute_a_sagittal(speeds, workers=1, spec=None) -> dict:
+    return {sp: a_sagittal_rows(*a_filtered_strides(sp, workers, spec=spec)[:2]) for sp in speeds}
 
 
 # ------------------------------------------------------------------------------ hip extension demand (moved from gait_diag.py, T1)
@@ -319,8 +320,8 @@ def validate(extract) -> None:
 def build(rec: dict, workers=1) -> dict:
     """The extract of a gait record: the computed tables are those of every subject-stride of the spec's speeds."""
     speeds = [str(s) for s in rec["spec"]["speeds_mps"]]
-    lsj, _ = compute_lumbosacral(speeds, 0, workers)
-    return assemble(rec, lsj, compute_a_sagittal(speeds, workers), compute_hip_demand(speeds))
+    lsj, _ = compute_lumbosacral(speeds, 0, workers, rec["spec"].get("pelvis_frame_offset", "none"))
+    return assemble(rec, lsj, compute_a_sagittal(speeds, workers, rec["spec"]), compute_hip_demand(speeds))
 
 
 def write_extract(rec: dict, path=None, workers=1) -> Path:
