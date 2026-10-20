@@ -91,6 +91,18 @@ def _toes(model, body):
     return [b for b in range(model.nbody) if int(model.body_parentid[b]) == body]
 
 
+def _contact_body(model, d, foot, point):
+    """The body a ground force at the floor point `point` acts on: the foot's toe when the point is ahead of the toe's hinge along the foot's long axis, else the
+    foot. The ankle rows of the Jacobian are the same either way (the point is the same); the toe's own row is not. `d` has its kinematics done."""
+    toes = _toes(model, foot)
+    if not toes:
+        return foot
+    ax = d.xmat[foot].reshape(3, 3)[:2, 0]
+    n = np.linalg.norm(ax)
+    ax = ax / n if n > 0 else np.array([1.0, 0.0])
+    return toes[0] if float((np.asarray(point, float)[:2] - d.xpos[toes[0]][:2]) @ ax) > 0.0 else foot
+
+
 def _foot_boxes(model, d, body):
     """World corners of the box geoms of a foot body and of its toe, plus the floor-projected centre and long-axis half vector of the foot's sole (from the first
     box's long axis, spanning every box along it: a toe makes the sole longer) and the first box's friction mu."""
@@ -261,7 +273,7 @@ def solve_frame(model, qpos, qvel, qacc, stance=FEET, feet=FEET, sweep=False, ba
         g = np.zeros(model.nv)
         jp = np.zeros((3, model.nv))
         for n in stance:
-            mujoco.mj_jac(model, d, jp, None, cops[n], bodies[n])
+            mujoco.mj_jac(model, d, jp, None, cops[n], _contact_body(model, d, bodies[n], cops[n]))
             g += jp.T @ (_ground_sign * forces[n])
         net = qfrc - g
         return net, np.r_[net[:3], R @ net[3:6]]
@@ -370,7 +382,8 @@ def solve_given(model, qpos, qfrc, forces, cops, feet=FEET):
     g = np.zeros(model.nv)
     jp = np.zeros((3, model.nv))
     for n, f in forces.items():
-        mujoco.mj_jac(model, d, jp, None, np.asarray(cops[n], float), mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, n))
+        foot = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, n)
+        mujoco.mj_jac(model, d, jp, None, np.asarray(cops[n], float), _contact_body(model, d, foot, cops[n]))
         g += jp.T @ np.asarray(f, float)
     net = qfrc - g
     return {n: float(net[dof]) for n, dof in _hinges(model)}, np.r_[net[:3], R @ net[3:6]], net

@@ -154,6 +154,26 @@ def frame_offset_deg(mode: str, info: dict) -> float:
     return float(tilt) - float(pitch)
 
 
+TOE_STOP_TOL_DEG = 0.1  # degrees. An angle within this of a stop counts as at the stop (a reporting threshold; nothing is computed from it)
+
+
+def toe_stats(model, qpos, stance) -> dict:
+    """The free toe over a stride, from the qpos frames (N, nq) and the dataset's stance flags (2, N) of the right and left foot: the peak angle (degrees) and the fraction of
+    frames at the flexion stop (the flat toe), at the extension stop and beyond it, over all frames and over the foot's stance frames. The stops are the model's joint range."""
+    out = {}
+    for f, side in enumerate(("right", "left")):
+        j = model.joint(f"toe_{side}")
+        theta = np.degrees(qpos[:, int(j.qposadr[0])])
+        lo, hi = np.degrees(j.range[0]), np.degrees(j.range[1])
+        st = np.asarray(stance[f], bool)
+        pick = lambda x, sel: float(np.mean(x[sel])) if sel.any() else None  # noqa: E731
+        out[side] = {"peak_deg": float(theta.max()),
+                     "at_flexion_stop": pick(theta <= lo + TOE_STOP_TOL_DEG, np.ones_like(st)), "at_extension_stop": pick(theta >= hi - TOE_STOP_TOL_DEG, np.ones_like(st)),
+                     "stance_at_flexion_stop": pick(theta <= lo + TOE_STOP_TOL_DEG, st), "stance_at_extension_stop": pick(theta >= hi - TOE_STOP_TOL_DEG, st),
+                     "stance_peak_deg": float(theta[st].max()) if st.any() else None}
+    return out
+
+
 def trunk_modes(spec: dict) -> list:
     """The spec's `trunk` as a list of modes: a name or a list of distinct names from TRUNK_MODES (default rigid)."""
     t = spec.get("trunk", "rigid")
@@ -270,12 +290,21 @@ def run_stride(task: dict) -> dict:
     cut = task["cutoff_hz"]
     hip = sub.get("hip_in_pelvis_os_m")
     ref = task["root_reference"] if hip is not None else "pelvis_origin"
-    cyc = retarget.Cycle(model, mapping, c.stand, ik, T, ratio, cutoff_hz=cut, pitch_offset_deg=task["pitch_offset_deg"],
-                         root_rule=task["root_rule"], hip_in_pelvis_os=hip, root_ref=ref,
-                         pitch_mean=task["pitch_mean"], trunk=task["trunk"],
-                         pelvis_frame_offset_deg=frame_offset_deg(task.get("pelvis_frame_offset", "none"), sub))
-    q, qd, qdd = cyc.grid()
     methods = task["methods"]
+
+    def cycle(toe):
+        return retarget.Cycle(model, mapping, c.stand, ik, T, ratio, cutoff_hz=cut, pitch_offset_deg=task["pitch_offset_deg"],
+                              root_rule=task["root_rule"], hip_in_pelvis_os=hip, root_ref=ref,
+                              pitch_mean=task["pitch_mean"], trunk=task["trunk"],
+                              pelvis_frame_offset_deg=frame_offset_deg(task.get("pelvis_frame_offset", "none"), sub), toe=toe,
+                              stance=fp[:, :, 6] >= gaitloads.STANCE_FLAG)
+    # The dataset's foot is rigid and has no toe angle: method A holds the toe flat (welded), so the ankle carries the rigid whole-foot moment; B and H let it
+    # roll (retarget.Cycle toe="rolling"), their contact polygon and ground force acting on the toe at its current angle. A model without a toe has one cycle.
+    cyc_w = cycle("welded")
+    free_toe = bool(cyc_w._toe_adr) and any(m in methods for m in ("B", "H"))
+    cyc = cycle("rolling") if free_toe else cyc_w
+    q, qd, qdd = cyc.grid()
+    qw, qdw, qddw = cyc_w.grid() if free_toe else (q, qd, qdd)
     joints = c.joints
     nf = N_FRAMES
     ref_xy = np.array([retarget.model_hip_mid(model, q[k])[:2] if ref == "hip_midpoint" else q[k, :2] for k in range(nf)])
@@ -310,6 +339,7 @@ def run_stride(task: dict) -> dict:
     for k in range(nf):
         stance = tuple(f for j, f in enumerate(FEET) if fp[j, k, 6] >= gaitloads.STANCE_FLAG)
         qfrc = dynamics.inverse_frame(model, q[k], qd[k], qdd[k])
+        qfrc_a = dynamics.inverse_frame(model, qw[k], qdw[k], qddw[k]) if free_toe and any(m.startswith("A") for m in methods) else qfrc
         ftot[k] = qfrc[:3]
         if "B" in methods:
             r = dynamics.solve_frame(model, q[k], qd[k], qdd[k], stance=stance, sweep=task["sweep"], qfrc=qfrc)
@@ -367,7 +397,9 @@ def run_stride(task: dict) -> dict:
                 forces, cops = measured(frame, k)
                 if m == "H":
                     forces = gaitloads.method_h_forces(qfrc, forces)
-                t, res, _ = dynamics.solve_given(model, q[k], qfrc, forces, cops)
+                    t, res, _ = dynamics.solve_given(model, q[k], qfrc, forces, cops)
+                else:
+                    t, res, _ = dynamics.solve_given(model, qw[k], qfrc_a, forces, cops)
                 tor[m][k] = [t[j] for j in joints]
                 resid[m][k] = res
     qdj = np.stack([qd[:nf, d] for d in dof], axis=1)
@@ -398,6 +430,8 @@ def run_stride(task: dict) -> dict:
     out["trunk_peak_deg"] = {j: float(np.degrees(np.abs(q[:nf, c.hinge[j][0]]).max())) for j in TRUNK_ANGLE_JOINTS}
     hips = [q[:nf, c.hinge[j][0]] for j in ("hip_fe_right", "hip_fe_left")]
     out["hip_extension_deg"] = float(-np.degrees(min(h.min() for h in hips)))
+    if free_toe:
+        out["toe"] = toe_stats(model, q[:nf], fp[:, :nf, 6] >= gaitloads.STANCE_FLAG)
     if task["kinematics"]:
         out["limit_fraction"] = retarget.limit_fraction(model, q[:nf])
         gaps = cyc.wrap_gap_deg()

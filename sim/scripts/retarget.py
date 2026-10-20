@@ -31,6 +31,18 @@ FILTER_ORDER = 2  # per pass; forward-backward makes it a 4th-order zero-lag res
 N_UNIQUE = 100  # 101 phase points, the last repeating the first
 SUBJECT_LEG_FRACTION = 0.491  # hip-to-ankle length / stature = thigh 0.245 + shank 0.246 (Winter, Biomechanics and Motor Control of Human Movement)
 FOOT_BODIES = ("foot_right", "foot_left")
+TOE_MODES = ("welded", "rolling")
+_FLEX_SIGN = {}  # (id(model), joint) -> flexion_sign, found once per model
+
+
+def _flexion_sign(model, joint):
+    import leanpose
+    key = (id(model), joint)
+    if key not in _FLEX_SIGN:
+        _FLEX_SIGN[key] = leanpose.flexion_sign(model, joint)
+    return _FLEX_SIGN[key]
+
+
 FOOT_OF = {"foot_right": "foot_right", "foot_left": "foot_left", "toe_right": "foot_right", "toe_left": "foot_left"}  # a toe is part of its foot's sole
 
 _IK = None  # set lazily to avoid importing the analysis folder at import time
@@ -209,11 +221,16 @@ class Cycle:
 
     def __init__(self, model, mapping, stand_qpos, ik, T, scale, cutoff_hz=CUTOFF_HZ,
                  pitch_offset_deg=0.0, root_rule="pelvis_dataset", hip_in_pelvis_os=None, root_ref=None, trunk="rigid", pitch_mean="measured",
-                 trunk_gain=None, trunk_lag_deg=None, pelvis_frame_offset_deg=0.0):
+                 trunk_gain=None, trunk_lag_deg=None, pelvis_frame_offset_deg=0.0, toe="welded", stance=None):
         if root_rule not in ROOT_RULES:
             raise ValueError(f"root_rule must be one of {ROOT_RULES}")
         if isinstance(pelvis_frame_offset_deg, bool) or not isinstance(pelvis_frame_offset_deg, (int, float)) or not np.isfinite(pelvis_frame_offset_deg):
             raise ValueError("pelvis_frame_offset_deg must be a finite number of degrees")
+        if toe not in TOE_MODES:
+            raise ValueError(f"toe must be one of {TOE_MODES}")
+        if toe == "rolling" and stance is None:
+            raise ValueError("a rolling toe needs the dataset's stance flags (2, 101): right and left foot")
+        self._stance = None if stance is None else np.asarray(stance, bool)
         self.root_rule = root_rule
         self.frame_offset_deg = float(pelvis_frame_offset_deg)
         if root_ref is None:
@@ -236,16 +253,17 @@ class Cycle:
         delta = self.frame_offset_deg
         self._C = np.eye(3)
         self._lsj_fe = _hinge_adr(model, "lsj_fe")
+        a = np.deg2rad(delta)
         if delta != 0.0:
-            import leanpose
-            a = np.deg2rad(delta)
             self._C = np.array([[np.cos(a), 0.0, np.sin(a)], [0.0, 1.0, 0.0], [-np.sin(a), 0.0, np.cos(a)]])  # forward (anterior) pitch is a positive turn about +y
-            self.stand[self._lsj_fe] = -leanpose.flexion_sign(model, "lsj_fe") * a
+        # The walking trunk is glued to the dataset's pelvis frame (flexion 0, as in Stage 2) and, with the offset, extended by delta so it keeps its world pose; it does not
+        # take the standing pose's lumbosacral extension (Stage 2g T4), which belongs to the standing posture.
+        self.stand[self._lsj_fe] = -_flexion_sign(model, "lsj_fe") * a
         for joint, spec in mapping["joints"].items():
             self.joint_adr.append(_hinge_adr(model, joint))
             shift = 0.0
             if delta != 0.0 and joint in ("hip_fe_right", "hip_fe_left"):
-                shift = leanpose.flexion_sign(model, joint) * delta
+                shift = _flexion_sign(model, joint) * delta
             series.append(np.deg2rad(spec["sign"] * col(spec["dataset"]) + spec.get("offset", 0.0) + shift))  # offset: model degrees, optional (camargo_mapping.yaml)
         eul = [np.deg2rad(col(n)) for n in mapping["frame"]["pelvis_euler"]]
         self.h_f = model_hip_offset(model)
@@ -313,6 +331,39 @@ class Cycle:
             self._zspl = self._spline(zs)
             lows = np.array([self._lowest_z_at(self._t_grid[k]) for k in range(N_UNIQUE)])  # with the unshifted height
             self._zspl = self._spline(zs - lows.min())
+        self.toe = toe
+        self._toe_adr = self._toe_hinges(model)
+        if toe == "rolling" and self._toe_adr:
+            # B and H: the toe is free. It lies flat on the floor while its foot is in stance (the dataset's force flag) and pitched heel-up, at the angle of the foot's
+            # sole to the floor (extension positive), and rests at its flat stop otherwise; the angle is taken from the filtered kinematics, then filtered and splined
+            # like every other signal, so qvel and qacc are its analytic derivatives. Not clipped: a frame beyond the toe's range is reported by limit_fraction. The
+            # retargeted stance foot floats above the floor (Stage 2c, record `stance_float_max_m`), so contact is the force flag, not the foot's height.
+            raw = self._toe_raw()
+            Xf = np.column_stack([Xf, _lowpass_periodic(raw, fs, cutoff_hz)])
+            self._comp_adr = self._comp_adr + self._toe_adr
+            self._spl = self._spline(Xf)
+
+    @staticmethod
+    def _toe_hinges(model):
+        """qpos addresses of (toe_right, toe_left) when the model has them, else []."""
+        ids = [mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, n) for n in ("toe_right", "toe_left")]
+        return [int(model.jnt_qposadr[j]) for j in ids] if min(ids) >= 0 else []
+
+    def _toe_raw(self):
+        """(N_UNIQUE, 2) the toe angle (rad) at the phase points, right and left, from the cycle with the toes flat: the foot's pitch below the horizontal when the foot is
+        in stance and the pitch is positive, else 0."""
+        m, d = self.model, self._work
+        out = np.zeros((N_UNIQUE, 2))
+        bodies = [mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, n) for n in FOOT_BODIES]
+        for k in range(N_UNIQUE):
+            q, _, _ = self._assemble(*self._state(self._t_grid[k]))
+            for f in (0, 1):
+                d.qpos[:] = q
+                mujoco.mj_kinematics(m, d)
+                x_axis = d.xmat[bodies[f]].reshape(3, 3)[:, 0]
+                pitch = float(np.arctan2(-x_axis[2], x_axis[0]))  # toe down is positive
+                out[k, f] = max(pitch, 0.0) if self._stance[f, k] else 0.0
+        return out
 
     def _counter_rotation(self, Xf):
         """(N, 2) lumbosacral lateral-bending and axial-rotation angles that cancel the pelvis's roll and yaw. With the pelvis rotation
