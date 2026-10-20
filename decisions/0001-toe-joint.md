@@ -72,3 +72,26 @@ The literature supports a passive element. In normal walking the metatarsophalan
 - Sellaouti R, Stasse O, Kajita S, Yokoi K, Kheddar A (2006). Faster and smoother walking of humanoid HRP-2 with passive toe joints. IROS. doi 10.1109/IROS.2006.282449.
 - Adding low-cost passive toe joints to the feet structure of SURENA III humanoid robot. Robotica (Cambridge).
 - Selected foot length ratios in a non-pathological sample. Rev Int Cienc Podol.
+
+## Amendment 2026-10-19: foot geometry resolved from Dumas et al. 2007
+
+Open items 1 and 2 are closed by Tables 1B and 2 of Dumas, Cheze and Verriest (2007), J Biomech 40:543-553. The text layer of the PDF drops minus signs; the signs below are inferred and every length cross-checks against the printed table (see the check line).
+
+**Foot landmarks in the foot segment coordinate system** (origin at the ankle joint centre AJC, X along the line from the calcaneus CAL to the midpoint of the first and fifth metatarsal heads MHI and MHV), female, mm: CAL x = -59, MHI x = 116, MHV x = 97 (midpoint 106.5), 2nd toe tip TTII x = 174; CAL, MHI and MHV all at y = -46, TTII at y = -54. Male: CAL -46, MHI 146, MHV 128 (midpoint 137), TTII 219.
+
+**Check.** CAL to the MH midpoint is 165.5 mm female and 183 mm male, the printed foot lengths L. CAL to TTII is 233 mm female and 265 mm male, the printed alternative lengths. AJC to the MH midpoint is only about 117 mm female (106.5 along X, 46 below). So the printed 165 mm is the heel-to-ball distance, and the wording in Section 2.4 and Table 2 ("AJC to the midpoint between MHI and MHV") disagrees with the paper's own coordinates. The sheet's foot row note should say the length normaliser is CAL to the MH midpoint.
+
+**Consequences for the toe.**
+
+| Quantity (mm) | Dumas reference (female, 1.61 m) | At Freyja's stack factor 1.048879 |
+|---|---|---|
+| Heel behind AJC | 59 | 61.9 |
+| Toe hinge (MH midpoint) ahead of AJC | 106.5 | 111.7 |
+| Toe tip ahead of AJC | 174 | 182.5 |
+| Toe length (hinge to toe tip) | 67.5 | 70.8 |
+| Foot length (heel to toe tip) | 233 | 244.4 |
+
+- The hinge sits about 112 mm ahead of the AJC, not 165. The scaled heel-to-toe length, 244 mm, agrees with the 245 mm used for a 170 cm woman above.
+- The foot segment's anatomical coordinate system includes the toe-tip landmark, so the foot mass (1.0%, 0.650 kg) is taken to include the toes. This is an inference; the paper does not state the composition.
+- The foot centre of mass is 45 mm ahead of and 36 mm below the AJC (27.0% of 165 mm, Table 1B), measured along the foot X axis from the AJC. Splitting off a toe of 14.4% of the mass (0.094 kg) centred 43.6% along it from the hinge puts the toe centre of mass about 136 mm ahead of the AJC and moves the remaining foot's centre of mass to about 29 mm (reference scale); the whole-foot values must be reproduced exactly (conservation check above).
+- The "165 mm reach ahead of the ankle" used in the stage 2 brief's ankle-torque estimate is the heel-to-ball distance, not a reach from the ankle. That estimate, and the polygon test's foot extents, are to be recomputed from the model's actual foot geometry (open until the geometry inventory of the toe brief).
