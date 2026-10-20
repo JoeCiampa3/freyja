@@ -8,5 +8,9 @@ estimate_days: 2.0
 tags: ["region:whole-body", "phase:spec"]
 done_when:
   type: manual
+
+signed_off: true
 ---
-An earlier decision deferred re-verifying every BSIP row against the literature until before simulation output is used for sizing; the knee and elbow load bases are the first such uses. Includes the mass-fraction residual (rows sum to 96.9%, currently distributed proportionally). Manual: Joe signs off.
+An earlier decision deferred re-verifying every BSIP row against the literature until before simulation output is used for sizing; the knee and elbow load bases are the first such uses. Includes the mass-fraction residual (rows sum to 96.9%, currently distributed proportionally). Manual: Joe signs off. 
+
+Findings listed in notebook/2026-10-19-bsip-verification.md
