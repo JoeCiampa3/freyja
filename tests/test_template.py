@@ -16,6 +16,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "sim" / "scripts"))
 sys.path.insert(0, str(REPO / "checks"))
+sys.path.insert(0, str(REPO / "tests"))
 
 import pre_processor as pp
 
@@ -30,8 +31,9 @@ GEOM_ATTR = re.compile(r'\b(pos|fromto|size)="([^"]*)"')
 
 
 def snapshot_values():
-    with SNAPSHOT.open(encoding="utf-8", newline="") as f:
-        return {r["placeholder"]: float(r["value"]) for r in csv.DictReader(f)}
+    """The committed snapshot as the sheet will make it once it carries the design range and ADR 0038's scaling (tests/foot_help.py): the template needs both."""
+    import foot_help as fh
+    return fh.scaled_snapshot_values()
 
 
 def geom_literals(text):
@@ -57,10 +59,21 @@ def floats(s):
     return [float(t) for t in s.split()]
 
 
+DESIGN_LENGTHS = ("foot_heel_behind_ankle", "foot_length_total", "foot_ball_length", "toe_hinge_ahead_ankle", "toe_tip_ahead_ankle", "foot_half_width", "toe_height")
+
+
 def scaled(values, factor):
-    """Stature scaled: every length and position scales, ROM and masses stay."""
-    return {k: v * factor if k.endswith(("_length", "_pos_x", "_pos_y", "_pos_z", "_jpos_z")) else v
-            for k, v in values.items()}
+    """Stature scaled: every length, position and centre of mass scales by the factor, every inertia by its square (the toe's geometry from the design range
+    with the lengths), ROM, masses and fractions stay."""
+    out = {}
+    for k, v in values.items():
+        if k.endswith(("_length", "_pos_x", "_pos_y", "_pos_z", "_jpos_z", "_com_x", "_com_y", "_com_z")) or k in DESIGN_LENGTHS:
+            out[k] = v * factor
+        elif k.endswith(("_ixx", "_iyy", "_izz", "_ixy", "_ixz", "_iyz")):
+            out[k] = v * factor * factor
+        else:
+            out[k] = v
+    return out
 
 
 class NoHandTypedCopies(unittest.TestCase):
@@ -99,21 +112,24 @@ class DerivedKeys(unittest.TestCase):
         for seg in ("shank", "upper_arm", "forearm"):
             self.assertIn(f"{seg}_left_cap_bot_z", pp.derive_keys({f"{seg}_left_length": 0.3}))
 
-    def test_foot_box_follows_foot_length_and_ankle_height(self):
-        d = pp.derive_keys({"foot_right_length": 0.165, "foot_left_length": 0.17, "pelvis_pos_z": 0.9,
-                            "thigh_right_pos_z": -0.1, "shank_right_pos_z": -0.4, "foot_right_pos_z": -0.35})
-        # box from -L/4 behind the ankle to +L ahead of it: centre 3L/8, half length 5L/8
-        self.assertAlmostEqual(d["foot_right_box_pos_x"], 0.061875, places=9)
-        self.assertAlmostEqual(d["foot_right_box_half_x"], 0.103125, places=9)
-        self.assertAlmostEqual(d["foot_left_box_half_x"], 5 * 0.17 / 8, places=9)
-        for side, L in (("right", 0.165), ("left", 0.17)):
-            self.assertAlmostEqual(d[f"foot_{side}_box_pos_x"] - d[f"foot_{side}_box_half_x"], -L / 4, delta=1e-9)
-            self.assertAlmostEqual(d[f"foot_{side}_box_pos_x"] + d[f"foot_{side}_box_half_x"], L, delta=1e-9)
+    def test_foot_box_runs_from_the_heel_to_the_toe_hinge_and_down_to_the_floor(self):
+        """The foot's box comes from the design range (heel, toe hinge, half width) and the ankle height from the position chain, not from the foot length."""
+        import foot_help as fh
+        v = fh.snapshot_values()
+        design = {pp.DESIGN_KEYS[k][0]: x * pp.DESIGN_KEYS[k][1] for k, x in fh.SPEC_DESIGN.items()}
+        # the ankle height is set by the chain (pelvis + thigh + shank + foot positions): 0.05 m here
+        v.update({"pelvis_pos_z": 0.9, "thigh_right_pos_z": -0.1, "shank_right_pos_z": -0.4, "foot_right_pos_z": -0.35, **design})
+        d = pp.derive_keys(v)
+        heel, hinge = design["foot_heel_behind_ankle"], design["toe_hinge_ahead_ankle"]
+        self.assertAlmostEqual(d["foot_right_box_pos_x"] - d["foot_right_box_half_x"], -heel, delta=1e-12)  # rear face
+        self.assertAlmostEqual(d["foot_right_box_pos_x"] + d["foot_right_box_half_x"], hinge, delta=1e-12)  # front face is the toe hinge
+        self.assertAlmostEqual(d["foot_right_box_half_y"], design["foot_half_width"])
         self.assertAlmostEqual(d["foot_right_box_half_z"], 0.025)  # ankle 0.05 above the floor
         self.assertAlmostEqual(d["foot_right_box_pos_z"], -0.025)
-        self.assertNotIn("foot_left_box_half_z", d)  # left chain not supplied
-        self.assertAlmostEqual(d["foot_right_sole_z"], -0.05)  # site_sole: ankle minus the ankle height
-        self.assertNotIn("foot_left_sole_z", d)
+        self.assertAlmostEqual(d["foot_right_sole_z"], -0.05)  # site_sole: minus the ankle height
+        self.assertAlmostEqual(d["toe_right_pos_z"], -0.05 + design["toe_height"] / 2)  # the hinge axis at the mid-height of the toe box
+        self.assertNotIn("foot_left_box_half_z", pp.derive_keys({k: x for k, x in v.items() if not k.startswith("foot_left_") and k != "shank_left_pos_z"}))
+        self.assertNotIn("foot_right_box_pos_x", pp.derive_keys({k: x for k, x in v.items() if k not in design}))  # no design range, no foot box
 
     def test_head_top_is_the_vertex(self):
         d = pp.derive_keys({"head_neck_length": 0.27})
@@ -243,8 +259,8 @@ class Geometry(unittest.TestCase):
 
 
 class FootBoxOnTheRealModel(unittest.TestCase):
-    """The committed model: the box reaches the sheet's foot length ahead of the ankle, a quarter of it behind,
-    and the sole stays on the floor."""
+    """The committed model: the foot's box runs from the design heel to the design toe hinge (before the sheet carried the design range, from a quarter of the
+    sheet's foot length behind the ankle to the whole length ahead of it), and the sole stays on the floor."""
 
     def test_edges_sole_and_floor_contact(self):
         import mujoco
@@ -252,13 +268,17 @@ class FootBoxOnTheRealModel(unittest.TestCase):
         import mjcf_checks  # noqa: F401
         ctx = checklib.Context.from_files()
         m, d = ctx.model, ctx.data
-        L = ctx.snapshot["foot_right_length"]
+        snap = ctx.snapshot
+        if "toe_hinge_ahead_ankle" in snap:
+            rear, front = -snap["foot_heel_behind_ankle"], snap["toe_hinge_ahead_ankle"]
+        else:  # the model of the Stage 2 snapshot, which has no toe
+            rear, front = -snap["foot_right_length"] / 4, snap["foot_right_length"]
         for side in ("right", "left"):
             b = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, f"foot_{side}")
             g = next(g for g in range(m.ngeom) if m.geom_bodyid[g] == b)
             x0, half = d.geom_xpos[g][0] - d.xpos[b][0], m.geom_size[g][0]
-            self.assertAlmostEqual(x0 - half, -L / 4, delta=1e-9)
-            self.assertAlmostEqual(x0 + half, L, delta=1e-9)
+            self.assertAlmostEqual(x0 - half, rear, delta=1e-9)
+            self.assertAlmostEqual(x0 + half, front, delta=1e-9)
             self.assertAlmostEqual(d.geom_xpos[g][2] - m.geom_size[g][2], 0.0, delta=1e-9)  # sole at z = 0
         (r,) = [x for x in checklib.call(checklib.REGISTRY["check.mjcf.floor_contact"], ctx)]
         self.assertEqual(r.status, checklib.PASS, r.message)

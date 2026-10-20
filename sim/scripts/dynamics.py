@@ -86,11 +86,17 @@ def root_closes(r: FrameResult) -> bool:
     return bool(np.abs(r.residual[:3]).max() <= ROOT_TOL * r.weight_n and np.abs(r.residual[3:5]).max() <= ROOT_TOL * r.weight_n)
 
 
+def _toes(model, body):
+    """The child bodies of a foot body (its toe), whose boxes are part of the sole at the toe's current angle."""
+    return [b for b in range(model.nbody) if int(model.body_parentid[b]) == body]
+
+
 def _foot_boxes(model, d, body):
-    """World corners of the box geoms of a foot body, plus the first box's floor-projected centre, long-axis half vector, mu."""
-    corners, first = [], None
+    """World corners of the box geoms of a foot body and of its toe, plus the floor-projected centre and long-axis half vector of the foot's sole (from the first
+    box's long axis, spanning every box along it: a toe makes the sole longer) and the first box's friction mu."""
+    corners, first, lo_hi = [], None, None
     for g in range(model.ngeom):
-        if model.geom_bodyid[g] == body and model.geom_type[g] == mujoco.mjtGeom.mjGEOM_BOX:
+        if int(model.geom_bodyid[g]) in (body, *_toes(model, body)) and model.geom_type[g] == mujoco.mjtGeom.mjGEOM_BOX:
             r, c, s = d.geom_xmat[g].reshape(3, 3), d.geom_xpos[g], model.geom_size[g]
             for sx in (-1, 1):
                 for sy in (-1, 1):
@@ -101,7 +107,16 @@ def _foot_boxes(model, d, body):
                 ax[2] = 0.0
                 n = np.linalg.norm(ax)
                 ax = ax / n if n > 0 else np.array([1.0, 0.0, 0.0])
-                first = (np.array([c[0], c[1], 0.0]), s[0] * ax, float(model.geom_friction[g][0]))
+                first = [c.copy(), ax, float(model.geom_friction[g][0])]
+                lo_hi = [float(c[:2] @ ax[:2]) - s[0], float(c[:2] @ ax[:2]) + s[0]]
+            else:  # a further box (the toe) widens the sole along the first box's axis
+                along = float(c[:2] @ first[1][:2])
+                lo_hi = [min(lo_hi[0], along - s[0]), max(lo_hi[1], along + s[0])]
+    if first is not None:
+        c, ax, mu = first
+        base = c[:2] - (c[:2] @ ax[:2]) * ax[:2]  # the first box's centre without its position along the axis
+        mid, half = 0.5 * (lo_hi[0] + lo_hi[1]), 0.5 * (lo_hi[1] - lo_hi[0])
+        first = (np.array([base[0] + mid * ax[0], base[1] + mid * ax[1], 0.0]), half * ax, mu)
     return np.array(corners), first
 
 

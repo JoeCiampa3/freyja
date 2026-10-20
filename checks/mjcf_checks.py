@@ -154,8 +154,11 @@ def joint_signs(ctx, polarity=None):
             hinges[mj.mj_id2name(m, mj.mjtObj.mjOBJ_JOINT, i)] = i
     for name in sorted(hinges.keys() - rows.keys()):
         problems.append(f"{name}: no row in joint_polarity.yaml")
-    for name in sorted(rows.keys() - hinges.keys()):
+    pending = set(spec.get("pending") or [])  # rows written ahead of the model that will carry the hinge (Stage 2g: the toe); checked as soon as the model has it
+    for name in sorted(rows.keys() - hinges.keys() - pending):
         problems.append(f"{name}: row names a joint that is not a hinge in the model")
+    for name in sorted(pending - rows.keys()):
+        problems.append(f"{name}: listed as pending in joint_polarity.yaml but has no row")
 
     for name in sorted(hinges.keys() & rows.keys()):
         row, jid = rows[name], hinges[name]
@@ -178,7 +181,8 @@ def joint_signs(ctx, polarity=None):
             problems.append(f"{name}: +{angle:g} rad moved the probe {move * 1000:+.1f} mm along world {row['axis']}, "
                             f"expected {'+' if want > 0 else '-'} ({row['positive']})")
     return Result("check.mjcf.joint_signs", tier, FAIL if problems else PASS,
-                  ("; ".join(problems) + note) if problems else f"{checked} hinges have the expected sign{note}",
+                  ("; ".join(problems) + note) if problems else f"{checked} hinges have the expected sign{note}"
+                  + (f" ({len(pending - hinges.keys())} pending rows wait for their hinge)" if pending - hinges.keys() else ""),
                   {"checked": checked, "failures": len(problems), "polarity_status": spec.get("status")})
 
 

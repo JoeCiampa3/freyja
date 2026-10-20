@@ -144,6 +144,7 @@ def solve_lean(model, com_x_rel_ankle_m: float, feet: dict, offsets: dict | None
     if not np.allclose(model.qpos0[r + 3:r + 7], [1, 0, 0, 0]):
         raise LeanError("the neutral root orientation must be the identity")
     foot_ids = {bid(n) for n in feet}
+    foot_ids |= {b for b in range(model.nbody) if int(model.body_parentid[b]) in foot_ids}  # the toe hangs from the foot and is part of the sole
     ankle = [(int(model.jnt_qposadr[jid(j)]), tuple(model.jnt_range[jid(j)])) for j in feet.values()]
     first = bid(next(iter(feet)))
     lo = max(rng[0] for _, rng in ankle)

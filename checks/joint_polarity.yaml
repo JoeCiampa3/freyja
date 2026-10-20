@@ -37,6 +37,9 @@
 schema: joint-polarity/1
 status: approved
 angle_rad: 0.1
+# Rows listed here are written ahead of the model that will carry the hinge (the Stage 2g snapshot change adds the toe; the tracked model does not have it until
+# the sheet carries the design range and `fy build` has run). A pending row is checked as soon as the model has its hinge; remove the list once it has.
+pending: [toe_right, toe_left]
 
 joints:
   # ---- hip (thigh frame, origin at the hip joint centre) -------------------------------------
@@ -56,6 +59,11 @@ joints:
   ankle_pdflex_left:  {probe: [0.12, 0, -0.03], axis: z, sign: 1,  positive: dorsiflexion, why: "dorsiflexion lifts the toes"}
   ankle_ie_right:     {probe: [0, 0, -0.06],    axis: y, sign: 1,  positive: inversion,    why: "the right sole turns toward the midline (+y)"}
   ankle_ie_left:      {probe: [0, 0, -0.06],    axis: y, sign: -1, positive: inversion,    why: "the left sole turns toward the midline (-y)"}
+
+  # ---- toe (toe frame, origin on the metatarsophalangeal hinge at the mid-height of the toe box) --------
+  # The probe is a point on the toe, 30 mm ahead of the hinge; the toe is 67 mm long, so it lies inside the toe box.
+  toe_right: {probe: [0.03, 0, 0], axis: z, sign: 1, positive: extension, why: "extension lifts the toe tip (ADR 0001: the toe extends in push-off, 0 to 80 degrees)"}
+  toe_left:  {probe: [0.03, 0, 0], axis: z, sign: 1, positive: extension, why: "extension lifts the toe tip (ADR 0001: the toe extends in push-off, 0 to 80 degrees)"}
 
   # ---- shoulder (upper-arm frame, origin at the shoulder joint centre) -----------------------
   shoulder_fe_right:  {probe: [0, 0, -0.25], axis: x, sign: 1,  positive: flexion,           why: "flexion raises the arm forward"}

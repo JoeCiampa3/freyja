@@ -107,6 +107,29 @@ RANGE_BSIP, RANGE_POS, RANGE_ROM = "bsip", "pos", "rom"
 # Optional: total mass and stature (label in column A, value in B, unit in the
 # label's brackets). Feeds the snapshot only; the template cannot use them.
 RANGE_TARGETS = "targets"
+# Optional until the template needs it: the design inputs (key in column A, number in B, the unit is part of the key; Stage 2g sheet spec section 2).
+# They enter the snapshot in SI (metres, kilograms, N m/rad; the standing tilt stays in degrees, the model's angle unit) and the template reads them
+# through derive_keys.
+RANGE_DESIGN = "design"
+DEG_PER_RAD = 180.0 / math.pi
+# sheet key -> (snapshot key, factor to the snapshot unit, lowest allowed value, highest allowed value, whether the lowest is allowed). The bounds only
+# catch a wrong unit or a zero that looks like a blank; they are not design limits.
+DESIGN_KEYS = {
+    "stand_pelvis_tilt_deg": ("stand_pelvis_tilt_deg", 1.0, 0.0, 90.0, True),
+    "foot_heel_behind_ankle_mm": ("foot_heel_behind_ankle", 1e-3, 0.0, 1000.0, False),
+    "foot_length_total_mm": ("foot_length_total", 1e-3, 0.0, 1000.0, False),
+    "foot_ball_length_mm": ("foot_ball_length", 1e-3, 0.0, 1000.0, False),
+    "toe_hinge_ahead_ankle_mm": ("toe_hinge_ahead_ankle", 1e-3, 0.0, 1000.0, False),
+    "toe_tip_ahead_ankle_mm": ("toe_tip_ahead_ankle", 1e-3, 0.0, 1000.0, False),
+    "foot_half_width_mm": ("foot_half_width", 1e-3, 0.0, 500.0, False),
+    "toe_height_mm": ("toe_height", 1e-3, 0.0, 500.0, False),
+    "toe_mass_fraction": ("toe_mass_fraction", 1.0, 0.0, 1.0, False),
+    "toe_com_fraction": ("toe_com_fraction", 1.0, 0.0, 1.0, False),
+    "toe_stiffness_nm_per_deg": ("toe_stiffness_nm_per_rad", DEG_PER_RAD, 0.0, 1e5, True),
+    "toe_damping_nm_s_per_rad": ("toe_damping_nm_s_per_rad", 1.0, 0.0, 1e5, True),
+}
+DESIGN_CONSISTENCY_M = 1e-5  # m (0.01 mm). The sheet derives the toe hinge and tip from the ball and total foot lengths and the heel offset; a typed
+#                              value that differs from that arithmetic by more than this draws a warning (the template reads the hinge and the tip)
 TARGET_KEYS = {"mass": "target_mass", "stature": "target_stature"}  # label keyword -> snapshot key
 TARGET_UNIT_TO_SI = {"kg": 1.0, "g": 1e-3, "m": 1.0, "mm": 1e-3, "cm": 1e-2}  # the snapshot is SI
 
@@ -305,11 +328,15 @@ class GoogleSheetSource:
                 self._sheet = self._client.open_by_key(self.sheet_key)
             params = {"valueRenderOption": "UNFORMATTED_VALUE"}
             names = [RANGE_BSIP, RANGE_POS, RANGE_ROM]
-            try:
-                resp = self._sheet.values_batch_get(names + [RANGE_TARGETS], params=params)
-                names.append(RANGE_TARGETS)
-            except gspread.exceptions.APIError:  # no 'targets' range yet: it is optional
-                resp = self._sheet.values_batch_get(names, params=params)
+            resp = None
+            for optional in ([RANGE_TARGETS, RANGE_DESIGN], [RANGE_DESIGN], [RANGE_TARGETS], []):  # the optional ranges may be absent: try what is left
+                try:
+                    resp = self._sheet.values_batch_get(names + optional, params=params)
+                    names = names + optional
+                    break
+                except gspread.exceptions.APIError:
+                    if not optional:
+                        raise
         except gspread.exceptions.SpreadsheetNotFound:
             raise SheetAccessError("Google says the sheet doesn't exist or isn't shared with this account. "
                                    f"Share it (Viewer is enough) with: {email}")
@@ -355,11 +382,12 @@ def fetch_xlsx(path: str) -> dict:
         rows = [["" if c.value is None else c.value for c in row]
                 for row in ws[rng.replace("$", "")]]
         tables[name] = RawTable.from_range(name, f"{sheet}!{rng}", rows)
-    if RANGE_TARGETS in wb.defined_names:  # optional
-        sheet, rng = wb.defined_names[RANGE_TARGETS].attr_text.rsplit("!", 1)
-        ws = wb[sheet.strip("'")]
-        rows = [["" if c.value is None else c.value for c in row] for row in ws[rng.replace("$", "")]]
-        tables[RANGE_TARGETS] = RawTable.from_range(RANGE_TARGETS, f"{sheet}!{rng}", rows)
+    for optional in (RANGE_TARGETS, RANGE_DESIGN):
+        if optional in wb.defined_names:
+            sheet, rng = wb.defined_names[optional].attr_text.rsplit("!", 1)
+            ws = wb[sheet.strip("'")]
+            rows = [["" if c.value is None else c.value for c in row] for row in ws[rng.replace("$", "")]]
+            tables[optional] = RawTable.from_range(optional, f"{sheet}!{rng}", rows)
     return tables
 
 
@@ -510,6 +538,60 @@ def read_targets(raw, report: Report) -> dict:
             continue
         out[key] = Param(x * scale, ref, raw.name)
     return out
+
+
+def read_design(raw, report: Report) -> dict:
+    """design table (key | number) -> {snapshot key: Param} in SI (see DESIGN_KEYS). An absent table gives {} (the template decides whether that is an
+    error); a table that is present must hold every key once, as a finite number inside its bounds, and an unknown key is a warning."""
+    out: dict[str, Param] = {}
+    if raw is None:
+        return out
+    seen = set()
+    for r, row in enumerate(raw.rows):
+        label = str(row[0]).strip() if row else ""
+        if not label:
+            continue
+        cell = row[1] if len(row) > 1 else None
+        ref = raw.ref(r, 1)
+        if label not in DESIGN_KEYS:
+            if r > 0 or isinstance(cell, (int, float)):  # a first row of text is a header
+                report.warn(f"[{raw.name}] {raw.ref(r, 0)}: '{label}' is not a known design key; ignored")
+            continue
+        snap, scale, lo, hi, lo_incl = DESIGN_KEYS[label]
+        if label in seen:
+            report.error(f"[{raw.name}] {raw.ref(r, 0)}: '{label}' appears twice")
+            continue
+        seen.add(label)
+        try:
+            x = to_number(cell)
+        except (ValueError, TypeError):
+            report.error(f"[{raw.name}] {ref} ({label}): {cell!r} is not a number")
+            continue
+        if x is None:
+            report.error(f"[{raw.name}] {ref} ({label}): cell is empty")
+            continue
+        if not ((x > lo or (lo_incl and x == lo)) and x < hi):
+            report.error(f"[{raw.name}] {ref} ({label}): {x:g} is outside {'[' if lo_incl else '('}{lo:g}, {hi:g}); the unit is part of the key")
+            continue
+        out[snap] = Param(x * scale, ref, raw.name)
+    missing = [k for k in DESIGN_KEYS if k not in seen]
+    if missing:
+        report.error(f"[{raw.name}] keys missing from the design range: {', '.join(missing)}")
+    return out
+
+
+def check_design(design: dict, report: Report):
+    """Relations between design values that the sheet derives by formula and that must hold for the geometry to make sense."""
+    d = {k: p.value for k, p in design.items()}
+    if len(d) < len(DESIGN_KEYS):
+        return  # a missing key was already reported
+    if not d["toe_tip_ahead_ankle"] > d["toe_hinge_ahead_ankle"] > 0:
+        report.error(f"[design] the toe hinge ({d['toe_hinge_ahead_ankle'] * 1000:.1f} mm ahead of the ankle) must be ahead of the ankle and behind the toe tip "
+                     f"({d['toe_tip_ahead_ankle'] * 1000:.1f} mm)")
+    for what, got, want in (("toe_hinge_ahead_ankle", d["toe_hinge_ahead_ankle"], d["foot_ball_length"] - d["foot_heel_behind_ankle"]),
+                            ("toe_tip_ahead_ankle", d["toe_tip_ahead_ankle"], d["foot_length_total"] - d["foot_heel_behind_ankle"])):
+        if abs(got - want) > DESIGN_CONSISTENCY_M:
+            report.warn(f"[design] {what} is {got * 1000:.3f} mm but the foot lengths and the heel offset give {want * 1000:.3f} mm")
 
 
 def check_bsip(bsip: dict, report: Report):
@@ -687,7 +769,6 @@ CAPSULE_RADII_M = {"thigh": 0.05, "shank": 0.04, "upper_arm": 0.03, "forearm": 0
 KNEE_SPHERE_RADIUS_M = 0.045  # design choice, no sheet source: sphere centred on the knee
 PELVIS_RADIUS_M = 0.055  # design choice, no sheet source
 NECK_RADIUS_M = 0.045  # design choice, no sheet source
-FOOT_REAR_FRACTION = 0.25  # design choice, no sheet source: the box reaches this fraction of the foot length behind the ankle
 HEAD_HALF_HEIGHT_M = 0.095  # design choice, no sheet source: the head is an ellipsoid, top at the vertex
 SHOULDER_RADIUS_M = 0.045  # design choice, no sheet source: shoulder girdle capsule between the shoulder joints
 TRAPEZIUS_RADIUS_M = 0.04  # design choice, no sheet source
@@ -699,6 +780,107 @@ CHEST_HALF_FRACTION = 0.20  # design choice, no sheet source: its half height, s
 HANG_HALF_FACTOR = {"abdomen": 0.75, "pelvis": 0.6, "thorax": 0.5, "hand_right": 0.5, "hand_left": 0.5}
 
 
+DESIGN_SNAPSHOT_KEYS = ("foot_heel_behind_ankle", "toe_hinge_ahead_ankle", "toe_tip_ahead_ankle", "foot_half_width", "toe_height",
+                        "toe_mass_fraction", "toe_com_fraction")
+INERTIA_KEYS = ("ixx", "iyy", "izz", "ixy", "ixz", "iyz")
+
+
+def _tensor(v) -> np.ndarray:
+    """ixx iyy izz ixy ixz iyz -> the symmetric 3x3 tensor."""
+    return np.array([[v[0], v[3], v[4]], [v[3], v[1], v[5]], [v[4], v[5], v[2]]])
+
+
+def _untensor(t) -> list:
+    return [t[0, 0], t[1, 1], t[2, 2], t[0, 1], t[0, 2], t[1, 2]]  # the order of INERTIA_KEYS
+
+
+def parallel_axis(mass: float, d) -> np.ndarray:
+    """Inertia added by taking a tensor about a point a vector d away from the body's own reference point: mass (d.d E - d d^T), the full tensor."""
+    d = np.asarray(d, float)
+    return mass * (float(d @ d) * np.eye(3) - np.outer(d, d))
+
+
+def foot_whole(values: dict, side: str):
+    """(mass, centre of mass (3,), inertia tensor (3, 3) about it) of the sheet's whole-foot row for a side, in the foot frame, or None if a key is missing."""
+    keys = [f"foot_{side}_{k}" for k in ("mass", "com_x", "com_y", "com_z", *INERTIA_KEYS)]
+    if any(k not in values for k in keys):
+        return None
+    v = [values[k] for k in keys]
+    return v[0], np.array(v[1:4]), _tensor(v[4:])
+
+
+def foot_split(mass, com, inertia, *, ankle, foot_heel_behind_ankle, toe_hinge_ahead_ankle, toe_tip_ahead_ankle, foot_half_width, toe_height,
+               toe_mass_fraction, toe_com_fraction) -> dict:
+    """Split the whole foot (mass, centre of mass and the inertia about it; foot frame: origin at the ankle centre, x ahead, z up) into a toe and the rest
+    by conservation (decisions/0001 and 0038). The toe is a box from the hinge to the toe tip, `toe_height` tall with its sole on the foot's sole and
+    2 * foot_half_width wide; its hinge axis is at its mid-height. Its inertia is the box about its centre carried to its centre of mass by the parallel
+    axis theorem. With m_w, c_w, I_w the whole foot and m_t, c_t, I_t the toe (about c_t):
+      m_r = m_w - m_t;   c_r = (m_w c_w - m_t c_t) / m_r;   I_r = I_w - I_t - m_r PA(c_r - c_w) - m_t PA(c_t - c_w)
+    Returns the toe's and the rest's mass, centre and tensor (foot frame, each about its own centre of mass) and the geometry the template needs."""
+    m_w, c_w, I_w = float(mass), np.asarray(com, float), np.asarray(inertia, float)
+    length, width = toe_tip_ahead_ankle - toe_hinge_ahead_ankle, 2.0 * foot_half_width
+    hinge = np.array([toe_hinge_ahead_ankle, 0.0, -ankle + toe_height / 2.0])
+    centre = hinge + np.array([length / 2.0, 0.0, 0.0])
+    m_t = toe_mass_fraction * m_w
+    c_t = hinge + np.array([toe_com_fraction * length, 0.0, 0.0])
+    I_box = m_t / 12.0 * np.diag([width ** 2 + toe_height ** 2, length ** 2 + toe_height ** 2, length ** 2 + width ** 2])
+    I_t = I_box + parallel_axis(m_t, c_t - centre)
+    m_r = m_w - m_t
+    c_r = (m_w * c_w - m_t * c_t) / m_r
+    I_r = I_w - I_t - parallel_axis(m_r, c_r - c_w) - parallel_axis(m_t, c_t - c_w)
+    return {"toe": {"mass": m_t, "com": c_t, "inertia": I_t, "hinge": hinge, "length": length, "half": np.array([length / 2, foot_half_width, toe_height / 2])},
+            "rest": {"mass": m_r, "com": c_r, "inertia": I_r,
+                     "box_pos_x": (toe_hinge_ahead_ankle - foot_heel_behind_ankle) / 2, "box_half_x": (toe_hinge_ahead_ankle + foot_heel_behind_ankle) / 2,
+                     "box_half_y": foot_half_width}}
+
+
+def foot_conservation_error(whole, split) -> dict:
+    """How far the toe and the rest of a split are from the whole foot `whole` = (mass, com, inertia): the relative mass error, the centre of mass error (m)
+    and the largest inertia entry error (kg m^2) of the parts recomposed about their own combined centre. Computed from the parts alone, not from foot_split's formulas."""
+    m_w, c_w, I_w = whole
+    t, r = split["toe"], split["rest"]
+    m = t["mass"] + r["mass"]
+    c = (t["mass"] * np.asarray(t["com"]) + r["mass"] * np.asarray(r["com"])) / m
+    I = t["inertia"] + parallel_axis(t["mass"], np.asarray(t["com"]) - c) + r["inertia"] + parallel_axis(r["mass"], np.asarray(r["com"]) - c)
+    return {"mass_rel": abs(m - m_w) / m_w, "com_m": float(np.abs(c - c_w).max()), "inertia": float(np.abs(I - I_w).max())}
+
+
+def foot_keys(side: str, split: dict) -> dict:
+    """The template keys of one foot from a split: the foot body's box and remainder inertial (foot_<s>_rest_*), the toe body's position, box and inertial (toe_<s>_*)."""
+    t, r, out = split["toe"], split["rest"], {}
+    out[f"foot_{side}_box_pos_x"], out[f"foot_{side}_box_half_x"], out[f"foot_{side}_box_half_y"] = r["box_pos_x"], r["box_half_x"], r["box_half_y"]
+    out[f"foot_{side}_rest_mass"] = r["mass"]
+    for axis, v in zip("xyz", r["com"]):
+        out[f"foot_{side}_rest_com_{axis}"] = float(v)
+    out.update({f"foot_{side}_rest_{k}": float(v) for k, v in zip(INERTIA_KEYS, _untensor(r["inertia"]))})
+    for axis, v in zip("xyz", t["hinge"]):
+        out[f"toe_{side}_pos_{axis}"] = float(v)
+    out[f"toe_{side}_box_pos_x"] = t["length"] / 2
+    out[f"toe_{side}_box_half_x"], out[f"toe_{side}_box_half_y"], out[f"toe_{side}_box_half_z"] = (float(v) for v in t["half"])
+    out[f"toe_{side}_mass"] = t["mass"]
+    for axis, v in zip("xyz", t["com"] - t["hinge"]):
+        out[f"toe_{side}_com_{axis}"] = float(v)
+    out.update({f"toe_{side}_{k}": float(v) for k, v in zip(INERTIA_KEYS, _untensor(t["inertia"]))})
+    return out
+
+
+def check_foot_split(values: dict, report: Report):
+    """The derived toe and remainder must be physical bodies: positive mass, positive definite tensors that satisfy the triangle inequality. A failure is a
+    finding about the sheet's inputs (a toe too heavy or too big for the foot row), never something to clip."""
+    for side in ("right", "left"):
+        for what, m, I in ((f"foot_{side} without the toe", values.get(f"foot_{side}_rest_mass"), [values.get(f"foot_{side}_rest_{k}") for k in INERTIA_KEYS]),
+                           (f"toe_{side}", values.get(f"toe_{side}_mass"), [values.get(f"toe_{side}_{k}") for k in INERTIA_KEYS])):
+            if m is None or None in I:
+                continue
+            a, b, c = np.linalg.eigvalsh(_tensor(I))
+            if not m > 0:
+                report.error(f"[design] {what}: mass {m:g} kg is not positive")
+            elif a <= 0:
+                report.error(f"[design] {what}: inertia tensor is not positive definite (smallest principal moment {a:.3g}); the toe split does not fit the foot row")
+            elif a + b < c * (1 - 1e-9):
+                report.error(f"[design] {what}: principal moments {a:.4g}, {b:.4g}, {c:.4g} break the triangle inequality; the toe split does not fit the foot row")
+
+
 def derive_keys(values: dict) -> dict:
     """{name: float} -> {derived name: float}. A key is only produced when its inputs exist.
       <seg>_<s>_radius, _cap_top_z, _cap_bot_z   thigh/shank/upper_arm/forearm capsule: tip at the
@@ -707,8 +889,10 @@ def derive_keys(values: dict) -> dict:
       <abdomen|pelvis|thorax|hand_<s>>_mid_z, _half_z   ellipsoid covering the segment (see HANG_HALF_FACTOR)
       thorax_chest_z, _chest_half_z              upper-chest ellipsoid that fills out the shoulders
       shoulder_radius, trapezius_radius, trapezius_start_z   shoulder girdle and the slope to the neck
-      foot_<s>_box_pos_x / _half_x               collision box from L/4 behind the ankle to L ahead (centre 3L/8, half 5L/8)
+      foot_<s>_box_pos_x / _half_x / _half_y     the foot's collision box from the heel to the toe hinge, half width (all from the design range)
       foot_<s>_box_pos_z / _half_z               sole on the floor: box from the ankle height down to z=0
+      foot_<s>_rest_*                            the foot body's mass, centre of mass and inertia once the toe is split off (foot_split)
+      toe_<s>_pos_*, _box_*, _mass, _com_*, _ixx.. the toe body: origin at the hinge, a box to the toe tip, its inertial (foot_keys)
       foot_<s>_sole_z                            -(ankle height): the sole, for site_sole_<s>
       pelvis_radius                              hip girdle capsule
       head_neck_head_z / _head_half_z            head ellipsoid whose top is the vertex
@@ -722,16 +906,15 @@ def derive_keys(values: dict) -> dict:
                 out[f"{seg}_{side}_cap_bot_z"] = -(L - r)
         if f"shank_{side}_length" in values:
             out[f"knee_{side}_sphere_radius"] = KNEE_SPHERE_RADIUS_M
-        if (L := values.get(f"foot_{side}_length")) is not None:
-            rear = FOOT_REAR_FRACTION * L  # behind the ankle
-            out[f"foot_{side}_box_pos_x"] = (L - rear) / 2  # box from -rear to +L (ankle to the metatarsal heads)
-            out[f"foot_{side}_box_half_x"] = (L + rear) / 2
         chain = [values.get(k) for k in ("pelvis_pos_z", f"thigh_{side}_pos_z", f"shank_{side}_pos_z", f"foot_{side}_pos_z")]
         if None not in chain:
             ankle = sum(chain)  # ankle height above the floor in the neutral pose
             out[f"foot_{side}_box_pos_z"] = -ankle / 2
             out[f"foot_{side}_box_half_z"] = ankle / 2
             out[f"foot_{side}_sole_z"] = -ankle  # site_sole, in the foot frame
+            whole = foot_whole(values, side)
+            if whole is not None and all(k in values for k in DESIGN_SNAPSHOT_KEYS):
+                out.update(foot_keys(side, foot_split(*whole, ankle=ankle, **{k: values[k] for k in DESIGN_SNAPSHOT_KEYS})))
     for seg, factor in HANG_HALF_FACTOR.items():
         if (L := values.get(f"{seg}_length")) is not None:
             out[f"{seg}_mid_z"] = -L / 2
@@ -758,7 +941,7 @@ def warn_unused(text: str, values: dict, report: Report):
     values are not, unless a position is zero.)"""
     used = {p.key for p in find_placeholders(text)}
     for k, p in sorted(values.items()):
-        if k in used or p.table == "bsip":
+        if k in used or p.table in ("bsip", RANGE_DESIGN):  # design values reach the template through derive_keys
             continue
         if p.table == "pos" and abs(p.value) < 1e-9:
             continue
@@ -904,15 +1087,17 @@ def parse_args(argv=None):
 
 
 def build_values(tables: dict, report: Report):
-    """All parsing + data checks. Returns (values, blank_rom_names, ankle_height)."""
+    """All parsing + data checks. Returns (values, blank_rom_names, ankle_height). The optional `design` range, when present, joins the values in SI."""
     bsip = read_segment_table(tables[RANGE_BSIP], BSIP_COLUMNS, report)
     pos = read_segment_table(tables[RANGE_POS], POS_COLUMNS, report)
     rom, rom_blank = read_rom_table(tables[RANGE_ROM], report)
+    design = read_design(tables.get(RANGE_DESIGN), report)
     check_bsip(bsip, report)
+    check_design(design, report)
     report.stop_if_errors("reading the sheet")
 
     values = {}
-    for part in (flatten(mirror(bsip, FLIP_BSIP)), flatten(mirror(pos, FLIP_POS)), rom):
+    for part in (flatten(mirror(bsip, FLIP_BSIP)), flatten(mirror(pos, FLIP_POS)), rom, design):
         clash = values.keys() & part.keys()
         if clash:
             report.error(f"the same name comes from two tables: {sorted(clash)}")
@@ -927,7 +1112,7 @@ class BuildResult:
     status: str  # created | updated | unchanged | checked (dry run)
     placeholders: int  # how many placeholders were filled in
     warnings: list
-    model_line: str | None  # e.g. "16 bodies, 32 joints, total mass 64.935 kg"
+    model_line: str | None  # e.g. "18 bodies, 34 joints, total mass 64.935 kg"
     ankle: float | None
     notes: list
     checks: object = None  # checklib.RunReport when a post_checks hook ran
@@ -964,7 +1149,11 @@ def build_model(tables: dict, *, template: Path = TEMPLATE, output: Path = OUTPU
     text = template.read_text(encoding="utf-8")
     plain = {k: p.value for k, p in values.items()}
     plain.update(derive_keys(plain))
+    check_foot_split(plain, report)
     xml, filled = render_counted(text, plain, report, strict=strict)
+    if report.errors and RANGE_DESIGN not in tables:
+        report.error(f"the sheet has no '{RANGE_DESIGN}' named range, which the foot and toe geometry of the template comes from "
+                     "(docs/briefs/ariadne/stage2g-sheet-spec.md, section 2)")
     report.stop_if_errors("filling the template")
     warn_unused(text, values, report)
     snapshot_bytes = values_csv({**values, **read_targets(tables.get(RANGE_TARGETS), report)}).encode("utf-8")

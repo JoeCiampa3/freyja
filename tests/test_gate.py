@@ -228,7 +228,8 @@ class DefaultHookTests(unittest.TestCase):
         template = (REPO / "sim" / "models" / "freyja_template.xml").read_text(encoding="utf-8")
         flipped = template.replace('name="knee_right" type="hinge" axis="0 1 0"', 'name="knee_right" type="hinge" axis="0 -1 0"')
         self.assertNotEqual(template, flipped)
-        tables = rebuild_tables_from_snapshot()
+        import foot_help
+        tables = foot_help.tables()  # the committed snapshot plus the design range and the toe's range of motion: the template needs them
         with tempfile.TemporaryDirectory() as d:
             d = Path(d)
             (d / "t.xml").write_text(flipped, encoding="utf-8")

@@ -31,6 +31,7 @@ FILTER_ORDER = 2  # per pass; forward-backward makes it a 4th-order zero-lag res
 N_UNIQUE = 100  # 101 phase points, the last repeating the first
 SUBJECT_LEG_FRACTION = 0.491  # hip-to-ankle length / stature = thigh 0.245 + shank 0.246 (Winter, Biomechanics and Motor Control of Human Movement)
 FOOT_BODIES = ("foot_right", "foot_left")
+FOOT_OF = {"foot_right": "foot_right", "foot_left": "foot_left", "toe_right": "foot_right", "toe_left": "foot_left"}  # a toe is part of its foot's sole
 
 _IK = None  # set lazily to avoid importing the analysis folder at import time
 
@@ -403,7 +404,7 @@ class Cycle:
         mujoco.mj_kinematics(m, d)
         zs = []
         for g in range(m.ngeom):
-            b = mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_BODY, int(m.geom_bodyid[g]))
+            b = FOOT_OF.get(mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_BODY, int(m.geom_bodyid[g])))
             if m.geom_type[g] == mujoco.mjtGeom.mjGEOM_BOX and b in FOOT_BODIES and (foot is None or b == FOOT_BODIES[foot]):
                 r, c, s = d.geom_xmat[g].reshape(3, 3), d.geom_xpos[g], m.geom_size[g]
                 for sx in (-1, 1):
@@ -474,7 +475,7 @@ def _corner_velocity_xy(m, d, body):
     """Horizontal world velocity of the lowest foot-box corner of `body`."""
     best, best_z = None, np.inf
     for g in range(m.ngeom):
-        if m.geom_type[g] == mujoco.mjtGeom.mjGEOM_BOX and mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_BODY, int(m.geom_bodyid[g])) == body:
+        if m.geom_type[g] == mujoco.mjtGeom.mjGEOM_BOX and FOOT_OF.get(mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_BODY, int(m.geom_bodyid[g]))) == body:
             r, c, s = d.geom_xmat[g].reshape(3, 3), d.geom_xpos[g], m.geom_size[g]
             for sx in (-1, 1):
                 for sy in (-1, 1):
