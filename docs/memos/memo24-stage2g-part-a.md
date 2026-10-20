@@ -1,6 +1,6 @@
 # Memo 24: Stage 2g Part A (T0 to T6), Checkpoint A
 
-STATE: (filled in below after `fy state`)
+STATE: base d9b5a480b5fe | brief architecture sha256:2ecf3ee5c019, ariadne sha256:d619d6e02e8f | snapshot sha256:e5cc96ceed7e | tests 1449/1449 | dirty no
 
 ## Decision summary
 
