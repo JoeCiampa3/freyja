@@ -98,6 +98,13 @@
             "minLength": 1,
             "description": "The model body, as named in sim/models/freyja.xml; for a bilateral segment the name without the side suffix (body `thigh` binds thigh_right and thigh_left). The snapshot keys come from the id: seg.<name> owns <name>_<column> (<name>_right_ and <name>_left_ when bilateral) by pre_processor's naming."
           },
+          "also_bodies": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1},
+            "description": "Further model bodies the segment owns, named like `body` (a bilateral name without its side suffix): a part of the segment that the model makes a body of its own, such as the toe of the foot."
+          },
           "sides": {
             "$ref": "#/$defs/sides"
           }

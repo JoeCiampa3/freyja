@@ -31,8 +31,9 @@ def _claims(records_dir, model):
         if not isinstance(r, dict):
             continue
         if r.get("kind") == "segment" and r.get("status") != "superseded":
-            for b in thread_build.expand(r.get("body", ""), model.bodies)[0] or [r.get("body", "")]:
-                bodies[b].append(r["id"])
+            for name in [r.get("body", ""), *r.get("also_bodies", [])]:  # the segment's body and the further bodies it owns
+                for b in thread_build.expand(name, model.bodies)[0] or [name]:
+                    bodies[b].append(r["id"])
         elif r.get("kind") == "joint" and r.get("status") != "superseded":
             for h in r.get("hinges", []):
                 for n in thread_build.expand(h, model.hinges)[0] or [h]:

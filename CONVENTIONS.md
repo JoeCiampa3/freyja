@@ -210,6 +210,7 @@ The rejected-options section is the part that matters on a decade horizon.
 
 ```yaml
 # seg.thigh          kind: segment      body: thigh                                   # binds thigh_right, thigh_left; keys thigh_<side>_<column>
+#                                       also_bodies: [toe]  (optional, seg.foot)      # further bodies the segment owns, named like body (the foot's toe: toe_right, toe_left)
 # jnt.hip            kind: joint        hinges: [hip_fe, hip_aa, hip_ier]             # binds hip_fe_right, ...
 #                                       rom_keys: [hip_flexion, hip_extension, ...]
 # part.hip.m2        kind: part         housed_in: seg.thigh                          # also acts_across: jnt.hip, reacts_into: seg.thigh (required with acts_across),

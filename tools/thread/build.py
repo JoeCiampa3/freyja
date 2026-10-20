@@ -248,6 +248,9 @@ class Build:
                 if name not in pp.EXPECTED_SEGMENTS:
                     self._err("binding-missing", f"{id}: {name!r} is not one of pre_processor's segments", (id,))
                 bound, missing = self._expand(r["body"], model.bodies)
+                for extra in r.get("also_bodies", []):  # further bodies the segment owns (the foot's toe)
+                    more, gone = self._expand(extra, model.bodies)
+                    bound, missing = bound + more, missing + gone
                 if missing:
                     self._err("binding-missing", f"{id}: the model has no body {', '.join(missing)}", (id,))
                 self.seg_bodies[id] = bound
