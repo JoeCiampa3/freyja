@@ -7,9 +7,9 @@ seed: 0
 support: gantry
 drive: inverse_dynamics_playback
 controller: {name: rom_sweep, version: "1"}
-# 18 limited joints x 20 s each. The runner measures every joint over its own segment.
-duration_s: 360.0
-window: {start_s: 0.0, end_s: 360.0}
+# 27 limited joints x 20 s each (33 hinges less the six bare thoracolumbar and cervicothoracic joints). The runner measures every joint over its own segment.
+duration_s: 540.0
+window: {start_s: 0.0, end_s: 540.0}
 params:
   sweep_s: 20.0
   fraction: 0.99

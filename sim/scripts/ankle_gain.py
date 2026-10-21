@@ -449,8 +449,8 @@ def body_geometry(c, manifest, speed: str) -> dict:
         rows.append((float(np.median(-(fm[..., 2]) + am[..., 2])) - off[0], float(np.median(am[..., 1])) + off[1], info["hip_in_pelvis_os_m"][2], ratio))
     r = np.array(rows)
     seg = np.array([_ankle_cache(sub, ANKLE_CACHE)["segment_mass_kg"] / info["mass_kg"] for sub, info in manifest["subjects"].items()])
-    ids = [mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, n) for n in ("thigh_right", "shank_right", "foot_right")]
-    out["segment_mass_fraction"] = {"freyja": [float(m.body_mass[i] / c.mass) for i in ids], "subjects": [float(v) for v in seg.mean(axis=0)]}
+    ids = [[mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, n) for n in names] for names in (("thigh_right",), ("shank_right",), ("foot_right", "toe_right"))]  # the toe counts with the foot
+    out["segment_mass_fraction"] = {"freyja": [float(sum(m.body_mass[i] for i in grp if i >= 0) / c.mass) for grp in ids], "subjects": [float(v) for v in seg.mean(axis=0)]}
     out["subjects"] = {"ankle_to_toe": r[:, 0].mean(), "ankle_height": r[:, 1].mean(), "hip_half_separation": r[:, 2].mean(),
                        "ankle_to_toe_scaled": (r[:, 0] * r[:, 3]).mean(), "ankle_height_scaled": (r[:, 1] * r[:, 3]).mean(), "hip_half_separation_scaled": (r[:, 2] * r[:, 3]).mean()}
     return out

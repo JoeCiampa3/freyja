@@ -147,8 +147,18 @@ class Feasibility(unittest.TestCase):
         result = statics.solve_static(self.model, pose_data(self.model))
         self.assertTrue(result.feasible, result.reasons)
         self.assertGreater(result.support_margin_m, 0.02)
-        self.assertGreater(result.limit_margin_deg, 1.0)  # the knee at neutral is 1.6 deg from its -1.6 deg extension stop
-        self.assertEqual(result.limit_joint, "knee_right")
+        # Three joint types stand on a stop at neutral: the sheet's shoulder adduction limit is a deliberate 0 (a placeholder) and the toe's flexion stop is flat (0). The
+        # smallest margin is 0 at one of them. Every other joint keeps its distance: the knee at neutral is 1.6 deg from its -1.6 deg extension stop.
+        self.assertTrue(result.limit_joint.startswith(("shoulder_aa_", "toe_")), result.limit_joint)
+        self.assertAlmostEqual(result.limit_margin_deg, 0.0, places=9)
+        data = pose_data(self.model)
+        margins = {}
+        for j in range(self.model.njnt):
+            if self.model.jnt_type[j] == mujoco.mjtJoint.mjJNT_HINGE and self.model.jnt_limited[j] and not mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_JOINT, j).startswith(("shoulder_aa", "toe_")):
+                q = data.qpos[self.model.jnt_qposadr[j]]
+                margins[mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_JOINT, j)] = math.degrees(min(q - self.model.jnt_range[j][0], self.model.jnt_range[j][1] - q))
+        self.assertGreater(min(margins.values()), 1.0)
+        self.assertIn(min(margins, key=margins.get), ("knee_right", "knee_left"))
         self.assertEqual(result.reasons, [])
 
     def test_com_beyond_the_toe_edge_is_infeasible_with_a_negative_margin(self):

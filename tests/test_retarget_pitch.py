@@ -102,7 +102,8 @@ def test_world_thigh_and_shank_pitch_are_the_datasets_for_synthetic_ik(model, st
 def test_standing_pelvis_is_upright_not_leaning_for_a_measured_pitch(model, stand):
     q = retarget.Cycle(model, MAPPING, stand, synthetic_ik(), 1.0, 1.0).eval(0.3)[0]
     assert np.abs(q[3:7] - np.array([1.0, 0, 0, 0])).max() < 1e-9  # the dataset's baseline, with no 2.608 degrees added
-    assert abs(Rotation.from_quat(np.r_[stand[4:7], stand[3]]).as_euler("YZX", degrees=True)[0] - 2.608) < 1e-3  # what the old code added
+    lean_deg = Rotation.from_quat(np.r_[stand[4:7], stand[3]]).as_euler("YZX", degrees=True)[0]
+    assert lean_deg > 1.0  # the stand fixture's own lean is what the old code added (2.608 degrees on the Stage 2 model, read from the model since Stage 2g)
 
 
 def test_measured_pitch_offset_is_added_to_the_datasets_pitch_in_the_anterior_direction(model, stand):
@@ -128,7 +129,7 @@ def _cycle_pair(model, stand):
     ik[:, ic.IK_CHANNELS.index("pelvis_tz")] = np.linspace(0, -1.2, 101)
     hip = np.array([-0.06, -0.07, 0.0])
     mk = lambda **kw: retarget.Cycle(model, MAPPING, stand, ik, 1.0, 0.95, hip_in_pelvis_os=hip, root_ref="hip_midpoint", **kw)
-    return mk(), mk(pitch_offset_deg=2.608)
+    return mk(), mk(pitch_offset_deg=float(Rotation.from_quat(np.r_[stand[4:7], stand[3]]).as_euler("YZX", degrees=True)[0]))
 
 
 def test_the_hip_midpoint_horizontal_path_is_the_datasets_whatever_the_pitch(model, stand):

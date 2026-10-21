@@ -68,7 +68,7 @@ class RomSweep(unittest.TestCase):
         self.assertEqual(set(self.rec["joints"]), limited)
         self.assertEqual(set(self.rec["skipped"]), unlimited)
         self.assertEqual(set(self.rec["skipped"].values()), {"unlimited"})
-        self.assertEqual((len(limited), len(unlimited)), (18, 13))  # the 7 missing sheet ROM values and the template's bare joints
+        self.assertEqual((len(limited), len(unlimited)), (27, 6))  # the six bare thoracolumbar and cervicothoracic joints (the sheet has every other range)
 
     def test_each_joint_moves_across_99_percent_of_its_model_range_without_touching_the_limit(self):
         for name, j in self.rec["joints"].items():
@@ -81,6 +81,18 @@ class RomSweep(unittest.TestCase):
                 self.assertGreater(j["limit_hit_fraction"], 0.0, name)
             else:
                 self.assertEqual(j["limit_hit_fraction"], 0.0, name)
+
+    def test_a_range_with_a_zero_width_side_is_swept_to_the_zero_and_back_without_a_division_by_nothing(self):
+        """The sheet's shoulder adduction FINAL is 0 on purpose (a placeholder: the motion is pose dependent), so shoulder_aa has the range [-182.7, 0]. The sweep goes from neutral
+        (the limit itself) to 99% of the open side and back; the zero-length leg takes no time and no sample is NaN."""
+        for side in ("right", "left"):
+            j = self.rec["joints"][f"shoulder_aa_{side}"]
+            self.assertEqual(j["rom_limit_deg"][1], 0.0)
+            self.assertAlmostEqual(j["rom_used_deg"][1], 0.0, places=9)
+            self.assertAlmostEqual(j["rom_used_deg"][0], 0.99 * j["rom_limit_deg"][0], places=6)
+            self.assertTrue(np.isfinite([j["torque_peak_nm"], j["torque_rms_nm"], j["speed_peak_rad_s"]]).all())
+            self.assertGreater(j["torque_peak_nm"], 0.0)
+        self.assertTrue(np.isfinite(self.result.raw["tau"]).all())
 
     def test_first_sample_of_each_sweep_is_the_models_gravity_bias_plus_inertia_times_the_ease_in(self):
         # at the first sample the joint is at neutral and still, but accelerating: tau = bias + M_jj * qdd, with bias and
@@ -121,7 +133,7 @@ class RomSweep(unittest.TestCase):
         ctx = checklib.Context.from_files()
         with mock.patch.object(sim_checks, "RUNS_DIR", Path(self.tmp.name)):
             (result,) = checklib.call(checklib.REGISTRY["check.sim.rom_reachable"], ctx)
-        self.assertEqual((result.status, result.measured["joints_checked"]), (checklib.PASS, 18), result.message)
+        self.assertEqual((result.status, result.measured["joints_checked"]), (checklib.PASS, 27), result.message)
 
 
 def run_hold(tmpdir, *sets):
@@ -147,13 +159,16 @@ class HoldPose(unittest.TestCase):
     def test_stands_to_the_end_with_the_standing_numbers_recorded(self):
         rr.validate(self.rec)
         self.assertEqual((self.rec["support"], self.rec["outcome"]), ("ground", "completed"))
-        self.assertEqual(self.rec["scenario"]["params"]["options"]["timestep_s"], 0.0002)
+        self.assertEqual(self.rec["scenario"]["params"]["options"]["timestep_s"], 0.0001)
         self.assertEqual(self.rec["scenario"]["params"]["pose"], {"com_x_rel_ankle_m": 0.0})
         self.assertAlmostEqual(self.diag["body_weight_n"], 64.935 * 9.81, places=6)
         self.assertGreater(self.rec["balance"]["support_margin_min_m"], 0.0)
         for key in ("lean_angle_deg", "com_offset_commanded_m", "com_offset_window_mean_m", "com_sag_m"):
             self.assertIn(key, self.diag)
-        self.assertAlmostEqual(self.diag["lean_angle_deg"], 2.6077, places=3)
+        model = mujoco.MjModel.from_xml_path(str(simrun.MODEL_FILE))
+        import gait
+        want = leanpose.design_stance(model, gait.snapshot_stand_tilt_deg(), gait.STANDING_FEET)
+        self.assertAlmostEqual(self.diag["lean_angle_deg"], math.degrees(want.lean_rad), places=6)  # the design stance of the snapshot, read from the model
 
     def test_inverse_dynamics_joint_rows_recover_the_applied_torque_with_contacts_too(self):
         # forward dynamics, then mj_inverse on the same state and acceleration: the joint rows close to round-off,
@@ -179,6 +194,11 @@ class HoldPose(unittest.TestCase):
 
     def test_no_joint_ends_near_a_limit(self):
         for name, j in self.rec["joints"].items():
+            if name.startswith("toe_") or name.startswith("shoulder_aa_"):
+                # the toe rests on its flexion stop (flat, 0 degrees) under its spring; the shoulder's adduction limit is the sheet's deliberate zero, which is the
+                # neutral pose (a placeholder, pose-dependent): both stand on a stop
+                self.assertEqual(j["limit_hit_fraction"], 1.0, name)
+                continue
             self.assertEqual(j["limit_hit_fraction"] or 0.0, 0.0, name)
 
 
@@ -255,7 +275,7 @@ class StandStatic(unittest.TestCase):
         self.assertNotIn("findings", self.rec)
 
     def test_peak_equals_rms_and_speed_and_power_are_zero(self):
-        self.assertEqual(len(self.rec["joints"]), 31)
+        self.assertEqual(len(self.rec["joints"]), 33)
         for name, j in self.rec["joints"].items():
             self.assertEqual(j["torque_peak_nm"], j["torque_rms_nm"], name)
             self.assertEqual((j["speed_peak_rad_s"], j["power_peak_w"]), (0.0, 0.0), name)
@@ -314,9 +334,11 @@ class ViewerSetup(unittest.TestCase):
         import viewscenario
         scn = simrun.load_scenario("hold_pose")
         model, data, ctrl = viewscenario.build(scn)
-        self.assertEqual(model.opt.timestep, 0.0002)
-        self.assertGreater(data.qpos[model.jnt_qposadr[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "ankle_pdflex_right")]], 0.04)
-        for _ in range(5000):  # 1 s
+        self.assertEqual(model.opt.timestep, 0.0001)
+        import gait
+        want = leanpose.design_stance(model, gait.snapshot_stand_tilt_deg(), gait.STANDING_FEET)
+        self.assertGreater(data.qpos[model.jnt_qposadr[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "ankle_pdflex_right")]], 0.5 * want.lean_rad)  # leaned, as the design stance is
+        for _ in range(int(round(1.0 / model.opt.timestep))):  # 1 s
             viewscenario.advance(model, data, ctrl, scn)
         self.assertGreater(data.xpos[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "pelvis")][2], 0.9)
         self.assertAlmostEqual(data.time, 1.0, places=6)

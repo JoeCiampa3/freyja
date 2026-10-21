@@ -1,15 +1,18 @@
 # hold_pose: ideal-torque PD holds a standing pose on the floor (forward dynamics, applied torque).
 # Settle for 7 s, then measure the static standing loads for 1 s.
 #
-# The pose is the rigid lean about the ankle (sim/scripts/leanpose.py) that puts the whole-body CoM
-# pose.com_x_rel_ankle_m in front of the ankle; every other joint is neutral. The neutral pose itself has no
+# The pose is the design stance (decisions/0004): the pelvic tilt of the snapshot (stand_pelvis_tilt_deg) as hip flexion and the opposite lumbosacral extension, then the
+# rigid lean about the ankle (sim/scripts/leanpose.py) that puts the whole-body CoM pose.com_x_rel_ankle_m in front of the ankle. The tilt is not typed here: it is read
+# from the snapshot (simrun.pose_with_design_tilt), and a pose.pelvic_tilt_deg or pose.lsj_fe_deg in this block would override it. The neutral pose itself has no
 # static equilibrium (CoM 40 mm behind the ankle, see notebook/2026-10-10-stage1-findings.md). The default 0.0 is
 # a design choice, not a measurement: the ankle torque is then near zero and the CoM is over the ankle, with the heel edge of the foot box (the model, from the sheet's design range) behind it; no
 # cited quiet-standing CoM position is in the repo, and the standing ankle torque is a function of it. Override from the command
 # line with `fy run hold_pose --set pose.com_x_rel_ankle_m=0.02`; the override is recorded in the summary.
 #
-# The timestep is overridden from the model's 0.002 s to 0.0002 s: the ankle and wrist joints are light and a
-# stiff explicit PD on qfrc_applied is unstable at 0.002 s (it diverged at 0.002 s and at 0.0005 s with kp = 2000).
+# The timestep is overridden from the model's 0.002 s to 0.0001 s: the ankle and wrist joints are light and a
+# stiff explicit PD on qfrc_applied is unstable at 0.002 s (it diverged at 0.002 s and at 0.0005 s with kp = 2000). Stage 2g: with the hips flexed and the lumbosacral
+# joint extended by the design tilt, the gains scaled to the diagonal of the mass matrix are no longer stable at 0.0002 s (the model was thrown off the floor within
+# 0.05 s; 0.0001 s and a kp of 200 both hold, the neutral pose still holds at 0.0002 s), because the off-diagonal inertia of the bent pose is large.
 # Gains are scaled to each joint's effective inertia and capped (sim/controllers/pd_hold.py).
 name: hold_pose
 model: sim/models/freyja.xml
@@ -20,7 +23,7 @@ controller: {name: pd_hold, version: "1"}
 duration_s: 8.0
 window: {start_s: 7.0, end_s: 8.0}
 options:
-  timestep_s: 0.0002
+  timestep_s: 0.0001
   integrator: euler
   verify_inverse: true
 pose: {com_x_rel_ankle_m: 0.0}

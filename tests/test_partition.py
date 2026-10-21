@@ -100,7 +100,8 @@ def test_substituted_masses_follow_the_dataset_fractions_and_keep_the_total(mode
     bid = lambda n: mujoco.mj_name2id(copy, mujoco.mjtObj.mjOBJ_BODY, n)
     assert copy.body_mass[bid("thigh_right")] == pytest.approx(total * 8.0 / M, rel=1e-12)
     assert copy.body_mass[bid("shank_left")] == pytest.approx(total * 3.0 / M, rel=1e-12)
-    assert copy.body_mass[bid("foot_right")] == pytest.approx(total * 1.3 / M, rel=1e-12)  # talus + calcn + toes
+    assert copy.body_mass[bid("foot_right")] + copy.body_mass[bid("toe_right")] == pytest.approx(total * 1.3 / M, rel=1e-12)  # talus + calcn + toes, the toe body counted with the foot
+    assert copy.body_mass[bid("toe_right")] / copy.body_mass[bid("foot_right")] == pytest.approx(model.body_mass[bid("toe_right")] / model.body_mass[bid("foot_right")], rel=1e-12)
     assert copy.body_mass[bid("pelvis")] == pytest.approx(total * 10.0 / M, rel=1e-12)
     trunk = [n for n in ("abdomen", "thorax", "head_and_neck", "upper_arm_right", "forearm_right", "hand_right", "upper_arm_left", "forearm_left", "hand_left")]
     assert sum(copy.body_mass[bid(n)] for n in trunk) == pytest.approx(total * 36.0 / M, rel=1e-12)

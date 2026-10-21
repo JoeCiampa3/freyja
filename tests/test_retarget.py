@@ -75,7 +75,8 @@ def test_standing_input_gives_zero_velocity_and_flat_feet(model, stand):
     # the dataset's 90 degree lab baseline (pelvis_list 0) maps to an upright, forward-facing pelvis. Stage 2c: before it, this
     # asserted the model's standing orientation (a 2.608 degree forward lean), which is what the composition with R_stand added.
     assert rot_diff_rad(q[3:7], np.array([1.0, 0, 0, 0])) < 1e-9
-    assert rot_diff_rad(q[3:7], stand[3:7]) == pytest.approx(np.deg2rad(2.6076927), abs=1e-6)  # the lean it no longer carries
+    assert rot_diff_rad(q[3:7], stand[3:7]) == pytest.approx(rot_diff_rad(np.array([1.0, 0, 0, 0]), stand[3:7]), abs=1e-9)  # the lean it no longer carries (the stand fixture's own)
+    assert rot_diff_rad(q[3:7], stand[3:7]) > np.deg2rad(1.0)  # and that lean is not nothing
 
 
 @pytest.mark.parametrize("rule", retarget.ROOT_RULES)
@@ -386,8 +387,13 @@ def test_rigid_trunk_output_is_unchanged_from_before_the_trunk_modes(model, stan
     # grid was re-recorded: "6b81fb135022033b" at cf658f5 became the value below. The parts the change must not touch keep the hashes
     # recorded at 8285c6a, before it: the joint positions, velocities and accelerations, the root's body-frame angular velocity and
     # acceleration, and the horizontal path of the hip midpoint.
-    assert h(np.concatenate([q.ravel(), qd.ravel(), qdd.ravel()])) == "0414050b96c62295"
-    assert h(np.concatenate([q[:, 7:].ravel(), qd[:, 6:].ravel(), qdd[:, 6:].ravel()])) == "464519a942ec31d9"
+    assert h(np.concatenate([q.ravel(), qd.ravel(), qdd.ravel()])) == "0a97e13ba9070cf1"  # re-recorded for the Stage 2g model (was 0414050b96c62295 on the Stage 2 model): the root height and the hip positions follow the new lengths
+    # Stage 2g: the model has two more hinges (the toes, held at zero here), so the joint columns are hashed without them and the hash is the one recorded before
+    toe_q = [int(model.jnt_qposadr[model.joint(n).id]) for n in ("toe_right", "toe_left")]
+    toe_v = [int(model.jnt_dofadr[model.joint(n).id]) for n in ("toe_right", "toe_left")]
+    assert np.abs(q[:, toe_q]).max() == 0.0 and np.abs(qd[:, toe_v]).max() == 0.0
+    qj, qdj, qddj = np.delete(q, toe_q, axis=1), np.delete(qd, toe_v, axis=1), np.delete(qdd, toe_v, axis=1)
+    assert h(np.concatenate([qj[:, 7:].ravel(), qdj[:, 6:].ravel(), qddj[:, 6:].ravel()])) == "464519a942ec31d9"
     assert h(np.concatenate([qd[:, 3:6].ravel(), qdd[:, 3:6].ravel()])) == "87062236a9c39767"
     assert h(np.array([retarget.model_hip_mid(model, k)[:2] for k in q])) == "afb38100df5e7d71"
     same = retarget.Cycle(model, mapping, stand, z["1.4_ik"][3], float(z["1.4_duration_s"][3]), 0.92, hip_in_pelvis_os=HIP, trunk="rigid")

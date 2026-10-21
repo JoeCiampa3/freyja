@@ -54,7 +54,11 @@ def with_dataset_masses(model, table, length_ratio, hip_in_pelvis):
             set_mass(f"{seg}_{side}", total_f * frac([f"{bone}_{suf}"]))
             x, y, z = table[f"{bone}_{suf}"][1]
             copy.body_ipos[bid(f"{seg}_{side}")] = length_ratio * np.array([x, -z, y])  # OpenSim (fwd, up, right) -> model (fwd, left, up)
-        set_mass(f"foot_{side}", total_f * frac([f"talus_{suf}", f"calcn_{suf}", f"toes_{suf}"]))
+        foot_total = total_f * frac([f"talus_{suf}", f"calcn_{suf}", f"toes_{suf}"])  # the dataset's foot includes its toes: the model's foot body and toe body share it
+        parts = [n for n in (f"foot_{side}", f"toe_{side}") if bid(n) >= 0]
+        share = foot_total / sum(float(copy.body_mass[bid(n)]) for n in parts)  # both scale by one factor, so the split between them stays the sheet's
+        for n in parts:
+            set_mass(n, float(copy.body_mass[bid(n)]) * share)
     current = sum(float(copy.body_mass[bid(n)]) for n in TRUNK_GROUP)
     for n in TRUNK_GROUP:
         set_mass(n, copy.body_mass[bid(n)] * total_f * frac(["torso"]) / current)

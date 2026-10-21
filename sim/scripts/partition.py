@@ -24,7 +24,7 @@ EPS = 1e-6  # s. The rate of change of a body Jacobian along the motion is a cen
 def _groups(stance_foot: str) -> dict:
     side = "right" if stance_foot.endswith("right") else "left"
     other = "left" if side == "right" else "right"
-    leg = lambda s: [f"thigh_{s}", f"shank_{s}", f"foot_{s}"]
+    leg = lambda s: [f"thigh_{s}", f"shank_{s}", f"foot_{s}", f"toe_{s}"]  # the toe is part of the leg (a model without one skips the name)
     return {"stance_leg": leg(side), "swing_leg": leg(other),
             "pelvis_trunk": ["pelvis", "abdomen", "thorax", "head_and_neck"] + [f"{seg}_{s}" for s in ("right", "left") for seg in ("upper_arm", "forearm", "hand")]}
 
@@ -73,6 +73,7 @@ def cop_partition(model, q, qd, qdd, stance_foot, ankle_xy, gravity=9.81) -> dic
     fz = sum(f[2] for f in force.values())
     out = {}
     for group, names in _groups(stance_foot).items():
+        names = [n for n in names if n in bodies]
         mg = sum(bodies[n]["mass"] for n in names)
         cg = sum(bodies[n]["mass"] * bodies[n]["com"] for n in names) / mg
         fg = sum(force[n] for n in names)

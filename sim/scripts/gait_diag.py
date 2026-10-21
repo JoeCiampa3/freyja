@@ -81,7 +81,7 @@ def force_report(args):
                   "lateral ptp ratio {lat_ptp_ratio:.3f} corr {lat_corr:.3f}, rms {lat_rms_n:.1f} N, mean diff {lat_mean_diff_n:.1f} N".format(**m))
 
 
-GROUPS = {"legs": ["thigh_right", "shank_right", "foot_right", "thigh_left", "shank_left", "foot_left"], "pelvis": ["pelvis"],
+GROUPS = {"legs": ["thigh_right", "shank_right", "foot_right", "toe_right", "thigh_left", "shank_left", "foot_left", "toe_left"], "pelvis": ["pelvis"],
           "trunk": ["abdomen", "thorax", "head_and_neck"],
           "arms": ["upper_arm_right", "forearm_right", "hand_right", "upper_arm_left", "forearm_left", "hand_left"]}
 
@@ -95,7 +95,7 @@ def lateral(args):
     c = gait._ctx(str(gait.simrun.MODEL_FILE))
     m = c.model
     manifest = json.loads((REPO / "data/camargo2021/manifest.json").read_text(encoding="utf-8"))
-    ids = {g: [mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, n) for n in v] for g, v in GROUPS.items()}
+    ids = {g: [mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, n) for n in v if mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, n) >= 0] for g, v in GROUPS.items()}
     for ref in ("pelvis_origin", "hip_midpoint"):
         res, tot, meas = {g: [] for g in GROUPS}, [], []
         for s, d in list(manifest["subjects"].items())[:args.subjects]:

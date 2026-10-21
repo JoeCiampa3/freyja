@@ -179,7 +179,7 @@ def _body_kin(model, cycle, t):
     mujoco.mj_kinematics(model, d)
     mujoco.mj_comPos(model, d)
     out = {}
-    for name in ("foot_right", "shank_right", "thigh_right"):
+    for name in ("toe_right", "foot_right", "shank_right", "thigh_right"):
         b = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, name)
         jp, jr = np.zeros((3, model.nv)), np.zeros((3, model.nv))
         mujoco.mj_jacBodyCom(model, d, jp, jr, b)
@@ -194,7 +194,7 @@ def test_stance_leg_torques_equal_a_bottom_up_newton_euler_recursion(model):
     cyc = retarget.Cycle(model, MAPPING, stand, z["1.4_ik"][3], float(z["1.4_duration_s"][3]), 0.92)
     g = np.array([0.0, 0.0, -G])
     eps = 1e-6
-    chain = ["foot_right", "shank_right", "thigh_right"]
+    chain = ["toe_right", "foot_right", "shank_right", "thigh_right"]  # the toe hangs from the foot (welded flat in this cycle); the ground wrench acts on the foot
     for ph in (0.2, 0.25, 0.3, 0.35, 0.4):  # right single support
         t = ph * cyc.T
         q, qd, qdd = cyc.eval(t)
@@ -220,7 +220,7 @@ def test_stance_leg_torques_equal_a_bottom_up_newton_euler_recursion(model):
             M_in = I @ alpha + np.cross(w, I @ w) - np.cross(xj - com, F_in)
             if name == "foot_right":
                 M_in -= np.cross(p_g - com, f_g)
-            else:
+            if x_child is not None:
                 M_in += np.cross(x_child - com, F_child) + M_child
             for j in joints:
                 torques[mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, j)] = float(d.xaxis[j] @ M_in)

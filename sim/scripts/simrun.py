@@ -219,11 +219,14 @@ def _fall_monitor(model, data, scn):
     return fallen
 
 
+CLOCK_TOL_S = 1e-9  # s. MuJoCo adds the timestep to its clock each step; 6e4 additions of 1e-4 drift by 1e-12 (Stage 2g). A stopped step is short by a whole timestep, at least 1e-5.
+
+
 def _diverged(mj, d, expected_time) -> bool:
     bad = (mj.mjtWarning.mjWARN_BADQPOS, mj.mjtWarning.mjWARN_BADQVEL, mj.mjtWarning.mjWARN_BADQACC, mj.mjtWarning.mjWARN_BADCTRL)
     if any(d.warning[int(w)].number for w in bad):
         return True
-    return not (np.isfinite(d.qpos).all() and np.isfinite(d.qvel).all()) or d.time < expected_time - 1e-12
+    return not (np.isfinite(d.qpos).all() and np.isfinite(d.qvel).all()) or d.time < expected_time - CLOCK_TOL_S
 
 
 def _floor_contacts(mj, model, data, floor_geoms, foot_of_body):
@@ -248,8 +251,30 @@ def _floor_contacts(mj, model, data, floor_geoms, foot_of_body):
     return out
 
 
-def _apply_pose(mj, model, data, pose):
-    """Set the solved lean pose (CoM over a chosen point relative to the ankle) as the starting state."""
+SETTLE_M = 1e-6  # m. A ground run starts this far lower than the solved pose: the pose is flat on the floor to round-off, and MuJoCo makes a floor contact only where the gap is
+#                  below zero, so whichever corners sat at +1e-17 m made no contact (Stage 2g: the heels, and the hold tipped onto its toes). A micrometre is below every number reported.
+
+
+def _settle_on_floor(data, model):
+    """Lower the free root by SETTLE_M (the pelvis is the model's only free joint)."""
+    import mujoco as mj
+    root = next(j for j in range(model.njnt) if model.jnt_type[j] == mj.mjtJoint.mjJNT_FREE)
+    data.qpos[int(model.jnt_qposadr[root]) + 2] -= SETTLE_M
+
+
+def pose_with_design_tilt(pose: dict, snapshot_path=None) -> dict:
+    """The scenario's pose block with the design stance's tilt filled in from the snapshot (stand_pelvis_tilt_deg: hips flexed by it, lumbosacral joint extended by it,
+    decisions/0004), for the parameters the block does not set itself. A snapshot without the key (or none) leaves the pose as written. No number is typed in a scenario."""
+    import gait  # the one reader of the snapshot key (an import here: gait imports this module's neighbours)
+    tilt = gait.snapshot_stand_tilt_deg(snapshot_path or SNAPSHOT_FILE)
+    if not tilt:
+        return dict(pose)
+    return {"pelvic_tilt_deg": tilt, "lsj_fe_deg": -tilt, **pose}
+
+
+def _apply_pose(mj, model, data, pose, snapshot_path=None):
+    """Set the solved lean pose (CoM over a chosen point relative to the ankle) as the starting state. The design stance's tilt comes from the snapshot unless the pose sets it."""
+    pose = pose_with_design_tilt(pose, snapshot_path)
     feet = {}
     for side in ("right", "left"):
         if _body_id(model, f"foot_{side}") is not None and mj.mj_name2id(model, mj.mjtObj.mjOBJ_JOINT, f"ankle_pdflex_{side}") >= 0:
@@ -350,7 +375,7 @@ def _slice(window, dt_, done):
     return int(round(window[0] / dt_)), min(int(round(window[1] / dt_)), done)
 
 
-def _finish_static(mj, scn, model, data, lean, *, run_id, model_sha, snapshot_sha, runs_dir, last_run_path, waivers_path, repo) -> RunResult:
+def _finish_static(mj, scn, model, data, lean, *, snapshot_path=None, run_id, model_sha, snapshot_sha, runs_dir, last_run_path, waivers_path, repo) -> RunResult:
     """A static_equilibrium run: no time stepping. The record has a zero-width window, zero duration, and per joint a torque
     whose peak equals its rms, with zero speed and power. An infeasible pose is recorded with outcome 'fell' and its reasons."""
     result = statics.solve_static(model, data)
@@ -368,6 +393,7 @@ def _finish_static(mj, scn, model, data, lean, *, run_id, model_sha, snapshot_sh
         "body_weight_n": float(model.body_mass.sum() * abs(model.opt.gravity[2])),
         "lean_angle_deg": float(np.degrees(lean.lean_rad)), "com_offset_commanded_m": float(scn["pose"]["com_x_rel_ankle_m"]),
         "com_offset_initial_m": float(lean.com_offset_m), "feasible": 1.0 if result.feasible else 0.0,
+        "stand_pelvis_tilt_deg": float(pose_with_design_tilt(scn["pose"], snapshot_path).get("pelvic_tilt_deg", 0.0)),
     }
     spec = scn.get("controller") or {}
     record = {
@@ -417,9 +443,12 @@ def run_scenario(scn: dict, *, model_path=None, snapshot_path=None, meta_path=No
     mj.mj_forward(model, data)
     lean = None
     if scn.get("pose"):
-        lean = _apply_pose(mj, model, data, scn["pose"])
+        lean = _apply_pose(mj, model, data, scn["pose"], snapshot_path)
+        if not static and not gantry:
+            _settle_on_floor(data, model)
+            mj.mj_forward(model, data)
     if static:
-        return _finish_static(mj, scn, model, data, lean, run_id=run_id, model_sha=model_sha, snapshot_sha=snapshot_sha, runs_dir=runs_dir,
+        return _finish_static(mj, scn, model, data, lean, snapshot_path=snapshot_path, run_id=run_id, model_sha=model_sha, snapshot_sha=snapshot_sha, runs_dir=runs_dir,
                               last_run_path=last_run_path, waivers_path=waivers_path, repo=repo)
     params = {**(scn.get("params") or {}), "seed": scn["seed"]}
     ctrl.reset(model, data, params)
@@ -472,6 +501,7 @@ def run_scenario(scn: dict, *, model_path=None, snapshot_path=None, meta_path=No
         diagnostics["lean_angle_deg"] = float(np.degrees(lean.lean_rad))
         diagnostics["com_offset_commanded_m"] = float(scn["pose"]["com_x_rel_ankle_m"])
         diagnostics["com_offset_initial_m"] = float(lean.com_offset_m)
+        diagnostics["stand_pelvis_tilt_deg"] = float(pose_with_design_tilt(scn["pose"], snapshot_path).get("pelvic_tilt_deg", 0.0))
         if i1 > i0:
             mean = float(raw["com_rel_ankle_x_m"][i0:i1].mean())
             diagnostics["com_offset_window_mean_m"] = mean
