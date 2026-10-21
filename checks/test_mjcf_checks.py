@@ -124,7 +124,7 @@ def test_joint_signs_on_the_model(ctx):
     rs = run(ctx, "check.mjcf.joint_signs")
     assert rs[0].tier == "gate"  # Joe approved the polarity file
     assert rs[0].status == cl.PASS, rs[0].message
-    assert rs[0].measured["checked"] == 31
+    assert rs[0].measured["checked"] == 33
 
 
 @pytest.mark.check("check.mjcf.joint_signs", tier="gate")
@@ -191,7 +191,7 @@ def test_floor_contact_fails_when_the_feet_float_or_sink(ctx):
 def test_stature_chain_on_the_model(ctx):
     rs = run(ctx, "check.mjcf.stature_chain")
     require(rs)
-    assert abs(rs[0].measured["offset_mm"] - (-14.684)) < 0.5  # the sheet's own definitional offset
+    assert abs(rs[0].measured["offset_mm"] - (-9.657)) < 0.5  # the chord closure at an upright pelvis (Stage 2g sheet; was -14.684 on the Stage 2 lengths)
 
 
 @pytest.mark.check("check.mjcf.stature_chain", tier="advisory")
@@ -208,7 +208,7 @@ def test_stature_chain_skips_without_a_target_and_fails_when_off(ctx):
 @pytest.mark.check("check.mjcf.com_pct_stature", tier="advisory")
 def test_com_pct_stature_reports_the_known_value(ctx):
     rs = run(ctx, "check.mjcf.com")
-    assert abs(only(rs, "check.mjcf.com_pct_stature").measured["pct_stature"] - 55.26) < 0.02
+    assert abs(only(rs, "check.mjcf.com_pct_stature").measured["pct_stature"] - 55.436) < 0.02  # Stage 2g model; inside the Virmavirta and Isolehto band 55.88 +/- 0.52 (was 55.26, outside it)
     require([only(rs, "check.mjcf.com_lateral")])
 
 

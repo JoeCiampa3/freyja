@@ -49,7 +49,7 @@ def test_every_body_and_hinge_is_bound_so_nothing_warns_unbound(built):
     assert not [i for i in built.warnings if i.code in ("unbound-body", "unbound-hinge")]
     kinds = {r["kind"] for r in built.recs.values()}
     assert kinds == {"segment", "joint", "part", "interface", "load_case", "harness_run", "work_item"}
-    assert sum(r["kind"] == "segment" for r in built.recs.values()) == 10 and sum(r["kind"] == "joint" for r in built.recs.values()) == 9
+    assert sum(r["kind"] == "segment" for r in built.recs.values()) == 10 and sum(r["kind"] == "joint" for r in built.recs.values()) == 10
 
 
 def test_derived_work_status_equals_the_intent_for_every_item(fx, built):

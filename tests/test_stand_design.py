@@ -92,8 +92,15 @@ def test_the_gait_context_stands_in_the_design_stance_and_in_the_old_one_without
     assert not np.allclose(c.stand, old.stand)
 
 
-def test_without_the_key_in_the_snapshot_the_context_keeps_the_old_standing_pose():
-    """The tracked snapshot predates stand_pelvis_tilt_deg; its Context must reproduce the Stage 2 stand exactly (the lean of 2.608 degrees)."""
-    c = gait.Context(REPO / "sim" / "models" / "freyja.xml")
-    assert np.degrees(leanpose.solve_lean(c.model, 0.0, gait.STANDING_FEET).lean_rad) == pytest.approx(2.6076927, abs=1e-6)
-    assert np.allclose(c.stand, leanpose.solve_lean(c.model, 0.0, gait.STANDING_FEET).qpos, atol=1e-12)
+def test_without_the_key_in_the_snapshot_the_context_keeps_the_old_standing_pose(tmp_path):
+    """A snapshot without stand_pelvis_tilt_deg (before Stage 2g) gives the old pose: a rigid lean about the ankle, every other joint at zero. The lean is read from the
+    model (it was 2.608 degrees on the Stage 2 model)."""
+    snap = tmp_path / "snapshot.csv"
+    snap.write_text("placeholder,value,sheet_source\ntarget_mass,60,x\n", encoding="utf-8", newline="\n")
+    assert gait.snapshot_stand_tilt_deg(snap) == 0.0 and gait.snapshot_stand_tilt_deg(tmp_path / "absent.csv") == 0.0
+    c = gait.Context(REPO / "sim" / "models" / "freyja.xml", stand_tilt_deg=gait.snapshot_stand_tilt_deg(snap))
+    lean = leanpose.solve_lean(c.model, 0.0, gait.STANDING_FEET)
+    assert np.allclose(c.stand, lean.qpos, atol=1e-12)
+    assert 0.0 < np.degrees(lean.lean_rad) < 10.0
+    assert np.abs(c.stand[7:]).max() < 1e-12 + np.abs(lean.qpos[7:]).max()  # only the ankle moves: the other hinges are zero
+    assert np.count_nonzero(np.abs(c.stand[7:]) > 1e-12) == 2  # the two ankles

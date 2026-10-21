@@ -1,0 +1,13 @@
+hinges:
+- toe
+id: jnt.toe
+kind: joint
+purpose: The metatarsophalangeal joint, between the foot and the toe, a passive hinge with a spring, a damper and stops.
+rom_keys:
+- toe_extension
+- toe_flexion
+schema: thread-record/1
+sides:
+- left
+- right
+status: proposed

@@ -29,7 +29,7 @@ def test_the_committed_records_cover_the_committed_model():
 def test_the_check_is_registered_advisory_and_passes_on_the_real_context(ctx):
     assert cl.REGISTRY["check.thread.coverage"].tier == "advisory"
     [r] = cl.call(cl.REGISTRY["check.thread.coverage"], ctx)
-    assert r.status == cl.PASS and "16 bodies" in r.message and "31 hinges" in r.message
+    assert r.status == cl.PASS and "18 bodies" in r.message and "33 hinges" in r.message
 
 
 @pytest.mark.check("check.thread.coverage", tier="advisory")

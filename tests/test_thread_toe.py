@@ -1,7 +1,7 @@
 """
 Stage 2g T5: the toe in the thread. A segment record may own further bodies (`also_bodies`), so `seg.foot` binds `foot_right`, `foot_left`, `toe_right` and `toe_left`, and
-`jnt.toe` binds the two toe hinges and the toe's range-of-motion keys. The tracked model has no toe until Part B, so this is checked on a copy of the real records and the
-fixture model of tests/foot_help.py in a temporary root; the tracked records are not changed here (they name hinges the tracked model does not have).
+`jnt.toe` binds the two toe hinges and the toe's range-of-motion keys. The tracked records carry both since Part B. These tests copy the real records with the toe
+records taken out again, to exercise the mechanism (what an unbound toe looks like, what binds it) on the fixture model of tests/foot_help.py in a temporary root.
 
 Run from the repo root:
     python -m pytest tests/test_thread_toe.py
@@ -32,8 +32,12 @@ def root(tmp_path):
     (tmp_path / "sim" / "models").mkdir(parents=True)
     shutil.copy(fh.fixture_model_path(), tmp_path / "sim" / "models" / "freyja.xml")
     (tmp_path / "params").mkdir()
-    snap = (REPO / "params" / "snapshot.csv").read_text(encoding="utf-8").rstrip("\n") + "\ntoe_extension,80,'MuJoCo Reference'!G90\ntoe_flexion,0,'MuJoCo Reference'!G91\n"
-    (tmp_path / "params" / "snapshot.csv").write_text(snap, encoding="utf-8", newline="\n")
+    shutil.copy(REPO / "params" / "snapshot.csv", tmp_path / "params" / "snapshot.csv")
+    (records(tmp_path) / "jnt.toe.yaml").unlink()  # the tracked records carry the toe; the tests below add it back
+    p = records(tmp_path) / "seg.foot.yaml"
+    doc = yaml.safe_load(p.read_text(encoding="utf-8"))
+    del doc["also_bodies"]
+    p.write_text(yaml.safe_dump(doc, sort_keys=True), encoding="utf-8")
     (tmp_path / "decisions").mkdir()
     return tmp_path
 

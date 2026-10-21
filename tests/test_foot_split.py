@@ -112,7 +112,7 @@ def test_the_design_range_is_read_in_si_with_the_cell_that_gave_each_value():
 def test_an_absent_range_gives_nothing_and_a_missing_or_bad_key_is_an_error_naming_the_cell():
     assert pp.read_design(None, pp.Report()) == {}
     rows = [[k, v] for k, v in fh.SPEC_DESIGN.items()]
-    out, r = read(rows[:-1])
+    out, r = read([row for row in rows if row[0] != "toe_damping_nm_s_per_rad"])
     assert any("toe_damping_nm_s_per_rad" in e and "missing" in e for e in r.errors)
     for bad, text in (("abc", "not a number"), ("", "empty"), (-5.0, "outside"), (0.0, "outside"), (1e6, "outside"), (float("nan"), "not a number")):
         rows2 = [[k, v] for k, v in fh.SPEC_DESIGN.items()]

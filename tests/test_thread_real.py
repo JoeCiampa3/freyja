@@ -14,7 +14,8 @@ from thread_help import REPO
 
 from thread import build, fixture
 
-JOINTS = {"ankle", "cervicothoracic", "elbow", "hip", "knee", "lumbosacral", "shoulder", "thoracolumbar", "wrist"}
+JOINTS = {"ankle", "cervicothoracic", "elbow", "hip", "knee", "lumbosacral", "shoulder", "thoracolumbar", "toe", "wrist"}
+PROPOSED = {"jnt.toe"}  # created proposed by Code (CLAUDE.md rule 2); Joe activates it
 LOAD_CASES = {"lc.stand-static": {"scenario": "stand_static"},
               "lc.walk-0p5": {"gait_spec": "walk_treadmill", "condition": "0.5 m/s level treadmill walking"},
               "lc.walk-1p4": {"gait_spec": "walk_treadmill", "condition": "1.4 m/s level treadmill walking"},
@@ -38,12 +39,12 @@ def test_one_segment_per_pre_processor_segment_and_one_joint_per_anatomical_join
     assert sorted(i for i, r in real.recs.items() if r["kind"] == "joint") == sorted(f"jnt.{j}" for j in JOINTS)
     for i, r in real.recs.items():
         if r["kind"] in ("segment", "joint"):
-            assert r["status"] == "active" and r["purpose"].endswith(".") and r["purpose"].count(". ") == 0, i
+            assert r["status"] == ("proposed" if i in PROPOSED else "active") and r["purpose"].endswith(".") and r["purpose"].count(". ") == 0, i
 
 
 def test_every_body_and_hinge_is_bound_exactly_once(real):
     model = real.store.model
-    assert len(model.bodies) == 16 and len(model.hinges) == 31
+    assert len(model.bodies) == 18 and len(model.hinges) == 33
     assert sorted(real.body_owner) == sorted(model.bodies) and sorted(real.hinge_owner) == sorted(model.hinges)
 
 
@@ -52,7 +53,7 @@ def test_the_joint_names_follow_the_answers_to_memo18(real):
     assert real.recs["jnt.cervicothoracic"]["hinges"] == ["cj_fe", "cj_lat", "cj_ax"]
     assert real.recs["seg.head_neck"]["body"] == "head_and_neck"
     missing = sorted(k for r in real.recs.values() if r["kind"] == "joint" for k in r["rom_keys"] if k not in real.store.snapshot)
-    assert len(missing) == 7  # the seven values rm.v1-rom-gaps-filled covers; listed, never invented
+    assert missing == []  # the seven values rm.v1-rom-gaps-filled covered, and the toe's two, are in the sheet
 
 
 def test_the_load_cases_are_proposed_and_do_not_require_an_independent_source(real):
@@ -121,9 +122,9 @@ def test_the_gravity_hold_load_case_describes_the_rom_sweep_as_it_is(real):
                             "and the pelvis held by the gantry.")
     n = r["notes"]
     assert "ground reaction" not in n and "ground-reaction" not in n  # the gantry holds the body
-    assert "13 unlimited hinges" in n and "seven missing sheet ROM values" in n and "bare joints" in n
+    assert "6 unlimited" in n and "bare joints" in n and "shoulder adduction limit is a" in n
     assert "near-worst, not a bound" in n and "proximal" in n
     model = real.store.model
     import re
     limited = len(re.findall(r'<joint[^>]*type="hinge"[^>]*\brange=', (REPO / "sim" / "models" / "freyja.xml").read_text(encoding="utf-8")))
-    assert len(model.hinges) - limited == 13  # the number the notes state
+    assert len(model.hinges) - limited == 6  # the number the notes state

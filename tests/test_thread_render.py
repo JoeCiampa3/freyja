@@ -58,7 +58,6 @@ def test_binding_and_values_carry_the_sheet_source(fx):
     assert re.search(r"\| `thigh_right_mass` \| 9\.49 \| 'MuJoCo Reference'!B22 \|", t)
     j = text(fx, "thread/dossiers/jnt.hip.md")
     assert "`hip_fe_left`" in j and "| `hip_flexion` |" in j
-    assert "Not in the snapshot" in text(fx, "thread/dossiers/jnt.lumbosacral.md")
     assert "No model or snapshot binding." in text(fx, "thread/dossiers/part.hip.m1.md")
 
 
@@ -181,3 +180,15 @@ def test_banners_and_determinism_with_references(fx):
 def test_dossiers_do_not_depend_on_git_history(fx):
     assert not (fx.root / ".git").exists()
     assert fx.outputs == build.build_root(fx.root).outputs
+
+
+def test_a_range_key_missing_from_the_snapshot_is_listed_as_not_in_the_snapshot(tmp_path):
+    """The sheet carries every range key since Stage 2g, so the case is made by taking one out of a copy of the fixture's snapshot."""
+    root = tmp_path / "root"
+    fixture.generate(root, 0)
+    snap = root / "params" / "snapshot.csv"
+    lines = snap.read_text(encoding="utf-8").splitlines(keepends=True)
+    assert any(l.startswith("lumbosacral_flexion,") for l in lines)
+    snap.write_text("".join(l for l in lines if not l.startswith("lumbosacral_flexion,")), encoding="utf-8", newline="")
+    t = text(build.build_root(root), "thread/dossiers/jnt.lumbosacral.md")
+    assert "Not in the snapshot" in t and "lumbosacral_flexion" in t

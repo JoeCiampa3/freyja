@@ -127,6 +127,12 @@ DESIGN_KEYS = {
     "toe_com_fraction": ("toe_com_fraction", 1.0, 0.0, 1.0, False),
     "toe_stiffness_nm_per_deg": ("toe_stiffness_nm_per_rad", DEG_PER_RAD, 0.0, 1e5, True),
     "toe_damping_nm_s_per_rad": ("toe_damping_nm_s_per_rad", 1.0, 0.0, 1e5, True),
+    # Provenance inputs: ANSUR II female means (Gordon et al. 2014) that the sheet's foot lengths and ankle height are scaled from. Nothing in the model
+    # reads them; tests/test_ansur_provenance.py compares them with the public CSV. The stature is the one value above 1 m.
+    "ansur_female_stature_mm": ("ansur_female_stature", 1e-3, 0.0, 2000.0, False),
+    "ansur_female_footlength_mm": ("ansur_female_footlength", 1e-3, 0.0, 1000.0, False),
+    "ansur_female_balloffootlength_mm": ("ansur_female_balloffootlength", 1e-3, 0.0, 1000.0, False),
+    "ansur_female_malleolusheight_mm": ("ansur_female_malleolusheight", 1e-3, 0.0, 1000.0, False),
 }
 DESIGN_CONSISTENCY_M = 1e-5  # m (0.01 mm). The sheet derives the toe hinge and tip from the ball and total foot lengths and the heel offset; a typed
 #                              value that differs from that arithmetic by more than this draws a warning (the template reads the hinge and the tip)

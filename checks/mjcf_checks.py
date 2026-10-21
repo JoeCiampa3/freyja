@@ -240,7 +240,7 @@ def stature_chain(ctx):
     off = height - target
     return Result("check.mjcf.stature_chain", ADVISORY, PASS if abs(off) <= STATURE_TOL_M else FAIL,
                   f"vertex at {height * 1000:.1f} mm against stature {target * 1000:.1f} mm: {off * 1000:+.1f} mm "
-                  f"(limit {STATURE_TOL_M * 1000:g} mm; the sheet records a definitional -14.684 mm)",
+                  f"(limit {STATURE_TOL_M * 1000:g} mm; the chord closure at an upright pelvis, which the sheet keeps beside its vertical closure)",
                   {"vertex_height_m": height, "target_stature_m": target, "offset_mm": off * 1000})
 
 

@@ -1,3 +1,5 @@
+also_bodies:
+- toe
 body: foot
 id: seg.foot
 kind: segment

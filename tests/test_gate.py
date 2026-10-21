@@ -209,8 +209,8 @@ class DefaultHookTests(unittest.TestCase):
             self.assertEqual(report.blocking, [])
             data = json.loads(last.read_text(encoding="utf-8"))
             self.assertIn("check.mjcf.mirror", [r["id"] for r in data["results"]])
-            self.assertEqual([r["status"] for r in data["results"] if r["id"] == "check.mjcf.com_pct_stature"], ["WAIVED"])  # Joe confirmed the waiver (31b75ac)
-            self.assertEqual(data["warnings"], [])  # a confirmed waiver on a check that still fails raises no reminder
+            self.assertEqual([r["status"] for r in data["results"] if r["id"] == "check.mjcf.com_pct_stature"], ["PASS"])  # the Stage 2g model is inside the band; the waiver is gone
+            self.assertEqual(data["warnings"], [])  # and no waiver is left to remind about
 
     def test_a_broken_copy_of_the_model_is_blocked_and_recorded(self):
         xml, snap = self.model_and_snapshot()
@@ -241,10 +241,10 @@ class DefaultHookTests(unittest.TestCase):
             self.assertFalse((d / "m.xml").exists())
 
 
-def rebuild_tables_from_snapshot():
-    """Raw sheet tables that reproduce the committed snapshot, built from the tracked csv (offline)."""
+def rebuild_tables_from_snapshot(path=None):
+    """Raw sheet tables that reproduce a snapshot csv (default: the tracked one), built offline."""
     import csv
-    snap = {r["placeholder"]: float(r["value"]) for r in csv.DictReader((REPO / "params" / "snapshot.csv").open(encoding="utf-8"))}
+    snap = {r["placeholder"]: float(r["value"]) for r in csv.DictReader((path or REPO / "params" / "snapshot.csv").open(encoding="utf-8"))}
     names = {"head_neck": "Head & Neck", "thorax": "Thorax", "abdomen": "Abdomen", "pelvis": "Pelvis", "upper_arm": "Upper Arm",
              "forearm": "Forearm", "hand": "Hand", "thigh": "Thigh", "shank": "Shank", "foot": "Foot"}
 

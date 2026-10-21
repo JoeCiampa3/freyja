@@ -195,7 +195,7 @@ class WatcherTests(unittest.TestCase):
     def make(self, script, build=None, **kw):
         def default_build(tables):
             self.built.append(tables)
-            return pp.BuildResult("updated", 42, [], "16 bodies, 32 joints, total mass 1 kg", 0.06, [])
+            return pp.BuildResult("updated", 42, [], "18 bodies, 34 joints, total mass 1 kg", 0.06, [])
         return watch.Watcher(FakeSource(script), build or default_build, self.template, interval=20, debounce=5,
                              sleep=self.sleep, clock=lambda: self.now, out=self.lines.append, **kw)
 

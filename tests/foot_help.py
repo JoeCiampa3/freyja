@@ -16,13 +16,17 @@ sys.path.insert(0, str(REPO / "tests"))
 import pre_processor as pp  # noqa: E402
 
 TEMPLATE = REPO / "sim" / "models" / "freyja_template.xml"
-SNAPSHOT = REPO / "params" / "snapshot.csv"
+# The fixtures are built from a frozen copy of the snapshot as it was before the Stage 2g sheet rebuild (commit d9b5a48: chord lengths, the template's 41 mm and 165 mm
+# foot, no design range). Part A was written against it, the walking reference (sim/benchmarks/walk_reference.json) belongs to it, and a fixture that follows the
+# tracked snapshot would be rebuilt by every sheet edit. The tracked model is tested through the checks' context, not through these fixtures.
+SNAPSHOT = REPO / "tests" / "fixtures" / "snapshot_pre_stage2g.csv"
 
 # The sheet spec's design range for a 1700 mm stature and a 12.0 degree tilt, in the sheet's units (key, value).
 SPEC_DESIGN = {
     "stand_pelvis_tilt_deg": 12.0, "foot_heel_behind_ankle_mm": 61.97, "foot_length_total_mm": 257.11, "foot_ball_length_mm": 190.10,
     "toe_hinge_ahead_ankle_mm": 128.12, "toe_tip_ahead_ankle_mm": 195.14, "foot_half_width_mm": 50.0, "toe_height_mm": 25.0,
     "toe_mass_fraction": 0.144, "toe_com_fraction": 0.436, "toe_stiffness_nm_per_deg": 0.25, "toe_damping_nm_s_per_rad": 0.05,
+    "ansur_female_stature_mm": 1628.5, "ansur_female_footlength_mm": 246.3, "ansur_female_balloffootlength_mm": 182.1, "ansur_female_malleolusheight_mm": 62.7,
 }
 K_ADR0038 = 1.05035  # the scale factor of decisions/0038 at 1700 mm and 12 degrees (sheet spec section 1); the committed snapshot predates it
 TOE_ROM = (("Toe", "Extension", 80.0), ("Toe", "Flexion", 0.0))
@@ -67,7 +71,7 @@ def tables(design=None, toe_rom=True, scaled=True):
     """Raw sheet tables that reproduce the committed snapshot (foot row scaled by ADR 0038 unless `scaled` is false), plus the design range and the toe's range
     of motion."""
     from test_gate import rebuild_tables_from_snapshot
-    t = rebuild_tables_from_snapshot()
+    t = rebuild_tables_from_snapshot(SNAPSHOT)
     if scaled:
         scale_foot_row(t["bsip"])
     if toe_rom:

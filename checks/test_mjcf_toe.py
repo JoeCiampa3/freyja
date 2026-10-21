@@ -48,21 +48,18 @@ def test_joint_signs_checks_the_toe_hinges_and_fails_when_one_is_flipped(ctx):
 
 
 @pytest.mark.check("check.mjcf.joint_signs", tier="gate")
-def test_a_pending_row_waits_for_its_hinge_and_an_unlisted_row_without_a_hinge_still_fails(ctx, tmp_path):
-    tracked = mc.load_polarity()
-    assert set(tracked["pending"]) == {"toe_right", "toe_left"}  # the tracked model has no toe yet; the rows are written ahead of it
+def test_no_row_is_pending_now_that_the_model_has_the_toe_and_a_row_without_a_hinge_fails(ctx, tmp_path):
     import yaml
-    spec = {**tracked, "pending": []}
+    tracked = mc.load_polarity()
+    assert not tracked.get("pending")  # the toe rows were written ahead of the model; the model has the hinges, so the list is gone
+    spec = {**tracked, "joints": {**tracked["joints"], "ghost_right": tracked["joints"]["toe_right"]}}
     path = tmp_path / "p.yaml"
     path.write_text(yaml.safe_dump(spec), encoding="utf-8")
-    old = cl.Context.from_files()  # the tracked model
-    if "toe_right" not in {old.model.joint(i).name for i in range(old.model.njnt)}:
-        r = mc.joint_signs(old, polarity=path)
-        assert r.status == cl.FAIL and "toe_right: row names a joint that is not a hinge" in r.message
-        assert run(old, "check.mjcf.joint_signs").status == cl.PASS  # with the pending list, as committed
-    spec = {**tracked, "pending": ["toe_right", "toe_left", "no_such_joint"]}
+    r = mc.joint_signs(ctx, polarity=path)
+    assert r.status == cl.FAIL and "ghost_right: row names a joint that is not a hinge" in r.message
+    spec = {**tracked, "pending": ["ghost_right"]}  # the mechanism stays for the next joint added ahead of its model
     path.write_text(yaml.safe_dump(spec), encoding="utf-8")
-    assert "no_such_joint: listed as pending" in mc.joint_signs(ctx, polarity=path).message
+    assert "ghost_right: listed as pending" in mc.joint_signs(ctx, polarity=path).message
 
 
 @pytest.mark.check("check.mjcf.joint_signs", tier="gate")

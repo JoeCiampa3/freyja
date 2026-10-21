@@ -2,13 +2,4 @@
 # A waiver on a check that now passes produces a warning, so stale entries do not linger.
 #
 # `confirmed: false` means PROPOSED by Claude: it does nothing until Joe sets it to true.
-
-- check: check.mjcf.com_pct_stature
-  reason: >-
-    Whole-body CoM at 55.26% of stature, about 0.1% below the Virmavirta and Isolehto band
-    (55.88 +/- 0.52%). Likely inter-individual variation from mixing ANSUR II (floor to ankle)
-    with Dumas (everything else); the pose of the two datasets cannot be cross-checked.
-  source: docs/memos/memo1b.md   # Validations section
-  recorded: 2026-10-10
-  review_by: 2027-01-10
-  confirmed: true               # PROPOSED: Joe to confirm
+# (none: check.mjcf.com_pct_stature passes since the Stage 2g sheet rebuild; its waiver was removed in Part B, memo 25)
