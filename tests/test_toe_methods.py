@@ -250,3 +250,19 @@ def test_toe_stats_counts_frames_at_the_stops():
     s = gait.toe_stats(m, q, st)["right"]
     assert s["peak_deg"] == pytest.approx(90.0) and s["at_flexion_stop"] == pytest.approx(0.7) and s["at_extension_stop"] == pytest.approx(0.2)
     assert s["stance_at_extension_stop"] == pytest.approx(0.2) and s["stance_at_flexion_stop"] == pytest.approx(0.8) and s["stance_peak_deg"] == pytest.approx(90.0)
+
+
+def test_the_gait_record_states_the_rolling_toe_rule_when_the_model_has_a_toe_and_nothing_when_it_does_not():
+    """Decision Q4 of memo 24 (accepted by Joe): the rule is an assumption of every B and H number, so it is printed in GAIT.md."""
+    import gait
+    with_toe = gait.toe_assumption(mujoco.MjModel.from_xml_path(str(fh.fixture_model_path())))
+    assert with_toe and "rolling" in with_toe and "welded" in with_toe and "stiffness" in with_toe and "damping" in with_toe
+    assert gait.toe_assumption(mujoco.MjModel.from_xml_path(str(REPO / "sim" / "models" / "freyja.xml"))) == with_toe
+    xml = (REPO / "sim" / "models" / "freyja.xml").read_text(encoding="utf-8")
+    bare = mujoco.MjModel.from_xml_string(_without_toes(xml))
+    assert gait.toe_assumption(bare) is None
+
+
+def _without_toes(xml):
+    import re
+    return re.sub(r"<body name=\"toe_(right|left)\".*?</body>", "", xml, flags=re.S)

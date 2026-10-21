@@ -174,6 +174,16 @@ def toe_stats(model, qpos, stance) -> dict:
     return out
 
 
+def toe_assumption(model):
+    """The sentence GAIT.md prints about the toe (None for a model without one): the rule behind every B and H number, accepted at Checkpoint A of Stage 2g (memo 24, Q4)."""
+    if mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "toe_right") < 0:
+        return None
+    return ("toe: the dataset's foot is rigid, so method A holds the toe welded flat (the ankle carries the whole-foot moment); in B and H the toe rolls with its foot "
+            "(rolling rule: while the foot is in stance, as the dataset flags it, and pitched heel-up, the toe takes the angle of the foot's sole to the floor, otherwise 0; "
+            "low-passed with the other signals). The toe's stiffness and damping do not enter its motion, only the toe joint's own torque row; the ground force acts on the toe "
+            "where the CoP is ahead of the hinge. Not a model of a measured toe angle.")
+
+
 def trunk_modes(spec: dict) -> list:
     """The spec's `trunk` as a list of modes: a name or a list of distinct names from TRUNK_MODES (default rigid)."""
     t = spec.get("trunk", "rigid")
@@ -667,7 +677,8 @@ def run_gait(spec: dict, *, model_path=None, snapshot_path=None, meta_path=None,
                         f"pelvis frame offset: {spec.get('pelvis_frame_offset', 'none')} (the dataset's IK pelvis frame against the model's Dumas pelvis frame; decisions/0004)",
                         "treadmill: the model walks in place, the belt carries the ground backward; no friction-cone or slip enforcement on the kinematics",
                         "methods A and H take the CoP relative to the subject's pelvis, scaled by leg-length ratio",
-                        "joint limits and contacts are disabled in inverse dynamics; frames past a limit are not clipped"],
+                        "joint limits and contacts are disabled in inverse dynamics; frames past a limit are not clipped"]
+                       + ([toe_text] if (toe_text := toe_assumption(c.model)) else []),
         "attribution": ATTRIBUTION, "subjects": subjects, "results": results, "sensitivity": sens,
     }
     record = _round(record)
