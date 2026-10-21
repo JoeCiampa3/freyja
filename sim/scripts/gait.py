@@ -318,6 +318,9 @@ def run_stride(task: dict) -> dict:
     hip = sub.get("hip_in_pelvis_os_m")
     ref = task["root_reference"] if hip is not None else "pelvis_origin"
     methods = task["methods"]
+    lift = task.get("cop_lift", "floor")  # a diagnostic switch (float_diag.py a-sensitivity): where method A applies the measured force, "floor" (the plane z = 0, as the record does) or "sole" (that point raised to the lowest corner of the stance foot)
+    if lift not in ("floor", "sole"):
+        raise GaitError(f"cop_lift must be 'floor' or 'sole', got {lift!r}")
 
     def cycle(toe):
         return retarget.Cycle(model, mapping, c.stand, ik, T, ratio, cutoff_hz=cut, pitch_offset_deg=task["pitch_offset_deg"],
@@ -422,6 +425,8 @@ def run_stride(task: dict) -> dict:
                 if m not in methods:
                     continue
                 forces, cops = measured(frame, k)
+                if lift == "sole" and m != "H":
+                    cops = {n: np.r_[np.asarray(p, float)[:2], dynamics.sole_height(model, qw[k], n)] for n, p in cops.items()}
                 if m == "H":
                     forces = gaitloads.method_h_forces(qfrc, forces)
                     t, res, _ = dynamics.solve_given(model, q[k], qfrc, forces, cops)

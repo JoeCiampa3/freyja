@@ -370,6 +370,16 @@ def solve_frame(model, qpos, qvel, qacc, stance=FEET, feet=FEET, sweep=False, ba
                        feasible_nominal=feasible_nominal, nominal_in_set=nominal_in_set)
 
 
+def sole_height(model, qpos, foot) -> float:
+    """Height above the world floor plane of the lowest corner of the foot's box and its toe's box at the pose qpos: where the sole is, which is above the floor when the retargeted
+    foot floats."""
+    d = mujoco.MjData(model)
+    d.qpos[:] = qpos
+    mujoco.mj_kinematics(model, d)
+    corners, _ = _foot_boxes(model, d, mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, foot))
+    return float(min(c[2] for c in corners))
+
+
 def solve_given(model, qpos, qfrc, forces, cops, feet=FEET):
     """Joint torques and the root residual when the ground wrench is GIVEN (methods A and H) instead of solved: `forces` and
     `cops` map the loaded feet to a world force and a point on the floor. `qfrc` is the frame's qfrc_inverse. Returns
