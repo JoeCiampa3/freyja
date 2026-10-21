@@ -1,6 +1,6 @@
 # Memo 26: the stance float, method A at the sole, A's root residual
 
-STATE: PENDING (filled from `fy state` in the closing commit)
+STATE: base a7e6eed3b477 | brief architecture sha256:2ecf3ee5c019, ariadne sha256:155afbaa35f6 | snapshot sha256:cf4fdfe08804 | tests 1485/1487 | dirty no
 
 ## Decision summary
 
