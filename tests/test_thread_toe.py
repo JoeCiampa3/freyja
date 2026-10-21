@@ -71,7 +71,7 @@ def test_the_toe_records_cover_the_model_and_the_thread_builds_without_error(roo
     assert len(model.bodies) == 18 and len(model.hinges) == 33
     assert b.body_owner["toe_right"] == b.body_owner["foot_right"] == "seg.foot" and b.body_owner["toe_left"] == "seg.foot"
     assert b.hinge_owner["toe_left"] == b.hinge_owner["toe_right"] == "jnt.toe"
-    assert b.recs["jnt.toe"]["status"] == "proposed"  # created proposed, Joe activates it
+    assert b.recs["jnt.toe"]["status"] == "proposed"  # the record this test adds is created proposed; the tracked one is active
 
 
 def test_a_toe_body_without_also_bodies_is_still_unbound_and_a_doubly_bound_one_is_an_error(root):

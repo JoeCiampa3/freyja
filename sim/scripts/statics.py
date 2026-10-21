@@ -28,6 +28,7 @@ import numpy as np
 import metrics
 
 VERSION = "1"
+ZERO_STOP_TOL_RAD = 1e-9  # rad. A joint this close to a range edge that is exactly 0 stands on a zero-width stop (the sheet's placeholder shoulder adduction, the flat toe)
 SOLE_TOL_M = 1e-3  # m. A foot-box corner this close to the floor belongs to the support polygon (the brief's 1 mm).
 
 
@@ -45,6 +46,7 @@ class StaticResult:
     limit_joint: str | None
     feasible: bool
     reasons: list = field(default_factory=list)
+    zero_width_stops: dict = field(default_factory=dict)  # joint -> "lower" or "upper": joints standing on a range edge of exactly 0, which limit_margin_deg leaves out
 
 
 def _bottom_corners_xy(model, data, bodies) -> list:
@@ -98,7 +100,7 @@ def solve_static(model, data, feet=("foot_right", "foot_left"), _ground_sign: fl
         net = work.qfrc_inverse - qfrc_ground
         corners = _bottom_corners_xy(model, work, set(ids))
         margin = metrics.support_margin(corners, com[:2])
-        torque, lim_margin, lim_joint = {}, None, None
+        torque, lim_margin, lim_joint, zero_stops = {}, None, None, {}
         for j in range(model.njnt):
             if model.jnt_type[j] != mujoco.mjtJoint.mjJNT_HINGE:
                 continue
@@ -106,6 +108,10 @@ def solve_static(model, data, feet=("foot_right", "foot_left"), _ground_sign: fl
             torque[name] = float(net[model.jnt_dofadr[j]])
             if model.jnt_limited[j]:
                 q = float(work.qpos[model.jnt_qposadr[j]])
+                edge = next((side for side, k in (("lower", 0), ("upper", 1)) if model.jnt_range[j][k] == 0.0 and abs(q) <= ZERO_STOP_TOL_RAD), None)
+                if edge is not None:  # on a zero-width stop (neutral against an edge at 0): listed apart, not a margin
+                    zero_stops[name] = edge
+                    continue
                 m = math.degrees(min(q - model.jnt_range[j][0], model.jnt_range[j][1] - q))
                 if lim_margin is None or m < lim_margin:
                     lim_margin, lim_joint = m, name
@@ -119,6 +125,6 @@ def solve_static(model, data, feet=("foot_right", "foot_left"), _ground_sign: fl
             residual_force_n=float(np.max(np.abs(net[:3]))), residual_moment_nm=float(np.max(np.abs(net[3:6]))),
             cop_xy=(float(com[0]), float(com[1])), cop_x_rel_ankle_m=float(com[0] - work.xpos[ids[0]][0]),
             force_split={n: float(f) for n, f in zip(feet, split)}, support_margin_m=float(margin),
-            limit_margin_deg=lim_margin, limit_joint=lim_joint, feasible=not reasons, reasons=reasons)
+            limit_margin_deg=lim_margin, limit_joint=lim_joint, feasible=not reasons, reasons=reasons, zero_width_stops=zero_stops)
     finally:
         model.opt.disableflags = flags

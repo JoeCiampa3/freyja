@@ -10,4 +10,4 @@ schema: thread-record/1
 sides:
 - left
 - right
-status: proposed
+status: active

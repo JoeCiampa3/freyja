@@ -14,7 +14,7 @@
     "toe"
   ],
   "id": "jnt.toe",
-  "inputs": "sha256:2fe4c287a887",
+  "inputs": "sha256:98cbebacc755",
   "interfaces": [],
   "kind": "joint",
   "parent_segments": [
@@ -40,6 +40,6 @@
     "left",
     "right"
   ],
-  "status": "proposed",
+  "status": "active",
   "work": []
 }

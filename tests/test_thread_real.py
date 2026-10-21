@@ -15,7 +15,7 @@ from thread_help import REPO
 from thread import build, fixture
 
 JOINTS = {"ankle", "cervicothoracic", "elbow", "hip", "knee", "lumbosacral", "shoulder", "thoracolumbar", "toe", "wrist"}
-PROPOSED = {"jnt.toe"}  # created proposed by Code (CLAUDE.md rule 2); Joe activates it
+PROPOSED = set()  # jnt.toe was created proposed by Code (CLAUDE.md rule 2) and activated by Joe (memo 25, Q5)
 LOAD_CASES = {"lc.stand-static": {"scenario": "stand_static"},
               "lc.walk-0p5": {"gait_spec": "walk_treadmill", "condition": "0.5 m/s level treadmill walking"},
               "lc.walk-1p4": {"gait_spec": "walk_treadmill", "condition": "1.4 m/s level treadmill walking"},

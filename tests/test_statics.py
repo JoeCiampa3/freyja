@@ -147,18 +147,11 @@ class Feasibility(unittest.TestCase):
         result = statics.solve_static(self.model, pose_data(self.model))
         self.assertTrue(result.feasible, result.reasons)
         self.assertGreater(result.support_margin_m, 0.02)
-        # Three joint types stand on a stop at neutral: the sheet's shoulder adduction limit is a deliberate 0 (a placeholder) and the toe's flexion stop is flat (0). The
-        # smallest margin is 0 at one of them. Every other joint keeps its distance: the knee at neutral is 1.6 deg from its -1.6 deg extension stop.
-        self.assertTrue(result.limit_joint.startswith(("shoulder_aa_", "toe_")), result.limit_joint)
-        self.assertAlmostEqual(result.limit_margin_deg, 0.0, places=9)
-        data = pose_data(self.model)
-        margins = {}
-        for j in range(self.model.njnt):
-            if self.model.jnt_type[j] == mujoco.mjtJoint.mjJNT_HINGE and self.model.jnt_limited[j] and not mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_JOINT, j).startswith(("shoulder_aa", "toe_")):
-                q = data.qpos[self.model.jnt_qposadr[j]]
-                margins[mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_JOINT, j)] = math.degrees(min(q - self.model.jnt_range[j][0], self.model.jnt_range[j][1] - q))
-        self.assertGreater(min(margins.values()), 1.0)
-        self.assertIn(min(margins, key=margins.get), ("knee_right", "knee_left"))
+        # Joints standing on a zero-width stop (a range edge of exactly 0 at the neutral) are listed apart (memo 25, Q4): the sheet's shoulder adduction limit is a deliberate 0,
+        # a placeholder, and the toe's flexion stop is the flat toe of ADR 0001. The margin is the smallest among the others: the knee at neutral is 1.6 deg from its -1.6 deg stop.
+        self.assertEqual(sorted(result.zero_width_stops), ["shoulder_aa_left", "shoulder_aa_right", "toe_left", "toe_right"])
+        self.assertIn(result.limit_joint, ("knee_right", "knee_left"))
+        self.assertAlmostEqual(result.limit_margin_deg, 1.6, places=3)
         self.assertEqual(result.reasons, [])
 
     def test_com_beyond_the_toe_edge_is_infeasible_with_a_negative_margin(self):
@@ -190,9 +183,29 @@ class Feasibility(unittest.TestCase):
         q = result.qpos
         best = min(((min(math.degrees(q[self.model.jnt_qposadr[j]] - self.model.jnt_range[j][0]),
                          math.degrees(self.model.jnt_range[j][1] - q[self.model.jnt_qposadr[j]])), j)
-                    for j in range(self.model.njnt) if self.model.jnt_type[j] == mujoco.mjtJoint.mjJNT_HINGE and self.model.jnt_limited[j]))
+                    for j in range(self.model.njnt) if self.model.jnt_type[j] == mujoco.mjtJoint.mjJNT_HINGE and self.model.jnt_limited[j]
+                    and mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_JOINT, j) not in result.zero_width_stops))  # the zero-width stops are reported apart
         self.assertAlmostEqual(result.limit_margin_deg, best[0], places=9)
         self.assertEqual(result.limit_joint, mujoco.mj_id2name(self.model, mujoco.mjtObj.mjOBJ_JOINT, best[1]))
+
+
+class ZeroWidthStops(unittest.TestCase):
+    def test_a_joint_off_its_zero_edge_is_not_a_zero_width_stop_and_one_beyond_a_nonzero_edge_is_still_a_limit_violation(self):
+        model = freyja()
+        data = pose_data(model)
+        j = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "shoulder_aa_right")
+        data.qpos[model.jnt_qposadr[j]] = -0.1  # abducted by 5.7 degrees: off the stop, 5.7 deg margin to it
+        mujoco.mj_forward(model, data)
+        result = statics.solve_static(model, data)
+        self.assertNotIn("shoulder_aa_right", result.zero_width_stops)
+        self.assertIn("shoulder_aa_left", result.zero_width_stops)
+        data.qpos[model.jnt_qposadr[j]] = 0.05  # past the zero edge: outside its range, so a violation, not a stop
+        mujoco.mj_forward(model, data)
+        result = statics.solve_static(model, data)
+        self.assertNotIn("shoulder_aa_right", result.zero_width_stops)
+        self.assertEqual(result.limit_joint, "shoulder_aa_right")
+        self.assertLess(result.limit_margin_deg, 0.0)
+        self.assertFalse(result.feasible)
 
 
 class NoLeaks(unittest.TestCase):

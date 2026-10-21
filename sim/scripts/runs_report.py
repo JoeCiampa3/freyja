@@ -202,6 +202,29 @@ def _joint_table(joints, previous=None) -> list:
     return lines
 
 
+ZERO_STOP_TOL_DEG = 0.1  # degrees. A joint this close to a range edge of exactly 0 is standing on a zero-width stop (the same 0.1 deg as metrics.LIMIT_TOL_DEG)
+
+
+def _stops_line(s):
+    """For a standing run: the joints on a zero-width stop (a range edge of exactly 0 with the joint at it: the sheet's placeholder shoulder adduction, the flat toe),
+    listed apart, and the smallest margin to a limit among the other limited joints (negative if outside)."""
+    on, margins = [], {}
+    for name, j in sorted(s["joints"].items()):
+        lim = j.get("rom_limit_deg")
+        if not lim:
+            continue
+        lo, hi = j["rom_used_deg"]
+        if any(edge == 0.0 and abs(used) <= ZERO_STOP_TOL_DEG for edge, used in zip(lim, (lo, hi))):
+            on.append(name)
+        else:
+            margins[name] = min(lo - lim[0], lim[1] - hi)
+    if not margins:
+        return None
+    name = min(margins, key=margins.get)
+    return ("Stops: joints standing on a zero-width stop (range edge 0 at the neutral): " + (", ".join(on) or "none")
+            + f"; smallest margin among the others {margins[name]:.2f} deg ({name})")
+
+
 def _contacts_lines(s) -> list:
     lines = []
     for foot in sorted(s["contacts"]):
@@ -274,6 +297,8 @@ def digest(summaries, current_model_sha=None) -> str:
             lines.append("Pose: " + ", ".join(f"{k} {v}" for k, v in sorted(pose.items())) + f"; lean angle {diag['lean_angle_deg']:.3f} deg"
                          + (f"; window-mean CoM offset {diag['com_offset_window_mean_m'] * 1000:.1f} mm; sag {diag['com_sag_m'] * 1000:.1f} mm"
                             if "com_sag_m" in diag else "; no CoM offset measured (the run ended before its window)"))
+        if pose and "lean_angle_deg" in diag and (stops := _stops_line(s)):
+            lines.append(stops)
         lines += [f"- {k}: {v:.6g}" if isinstance(v, float) else f"- {k}: {v}" for k, v in sorted(s.get("diagnostics", {}).items())]
         lines += ["", _checks_line(s), ""]
     return _cap(lines)

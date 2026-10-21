@@ -619,3 +619,22 @@ class AcceptanceSpeedEnvelope(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_the_digest_lists_joints_on_a_zero_width_stop_apart_and_gives_the_smallest_margin_among_the_others():
+    """Memo 25, Q4: in a standing run the joints that stand on a range edge of exactly 0 (the sheet's placeholder shoulder adduction, the flat toe) are listed
+    apart; the margin reported is the smallest over the other limited joints."""
+    j = lambda lo, hi, used: dict(joint(), rom_limit_deg=[lo, hi], rom_used_deg=[used, used])  # noqa: E731
+    joints = {"shoulder_aa_right": j(-182.7, 0.0, 0.0), "toe_right": j(0.0, 80.0, 0.0), "knee_right": j(-1.6, 141.9, 0.0), "hip_fe_right": j(-31.0, 133.8, 12.0),
+              "tj_fe": joint(limit=None, rom=(0.0, 0.0))}
+    rec = summary("run.20261002-0900-stand", "stand", joints=joints, diagnostics={"lean_angle_deg": 1.8})
+    rec["scenario"]["params"]["pose"] = {"com_x_rel_ankle_m": 0.0}
+    line = next(l for l in rp.digest([rec]).splitlines() if l.startswith("Stops:"))
+    assert "zero-width stop" in line and "shoulder_aa_right" in line and "toe_right" in line
+    assert "smallest margin among the others 1.60 deg (knee_right)" in line
+    # a joint that is past its zero edge is not on the stop: it is the smallest margin, and negative
+    joints["shoulder_aa_right"] = j(-182.7, 0.0, 2.0)
+    rec = summary("run.20261002-0900-stand", "stand", joints=joints, diagnostics={"lean_angle_deg": 1.8})
+    rec["scenario"]["params"]["pose"] = {"com_x_rel_ankle_m": 0.0}
+    line = next(l for l in rp.digest([rec]).splitlines() if l.startswith("Stops:"))
+    assert "shoulder_aa_right" not in line.split("smallest margin")[0] and "-2.00 deg (shoulder_aa_right)" in line
