@@ -237,20 +237,10 @@ def test_the_tracked_extract_exists_validates_and_has_memo6s_lateral_lumbosacral
     ge.validate(e)
     assert ge.dumps(e) == TRACKED.read_text(encoding="utf-8")  # canonical form: sorted keys, LF
     p95 = lambda sp, v: e["lumbosacral"][sp]["lsj_lat"][v]["peak_torque_nm"]["p95"]
-    assert (round(p95("1.4", "first_harmonic median"), 1), round(p95("1.6", "first_harmonic median"), 1)) == (31.8, 40.0)  # memo6, T9.1 gave 32.1 and 40.7; Stage 2c (retargeting without the standing lean) moved them by about 1%
-    assert (round(p95("1.4", "counter_rotate"), 1), round(p95("1.6", "counter_rotate"), 1)) == (23.3, 26.9)  # Stage 2c; was (23.5, 27.6)
-    assert (round(p95("1.4", "rigid"), 1), round(p95("1.6", "rigid"), 1)) == (92.7, 110.5)  # Stage 2c; was (93.0, 110.4)
+    assert (round(p95("1.4", "first_harmonic median"), 1), round(p95("1.6", "first_harmonic median"), 1)) == (30.3, 37.9)  # memo6, T9.1 gave 32.1 and 40.7; Stage 2c moved them to (31.8, 40.0); Stage 2g (new model, frame offset measured) to these
+    assert (round(p95("1.4", "counter_rotate"), 1), round(p95("1.6", "counter_rotate"), 1)) == (21.2, 23.5)  # Stage 2g; was (23.3, 26.9) at Stage 2c and (23.5, 27.6) before
+    assert (round(p95("1.4", "rigid"), 1), round(p95("1.6", "rigid"), 1)) == (93.8, 112.1)  # Stage 2g; was (92.7, 110.5) at Stage 2c and (93.0, 110.4) before
     assert e["results"]["1.4"]["rigid"]["n_strides"] == 469 and e["results"]["1.6"]["rigid"]["n_strides"] == 519
-
-
-def pre_stage2g_manifest_sha256(path):
-    """sha256 of the manifest with the keys Stage 2g T1 added removed, written the way the ingestion writes it (sorted keys, indent 1, LF, final newline)."""
-    import re
-    m = json.loads(Path(path).read_text(encoding="utf-8"))
-    for subject in m["subjects"].values():
-        subject.pop("static_dumas_tilt_deg", None)
-    m["files_sha256"] = {k: v for k, v in m["files_sha256"].items() if not re.search(r"/static[^/]*/markers$", k)}
-    return hashlib.sha256((json.dumps(m, indent=1, sort_keys=True) + "\n").encode("utf-8")).hexdigest()
 
 
 def test_the_tracked_extract_has_the_acceptance_speed_beside_the_sizing_speeds_and_agrees_with_the_manifest_on_disk():
@@ -266,10 +256,7 @@ def test_the_tracked_extract_has_the_acceptance_speed_beside_the_sizing_speeds_a
     for sp in ("1.4", "1.6"):
         assert e["results"][sp]["rigid"]["band"]["A_filtered"]["all"]["meets"] is True
     manifest = REPO / "data" / "camargo2021" / "manifest.json"
-    # Stage 2g T1 added keys to the manifest (each subject's static Dumas tilt and the hash of its static marker file) and nothing else, so an extract written
-    # before that carries the hash of the manifest without them. The final regeneration (Stage 2g T8) rewrites the extract on the new manifest; until then the
-    # extract is accepted if it matches the manifest as it was, rebuilt by dropping exactly those keys.
-    assert e["dataset_manifest_sha256"] in (hashlib.sha256(manifest.read_bytes()).hexdigest(), pre_stage2g_manifest_sha256(manifest))
+    assert e["dataset_manifest_sha256"] == hashlib.sha256(manifest.read_bytes()).hexdigest()  # Stage 2g T8 regenerated the extract on the manifest with the static tilts
 
 
 def test_the_tracked_envelope_is_what_the_tracked_extract_and_run_records_produce():

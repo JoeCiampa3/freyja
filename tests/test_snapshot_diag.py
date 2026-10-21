@@ -263,3 +263,26 @@ def test_real_static_trial_foot_fit_and_tilt_for_one_subject():
     assert 0 < out["foot"]["R"]["fit_rms_m"] < 0.01 and 0.15 < out["foot"]["R"]["foot_length_m"] < 0.32
     assert np.isfinite(out["dumas_tilt_mean_deg"]) and -30 < out["dumas_tilt_mean_deg"] < 40 and out["dumas_tilt_sd_deg"] >= 0
     assert "R_Toe_Tip" in out["markers"] and "C7" not in out["markers"]
+
+
+# ------------------------------------------------------------------------------ the lateral diagnostic follows the spec's pelvis frame offset
+
+PROCESSED_AB06 = REPO / "data" / "camargo2021" / "processed" / "AB06.npz"
+
+
+@pytest.mark.skipif(not PROCESSED_AB06.exists(), reason="processed Camargo arrays not present")
+def test_the_lateral_diagnostics_stride_peak_equals_the_extracts_row_for_the_same_pelvis_frame_offset():
+    """Stage 2g T8: snapshot_diag.py lateral was written before the frame offset existed and always ran without it, so its strides could not be matched to the extract
+    once the extract was generated with `measured`. For one stride and each setting the peak equals gait_extract's rigid lsj_lat peak torque."""
+    import gait
+    import gait_extract
+    man = json.loads((REPO / "data" / "camargo2021" / "manifest.json").read_text(encoding="utf-8"))
+    base = {"model_path": str(gait.simrun.MODEL_FILE), "processed": str(REPO / "data" / "camargo2021" / "processed"), "subject": "AB06", "speed": "1.4", "index": 3,
+            "subject_info": man["subjects"]["AB06"]}
+    peaks = {}
+    for mode in ("none", "measured"):
+        mine = sd._lat_task({**base, "pelvis_frame_offset": mode})["peak"]
+        ref = gait_extract._lsj_task({**base, "variant": "rigid", "pelvis_frame_offset": mode})["metrics"]["lsj_lat"]["peak_torque_nm"]
+        assert mine == pytest.approx(ref, rel=1e-9), mode
+        peaks[mode] = mine
+    assert peaks["none"] != pytest.approx(peaks["measured"], rel=1e-4)  # the offset moves the row, so the test can tell the two apart

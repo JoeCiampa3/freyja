@@ -403,7 +403,8 @@ def _lat_task(task: dict) -> dict:
     hip = sub.get("hip_in_pelvis_os_m")
     cyc = retarget.Cycle(c.model, c.mapping, c.stand, z[f"{sp}_ik"][i], float(z[f"{sp}_duration_s"][i]), retarget.leg_length_ratio(c.model, sub["height_m"]),
                          cutoff_hz=retarget.CUTOFF_HZ, root_rule="pelvis_dataset", hip_in_pelvis_os=hip, root_ref="hip_midpoint" if hip is not None else "pelvis_origin",
-                         pitch_mean="measured", **gait_extract._variant_kwargs("rigid", sp))
+                         pitch_mean="measured", pelvis_frame_offset_deg=gait.frame_offset_deg(task.get("pelvis_frame_offset", "none"), sub),
+                         **gait_extract._variant_kwargs("rigid", sp))
     q, qd, qdd = cyc.grid()
     nf = gait.N_FRAMES
     dof = c.hinge["lsj_lat"][1]
@@ -424,7 +425,8 @@ def lateral_command(args):
     for sp in args.speeds:
         for s, info in man["subjects"].items():
             for i in range(info["strides"][sp]):
-                tasks.append({"model_path": str(gait.simrun.MODEL_FILE), "processed": str(REPO / "data/camargo2021/processed"), "subject": s, "speed": sp, "index": i, "subject_info": info})
+                tasks.append({"model_path": str(gait.simrun.MODEL_FILE), "processed": str(REPO / "data/camargo2021/processed"), "subject": s, "speed": sp, "index": i, "subject_info": info,
+                              "pelvis_frame_offset": gait.load_spec("walk_treadmill").get("pelvis_frame_offset", "none")})  # the tracked extract's setting
     with ProcessPoolExecutor(max_workers=args.workers) as ex:
         rows = list(ex.map(_lat_task, tasks, chunksize=8))
     for sp in args.speeds:
