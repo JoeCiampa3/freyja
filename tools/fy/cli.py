@@ -110,6 +110,12 @@ def run_roadmap(root: Path, args: list):
     return roadmap_cli.main(args, default_root=root)
 
 
+def run_envelope(root: Path, args: list):
+    _use(root, "tools")
+    from envelope import cli as envelope_cli
+    return envelope_cli.main(args, default_root=root)
+
+
 def run_thread(root: Path, args: list):
     _use(root, "tools")
     from thread import cli as thread_cli
@@ -146,6 +152,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("view", help="watch a scenario in the MuJoCo viewer", add_help=False)
     sub.add_parser("roadmap", help="the roadmap graph: validate, build, show, frontier, refs, open, fixture, install-hooks", add_help=False)
     sub.add_parser("thread", help="the system model: validate, build, show, refs, impact, why, stamp, fixture", add_help=False)
+    sub.add_parser("envelope", help="body-envelope trial: build the conformed thigh, gates, clearance check", add_help=False)
     sub.add_parser("runs", help="list, show and compare run records; write the digest and envelope", add_help=False)
     chk = sub.add_parser("check", help="run the model checks")
     chk.add_argument("--tier", choices=("gate", "advisory"), help="only results of this tier")
@@ -156,7 +163,7 @@ def main(argv=None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     ap = build_parser()
     # build, watch, test, run and runs hand everything after the command to the tool that owns the options
-    if argv[:1] and argv[0] in ("build", "watch", "test", "run", "runs", "view", "sweep", "gait", "state", "roadmap", "thread"):
+    if argv[:1] and argv[0] in ("build", "watch", "test", "run", "runs", "view", "sweep", "gait", "state", "roadmap", "thread", "envelope"):
         command, rest = argv[0], argv[1:]
         tier = None
     else:
@@ -187,4 +194,6 @@ def main(argv=None) -> int:
         return run_roadmap(root, rest)
     if command == "thread":
         return run_thread(root, rest)
+    if command == "envelope":
+        return run_envelope(root, rest)
     return run_check(root, tier)

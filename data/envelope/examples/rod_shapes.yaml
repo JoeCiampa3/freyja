@@ -1,0 +1,5 @@
+# Worked example for `fy envelope check`: a straight rod of OD D = 60 mm, length 150 mm, local z along the rod.
+# Poses (segment frame: origin at the hip centre, z up the thigh, x anterior, y left): the rod centre sits at station s0 = 200 mm
+# (tz = -200) and is moved laterally; for the right thigh lateral is -y.
+shapes:
+  - {name: rod, type: cylinder, diameter: 60, length: 150}
