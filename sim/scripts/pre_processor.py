@@ -77,6 +77,7 @@ import time
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import datetime
+from itertools import combinations
 from pathlib import Path
 
 import numpy as np
@@ -111,6 +112,13 @@ RANGE_TARGETS = "targets"
 # They enter the snapshot in SI (metres, kilograms, N m/rad; the standing tilt stays in degrees, the model's angle unit) and the template reads them
 # through derive_keys.
 RANGE_DESIGN = "design"
+# Optional: the landmark table (Landmark | Parent frame | blank | ISB X Y Z | MJC x y z, millimetres). Feeds the snapshot only (SI, metres); the template
+# cannot use them. The parent frame is text and stays in the sheet.
+RANGE_LANDMARKS = "source_landmarks"
+LANDMARK_COLUMNS = ["isb_x", "isb_y", "isb_z", "mjc_x", "mjc_y", "mjc_z"]
+LANDMARK_TO_SI = 1e-3  # mm -> m
+LANDMARK_MAX_M = 1.0  # catches a wrong unit; not a design limit
+OPTIONAL_RANGES = (RANGE_TARGETS, RANGE_DESIGN, RANGE_LANDMARKS)
 DEG_PER_RAD = 180.0 / math.pi
 # sheet key -> (snapshot key, factor to the snapshot unit, lowest allowed value, highest allowed value, whether the lowest is allowed). The bounds only
 # catch a wrong unit or a zero that looks like a blank; they are not design limits.
@@ -335,7 +343,8 @@ class GoogleSheetSource:
             params = {"valueRenderOption": "UNFORMATTED_VALUE"}
             names = [RANGE_BSIP, RANGE_POS, RANGE_ROM]
             resp = None
-            for optional in ([RANGE_TARGETS, RANGE_DESIGN], [RANGE_DESIGN], [RANGE_TARGETS], []):  # the optional ranges may be absent: try what is left
+            subsets = [list(c) for n in range(len(OPTIONAL_RANGES), -1, -1) for c in combinations(OPTIONAL_RANGES, n)]
+            for optional in subsets:  # the optional ranges may be absent: try what is left
                 try:
                     resp = self._sheet.values_batch_get(names + optional, params=params)
                     names = names + optional
@@ -388,7 +397,7 @@ def fetch_xlsx(path: str) -> dict:
         rows = [["" if c.value is None else c.value for c in row]
                 for row in ws[rng.replace("$", "")]]
         tables[name] = RawTable.from_range(name, f"{sheet}!{rng}", rows)
-    for optional in (RANGE_TARGETS, RANGE_DESIGN):
+    for optional in OPTIONAL_RANGES:
         if optional in wb.defined_names:
             sheet, rng = wb.defined_names[optional].attr_text.rsplit("!", 1)
             ws = wb[sheet.strip("'")]
@@ -543,6 +552,51 @@ def read_targets(raw, report: Report) -> dict:
                         f"({', '.join(TARGET_UNIT_TO_SI)}); {key} left out of the snapshot")
             continue
         out[key] = Param(x * scale, ref, raw.name)
+    return out
+
+
+def read_landmarks(raw, report: Report) -> dict:
+    """source_landmarks table -> {'source_landmark_<name>_<isb|mjc>_<x|y|z>': Param} in metres. Optional and advisory like `targets`: a bad row or cell is a
+    warning and is left out of the snapshot. Nothing here reaches the model."""
+    out: dict[str, Param] = {}
+    if raw is None:
+        return out
+    header_row = next((r for r, row in enumerate(raw.rows) if row and column_key(row[0]) == "landmark"), None)
+    if header_row is None:
+        report.warn(f"[{raw.name}] no 'Landmark' header found; the table is left out of the snapshot")
+        return out
+    header = [column_key(h) for h in raw.rows[header_row]]
+    missing = [c for c in LANDMARK_COLUMNS if c not in header]
+    if missing:
+        report.warn(f"[{raw.name}] columns not found: {', '.join(missing)}; the table is left out of the snapshot")
+        return out
+    col_i = {c: header.index(c) for c in LANDMARK_COLUMNS}
+    seen = set()
+    for r in range(header_row + 1, len(raw.rows)):
+        row = raw.rows[r]
+        label = str(row[0]).strip() if row else ""
+        if not label:
+            continue
+        name = ident(label)
+        if name in seen:
+            report.warn(f"[{raw.name}] {raw.ref(r, 0)}: '{label}' appears twice; the second is ignored")
+            continue
+        seen.add(name)
+        row_out = {}
+        for col, ci in col_i.items():
+            cell = row[ci] if ci < len(row) else None
+            try:
+                x = to_number(cell)
+            except (ValueError, TypeError):
+                x = None
+            if x is None or abs(x * LANDMARK_TO_SI) > LANDMARK_MAX_M:
+                report.warn(f"[{raw.name}] {raw.ref(r, ci)} ({label} / {col}): {cell!r} is not a number of millimetres inside +-{LANDMARK_MAX_M * 1000:g}; "
+                            f"{label} left out of the snapshot")
+                row_out = None
+                break
+            row_out[f"source_landmark_{name}_{col}"] = Param(x * LANDMARK_TO_SI, raw.ref(r, ci), raw.name)
+        if row_out:
+            out.update(row_out)
     return out
 
 
@@ -1162,7 +1216,8 @@ def build_model(tables: dict, *, template: Path = TEMPLATE, output: Path = OUTPU
                      "(docs/briefs/ariadne/stage2g-sheet-spec.md, section 2)")
     report.stop_if_errors("filling the template")
     warn_unused(text, values, report)
-    snapshot_bytes = values_csv({**values, **read_targets(tables.get(RANGE_TARGETS), report)}).encode("utf-8")
+    snapshot_bytes = values_csv({**values, **read_targets(tables.get(RANGE_TARGETS), report),
+                                 **read_landmarks(tables.get(RANGE_LANDMARKS), report)}).encode("utf-8")
     xml = add_banner(xml, sha256_hex(snapshot_bytes))
 
     say("[3/4] Checking the finished XML ...")
