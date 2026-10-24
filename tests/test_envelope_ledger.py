@@ -11,7 +11,7 @@ import yaml
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "tools"))
 
-from envelope import field, ledger, pelvis, trial  # noqa: E402
+from envelope import field, ledger  # noqa: E402
 from envelope.synthetic import frustum  # noqa: E402
 
 R, H = 45.0, 300.0
@@ -74,63 +74,12 @@ def test_yaml_and_csv_carry_the_banner_and_neither_a_timestamp_nor_an_absolute_p
     assert ledger.to_yaml(hdr, "abc123def456") == y                      # deterministic
 
 
-def test_gate_3_stretch_keeps_areas_on_the_cylinder(seg):
-    from envelope import thigh
-    v, f = frustum(R, R, 60, -H - 60)
-    s = 1.05
-    b = field.build_segment(thigh.conform(v, s), f, length=H * s, voxel=2.0, z_top=0.0, margin=40.0)
-    for u in (0.1, 0.5, 0.9):
-        a0, a1 = seg.section(u * H).area(), b.section(u * H * s).area()
-        assert abs(a1 - a0) / a0 < 0.01
-
-
-B1 = {"rows": {"RASIS": [87, -13, 119], "LASIS": [87, -13, -119], "MPSIS": [-108, -13, 0], "HJC (Dumas)": [54, -93, 88]}, "pelvis_ref_length_mm": 107}
-
-
-def synthetic_landmarks(k=1.03):
-    R0 = np.eye(3)
-    ljc = np.array([0.0, 0.0, 900.0])
-    P = lambda row: ljc + R0 @ (np.array(B1["rows"][row]) * k)
-    hjc = P("HJC (Dumas)")
-    # sheet frame is x anterior, y left, z up while ISB Z is right: build the pelvis frame the way the pipeline does
-    ar, al = np.array([40.0, -120.0, 900.0]), np.array([40.0, 120.0, 900.0])
-    ms = np.array([-150.0, 0.0, 905.0])
-    return {"ASIS_R": ar, "ASIS_L": al, "SACRAL_MID": ms, "EPI_MED_R": np.array([-20.0, -85.0, 480.0]), "EPI_LAT_R": np.array([-20.0, -185.0, 480.0])}
-
-
-def test_sensitivity_one_at_a_time_covers_every_landmark_axis_and_sign():
-    P = synthetic_landmarks()
-    sv = trial.sensitivity(P, B1, 398.0, n=20)
-    assert len(sv.one_at_a_time) == 5 * 3 * 2
-    assert sv.max_relative_change > 0 and sv.n == 20 and sv.mc_std > 0
-
-
-def test_sensitivity_is_reproducible_and_a_pure_knee_shift_is_first_order():
-    P = synthetic_landmarks()
-    a = trial.sensitivity(P, B1, 398.0, n=30, seed=1)
-    b = trial.sensitivity(P, B1, 398.0, n=30, seed=1)
-    assert a.mc_mean == b.mc_mean and a.mc_std == b.mc_std
-    s0 = trial.stretch_for(P, B1, 398.0)[0]
-    z = [r for r in a.one_at_a_time if r[0] == "EPI_MED_R" and r[1] == "z" and r[2] == -5.0][0]
-    # moving one epicondyle 5 mm moves the knee centre 2.5 mm, so L_mesh by about 2.5 mm
-    assert abs(abs(z[4]) - 2.5 / (398.0 / s0)) < 0.002
-
-
 def run_cli(*args):
     return subprocess.run([sys.executable, str(REPO / "tools" / "fy"), "envelope", *args], capture_output=True, text=True, cwd=REPO)
 
 
-def test_build_without_picks_stops_and_names_the_missing_file(tmp_path):
-    r = run_cli("build", "--landmarks", str(tmp_path / "nope.json"), "--b1", str(tmp_path / "b1.json"))
-    assert r.returncode == 3 and "STOP" in r.stderr and "nope.json" in r.stderr
-
-
-def test_build_refuses_provisional_landmarks_into_the_data_directory(tmp_path):
-    lm = tmp_path / "lm.json"
-    import json
-    lm.write_text(json.dumps({"schema": "landmarks/1", "topology": 13380, "provisional": True,
-                              "landmarks": {n: {"vertex": i} for i, n in enumerate(("ASIS_R", "ASIS_L", "SACRAL_MID", "EPI_MED_R", "EPI_LAT_R"))}}))
-    b1 = tmp_path / "b1.json"
-    b1.write_text(json.dumps({"rows": B1["rows"], "pelvis_ref_length_mm": 107}))
-    r = run_cli("build", "--landmarks", str(lm), "--b1", str(b1))
-    assert r.returncode == 3 and "provisional" in r.stderr
+def test_build_with_a_wrong_vertex_count_stops_and_says_so(tmp_path):
+    obj = tmp_path / "short.obj"
+    obj.write_text("v 0 0 0\nv 1 0 0\nv 0 1 0\nf 1 2 3\n")
+    r = run_cli("build", "--mesh", str(obj), "--out", str(tmp_path / "o"), "--cache-dir", str(tmp_path / "c"))
+    assert r.returncode == 3 and "STOP" in r.stderr and "13380" in r.stderr

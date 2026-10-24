@@ -12,7 +12,7 @@ sys.path.insert(0, str(REPO / "tools"))
 from envelope import landmarks, meshio  # noqa: E402
 
 OBJ = REPO / "data" / "makehuman" / "freyja-body-v1.obj"
-REF = REPO / "data" / "mesh" / "freyja-body-v1.obj"
+REF = OBJ     # base.obj was a placeholder name: the exported body is its own topology reference (Joe, memo 27 follow-up)
 
 
 def good():
@@ -46,7 +46,7 @@ def test_bad_files_are_rejected(mutate, word):
 
 
 def test_committed_landmarks_file_validates_when_present():
-    p = REPO / "data" / "mesh" / "landmarks.json"
+    p = REPO / "data" / "makehuman" / "landmarks.json"
     if not p.exists():
         pytest.skip("no picks committed yet")
     assert landmarks.validate(json.loads(p.read_text())) == []

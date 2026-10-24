@@ -61,3 +61,21 @@ def report(voxel=2.0):
         e["inscribed_radius"] = max(e["inscribed_radius"], abs(sec.chebyshev()[2] - r))
     out["cone"] = e
     return out
+
+
+def tube(r, z0, z1, rings, n=120):
+    """Closed cylinder with `rings` rings between z0 and z1 (so a height-dependent transform bends it smoothly), caps included."""
+    a = np.linspace(0, 2 * np.pi, n, endpoint=False)
+    zs = np.linspace(z0, z1, rings)
+    v = [np.column_stack([r * np.cos(a), r * np.sin(a), np.full(n, z)]) for z in zs]
+    v = np.vstack(v + [[[0, 0, z0]], [[0, 0, z1]]])
+    c0, c1 = n * rings, n * rings + 1
+    f = []
+    for k in range(rings - 1):
+        for i in range(n):
+            j = (i + 1) % n
+            f += [(k * n + i, k * n + j, (k + 1) * n + j), (k * n + i, (k + 1) * n + j, (k + 1) * n + i)]
+    for i in range(n):
+        j = (i + 1) % n
+        f += [(c0, j, i), (c1, (rings - 1) * n + i, (rings - 1) * n + j)]
+    return v, np.array(f)

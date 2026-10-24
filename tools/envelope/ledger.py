@@ -59,11 +59,12 @@ def rows_for(seg: field.Segment, side: str, shells=SHELL_MM):
     return out
 
 
-def header(res, rows, shells, density_note, landmark_label, b1_label, inputs_sha, hip_zone_mm) -> dict:
-    seg = res.seg
+def header(res, rows, shells, density_note, mesh_label, ansur_label, inputs_sha, hip_zone_mm) -> dict:
+    seg, reg = res.seg, res.reg
     skin = seg.volume(0.0)
     body = [r for r in rows if r["s_mm"] >= hip_zone_mm]
     hip = [r for r in rows if r["s_mm"] < hip_zone_mm]
+    summ = reg.summary()
 
     def minrow(rs, key):
         r = min(rs, key=lambda x: x[key])
@@ -71,18 +72,21 @@ def header(res, rows, shells, density_note, landmark_label, b1_label, inputs_sha
 
     return {
         "segment": "thigh_R",
-        "frame": "segment: origin at the hip centre, z up the thigh (knee at z = -length), x anterior, y left; stations are distances below the hip centre",
+        "frame": "segment: origin at the hip centre on the vertical axis, z up the thigh (knee at z = -length), x anterior, y left; stations are distances below the hip centre",
         "length_mm": round(seg.length, 2),
-        "length_mesh_mm": round(res.L_mesh, 2),
-        "stretch_s": round(res.s, 5),
-        "pelvis_scale_k": round(res.k, 5),
-        "k_variant": res.k_variant,
-        "landmark_file": landmark_label,
-        "b1_source": b1_label,
+        "stretch": {k: round(v, 5) for k, v in summ["stretch"].items()},
+        "shear_mm": {k: round(v, 2) for k, v in summ["shear_mm"].items()},
+        "shear_deg": {k: round(v, 2) for k, v in summ["shear_deg"].items()},
+        "pelvis_scale_k": round(reg.sheet.k_pelvis, 5),
+        "mesh_nodes_mm": {k: round(v, 2) for k, v in summ["mesh_nodes_mm"].items()},
+        "sheet_nodes_mm": {k: round(v, 2) for k, v in summ["sheet_nodes_mm"].items()},
+        "knee_source": reg.knee_source,
+        "mesh_file": mesh_label,
+        "ansur_source": ansur_label,
         "voxel_mm": seg.h,
         "skin_volume_l": round(skin / 1e6, 4),
         "inner_volume_l": {f"t{t:g}": round(seg.volume(t) / 1e6, 4) for t in shells},
-        "mass_budget": {"sheet_thigh_mass_kg": round(res.mass_kg, 4), "implied_density_kg_per_l": round(res.mass_kg / (skin / 1e6), 4), "note": density_note},
+        "mass_budget": {"sheet_thigh_mass_kg": round(res.reg.sheet.thigh_mass_kg, 4), "implied_density_kg_per_l": round(res.reg.sheet.thigh_mass_kg / (skin / 1e6), 4), "note": density_note},
         "min_inscribed_radius": {
             "outside_hip_zone": {**minrow(body, "cheb_r_mm"), "from_station_mm": hip_zone_mm},
             "hip_zone": {**minrow(hip, "cheb_r_mm"), "below_station_mm": hip_zone_mm} if hip else None,

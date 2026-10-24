@@ -1,4 +1,4 @@
-"""`fy envelope gates`: the trial's gate table, the sensitivity of the required stretch and the two pelvis-scale variants.
+"""`fy envelope gates`: the trial's gate table, the feature report, the ANSUR diagnostics and the Monte Carlo.
 
 Everything is computed here from the inputs; nothing is typed in. The result is written as thigh_R_trial.json beside the ledger
 (deterministic: no timestamps, no absolute paths) and printed as a table.
@@ -6,72 +6,101 @@ Everything is computed here from the inputs; nothing is typed in. The result is 
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 import numpy as np
 
-from . import field, meshio, oracle, synthetic, trial
+from . import meshio, oracle, register, synthetic, trial
 
-ASIS_TOL = 0.08           # gate 2: |s - 1| (the brief)
-PERTURB_TOL = 0.015       # gate 2: relative move of s under a 5 mm landmark perturbation (the brief)
 LENGTH_TOL_MM = 0.5       # gate 3 (the brief)
 AREA_TOL = 0.01           # gate 3: section areas at matched normalised stations (the brief)
 SYNTH_TOL_MM = 2.0        # gate 4: one voxel (the brief)
 MATCHED_U = (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)   # normalised stations compared in gate 3; the hip zone (u < 0.1) is left out
+MC_N = 200                # Monte Carlo samples (the brief)
 
 
 def _gate(name, ok, detail):
     return {"gate": name, "pass": bool(ok), "detail": detail}
 
 
-def run(inp, p, args, root, label) -> int:
-    out = {"landmark_file": "provisional" if inp.provisional else label(p["landmarks"], root), "voxel_mm": args.voxel}
+def _jsonable(o):
+    if isinstance(o, dict):
+        return {str(k): _jsonable(v) for k, v in o.items()}
+    if isinstance(o, (list, tuple)):
+        return [_jsonable(v) for v in o]
+    if isinstance(o, (np.floating, np.integer)):
+        return o.item()
+    if isinstance(o, np.ndarray):
+        return o.tolist()
+    return o
+
+
+def run(p, args, root, label) -> int:
+    inp = trial.load_inputs(root, p["mesh"])
+    out = {"mesh_file": label(p["mesh"], root), "voxel_mm": args.voxel, "ansur_source": inp.ansur.get("source_sha256_12")}
     gates = []
 
-    # gate 1: topology and watertightness
-    topo = meshio.topology_difference(p["mesh"], root / "data/mesh/freyja-body-v1.obj")
-    res = trial.build_thigh(inp, "asis", args.voxel)
-    c = res.checks
-    gates.append(_gate("1 topology matches base; thigh surface watertight", topo is None and c["boundary_edges_near_thigh"] == 0 and c["nonmanifold_edges_near_thigh"] == 0
-                       and c["odd_parity_columns"] == 0,
-                       f"topology difference: {topo or 'none'}; boundary edges near the thigh {c['boundary_edges_near_thigh']} (whole body {c['boundary_edges_whole_body']}); "
-                       f"non-manifold {c['nonmanifold_edges_near_thigh']}; odd-parity columns {c['odd_parity_columns']}"))
-    out["checks"] = {k: (bool(v) if isinstance(v, (bool, np.bool_)) else int(v)) for k, v in c.items()}
-    for key in ("hjc_inside_body", "kjc_inside_body", "mid_axis_inside_region"):
-        if not c[key]:
-            gates.append(_gate(f"stop: {key}", False, "a landmark-derived point lies outside the plausible region; brief says stop and ask Joe"))
+    feats = trial.find_features(inp)
+    reg = trial.make_registration(inp, feats, "auto" if args.knee == "auto" else args.knee)
+    summ = reg.summary()
+    kn = feats["knee"]
+    out["sole_plane"] = inp.sole
+    out["sheet_checks"] = inp.sheet.checks
+    out["features"] = {"ansur_scaled_to_mesh_stature_mm": feats["ansur_scaled_mm"], "mesh_stature_mm": inp.stature_mesh, "crotch_apex_mm": feats["crotch_apex_mm"],
+                       "knee_breadth_feature": kn, "knee_source_used": reg.knee_source,
+                       "knee_disagreement_mm": kn["z_mm"] - feats["ansur_scaled_mm"]["lateral_femoral_epicondyle"],
+                       "crotch_disagreement_mm": feats["crotch_apex_mm"] - feats["ansur_scaled_mm"]["crotch"], "ruler": "not available (no Ruler.Measures vertex lists in the repo)"}
+    out["diagnostics"] = register.diagnostics(inp.sheet, inp.ansur)
+    out["registration"] = summ
+    out["section_centroids_before_shear_mm"] = reg.centroids
 
-    # gate 2: required stretch and its sensitivity
-    sens = {}
-    for mode in ("asis", "sheet"):
-        sv = trial.sensitivity(inp.P, inp.b1, inp.thigh_length_mm, k_mode=mode, k_fixed=inp.k_sheet)
-        sens[mode] = sv
-    s_asis = res.s
-    out["stretch"] = {"s_asis": s_asis, "k_asis": res.k}
-    sv = sens["asis"]
-    worst = max(sv.one_at_a_time, key=lambda r: abs(r[4]))
-    gates.append(_gate("2 |s-1| < 8% and moves < 1.5% under 5 mm perturbation",
-                       abs(s_asis - 1) < ASIS_TOL and sv.max_relative_change < PERTURB_TOL,
-                       f"s = {s_asis:.4f} (|s-1| = {abs(s_asis - 1) * 100:.2f}%); worst one-at-a-time move {sv.max_relative_change * 100:.2f}% "
-                       f"({worst[0]} {worst[1]} {worst[2]:+.0f} mm); Monte Carlo N={sv.n}, sigma 5 mm: s = {sv.mc_mean:.4f} +- {sv.mc_std:.4f} (5-95%: {sv.mc_p5:.4f}-{sv.mc_p95:.4f})"))
-    out["sensitivity"] = {m: {"max_relative_change": v.max_relative_change, "mc_mean": v.mc_mean, "mc_std": v.mc_std, "mc_p5": v.mc_p5, "mc_p95": v.mc_p95,
-                              "mc_min": v.mc_min, "mc_max": v.mc_max, "n": v.n,
-                              "one_at_a_time": [{"landmark": r[0], "axis": r[1], "delta_mm": r[2], "s": r[3], "relative_change": r[4]} for r in v.one_at_a_time]}
-                          for m, v in sens.items()}
+    # gate 1: topology and watertightness
+    topo = meshio.topology_difference(p["mesh"], root / "data/makehuman/freyja-body-v1.obj")
+    res = trial.build_thigh(inp, reg, args.voxel)
+    c = res.checks
+    out["checks"] = _jsonable(c)
+    ok1 = topo is None and c["boundary_edges_near_thigh"] == 0 and c["nonmanifold_edges_near_thigh"] == 0 and c["odd_parity_columns"] == 0
+    gates.append(_gate("1 topology matches base; thigh surface watertight", ok1,
+                       f"topology difference: {topo or 'none (the reference is this same file)'}; boundary edges near the thigh {c['boundary_edges_near_thigh']} "
+                       f"(whole body {c['boundary_edges_whole_body']}); non-manifold {c['nonmanifold_edges_near_thigh']}; odd-parity columns {c['odd_parity_columns']}"))
+    for key in ("hjc_inside_body", "kjc_inside_body", "ajc_inside_body", "mid_axis_inside_region"):
+        if not c[key]:
+            gates.append(_gate(f"stop: {key}", False, "a node of the conformed thigh lies outside the plausible region; the brief says stop and ask Joe"))
+
+    # gate 2: per-sub-segment stretch, and the robust envelope
+    prof = trial.build_profile(inp, feats, reg, args.voxel)
+    mc = register.monte_carlo(prof, reg, n=MC_N, shells=trial.SHELLS_MM)
+    out["monte_carlo"] = _jsonable(mc)
+    st = summ["stretch"]
+    worst = max(abs(v - 1) for v in st.values())
+    nom_r, sp_r = mc["nominal"]["rmin_t0"], mc["spread"]["rmin_t0"]
+    nom_v, sp_v = mc["nominal"]["volume_t0"], mc["spread"]["volume_t0"]
+    dr = nom_r - sp_r["p5"]
+    dv = max(abs(sp_v["p2_5"] - nom_v), abs(sp_v["p97_5"] - nom_v)) / nom_v
+    ok2 = worst < register.MAX_STRETCH_DEVIATION and dr <= register.ROBUST_RADIUS_MM and dv <= register.ROBUST_VOLUME
+    gates.append(_gate("2 |stretch-1| < 8% per sub-segment; robust radius within 5 mm, volume within 10%", ok2,
+                       f"stretch foot {st['foot']:.4f}, shank {st['shank']:.4f}, thigh {st['thigh']:.4f}; min inscribed radius nominal {nom_r:.2f} mm at station "
+                       f"{mc['nominal']['rmin_station_t0']:.0f}, robust (5th pct) {sp_r['p5']:.2f} mm (diff {dr:.2f}); skin volume nominal {nom_v / 1e6:.3f} l, "
+                       f"95% range {sp_v['p2_5'] / 1e6:.3f}-{sp_v['p97_5'] / 1e6:.3f} l (max diff {dv * 100:.1f}%); N={mc['n']}"))
 
     # gate 3: conformed length and section areas at matched normalised stations
-    raw = trial.build_thigh(inp, "asis", args.voxel, stretch=False)
+    s_th = st["thigh"]
+    L_conf = float(reg.axial.forward(reg.mesh_nodes["hjc"]) - reg.axial.forward(reg.mesh_nodes["kjc"]))
     areas = []
     for u in MATCHED_U:
-        a0 = raw.seg.section(u * raw.seg.length).area()
-        a1 = res.seg.section(u * res.seg.length).area()
+        s = u * res.seg.length
+        zpre = reg.mesh_nodes["hjc"] - s / s_th
+        a0 = float(np.interp(zpre, prof["z"], prof["area"][0.0]))
+        a1 = res.seg.section(s).area()
         areas.append((u, a0, a1, (a1 - a0) / a0))
     worst_area = max(abs(a[3]) for a in areas)
-    dl = abs(res.seg.length - inp.thigh_length_mm)
+    dl = max(abs(res.seg.length - inp.sheet.thigh_length), abs(L_conf - inp.sheet.thigh_length))
     gates.append(_gate("3 length = sheet within 0.5 mm; matched-station areas within 1%", dl < LENGTH_TOL_MM and worst_area < AREA_TOL,
-                       f"conformed length {res.seg.length:.3f} mm vs sheet {inp.thigh_length_mm:.3f} mm (diff {dl:.4f}); worst area change {worst_area * 100:.3f}% over u = 0.1..0.9"))
-    out["conform"] = {"length_mm": res.seg.length, "sheet_length_mm": inp.thigh_length_mm, "areas": [{"u": a[0], "unstretched_mm2": a[1], "stretched_mm2": a[2], "relative": a[3]} for a in areas],
-                      "volume_unstretched_l": raw.seg.volume() / 1e6, "volume_stretched_l": res.seg.volume() / 1e6}
+                       f"conformed length {L_conf:.3f} mm vs sheet {inp.sheet.thigh_length:.3f} mm (diff {dl:.4f}); worst area change {worst_area * 100:.3f}% over u = 0.1..0.9"))
+    out["conform"] = {"length_mm": L_conf, "sheet_length_mm": inp.sheet.thigh_length,
+                      "areas": [{"u": a[0], "unconformed_mm2": a[1], "conformed_mm2": a[2], "relative": a[3]} for a in areas],
+                      "volume_unconformed_slab_l": float(np.trapezoid(np.interp(np.linspace(reg.mesh_nodes['kjc'], reg.mesh_nodes['hjc'], 400), prof['z'], prof['area'][0.0]),
+                                                                       np.linspace(reg.mesh_nodes['kjc'], reg.mesh_nodes['hjc'], 400))) / 1e6,
+                      "volume_conformed_l": res.seg.volume() / 1e6, "volume_profile_nominal_l": mc["nominal"]["volume_t0"] / 1e6}
 
     # gate 4: synthetic solids
     rep = synthetic.report(args.voxel)
@@ -86,29 +115,33 @@ def run(inp, p, args, root, label) -> int:
         shapes = oracle.read_shapes(ex / "rod_shapes.yaml")
         feas = oracle.clearance(res.seg, shapes, oracle.read_poses(ex / "rod_feasible_poses.csv"))
         infe = oracle.clearance(res.seg, shapes, oracle.read_poses(ex / "rod_infeasible_poses.csv"))
-        ok5 = feas["feasible"] and not infe["feasible"]
-        gates.append(_gate("5 oracle CLI: margin and binding station, feasible and infeasible", ok5,
-                           f"feasible case: margin {feas['margin_mm']:.2f} mm at station {feas['station_mm']:.1f} mm; infeasible case: margin {infe['margin_mm']:.2f} mm at station {infe['station_mm']:.1f} mm (pose {infe['pose_index']})"))
-        out["example"] = {"feasible": {k: feas[k] for k in ("margin_mm", "station_mm", "pose_index", "point_mm", "feasible")},
-                          "infeasible": {k: infe[k] for k in ("margin_mm", "station_mm", "pose_index", "point_mm", "feasible")}}
+        gates.append(_gate("5 oracle CLI: margin and binding station, feasible and infeasible", feas["feasible"] and not infe["feasible"],
+                           f"feasible case: margin {feas['margin_mm']:.2f} mm at station {feas['station_mm']:.1f} mm; infeasible case: margin {infe['margin_mm']:.2f} mm "
+                           f"at station {infe['station_mm']:.1f} mm (pose {infe['pose_index']})"))
+        out["example"] = {k: {kk: v[kk] for kk in ("margin_mm", "station_mm", "pose_index", "point_mm", "feasible")} for k, v in (("feasible", feas), ("infeasible", infe))}
     except FileNotFoundError:
         gates.append(_gate("5 oracle CLI worked example", False, "data/envelope/examples/ is missing"))
 
-    # k variants
-    res_sheet = trial.build_thigh(inp, "sheet", args.voxel)
-    out["k_variants"] = {
-        v: {"k": r.k, "s": r.s, "hjc_sheet_mm": [float(x) for x in r.hjc], "skin_volume_l": r.seg.volume() / 1e6, "length_mesh_mm": r.L_mesh}
-        for v, r in (("asis", res), ("sheet", res_sheet))}
-    out["k_variants"]["delta"] = {"hjc_mm": float(np.linalg.norm(res.hjc - res_sheet.hjc)), "s": res_sheet.s - res.s,
-                                  "skin_volume_l": res_sheet.seg.volume() / 1e6 - res.seg.volume() / 1e6}
-
+    # reported with the gates: volumes and density
+    skin = res.seg.volume() / 1e6
+    out["volumes"] = {"skin_l": skin, "inner_l": {f"t{t:g}": res.seg.volume(t) / 1e6 for t in trial.SHELLS_MM},
+                      "sheet_thigh_mass_kg": inp.sheet.thigh_mass_kg, "implied_density_kg_per_l": inp.sheet.thigh_mass_kg / skin}
     out["gates"] = gates
     outdir = p["out"]
     outdir.mkdir(parents=True, exist_ok=True)
-    (outdir / "thigh_R_trial.json").write_text(json.dumps(out, indent=1, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
-    print(f"landmarks: {out['landmark_file']}   voxel {args.voxel} mm   k variants: asis {res.k:.4f}, sheet {res_sheet.k:.4f}")
+    (outdir / "thigh_R_trial.json").write_text(json.dumps(_jsonable(out), indent=1, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
+
+    f = out["features"]
+    print(f"mesh {out['mesh_file']}   voxel {args.voxel} mm   knee source: {reg.knee_source}")
+    print(f"mesh stature {inp.stature_mesh:.1f} mm; crotch apex {f['crotch_apex_mm']:.1f} (ANSUR-scaled {feats['ansur_scaled_mm']['crotch']:.1f}); knee breadth peak {kn['z_mm']:.1f} "
+          f"(prominence {kn['prominence_mm']:.2f} mm, feature: {kn['is_feature']}) vs ANSUR-scaled epicondyle {feats['ansur_scaled_mm']['lateral_femoral_epicondyle']:.1f}")
+    d = out["diagnostics"]
+    print(f"sheet vs ANSUR (scaled to {inp.sheet.stature_mm:.0f} mm): HJC - trochanterion {d['hjc_minus_scaled_trochanterion_mm']:+.1f} mm (flag {d['hjc_flag']}), "
+          f"KJC - lateral epicondyle {d['kjc_minus_scaled_lateral_epicondyle_mm']:+.1f} mm")
+    print(f"shear: thigh {summ['shear_mm']['thigh']:.1f} mm ({summ['shear_deg']['thigh']:.1f} deg), shank {summ['shear_mm']['shank']:.1f} mm ({summ['shear_deg']['shank']:.1f} deg)")
     for g in gates:
         print(f"[{'PASS' if g['pass'] else 'FAIL'}] gate {g['gate']}\n        {g['detail']}")
-    kv = out["k_variants"]
-    print(f"k variants: asis k {kv['asis']['k']:.4f} s {kv['asis']['s']:.4f} V {kv['asis']['skin_volume_l']:.3f} l; sheet k {kv['sheet']['k']:.4f} s {kv['sheet']['s']:.4f} V {kv['sheet']['skin_volume_l']:.3f} l; HJC differs by {kv['delta']['hjc_mm']:.2f} mm")
+    v = out["volumes"]
+    print(f"skin volume {v['skin_l']:.3f} l; inner: " + ", ".join(f"t={k[1:]} {x:.3f}" for k, x in v["inner_l"].items()) +
+          f"; sheet mass {v['sheet_thigh_mass_kg']:.2f} kg -> {v['implied_density_kg_per_l']:.3f} kg/l")
     return 0 if all(g["pass"] for g in gates) else 1

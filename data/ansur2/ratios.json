@@ -1,0 +1,82 @@
+{
+ "generated_by": "fy envelope ratios",
+ "inputs": "ANSUR II female public CSV sha256:ed7e800aa97a",
+ "landmarks": {
+  "crotch": {
+   "column": "crotchheight",
+   "height_mm": {
+    "mean": 782.3172205438067,
+    "sd": 44.63673782046689
+   },
+   "ratio": {
+    "mean": 0.48022832740856514,
+    "sd": 0.015118272374293825
+   }
+  },
+  "iliocristale": {
+   "column": "iliocristaleheight",
+   "height_mm": {
+    "mean": 995.7250755287009,
+    "sd": 49.6850021780221
+   },
+   "ratio": {
+    "mean": 0.6112953603381988,
+    "sd": 0.01286357829728406
+   }
+  },
+  "lateral_femoral_epicondyle": {
+   "column": "lateralfemoralepicondyleheight",
+   "height_mm": {
+    "mean": 465.9365558912387,
+    "sd": 27.139716925237323
+   },
+   "ratio": {
+    "mean": 0.2860382769086057,
+    "sd": 0.01022207293440658
+   }
+  },
+  "lateral_malleolus": {
+   "column": "lateralmalleolusheight",
+   "height_mm": {
+    "mean": 62.74823766364552,
+    "sd": 5.108402661207229
+   },
+   "ratio": {
+    "mean": 0.03853750150761193,
+    "sd": 0.002826474076091087
+   }
+  },
+  "tenth_rib": {
+   "column": "tenthribheight",
+   "height_mm": {
+    "mean": 1056.2567975830816,
+    "sd": 50.012729025727246
+   },
+   "ratio": {
+    "mean": 0.6484890917339862,
+    "sd": 0.01107227818687054
+   }
+  },
+  "trochanterion": {
+   "column": "trochanterionheight",
+   "height_mm": {
+    "mean": 845.3509566968781,
+    "sd": 44.67626840708614
+   },
+   "ratio": {
+    "mean": 0.5189846304592637,
+    "sd": 0.014445994217885583
+   }
+  }
+ },
+ "n": 1986,
+ "source_sha256_12": "ed7e800aa97a",
+ "stature_mm": {
+  "mean": 1628.4733131923465,
+  "sd": 64.19951224968793
+ },
+ "trochanterion_minus_crotch_ratio": {
+  "mean": 0.038756303050698396,
+  "sd": 0.0100320595670233
+ }
+}
