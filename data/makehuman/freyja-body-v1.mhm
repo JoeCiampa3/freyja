@@ -1,0 +1,27 @@
+# Written by MakeHuman 1.2.1 alpha
+version v1.2.1
+camera 43.5 313.0 -0.7373845991967448 0.7776538446553461 0.7313647614223343 15.0
+modifier pelvis/bulge-decr|incr -0.874000
+modifier breast/BreastSize 0.628000
+modifier breast/BreastFirmness 0.734000
+modifier breast/breast-dist-decr|incr -0.362000
+modifier breast/breast-volume-vert-down|up -0.004000
+modifier macrodetails/Gender 0.000000
+modifier macrodetails/Age 0.440000
+modifier macrodetails/African 0.000000
+modifier macrodetails/Asian 0.000000
+modifier macrodetails/Caucasian 1.000000
+modifier macrodetails-universal/Muscle 0.396000
+modifier macrodetails-universal/Weight 0.232000
+modifier macrodetails-height/Height 0.623000
+modifier macrodetails-proportions/BodyProportions 0.546000
+modifier bodyshapes/bodyshapes-elvs-fem-neat-hourglass 0.261000
+modifier bodyshapes/bodyshapes-elvs-fem-invert-triangle 1.000000
+modifier measure/measure-bust-circ-decr|incr 0.406250
+modifier measure/measure-underbust-circ-decr|incr -0.594000
+modifier measure/measure-waist-circ-decr|incr 0.302734
+modifier measure/measure-hips-circ-decr|incr 0.440000
+pose standing02.bvh
+clothesHideFaces False
+skinMaterial skins/young_caucasian_female/young_caucasian_female2.mhmat
+subdivide False

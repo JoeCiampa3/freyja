@@ -10,6 +10,7 @@ local_config.json
 archive/
 data/literature
 data/ansur2/raw
+data/envelope/cache
 # Roadmap viewer pins: personal, per clone
 roadmap/.pins.json
 
