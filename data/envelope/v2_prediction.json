@@ -1,0 +1,157 @@
+{
+ "girth_loops": {
+  "v1 as MakeHuman showed it (committed OBJ, posed standing02)": {
+   "ankle-circ": {
+    "tilt_deg": 9.754152098072439,
+    "z_mm": 122.59450000000001
+   },
+   "calf-circ": {
+    "tilt_deg": 27.336022555552695,
+    "z_mm": 349.91749999999996
+   },
+   "knee-circ": {
+    "tilt_deg": 14.09313084475927,
+    "z_mm": 497.02699999999993
+   },
+   "thigh-circ": {
+    "tilt_deg": 24.36573194049679,
+    "z_mm": 737.5139999999999
+   }
+  },
+  "v1 rebuilt at rest (no pose)": {
+   "ankle-circ": {
+    "tilt_deg": 9.750749787024095,
+    "z_mm": 122.59085605885956
+   },
+   "calf-circ": {
+    "tilt_deg": 27.33592255301726,
+    "z_mm": 349.91547699208706
+   },
+   "knee-circ": {
+    "tilt_deg": 14.093478120478226,
+    "z_mm": 497.02361052357116
+   },
+   "thigh-circ": {
+    "tilt_deg": 24.365193854049856,
+    "z_mm": 737.5102002244967
+   }
+  },
+  "v2 predicted (rest, unposed)": {
+   "ankle-circ": {
+    "tilt_deg": 9.647234855436473,
+    "z_mm": 122.68469521885947
+   },
+   "calf-circ": {
+    "tilt_deg": 25.56587053748689,
+    "z_mm": 327.3451982320869
+   },
+   "knee-circ": {
+    "tilt_deg": 14.04430707250742,
+    "z_mm": 467.490554043571
+   },
+   "thigh-circ": {
+    "tilt_deg": 25.079547777202677,
+    "z_mm": 732.5561262644966
+   }
+  }
+ },
+ "knee_hip": {
+  "v1 as MakeHuman showed it (committed OBJ, posed standing02)": {
+   "hip_fraction": 0.5134537998809867,
+   "hip_mm": 871.4799999999999,
+   "knee_fraction": 0.2959128964407968,
+   "knee_mm": 502.25,
+   "stature_mm": 1697.29
+  },
+  "v1 rebuilt at rest (no pose)": {
+   "hip_fraction": 0.5129693623013153,
+   "hip_mm": 871.4765961257472,
+   "knee_fraction": 0.29563207559369875,
+   "knee_mm": 502.2452681933312,
+   "stature_mm": 1698.8862496896002
+  },
+  "v2 predicted (rest, unposed)": {
+   "hip_fraction": 0.5124068273001449,
+   "hip_mm": 870.5555137257471,
+   "knee_fraction": 0.27823849610784923,
+   "knee_mm": 472.71434339333103,
+   "stature_mm": 1698.9537752896
+  }
+ },
+ "rows": {
+  "v1 as MakeHuman showed it (committed OBJ, posed standing02)": {
+   "ankle-circ": 19.120723560616483,
+   "bust-circ": 89.00334994170372,
+   "calf-circ": 33.18628378755158,
+   "frontchest-dist": 27.94103496651475,
+   "hips-circ": 94.29616529454881,
+   "knee-circ": 32.386073230265836,
+   "lowerarm-length": 22.467870749138633,
+   "lowerleg-height": 49.790950312280636,
+   "napetowaist-dist": 38.79759431975132,
+   "neck-circ": 30.552705100819864,
+   "neck-height": 10.028286709962606,
+   "shoulder-dist": 16.30260979107333,
+   "statistics_height": 169.72899999999998,
+   "thigh-circ": 47.50425208308326,
+   "underbust-circ": 72.16043471803228,
+   "upperarm-circ": 22.467379738914698,
+   "upperarm-length": 26.579643658258476,
+   "upperleg-height": 37.42953882964629,
+   "waist-circ": 64.1255198580199,
+   "waisttohip-dist": 19.299179723501197,
+   "wrist-circ": 12.92446721592723
+  },
+  "v1 rebuilt at rest (no pose)": {
+   "ankle-circ": 19.12046802238605,
+   "bust-circ": 89.30409495175391,
+   "calf-circ": 33.18581522455906,
+   "frontchest-dist": 28.86335509312001,
+   "hips-circ": 94.2958659683488,
+   "knee-circ": 32.38623720327024,
+   "lowerarm-length": 22.319513192137933,
+   "lowerleg-height": 49.79096277002793,
+   "napetowaist-dist": 38.947498085418324,
+   "neck-circ": 30.5771263997352,
+   "neck-height": 9.911263550169085,
+   "shoulder-dist": 14.737309700476969,
+   "statistics_height": 169.88862496896002,
+   "thigh-circ": 47.50442219961657,
+   "underbust-circ": 72.17916792010229,
+   "upperarm-circ": 22.24295857072935,
+   "upperarm-length": 26.708391307424808,
+   "upperleg-height": 37.4294598718062,
+   "waist-circ": 64.09628829365526,
+   "waisttohip-dist": 19.27693440625354,
+   "wrist-circ": 12.912532705693405
+  },
+  "v2 predicted (rest, unposed)": {
+   "ankle-circ": 19.1500522915113,
+   "bust-circ": 89.39015399171046,
+   "calf-circ": 32.98062839790733,
+   "frontchest-dist": 28.893488213120012,
+   "hips-circ": 94.38927659242601,
+   "knee-circ": 32.417351164253446,
+   "lowerarm-length": 22.353098674179748,
+   "lowerleg-height": 46.8512341829513,
+   "napetowaist-dist": 38.99487705385618,
+   "neck-circ": 30.610969826355564,
+   "neck-height": 9.92160224069364,
+   "shoulder-dist": 14.75089041972983,
+   "statistics_height": 169.89537752895998,
+   "thigh-circ": 47.60259554085636,
+   "underbust-circ": 72.25413135834208,
+   "upperarm-circ": 22.26914068315128,
+   "upperarm-length": 26.760338331260463,
+   "upperleg-height": 40.33873814551063,
+   "waist-circ": 64.1687269873138,
+   "waisttohip-dist": 19.2983170246979,
+   "wrist-circ": 12.93089764201059
+  }
+ },
+ "v2_changes": {
+  "macrodetails-height/Height": 0.625,
+  "measure/measure-lowerleg-height-decr|incr": -0.515,
+  "measure/measure-upperleg-height-decr|incr": 0.269
+ }
+}

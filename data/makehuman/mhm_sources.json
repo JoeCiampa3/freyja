@@ -1,0 +1,667 @@
+{
+ "base_obj": {
+  "bytes": 1749303,
+  "committed_as": "data/makehuman/base.obj",
+  "license": "CC0 (explicit statement in the file header: 'released as CC0 in september 2020')",
+  "repo_path": "makehuman/data/3dobjs/base.obj",
+  "sha256": "8e761e6624b8f54536409135d1636da63b32486a90d4897f84e121d144f6fb4c"
+ },
+ "base_url": "https://raw.githubusercontent.com/makehumancommunity/makehuman",
+ "commit": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+ "commit_date": "2024-06-26T08:28:37Z",
+ "files": {
+  "bodyshapes/bodyshapes-elvs-fem-invert-triangle.target": {
+   "bytes": 71942,
+   "sha256": "f4e4bded4c5db8586236b1e2e9cb65ea9a055101becfa6f3c72c354813dddbfe"
+  },
+  "bodyshapes/bodyshapes-elvs-fem-neat-hourglass.target": {
+   "bytes": 70340,
+   "sha256": "e1c9d307eeddc3b372ab24e7ad764a47b055a556025a74a2ac6c3bcac9734075"
+  },
+  "breast/breast-dist-decr.target": {
+   "bytes": 8270,
+   "sha256": "a052af5c0b7bac35b0ce429ebbf240da036d93941370d8b576e19ec837d110a3"
+  },
+  "breast/breast-volume-vert-down.target": {
+   "bytes": 6320,
+   "sha256": "1689663bfae4a32e7480770269f78022b011b02c9a6a7246674a830f4f82a6b0"
+  },
+  "breast/female-child-averagemuscle-averageweight-averagecup-maxfirmness.target": {
+   "bytes": 6185,
+   "sha256": "8be6f61da3536a09c9f03717867bd0f2f791aad002375d8fa700efb68dac08bf"
+  },
+  "breast/female-child-averagemuscle-averageweight-maxcup-averagefirmness.target": {
+   "bytes": 15680,
+   "sha256": "1287b1dd4b67b3872b4dea44e83b0dc5437431cd9e9f87499f435ca54d9752ae"
+  },
+  "breast/female-child-averagemuscle-averageweight-maxcup-maxfirmness.target": {
+   "bytes": 15365,
+   "sha256": "3eeac3052ad5fabcc8afa0796e7c5f00031326d796afccc314e0b6b129da89a8"
+  },
+  "breast/female-child-averagemuscle-maxweight-averagecup-maxfirmness.target": {
+   "bytes": 5825,
+   "sha256": "2829e7dcc9bff9b283936dc3a7c96e760f7e9033d3768de633cbb4d07b97f3b2"
+  },
+  "breast/female-child-averagemuscle-maxweight-maxcup-averagefirmness.target": {
+   "bytes": 15495,
+   "sha256": "2c40384adfc19e7c2467814b2a5a7a0ed5df605473af3fda7f30f388073a1232"
+  },
+  "breast/female-child-averagemuscle-maxweight-maxcup-maxfirmness.target": {
+   "bytes": 17107,
+   "sha256": "6a5c96e9dd4bf812a58a4862d7027f3fb99f26d363007d03fa99d47587e6bc41"
+  },
+  "breast/female-child-averagemuscle-minweight-averagecup-maxfirmness.target": {
+   "bytes": 6524,
+   "sha256": "d9a607382d166bff59e1516050514831b21b1073a0d222a8c3e24a7fc3dba2ad"
+  },
+  "breast/female-child-averagemuscle-minweight-maxcup-averagefirmness.target": {
+   "bytes": 15500,
+   "sha256": "3a5ee60a9268c73a3536b020aada20eb6d09df234bef3f56c87b8acbe0102159"
+  },
+  "breast/female-child-averagemuscle-minweight-maxcup-maxfirmness.target": {
+   "bytes": 15331,
+   "sha256": "dc9434afcb50ab7d68d688fce668aaf44900cf95b850b2f5596721ee7a15c176"
+  },
+  "breast/female-child-maxmuscle-averageweight-averagecup-maxfirmness.target": {
+   "bytes": 5992,
+   "sha256": "5252bce227d728aac84862aa8f4bacf36f56edf8725cb6b9b14544bb37ff44d8"
+  },
+  "breast/female-child-maxmuscle-averageweight-maxcup-averagefirmness.target": {
+   "bytes": 15693,
+   "sha256": "9bd69313fb273efb09005fe6c79468375a36fc6ee6aec05e83cfab9a4fac61da"
+  },
+  "breast/female-child-maxmuscle-averageweight-maxcup-maxfirmness.target": {
+   "bytes": 15335,
+   "sha256": "e1b93b57117b4ec7e5026e52f8f73c8ef42d81c4b85a5467db80474c5cd42607"
+  },
+  "breast/female-child-maxmuscle-minweight-averagecup-maxfirmness.target": {
+   "bytes": 5726,
+   "sha256": "399fa65ee226d102f8332761158bee1fae924b8f6f5adb0aa705fd8026f457f8"
+  },
+  "breast/female-child-maxmuscle-minweight-maxcup-averagefirmness.target": {
+   "bytes": 15582,
+   "sha256": "9f545220450650a337184f6bcad8f938821e5c4b62707320f1ff1f56ca253d15"
+  },
+  "breast/female-child-maxmuscle-minweight-maxcup-maxfirmness.target": {
+   "bytes": 15315,
+   "sha256": "b47c05ebc6e70240d1acb2887527db3354b7b7bb055415fa45b4c47a64fd1564"
+  },
+  "breast/female-child-minmuscle-averageweight-averagecup-maxfirmness.target": {
+   "bytes": 5842,
+   "sha256": "793dae48f4ac5fde4f559b077a4fae298a8f1b376266e3efb373bf61428dc734"
+  },
+  "breast/female-child-minmuscle-averageweight-maxcup-averagefirmness.target": {
+   "bytes": 15511,
+   "sha256": "df90a22ba6ce77531ce7adeae703e6e925372957e96e63064dff816891981a62"
+  },
+  "breast/female-child-minmuscle-averageweight-maxcup-maxfirmness.target": {
+   "bytes": 15347,
+   "sha256": "ff08ebd4087ab601e612ba840c9188b0b31f96976cd0cc7fa5abdd22b2c9611f"
+  },
+  "breast/female-child-minmuscle-maxweight-averagecup-maxfirmness.target": {
+   "bytes": 5852,
+   "sha256": "f3e73d9eb98c98a1bff3a7b9a287b9fab26216b1e3e5cd9ef945e3ee83beadb2"
+  },
+  "breast/female-child-minmuscle-maxweight-maxcup-averagefirmness.target": {
+   "bytes": 15501,
+   "sha256": "e4cef8d52578b2e46c5571411cc3de88766994186b2882c44a1c1a6caa9205b1"
+  },
+  "breast/female-child-minmuscle-maxweight-maxcup-maxfirmness.target": {
+   "bytes": 15323,
+   "sha256": "b83acb2bf83d82b266580bcbed49f2197f1a9fbb58d4d3e6aebb2ea7dff72663"
+  },
+  "breast/female-child-minmuscle-minweight-averagecup-maxfirmness.target": {
+   "bytes": 5817,
+   "sha256": "005d3fec765fefd294338e18c20dd9c8152cda4c616e0fdef1917d08450b9a3c"
+  },
+  "breast/female-child-minmuscle-minweight-maxcup-averagefirmness.target": {
+   "bytes": 14588,
+   "sha256": "1947efabd39e7410b250580b8781202f5cd6b22daa67f7b67d2607014abfd0ad"
+  },
+  "breast/female-child-minmuscle-minweight-maxcup-maxfirmness.target": {
+   "bytes": 15365,
+   "sha256": "cc9d1e6686a4243418b0dad0d9468e5f09ab342181f326ae17f2d100dcd9b013"
+  },
+  "breast/female-young-averagemuscle-averageweight-averagecup-maxfirmness.target": {
+   "bytes": 6193,
+   "sha256": "31f1d91824fcbb98ccf52f2c4d20c8e7c77c77ae596c58d1cf91c34801552b60"
+  },
+  "breast/female-young-averagemuscle-averageweight-maxcup-averagefirmness.target": {
+   "bytes": 15334,
+   "sha256": "b5aaa1595cf4efcee69022fc60034d93ab6f6fc473e6f8e162e5526803b074bf"
+  },
+  "breast/female-young-averagemuscle-averageweight-maxcup-maxfirmness.target": {
+   "bytes": 15581,
+   "sha256": "76737472bf148e69bd5e80da982b88aa0926b51ef9ea1ac6217da88d86cf55cf"
+  },
+  "breast/female-young-averagemuscle-maxweight-averagecup-maxfirmness.target": {
+   "bytes": 6228,
+   "sha256": "02a3f8a7422aaf1655a9e8f0c3edd276581d07482ad8b59057d6c6397dfb4c90"
+  },
+  "breast/female-young-averagemuscle-maxweight-maxcup-averagefirmness.target": {
+   "bytes": 15338,
+   "sha256": "05544ef4bed841fa7944335aedc887abad0b442c3209fa3254ba47f8631a9f82"
+  },
+  "breast/female-young-averagemuscle-maxweight-maxcup-maxfirmness.target": {
+   "bytes": 15444,
+   "sha256": "16ccf9ae926c23b4b215173f4edde6b79d2cffc51ebe7108c61e1dfc3bb5fb89"
+  },
+  "breast/female-young-averagemuscle-minweight-averagecup-maxfirmness.target": {
+   "bytes": 4866,
+   "sha256": "cb35d792634d1cba1a532c7e172f44bd6db563ab45b42faa91fe794e8cb1e697"
+  },
+  "breast/female-young-averagemuscle-minweight-maxcup-averagefirmness.target": {
+   "bytes": 15444,
+   "sha256": "bc0653099dc3c7bd490642b0a5e718939bbeec33f86095b69d724567adfba3b6"
+  },
+  "breast/female-young-averagemuscle-minweight-maxcup-maxfirmness.target": {
+   "bytes": 15446,
+   "sha256": "2e975bc0268147d938198ca76093fdfc44279be08a80052e7e73926ab29e97fb"
+  },
+  "breast/female-young-maxmuscle-averageweight-averagecup-maxfirmness.target": {
+   "bytes": 6236,
+   "sha256": "2a7f7d1cfeab45fba2b2f89318694c89f7b5afa1ab4395fdf2f5e37c46e6f634"
+  },
+  "breast/female-young-maxmuscle-averageweight-maxcup-averagefirmness.target": {
+   "bytes": 15430,
+   "sha256": "ee30c72778b92897da2cb71c65cee08a0f9d299d19d26a99288ad7bf13e5b4b1"
+  },
+  "breast/female-young-maxmuscle-averageweight-maxcup-maxfirmness.target": {
+   "bytes": 15460,
+   "sha256": "3a99cd342479e57e1b20aae5515d87cbd17499505dbdffd6346d1d734b250f65"
+  },
+  "breast/female-young-maxmuscle-minweight-averagecup-maxfirmness.target": {
+   "bytes": 4866,
+   "sha256": "cb35d792634d1cba1a532c7e172f44bd6db563ab45b42faa91fe794e8cb1e697"
+  },
+  "breast/female-young-maxmuscle-minweight-maxcup-averagefirmness.target": {
+   "bytes": 15450,
+   "sha256": "1ea8f093dda8a93c04608a4f78bc54898e6979105244f21946e11db3f7514c2a"
+  },
+  "breast/female-young-maxmuscle-minweight-maxcup-maxfirmness.target": {
+   "bytes": 15400,
+   "sha256": "4a4230c96fbe4d7dc68f6088923c1705d47f81534c50573afd9366e191a96aac"
+  },
+  "breast/female-young-minmuscle-averageweight-averagecup-maxfirmness.target": {
+   "bytes": 6548,
+   "sha256": "9ff0ace7b46b0fa6125878370ceb6a1d8b851c3b14f240d69ab0dfb81c15f674"
+  },
+  "breast/female-young-minmuscle-averageweight-maxcup-averagefirmness.target": {
+   "bytes": 15330,
+   "sha256": "a7d6f2b5d5137ad5a0db49536e5444b4731a168694457d49010bb644948e258b"
+  },
+  "breast/female-young-minmuscle-averageweight-maxcup-maxfirmness.target": {
+   "bytes": 15421,
+   "sha256": "b8a003853aa186aed5309990812c079e0c4271af989fdc42c30cbb2b180eab30"
+  },
+  "breast/female-young-minmuscle-maxweight-averagecup-maxfirmness.target": {
+   "bytes": 10639,
+   "sha256": "59ec723fd1e302b927539a8c316937943464bf44dc080fe351494b7e16474279"
+  },
+  "breast/female-young-minmuscle-maxweight-maxcup-averagefirmness.target": {
+   "bytes": 18131,
+   "sha256": "f539179d07844f9c1d8da2546c17f629280ab2d6193e3468efbc9513a230255d"
+  },
+  "breast/female-young-minmuscle-maxweight-maxcup-maxfirmness.target": {
+   "bytes": 15643,
+   "sha256": "d16f4bc9030b2d11cd058ae61e8f453da23c9a45b73da6801beb6ac05fd6ec4b"
+  },
+  "breast/female-young-minmuscle-minweight-averagecup-maxfirmness.target": {
+   "bytes": 4866,
+   "sha256": "cb35d792634d1cba1a532c7e172f44bd6db563ab45b42faa91fe794e8cb1e697"
+  },
+  "breast/female-young-minmuscle-minweight-maxcup-averagefirmness.target": {
+   "bytes": 15505,
+   "sha256": "1ea1ef84b46fa73ac64d411b4b1aee1189b31f52137844aa9da99f6206dd24a0"
+  },
+  "breast/female-young-minmuscle-minweight-maxcup-maxfirmness.target": {
+   "bytes": 15450,
+   "sha256": "4548bc7e2721d950b90a36fd3df688537e7c8b849b39dc5ecc2437dbad20c070"
+  },
+  "macrodetails/african-female-child.target": {
+   "bytes": 442183,
+   "sha256": "f88b8f252df8a9a3f35f78e1664983e9a30756bca1e454afce39438296eb7b41"
+  },
+  "macrodetails/african-female-young.target": {
+   "bytes": 411735,
+   "sha256": "92d61eeb3c164b421fd5a7c3537ee45e7e1a51de4d49bf312e19c3df2be1d8fc"
+  },
+  "macrodetails/african-male-child.target": {
+   "bytes": 439005,
+   "sha256": "5b89c85ed7ba9984b5e57a5844b10eb74ab7fcfa79f77a5a3ec697dd860969ed"
+  },
+  "macrodetails/african-male-young.target": {
+   "bytes": 406170,
+   "sha256": "894abc1fbb3d28543a51fef16f89d5d4bdf9aa2e1534413339811a3d47818b7d"
+  },
+  "macrodetails/asian-female-child.target": {
+   "bytes": 447393,
+   "sha256": "a4fffea45a475a24a0a7332dac28a07dfd60a9af9eb50b61ed5abd1178197f75"
+  },
+  "macrodetails/asian-female-young.target": {
+   "bytes": 435553,
+   "sha256": "095fe79694fa19e1fe98d93009ec116199bd524e081c640351a10eccf2cca1eb"
+  },
+  "macrodetails/asian-male-child.target": {
+   "bytes": 442344,
+   "sha256": "c1b56e9cc549cd7c463f407557d7adceaa217b528c600d34c19df98bc3d6472e"
+  },
+  "macrodetails/asian-male-young.target": {
+   "bytes": 421040,
+   "sha256": "ed2e8c191cb6b87b4a2d97c80486acb2604fa549316c7aa2a738a5d5a14334dc"
+  },
+  "macrodetails/caucasian-female-child.target": {
+   "bytes": 446405,
+   "sha256": "17fc408839c0a407bf4efd96d9af7eebcdf20d74698659f3597b0647ed6b147e"
+  },
+  "macrodetails/caucasian-female-young.target": {
+   "bytes": 420559,
+   "sha256": "118379f6e8ba9266247fdb8788a20e1df40a239f97ced0b9905bcbcc74f6e820"
+  },
+  "macrodetails/caucasian-male-child.target": {
+   "bytes": 441028,
+   "sha256": "401b9b0349c88dc7aacb81e71f67daf747fecde0f7fd7f3f6e10fb2ce5586d1e"
+  },
+  "macrodetails/caucasian-male-young.target": {
+   "bytes": 396479,
+   "sha256": "70e228ba7164737dae664454394536fc5935fa48d333c1a97d77e2dc6eacc5f5"
+  },
+  "macrodetails/height/female-child-averagemuscle-averageweight-maxheight.target": {
+   "bytes": 411926,
+   "sha256": "0d093cad7d4d968756164a21d719aae4deb9e315ac97291d41f32b035ccf6100"
+  },
+  "macrodetails/height/female-child-averagemuscle-averageweight-minheight.target": {
+   "bytes": 444394,
+   "sha256": "375857dff927f67da53786fc5ac0545c473f4959e3b326727b6b91f49ebdd2e3"
+  },
+  "macrodetails/height/female-child-averagemuscle-maxweight-maxheight.target": {
+   "bytes": 411926,
+   "sha256": "0d093cad7d4d968756164a21d719aae4deb9e315ac97291d41f32b035ccf6100"
+  },
+  "macrodetails/height/female-child-averagemuscle-minweight-maxheight.target": {
+   "bytes": 411926,
+   "sha256": "0d093cad7d4d968756164a21d719aae4deb9e315ac97291d41f32b035ccf6100"
+  },
+  "macrodetails/height/female-child-averagemuscle-minweight-minheight.target": {
+   "bytes": 444394,
+   "sha256": "375857dff927f67da53786fc5ac0545c473f4959e3b326727b6b91f49ebdd2e3"
+  },
+  "macrodetails/height/female-child-maxmuscle-averageweight-maxheight.target": {
+   "bytes": 411926,
+   "sha256": "0d093cad7d4d968756164a21d719aae4deb9e315ac97291d41f32b035ccf6100"
+  },
+  "macrodetails/height/female-child-maxmuscle-minweight-maxheight.target": {
+   "bytes": 411926,
+   "sha256": "0d093cad7d4d968756164a21d719aae4deb9e315ac97291d41f32b035ccf6100"
+  },
+  "macrodetails/height/female-child-minmuscle-averageweight-maxheight.target": {
+   "bytes": 411926,
+   "sha256": "0d093cad7d4d968756164a21d719aae4deb9e315ac97291d41f32b035ccf6100"
+  },
+  "macrodetails/height/female-child-minmuscle-averageweight-minheight.target": {
+   "bytes": 444394,
+   "sha256": "375857dff927f67da53786fc5ac0545c473f4959e3b326727b6b91f49ebdd2e3"
+  },
+  "macrodetails/height/female-child-minmuscle-maxweight-maxheight.target": {
+   "bytes": 411926,
+   "sha256": "0d093cad7d4d968756164a21d719aae4deb9e315ac97291d41f32b035ccf6100"
+  },
+  "macrodetails/height/female-child-minmuscle-minweight-maxheight.target": {
+   "bytes": 411926,
+   "sha256": "0d093cad7d4d968756164a21d719aae4deb9e315ac97291d41f32b035ccf6100"
+  },
+  "macrodetails/height/female-child-minmuscle-minweight-minheight.target": {
+   "bytes": 444404,
+   "sha256": "7529c116954716578e64a1059cc43ccd5329457818433de53a4772ca0f668315"
+  },
+  "macrodetails/height/female-young-averagemuscle-averageweight-maxheight.target": {
+   "bytes": 420920,
+   "sha256": "3baacc70187410ebba2b62c56a53775266ab859b7844d47e658d36ee78493621"
+  },
+  "macrodetails/height/female-young-averagemuscle-averageweight-minheight.target": {
+   "bytes": 444394,
+   "sha256": "375857dff927f67da53786fc5ac0545c473f4959e3b326727b6b91f49ebdd2e3"
+  },
+  "macrodetails/height/female-young-averagemuscle-maxweight-maxheight.target": {
+   "bytes": 420920,
+   "sha256": "3baacc70187410ebba2b62c56a53775266ab859b7844d47e658d36ee78493621"
+  },
+  "macrodetails/height/female-young-averagemuscle-minweight-maxheight.target": {
+   "bytes": 420920,
+   "sha256": "3baacc70187410ebba2b62c56a53775266ab859b7844d47e658d36ee78493621"
+  },
+  "macrodetails/height/female-young-averagemuscle-minweight-minheight.target": {
+   "bytes": 444394,
+   "sha256": "375857dff927f67da53786fc5ac0545c473f4959e3b326727b6b91f49ebdd2e3"
+  },
+  "macrodetails/height/female-young-maxmuscle-averageweight-maxheight.target": {
+   "bytes": 420920,
+   "sha256": "3baacc70187410ebba2b62c56a53775266ab859b7844d47e658d36ee78493621"
+  },
+  "macrodetails/height/female-young-maxmuscle-minweight-maxheight.target": {
+   "bytes": 420920,
+   "sha256": "3baacc70187410ebba2b62c56a53775266ab859b7844d47e658d36ee78493621"
+  },
+  "macrodetails/height/female-young-minmuscle-averageweight-maxheight.target": {
+   "bytes": 420920,
+   "sha256": "3baacc70187410ebba2b62c56a53775266ab859b7844d47e658d36ee78493621"
+  },
+  "macrodetails/height/female-young-minmuscle-averageweight-minheight.target": {
+   "bytes": 444394,
+   "sha256": "375857dff927f67da53786fc5ac0545c473f4959e3b326727b6b91f49ebdd2e3"
+  },
+  "macrodetails/height/female-young-minmuscle-maxweight-maxheight.target": {
+   "bytes": 420920,
+   "sha256": "3baacc70187410ebba2b62c56a53775266ab859b7844d47e658d36ee78493621"
+  },
+  "macrodetails/height/female-young-minmuscle-minweight-maxheight.target": {
+   "bytes": 420920,
+   "sha256": "3baacc70187410ebba2b62c56a53775266ab859b7844d47e658d36ee78493621"
+  },
+  "macrodetails/height/female-young-minmuscle-minweight-minheight.target": {
+   "bytes": 444392,
+   "sha256": "48fe0e14e4db968f42d8e48751895fe1547c0424a531002132bce7691ec8aa74"
+  },
+  "macrodetails/height/male-child-averagemuscle-averageweight-maxheight.target": {
+   "bytes": 411926,
+   "sha256": "0d093cad7d4d968756164a21d719aae4deb9e315ac97291d41f32b035ccf6100"
+  },
+  "macrodetails/height/male-child-averagemuscle-minweight-maxheight.target": {
+   "bytes": 411926,
+   "sha256": "0d093cad7d4d968756164a21d719aae4deb9e315ac97291d41f32b035ccf6100"
+  },
+  "macrodetails/height/male-child-minmuscle-averageweight-maxheight.target": {
+   "bytes": 411926,
+   "sha256": "0d093cad7d4d968756164a21d719aae4deb9e315ac97291d41f32b035ccf6100"
+  },
+  "macrodetails/height/male-child-minmuscle-minweight-maxheight.target": {
+   "bytes": 411926,
+   "sha256": "0d093cad7d4d968756164a21d719aae4deb9e315ac97291d41f32b035ccf6100"
+  },
+  "macrodetails/height/male-young-averagemuscle-averageweight-maxheight.target": {
+   "bytes": 420920,
+   "sha256": "3baacc70187410ebba2b62c56a53775266ab859b7844d47e658d36ee78493621"
+  },
+  "macrodetails/height/male-young-averagemuscle-minweight-maxheight.target": {
+   "bytes": 420920,
+   "sha256": "3baacc70187410ebba2b62c56a53775266ab859b7844d47e658d36ee78493621"
+  },
+  "macrodetails/height/male-young-minmuscle-averageweight-maxheight.target": {
+   "bytes": 420920,
+   "sha256": "3baacc70187410ebba2b62c56a53775266ab859b7844d47e658d36ee78493621"
+  },
+  "macrodetails/height/male-young-minmuscle-minweight-maxheight.target": {
+   "bytes": 420920,
+   "sha256": "3baacc70187410ebba2b62c56a53775266ab859b7844d47e658d36ee78493621"
+  },
+  "macrodetails/proportions/female-child-averagemuscle-averageweight-idealproportions.target": {
+   "bytes": 348508,
+   "sha256": "3f853d21a4746d3177df46ded4b407b658a151ffc82658e38c40864b674623d7"
+  },
+  "macrodetails/proportions/female-child-averagemuscle-averageweight-uncommonproportions.target": {
+   "bytes": 359317,
+   "sha256": "e882dfd6d2f2945c4b7b47cc22172ac0ea7837cad1c81f0e43169f7cc3d34a54"
+  },
+  "macrodetails/proportions/female-child-averagemuscle-maxweight-idealproportions.target": {
+   "bytes": 347783,
+   "sha256": "227cb6e69e992b9318be3db945b0cbfe2856f29ec2c8ed3c84e5481ef21f3762"
+  },
+  "macrodetails/proportions/female-child-averagemuscle-minweight-idealproportions.target": {
+   "bytes": 348296,
+   "sha256": "fbed0a885cb2d0d5268af8a1ab93075b24517265abb60ea8635ea0838b751b9b"
+  },
+  "macrodetails/proportions/female-child-averagemuscle-minweight-uncommonproportions.target": {
+   "bytes": 359317,
+   "sha256": "e882dfd6d2f2945c4b7b47cc22172ac0ea7837cad1c81f0e43169f7cc3d34a54"
+  },
+  "macrodetails/proportions/female-child-maxmuscle-averageweight-idealproportions.target": {
+   "bytes": 349660,
+   "sha256": "775589d7f6e241b3235ec4ab969752c1d9076fc51339d02ba564d6c4428fe950"
+  },
+  "macrodetails/proportions/female-child-maxmuscle-minweight-idealproportions.target": {
+   "bytes": 348257,
+   "sha256": "fa955742031fdf3d8b3b7941b8094c35e9cd229498a1ec346fa1d0bed2ffc361"
+  },
+  "macrodetails/proportions/female-child-minmuscle-averageweight-idealproportions.target": {
+   "bytes": 349266,
+   "sha256": "51f9e2c5a13a2ba053a7b76cccbc2ce2984a2ccbf8d9a725d9d95d9642da1498"
+  },
+  "macrodetails/proportions/female-child-minmuscle-averageweight-uncommonproportions.target": {
+   "bytes": 359317,
+   "sha256": "e882dfd6d2f2945c4b7b47cc22172ac0ea7837cad1c81f0e43169f7cc3d34a54"
+  },
+  "macrodetails/proportions/female-child-minmuscle-maxweight-idealproportions.target": {
+   "bytes": 348176,
+   "sha256": "6796279dcf6b9d2658f322238482d4d4153c7558c34f546d8619e72a4d885078"
+  },
+  "macrodetails/proportions/female-child-minmuscle-minweight-idealproportions.target": {
+   "bytes": 347590,
+   "sha256": "bd58e1431b262c6d238fba4a88542df01b59a3738c5efaee4d323428e6b532d7"
+  },
+  "macrodetails/proportions/female-child-minmuscle-minweight-uncommonproportions.target": {
+   "bytes": 359317,
+   "sha256": "e882dfd6d2f2945c4b7b47cc22172ac0ea7837cad1c81f0e43169f7cc3d34a54"
+  },
+  "macrodetails/proportions/female-young-averagemuscle-averageweight-idealproportions.target": {
+   "bytes": 349563,
+   "sha256": "0a3bd099b7a88150d56d68b69c07d3d3538cb57279e0e775d13f19d3dc3e339d"
+  },
+  "macrodetails/proportions/female-young-averagemuscle-averageweight-uncommonproportions.target": {
+   "bytes": 359317,
+   "sha256": "e882dfd6d2f2945c4b7b47cc22172ac0ea7837cad1c81f0e43169f7cc3d34a54"
+  },
+  "macrodetails/proportions/female-young-averagemuscle-maxweight-idealproportions.target": {
+   "bytes": 349535,
+   "sha256": "96f81f6e03caae79a75c404c9328aeea0d73e80bfe4b82b5ee247b3d4ce0ea78"
+  },
+  "macrodetails/proportions/female-young-averagemuscle-minweight-idealproportions.target": {
+   "bytes": 351599,
+   "sha256": "8be529e595d7a5fb12352c476faf99af8dd3ae3f50972d452f650d1f2f810213"
+  },
+  "macrodetails/proportions/female-young-averagemuscle-minweight-uncommonproportions.target": {
+   "bytes": 359317,
+   "sha256": "e882dfd6d2f2945c4b7b47cc22172ac0ea7837cad1c81f0e43169f7cc3d34a54"
+  },
+  "macrodetails/proportions/female-young-maxmuscle-averageweight-idealproportions.target": {
+   "bytes": 351047,
+   "sha256": "12654c6dd22d81a9595f41f149f1988c141ca22a350d4c2b91fccd8f9b2ce23b"
+  },
+  "macrodetails/proportions/female-young-maxmuscle-minweight-idealproportions.target": {
+   "bytes": 349835,
+   "sha256": "30330cfaf3d4850c3561567dca3c9dbe08b5c7ddab6163b2565a2964c168fc60"
+  },
+  "macrodetails/proportions/female-young-minmuscle-averageweight-idealproportions.target": {
+   "bytes": 349582,
+   "sha256": "10275c2f0d390ac4180b34ac5fa98e907f50cc3661f3a5f45d2cb4aa9f9cf11a"
+  },
+  "macrodetails/proportions/female-young-minmuscle-averageweight-uncommonproportions.target": {
+   "bytes": 359317,
+   "sha256": "e882dfd6d2f2945c4b7b47cc22172ac0ea7837cad1c81f0e43169f7cc3d34a54"
+  },
+  "macrodetails/proportions/female-young-minmuscle-maxweight-idealproportions.target": {
+   "bytes": 349484,
+   "sha256": "329bad60b852bbc17eb8a6343e95dfc8942c590a21014f85e10afac21ede1ed0"
+  },
+  "macrodetails/proportions/female-young-minmuscle-minweight-idealproportions.target": {
+   "bytes": 350141,
+   "sha256": "d70464833b00c5f36d8516d440cf1aa3835b9f45d51bcccedd48cf7b7c30781d"
+  },
+  "macrodetails/proportions/female-young-minmuscle-minweight-uncommonproportions.target": {
+   "bytes": 359317,
+   "sha256": "e882dfd6d2f2945c4b7b47cc22172ac0ea7837cad1c81f0e43169f7cc3d34a54"
+  },
+  "macrodetails/proportions/male-child-averagemuscle-averageweight-idealproportions.target": {
+   "bytes": 163723,
+   "sha256": "4b36a92868d8ea6f4000777aca494e3ace843baa574271ff2356da89af3b2b7c"
+  },
+  "macrodetails/proportions/male-child-averagemuscle-minweight-idealproportions.target": {
+   "bytes": 163723,
+   "sha256": "4b36a92868d8ea6f4000777aca494e3ace843baa574271ff2356da89af3b2b7c"
+  },
+  "macrodetails/proportions/male-child-minmuscle-averageweight-idealproportions.target": {
+   "bytes": 163723,
+   "sha256": "4b36a92868d8ea6f4000777aca494e3ace843baa574271ff2356da89af3b2b7c"
+  },
+  "macrodetails/proportions/male-child-minmuscle-minweight-idealproportions.target": {
+   "bytes": 163723,
+   "sha256": "4b36a92868d8ea6f4000777aca494e3ace843baa574271ff2356da89af3b2b7c"
+  },
+  "macrodetails/proportions/male-young-averagemuscle-averageweight-idealproportions.target": {
+   "bytes": 164124,
+   "sha256": "7bbd790604c908417ff8ca11e566e3577508d92a4f397a2ace0f89f4cc3aa373"
+  },
+  "macrodetails/proportions/male-young-averagemuscle-minweight-idealproportions.target": {
+   "bytes": 167077,
+   "sha256": "278060f8fb9c1843df0ae0894d015c8459ccb8cef74cf4f65032bae9152cfd6a"
+  },
+  "macrodetails/proportions/male-young-minmuscle-averageweight-idealproportions.target": {
+   "bytes": 164317,
+   "sha256": "d9452857903d18a2100ca26105d5a61083e7064fbe16f035863446728755ec20"
+  },
+  "macrodetails/proportions/male-young-minmuscle-minweight-idealproportions.target": {
+   "bytes": 164317,
+   "sha256": "d9452857903d18a2100ca26105d5a61083e7064fbe16f035863446728755ec20"
+  },
+  "macrodetails/universal-female-child-averagemuscle-averageweight.target": {
+   "bytes": 604,
+   "sha256": "4ba5396ddabda448ece15650a566fbebfbb10239256ccb201e8f883429e12249"
+  },
+  "macrodetails/universal-female-child-averagemuscle-maxweight.target": {
+   "bytes": 129308,
+   "sha256": "311017f8768f42de2f4fa9142381de527a3a3e8bef09190f97e5cd17f5ec4c2a"
+  },
+  "macrodetails/universal-female-child-averagemuscle-minweight.target": {
+   "bytes": 140164,
+   "sha256": "a48d2f7589706e61f5776f115bfe30ce2e12dd1d4cdd5680f288b0e5d6ee69b6"
+  },
+  "macrodetails/universal-female-child-maxmuscle-averageweight.target": {
+   "bytes": 142401,
+   "sha256": "1888abdf3939a332921db2dfb2af29b29cf56fb1ed89245ffb8575ef78aa9f7c"
+  },
+  "macrodetails/universal-female-child-maxmuscle-minweight.target": {
+   "bytes": 136725,
+   "sha256": "c3a23a9a3060f09be7e498ba9b77f089aa2364e94371ae2dabe606b308ab9913"
+  },
+  "macrodetails/universal-female-child-minmuscle-averageweight.target": {
+   "bytes": 255132,
+   "sha256": "5d2f9ef31873c6f8bd7b639206b4d78ce24919dda341b97ff62adce5ea65a197"
+  },
+  "macrodetails/universal-female-child-minmuscle-maxweight.target": {
+   "bytes": 279002,
+   "sha256": "adbe50e6a09db6087ad7e936f0990ef3d22c2a8ea8c30f2409299f27d4fcb592"
+  },
+  "macrodetails/universal-female-child-minmuscle-minweight.target": {
+   "bytes": 236366,
+   "sha256": "7e4b2d9b4569e477b235e3123eb8e7f5f1a0a5fbf15f050dbba78d991b43a627"
+  },
+  "macrodetails/universal-female-young-averagemuscle-averageweight.target": {
+   "bytes": 604,
+   "sha256": "4ba5396ddabda448ece15650a566fbebfbb10239256ccb201e8f883429e12249"
+  },
+  "macrodetails/universal-female-young-averagemuscle-maxweight.target": {
+   "bytes": 124481,
+   "sha256": "3648e7f9b34d947726161b563b90ba92b29860bac4c4f82aea3cec37bad2bb4e"
+  },
+  "macrodetails/universal-female-young-averagemuscle-minweight.target": {
+   "bytes": 147131,
+   "sha256": "e53a4afc87ac2703460a59e8290b1111478aeee5c02ece6735328c1f8c62eb63"
+  },
+  "macrodetails/universal-female-young-maxmuscle-averageweight.target": {
+   "bytes": 138225,
+   "sha256": "2e56b09b44a8497b927585447fdaac5ea7293521d1f3a3df1059495873c53f4e"
+  },
+  "macrodetails/universal-female-young-maxmuscle-minweight.target": {
+   "bytes": 147219,
+   "sha256": "05351f0063429f4e1e484501b73997a6fb129b93939db355d108f98d5479fb10"
+  },
+  "macrodetails/universal-female-young-minmuscle-averageweight.target": {
+   "bytes": 100650,
+   "sha256": "ab588aadac1ce474969f38b3dbc08c2dc081e861a223f70250e5cae135d054a3"
+  },
+  "macrodetails/universal-female-young-minmuscle-maxweight.target": {
+   "bytes": 202635,
+   "sha256": "66600ccaea3d4c54b1427c81f49160a7cbb2794fbcb7a695ec6e6a4743d72364"
+  },
+  "macrodetails/universal-female-young-minmuscle-minweight.target": {
+   "bytes": 380075,
+   "sha256": "856167f0a03efedd69f91e1cbad065957c8e8fef6acaaaf5b85a32b0f018fa67"
+  },
+  "macrodetails/universal-male-child-averagemuscle-averageweight.target": {
+   "bytes": 604,
+   "sha256": "4ba5396ddabda448ece15650a566fbebfbb10239256ccb201e8f883429e12249"
+  },
+  "macrodetails/universal-male-child-averagemuscle-minweight.target": {
+   "bytes": 145955,
+   "sha256": "03a9c12855ea7bea9b07191f1d02b6f1e887f118864854e61b8c14bcc110db3c"
+  },
+  "macrodetails/universal-male-child-minmuscle-averageweight.target": {
+   "bytes": 151083,
+   "sha256": "9ae65451e36ad2f282b6298acae1af45ec395cf6acdeca70814e0e607bdfd5d5"
+  },
+  "macrodetails/universal-male-child-minmuscle-minweight.target": {
+   "bytes": 208583,
+   "sha256": "2526baed3cd8001f4eb8593dfcc8aa7790ada8c2e23ac3a13188f0e8b93abbe7"
+  },
+  "macrodetails/universal-male-young-averagemuscle-averageweight.target": {
+   "bytes": 604,
+   "sha256": "4ba5396ddabda448ece15650a566fbebfbb10239256ccb201e8f883429e12249"
+  },
+  "macrodetails/universal-male-young-averagemuscle-minweight.target": {
+   "bytes": 147071,
+   "sha256": "fac0d53b7051f4d1f06230d0b419e916eb5bae5ce67c031a9998fdde05229755"
+  },
+  "macrodetails/universal-male-young-minmuscle-averageweight.target": {
+   "bytes": 155256,
+   "sha256": "aa2bd57c3d82cbcbaee3f35e75c7d03952bbb9624003d7ee6f1aa50e04bfa5ba"
+  },
+  "macrodetails/universal-male-young-minmuscle-minweight.target": {
+   "bytes": 182223,
+   "sha256": "3af713db636eb41f32af5010981bad30efe743a3ab1d4a61c619c664b610a51a"
+  },
+  "measure/measure-bust-circ-incr.target": {
+   "bytes": 40556,
+   "sha256": "46394c7f9cdfac31654f14950b57bbfb874c9a2fa68e48c9cc3e7bba619b75f4"
+  },
+  "measure/measure-hips-circ-incr.target": {
+   "bytes": 26447,
+   "sha256": "e4294db231dd3283680e6be4b9d3d8d81aa7c575a32f937f8d0751b1ec3d6512"
+  },
+  "measure/measure-lowerleg-height-decr.target": {
+   "bytes": 59660,
+   "sha256": "267a461a42209dc1547fba016179646d38f9148fa177867e234b6018a404e98a"
+  },
+  "measure/measure-lowerleg-height-incr.target": {
+   "bytes": 75540,
+   "sha256": "b76887923140e6fbf91d3488f10faff33f9ad0269e614061592ba324e9384d7b"
+  },
+  "measure/measure-underbust-circ-decr.target": {
+   "bytes": 39087,
+   "sha256": "94c7a07cf0b71a2a5f6e369ba9bf10e1e30ac2ef93596567f16178623867c186"
+  },
+  "measure/measure-upperleg-height-decr.target": {
+   "bytes": 93265,
+   "sha256": "fb17a93a653d16b59c20c2e48eac01338e6025f5097484c5c55038213130aee5"
+  },
+  "measure/measure-upperleg-height-incr.target": {
+   "bytes": 107639,
+   "sha256": "e532edd028160842297d4acf77ea961cb5a3016e29d6077bc35464ed6a4bd567"
+  },
+  "measure/measure-waist-circ-incr.target": {
+   "bytes": 27682,
+   "sha256": "4949212ec9a5e227b177a029ee42b0be3fd3b273a211bc91c6f4d4dbf0334856"
+  },
+  "pelvis/bulge-decr.target": {
+   "bytes": 852,
+   "sha256": "a4c13aee1da6179ffe61f2a64af464e4254b9a75128929837fc694a39359ec80"
+  }
+ },
+ "note": "Pins what analysis/makehuman_attribution.py and analysis/makehuman_v2.py read. 'files' are paths in the upstream repo's makehuman/data/targets folder, fetched at 'commit' by analysis/makehuman_fetch.py into data/makehuman/cache/targets (gitignored). The list is the target files those scripts actually read for the v1, default-human, slider-search and v2 meshes, not the whole folder. The pre-pin attribution run of memo 30 read a 414-file folder fetched from master on 2026-10-24; its results reproduce from this pin to the digits stored, only 'inputs.target_files' differs.",
+ "retrieved": "2026-10-25",
+ "source": "github.com/makehumancommunity/makehuman",
+ "targets_license": {
+  "license_file": "LICENSE.ASSETS.md",
+  "spdx": "CC0-1.0",
+  "statement": "The targets folder has no license file of its own. Every target file read carries the same header as base.obj ('This asset was explicitly released as CC0 in september 2020. The license text for CC0 can be found in the root of this repository.'), and the repository's LICENSE.ASSETS.md at that commit is the CC0 1.0 Universal text. Checked for all files in this manifest."
+ },
+ "targets_path": "makehuman/data/targets"
+}

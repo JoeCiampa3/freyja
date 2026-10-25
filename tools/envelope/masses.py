@@ -16,6 +16,7 @@ PATH = "data/envelope/body_density.json"
 BRACKET = (0.15, 0.35)                    # the brief's sensitivity bracket for the body fat fraction
 BLENDER_TOLERANCE = 0.005                 # the brief: the computed volume must match Joe's Blender volume within 0.5%
 REFERENCE_DENSITY = {"thigh": 1.05, "shank": 1.09, "foot": 1.10}   # kg/l, Dempster-type values quoted in the brief; eyeballing only
+ABDOMEN_REFERENCE_DENSITY = 1.01  # kg/l, the same recalled Dempster abdomen-pelvis value for the sheet's abdomen body; recalled, unverified, needs a cited source (brief 3, item 5)
 PELVIS_REFERENCE_DENSITY = 1.01   # kg/l, Dempster's abdomen-pelvis value as I recall it from Winter's tables; the brief gives none for the pelvis (a question for Joe)
 
 
@@ -75,7 +76,7 @@ def report(inp, results: dict, constants: dict, cuts: dict | None = None) -> dic
     def add(name, volume_l, mass_kg, ref, mass_label=None):
         share_m = mass_kg / total
         share_v = volume_l / V_mesh
-        row = {"volume_l": volume_l, "mass_kg_sheet": mass_kg, "mass_share": share_m, "volume_share": share_v, "ratio": share_m / share_v, "reference_density_kg_per_l": ref, "cases": {}}
+        row = {"volume_l": volume_l, "mass_kg_sheet": mass_kg, "sheet_mass_per_skin_volume_kg_per_l": mass_kg / volume_l, "mass_share": share_m, "volume_share": share_v, "ratio": share_m / share_v, "reference_density_kg_per_l": ref, "cases": {}}
         for label in cases:
             c = out["cases"][label]
             expected = ref / c["mean_mesh_density_kg_per_l"]
@@ -98,6 +99,19 @@ def report(inp, results: dict, constants: dict, cuts: dict | None = None) -> dic
             m = 2 * mass["thigh"] + mass["pelvis"]
             ref = (2 * mass["thigh"] * REFERENCE_DENSITY["thigh"] + mass["pelvis"] * PELVIS_REFERENCE_DENSITY) / m
             add(f"thigh_pelvis_{k}", vol, m, ref)
+        tops = ("_ilio", "_ilio_lo", "_ilio_hi")
+        for suffix in tops:
+            for k, th in (("hjc", "in"), ("crotch", "crotch")):
+                add(f"pelvis_{k}{suffix}", v[f"pelvis_{k}{suffix}"] / 1e6, mass["pelvis"], PELVIS_REFERENCE_DENSITY)
+                vol = 2 * v[f"thigh_{th}"] / 1e6 + v[f"pelvis_{k}{suffix}"] / 1e6
+                m = 2 * mass["thigh"] + mass["pelvis"]
+                ref = (2 * mass["thigh"] * REFERENCE_DENSITY["thigh"] + mass["pelvis"] * PELVIS_REFERENCE_DENSITY) / m
+                add(f"thigh_pelvis_{k}{suffix}", vol, m, ref)
+        # the lumped region: abdomen + pelvis + both thighs, from the tenth rib (mean, -1 SD, +1 SD) down to the KJC planes
+        m = sh.abdomen_mass_kg + mass["pelvis"] + 2 * mass["thigh"]
+        ref = (sh.abdomen_mass_kg * ABDOMEN_REFERENCE_DENSITY + mass["pelvis"] * PELVIS_REFERENCE_DENSITY + 2 * mass["thigh"] * REFERENCE_DENSITY["thigh"]) / m
+        for name in ("lumped", "lumped_lo", "lumped_hi"):
+            add(name, v[name] / 1e6, m, ref)
         out["cut_stations"] = {"crotch_below_hip_centre_mm": cuts["s_crotch_mm"], "hip_zone_mm": 40.0, "ljc_mesh_mm": cuts["ljc_mesh_mm"]}
     out["rows"] = rows
     out["stature_mesh_m"] = stature_m

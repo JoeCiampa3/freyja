@@ -6,8 +6,8 @@ weights from human.py (`_set*Vals`) and humanmodifier.py (macro targets weighted
 
     python analysis/makehuman_attribution.py --base base.obj --targets DIR --out data/envelope/sculpt_attribution.json
 
-`base.obj` is makehuman/data/3dobjs/base.obj and DIR holds makehuman/data/targets (macrodetails, breast, measure, bodyshapes, pelvis), both from
-github.com/makehumancommunity/makehuman, all CC0. They stay outside the repo; the output records their hashes. The knee is the one the trial uses:
+`base.obj` is committed at data/makehuman/base.obj and DIR is the folder `python analysis/makehuman_fetch.py` fills (default
+data/makehuman/cache/targets, gitignored), both pinned by hash in data/makehuman/mhm_sources.json; all CC0. The output records the hashes. The knee is the one the trial uses:
 the mean of the lower end of the Ruler upper-leg chord and the upper end of the lower-leg chord, as a fraction of stature (top of head over the sole).
 """
 from __future__ import annotations
@@ -107,22 +107,30 @@ def target_weights(files, state, vals) -> dict:
     return w
 
 
-def read_mhm(path) -> dict:
+def read_mhm_text(text) -> dict:
     out = {}
-    for line in Path(path).read_text().splitlines():
+    for line in text.splitlines():
         p = line.split()
         if len(p) == 3 and p[0] == "modifier":
             out[p[1]] = float(p[2])
     return out
 
 
+def read_mhm(path) -> dict:
+    return read_mhm_text(Path(path).read_text())
+
+
 class Targets:
     def __init__(self, folder):
         self.folder = Path(folder)
+        if not self.folder.is_dir():
+            raise FileNotFoundError(f"{folder}: no targets folder; run `python analysis/makehuman_fetch.py`")
         self.files = sorted(str(p.relative_to(self.folder)).replace("\\", "/") for p in self.folder.rglob("*.target"))
         self._cache = {}
+        self.used = set()                                # every target file read, for the pinned manifest
 
     def load(self, rel):
+        self.used.add(rel)
         if rel not in self._cache:
             idx, d = [], []
             for line in (self.folder / rel).read_text().splitlines():

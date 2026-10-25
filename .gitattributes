@@ -8,3 +8,5 @@ docs/schemas/*.json text eol=lf
 sim/sweeps/**/sweep.json text eol=lf
 sim/sweeps/**/SWEEP.md text eol=lf
 docs/schemas/*.json text eol=lf
+# base.obj is pinned by byte hash (data/makehuman/mhm_sources.json): no line-ending conversion
+data/makehuman/base.obj -text

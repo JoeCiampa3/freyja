@@ -148,3 +148,51 @@ def test_share_ratio_arithmetic_with_stand_in_segments():
     assert c["expected_tissue_ratio"] == pytest.approx(1.05 / mean) and c["normalised_ratio"] == pytest.approx(0.5 / (1.05 / mean))
     assert c["implied_density_kg_per_l"] == pytest.approx(0.1 * D * 0.9 / 0.2)
     assert out["blender_within_tolerance"] is True
+
+
+# ---- brief 3: pelvis tops at the iliocristale, the lumped region to the tenth rib ----------------------------------------------------
+
+def _ansur_stub():
+    return {"landmarks": {"iliocristale": {"ratio": {"mean": 0.6, "sd": 0.01}}, "tenth_rib": {"ratio": {"mean": 0.65, "sd": 0.02}}}}
+
+
+def test_landmark_heights_are_ansur_ratio_times_the_mesh_stature_with_a_one_sd_band():
+    from envelope import cuts
+    h = cuts.landmark_heights(_ansur_stub(), 1700.0)
+    assert h["iliocristale"] == pytest.approx({"mean": 1020.0, "lo": 1003.0, "hi": 1037.0, "sd": 17.0})
+    assert h["tenth_rib"] == pytest.approx({"mean": 1105.0, "lo": 1071.0, "hi": 1139.0, "sd": 34.0})
+
+
+def test_lumped_volume_is_the_slab_from_the_crotch_apex_plus_two_thighs_and_does_not_see_the_pelvis_cuts():
+    from envelope import cuts, register
+    sh = register.sheet_nodes(REPO / "params" / "snapshot.csv")
+    reg = register.make_registration(sh, {"ajc": 60.0, "kjc": 480.0, "hjc": 880.0}, {n: (0.0, -100.0) for n in ("ajc", "kjc", "hjc")}, {n: 1.0 for n in ("ajc", "kjc", "hjc")})
+    z = np.arange(0.0, 1200.0, 2.0)
+    area = np.full_like(z, 10000.0)
+    s = reg.axial.stretches()["thigh"]
+    v = cuts.lumped_volume(z, area, 800.0, 1100.0, reg, thigh_below_apex_mm3=3.0e6)
+    assert v == pytest.approx(10000.0 * (80.0 * s + 220.0) + 2 * 3.0e6, rel=2e-3)
+
+
+def test_mass_rows_for_the_new_cuts_carry_sheet_mass_per_skin_volume():
+    from envelope import masses
+    from envelope.synthetic import box
+    V, F = box(50, 50, 50)                                  # 1 l
+    sh = SimpleNamespace(total_mass_kg=10.0, thigh_mass_kg=1.0, shank_mass_kg=0.5, foot_mass_kg=0.2, pelvis_mass_kg=1.0, abdomen_mass_kg=0.3)
+    inp = SimpleNamespace(V=V, F=F, sheet=sh, stature_mesh=100.0)
+    fake = lambda v: SimpleNamespace(seg=SimpleNamespace(volume=lambda t=0.0, s0=0.0, s1=None: v * 1e6))
+    vols = {"thigh_in": 0.2e6, "thigh_out": 0.1e6, "thigh_crotch": 0.15e6, "pelvis_hjc": 0.3e6, "pelvis_crotch": 0.4e6}
+    for top in ("ilio", "ilio_lo", "ilio_hi"):
+        vols[f"pelvis_hjc_{top}"], vols[f"pelvis_crotch_{top}"] = 0.35e6, 0.45e6
+    vols.update({"lumped": 0.9e6, "lumped_lo": 0.8e6, "lumped_hi": 1.0e6})
+    cuts = {"volumes_mm3": vols, "s_crotch_mm": 70.0, "ljc_mesh_mm": 900.0}
+    out = masses.report(inp, {"thigh": fake(0.2), "shank": fake(0.1), "foot": fake(0.02)}, {"body_fat_fraction": 0.2, "v_lung_l": 0.1}, cuts)
+    r = out["rows"]
+    assert r["pelvis_hjc_ilio"]["volume_l"] == pytest.approx(0.35) and r["pelvis_hjc_ilio"]["mass_kg_sheet"] == 1.0
+    assert r["pelvis_hjc_ilio"]["sheet_mass_per_skin_volume_kg_per_l"] == pytest.approx(1.0 / 0.35)
+    assert r["thigh_pelvis_hjc_ilio"]["volume_l"] == pytest.approx(2 * 0.2 + 0.35) and r["thigh_pelvis_hjc_ilio"]["mass_kg_sheet"] == pytest.approx(3.0)
+    assert r["lumped"]["mass_kg_sheet"] == pytest.approx(0.3 + 1.0 + 2 * 1.0) and r["lumped"]["volume_l"] == pytest.approx(0.9)
+    assert r["lumped"]["reference_density_kg_per_l"] == pytest.approx((0.3 * masses.ABDOMEN_REFERENCE_DENSITY + 1.0 * masses.PELVIS_REFERENCE_DENSITY + 2 * 1.05) / 3.3)
+    assert r["shank"]["sheet_mass_per_skin_volume_kg_per_l"] == pytest.approx(0.5 / 0.1) and r["foot"]["sheet_mass_per_skin_volume_kg_per_l"] == pytest.approx(0.2 / 0.02)
+    assert {"lumped_lo", "lumped_hi", "pelvis_crotch_ilio_hi", "thigh_pelvis_crotch_ilio_lo"} <= set(r)
+    assert r["pelvis_hjc"]["volume_l"] == pytest.approx(0.3)           # the lumbosacral-top rows are untouched
