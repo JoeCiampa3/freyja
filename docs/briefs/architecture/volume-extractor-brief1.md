@@ -47,4 +47,5 @@ Gate 2 (replaces the stretch-sensitivity gate): required |stretch − 1| < 8% pe
 Topology mismatch; missing or changed sheet cell; thigh not watertight; |s − 1| > 8%; any landmark that falls outside the mesh's plausible region (e.g. HJC outside the body).
 
 ## Deliverables
-Picker, pipeline, tests, data artifacts per conventions, and a memo in `docs/memos/` with the gate table, the sensitivity spread, the volume and density numbers, and the plots. Include a follow-ups section for anything Joe should decide. Add to the running list: note which landmark file and k variant each result used.
+Picker, pipeline, tests, data artifacts per conventions, and a memo in `docs/memos/` with the gate table, the sensitivity spread, the volume and density numbers, and the plots. Include a follow-ups section for anything Joe should decide. 
+
