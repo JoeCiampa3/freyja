@@ -86,10 +86,11 @@ def find_features(inp: Inputs) -> dict:
             "kjc_estimates_mm": kjc_est, "hjc_estimates_mm": hjc_est, "ajc_estimates_mm": ajc_est}
 
 
-def make_registration(inp: Inputs, feats: dict, knee_source="ruler") -> register.Registration:
+def make_registration(inp: Inputs, feats: dict, knee_source="chords") -> register.Registration:
     """Mesh nodes. AJC: the ANSUR lateral-malleolus ratio (ANSUR gives no offset from the Ruler ankle loop to the ankle joint, see memo 29). KJC: the
-    Ruler knee loop plus the ANSUR epicondyle-above-midpatella offset ('ruler', assumes the loop sits at the midpatella), the ANSUR ratio ('ansur'),
-    the mean of the two Ruler leg-height chord ends ('chords'), or the knee-breadth peak when the mesh has one ('breadth'). HJC: the measured crotch
+    mean of the Ruler upper-leg chord's lower end and the lower-leg chord's upper end ('chords', the trial's anchor, Joe's decision after memo 29), the
+    Ruler knee loop plus the ANSUR epicondyle-above-midpatella offset ('ruler', assumes the loop sits at the midpatella), the ANSUR ratio ('ansur'), or
+    the knee-breadth peak when the mesh has one ('breadth'). HJC: the measured crotch
     apex plus the ANSUR trochanterion-above-crotch offset."""
     if knee_source not in KNEE_SOURCES:
         raise ValueError(f"knee source {knee_source!r}: choose from {KNEE_SOURCES}")
@@ -102,7 +103,7 @@ def make_registration(inp: Inputs, feats: dict, knee_source="ruler") -> register
         raise StopAndAsk("the mesh has no knee-breadth feature (peak on the band edge or under 3 mm prominence)")
     kjc, kjc_sd = {"ruler": (e["ruler_loop_plus_ansur_offset"], float(np.hypot(knee_off_sd, LOOP_SD_MM))),
                    "ansur": (e["ansur_ratio"], L["lateral_femoral_epicondyle"]["ratio"]["sd"] * S),
-                   "chords": (e["ruler_chords_mean"], float(np.hypot(knee_off_sd, LOOP_SD_MM))),
+                   "chords": (e["ruler_chords_mean"], L["lateral_femoral_epicondyle"]["ratio"]["sd"] * S),   # Joe: the ANSUR epicondyle SD, centred on the chord anchor
                    "breadth": (e["breadth_peak"], L["lateral_femoral_epicondyle"]["ratio"]["sd"] * S)}[knee_source]
     nodes = {"ajc": feats["ajc_estimates_mm"]["ansur_ratio"], "kjc": kjc, "hjc": feats["hjc_estimates_mm"]["crotch_apex_plus_ansur_offset"]}
     sig = {"ajc": L["lateral_malleolus"]["ratio"]["sd"] * S, "kjc": kjc_sd, "hjc": float(np.hypot(off["sd"] * S, register.CROTCH_SD_MM))}

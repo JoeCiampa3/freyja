@@ -101,3 +101,50 @@ def test_sheet_masses_sum_to_the_target_within_a_fraction_of_a_percent():
     from envelope import register
     n = register.sheet_nodes(REPO / "params" / "snapshot.csv")
     assert abs(n.total_mass_kg - n.target_mass_kg) / n.target_mass_kg < 0.005
+
+
+# ---- cuts and the share tables -----------------------------------------------------------------------------------------------------
+
+def test_stretched_volume_integrates_the_area_profile_with_the_height_map():
+    from envelope import cuts, register
+    sh = register.sheet_nodes(REPO / "params" / "snapshot.csv")
+    reg = register.make_registration(sh, {"ajc": 60.0, "kjc": 480.0, "hjc": 880.0}, {n: (0.0, -100.0) for n in ("ajc", "kjc", "hjc")}, {n: 1.0 for n in ("ajc", "kjc", "hjc")})
+    z = np.arange(0.0, 1100.0, 2.0)
+    area = np.full_like(z, 10000.0)
+    s = reg.axial.stretches()["thigh"]
+    # between the knee and the hip node the height map has slope s; above the hip node slope 1
+    assert cuts.stretched_volume(z, area, 480.0, 880.0, reg) == pytest.approx(10000.0 * 400.0 * s, rel=1e-3)
+    assert cuts.stretched_volume(z, area, 880.0, 980.0, reg) == pytest.approx(10000.0 * 100.0, rel=1e-3)
+    assert cuts.stretched_volume(z, area, 800.0, 900.0, reg) == pytest.approx(10000.0 * (80.0 * s + 20.0), rel=2e-3)
+
+
+def test_core_area_profile_ignores_a_detached_arm():
+    from envelope import cuts, features
+    from envelope.synthetic import box
+    torso, tf = box(100, 150, 200, center=(0, 0, 200))
+    arm, af = box(30, 30, 100, center=(0, 300, 200))
+    V = np.vstack([torso, arm])
+    F = np.vstack([tf, af + len(torso)])
+    r = features.BodyRaster(V, F, 380.0)
+    z, a = cuts.core_area_profile(r, 100.0, 300.0)
+    assert np.allclose(a, 200 * 300, rtol=0.03)            # the torso's 200 x 300 mm section, not plus the arm's 60 x 60
+
+
+def test_share_ratio_arithmetic_with_stand_in_segments():
+    from envelope import masses
+    from envelope.synthetic import box
+    V, F = box(50, 50, 50)                                  # 100 mm cube = 1 l
+    sh = SimpleNamespace(total_mass_kg=10.0, thigh_mass_kg=1.0, shank_mass_kg=0.5, foot_mass_kg=0.2, pelvis_mass_kg=1.0)
+    inp = SimpleNamespace(V=V, F=F, sheet=sh, stature_mesh=100.0)
+    fake = lambda v: SimpleNamespace(seg=SimpleNamespace(volume=lambda t=0.0, s0=0.0, s1=None: v * 1e6))
+    consts = {"body_fat_fraction": 0.2, "v_lung_l": 0.1, "blender_volume_m3": 0.001}
+    out = masses.report(inp, {"thigh": fake(0.2), "shank": fake(0.1), "foot": fake(0.02)}, consts)
+    D = 4.95 / 4.7
+    assert out["cases"]["nominal"]["mesh_mass_kg"] == pytest.approx(D * 0.9)
+    r = out["rows"]["thigh"]
+    assert r["mass_share"] == pytest.approx(0.1) and r["volume_share"] == pytest.approx(0.2) and r["ratio"] == pytest.approx(0.5)
+    mean = D * 0.9 / 1.0
+    c = r["cases"]["nominal"]
+    assert c["expected_tissue_ratio"] == pytest.approx(1.05 / mean) and c["normalised_ratio"] == pytest.approx(0.5 / (1.05 / mean))
+    assert c["implied_density_kg_per_l"] == pytest.approx(0.1 * D * 0.9 / 0.2)
+    assert out["blender_within_tolerance"] is True

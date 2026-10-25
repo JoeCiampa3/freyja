@@ -9,7 +9,10 @@ import json
 
 import numpy as np
 
-from . import masses, meshio, oracle, register, synthetic, trial
+import hashlib
+from pathlib import Path
+
+from . import cuts, masses, meshio, oracle, register, synthetic, trial
 
 LENGTH_TOL_MM = 0.5       # gate 3 (the brief)
 AREA_TOL = 0.01           # gate 3: section areas at matched normalised stations (the brief)
@@ -88,14 +91,20 @@ def run(p, args, root, label) -> int:
     out["checks"] = {n: _jsonable(r.checks) for n, r in results.items()}
 
     st = summ["stretch"]
-    topo = meshio.topology_difference(p["mesh"], root / "data/makehuman/freyja-body-v1.obj")
+    base_path = Path(args.base) if getattr(args, "base", None) else root / "data/makehuman/base.obj"
+    if base_path.exists():
+        topo = meshio.topology_difference(p["mesh"], base_path)
+        out["topology_reference"] = {"file": label(base_path, root), "sha256_12": hashlib.sha256(base_path.read_bytes()).hexdigest()[:12]}
+    else:
+        topo = f"STOP: {label(base_path, root)} (MakeHuman's makehuman/data/3dobjs/base.obj) is not in the repo; place it there or pass --base"
+        out["topology_reference"] = None
     for name in ("thigh", "shank"):
         res, prof, mc = results[name], profiles[name], mcs[name]
         c = res.checks
         up, low, u_s, L, u_m, l_m = trial.segment_geometry(inp, reg, name)
         ok1 = topo is None and c["boundary_edges_near_segment"] == 0 and c["nonmanifold_edges_near_segment"] == 0 and c["odd_parity_columns"] == 0 and c["seed_inside_region"]
         gates.append(_gate(f"1 {name}: topology matches base; surface watertight", ok1,
-                           f"topology difference: {topo or 'none (the reference is this same file)'}; boundary edges near the {name} {c['boundary_edges_near_segment']} "
+                           f"topology vs base.obj: {topo or 'identical (13,380 body vertices, same faces in the same order)'}; boundary edges near the {name} {c['boundary_edges_near_segment']} "
                            f"(whole body {c['boundary_edges_whole_body']}); non-manifold {c['nonmanifold_edges_near_segment']}; odd-parity columns {c['odd_parity_columns']}"))
         if name == "thigh":
             for key in ("hjc_inside_body", "kjc_inside_body", "ajc_inside_body"):
@@ -154,8 +163,10 @@ def run(p, args, root, label) -> int:
 
     # mass base (item 3), thigh restated (item 4)
     consts = masses.load_constants(root)
-    mb = masses.report(inp, results, consts)
+    cut = cuts.thigh_and_pelvis(inp, feats, reg, results["thigh"])
+    mb = masses.report(inp, results, consts, cut)
     out["mass_base"] = mb
+    out["cuts"] = cut
     gates.append(_gate("6 mesh volume matches Joe's Blender volume within 0.5%", bool(mb["blender_within_tolerance"]),
                        f"computed {mb['mesh_volume_l']:.4f} l, Blender {mb['blender_volume_l']:.4f} l ({mb['blender_relative_difference'] * 100:+.4f}%)"))
 
@@ -171,15 +182,15 @@ def run(p, args, root, label) -> int:
     out["knee_anchor_mass_sensitivity"] = kv
 
     # cut sensitivity of the shank volume (item 5)
-    cut = {}
+    cut_sens = {}
     for t in (0.0, 5.0):
         v0 = _volume_window(profiles["shank"], reg, "shank", t)
         row = {"nominal_l": v0 / 1e6}
         for label_, (us, ls) in {"KJC plane +15": (CUT_SHIFT_MM, 0.0), "KJC plane -15": (-CUT_SHIFT_MM, 0.0), "AJC plane +15": (0.0, CUT_SHIFT_MM), "AJC plane -15": (0.0, -CUT_SHIFT_MM)}.items():
             v = _volume_window(profiles["shank"], reg, "shank", t, us, ls)
             row[label_] = {"volume_l": v / 1e6, "change_percent": (v - v0) / v0 * 100.0}
-        cut[f"t{t:g}"] = row
-    out["shank_cut_sensitivity"] = cut
+        cut_sens[f"t{t:g}"] = row
+    out["shank_cut_sensitivity"] = cut_sens
 
     # girth check on the UNCONFORMED mesh at the Ruler loop heights (item 6)
     girth = {}
@@ -227,8 +238,11 @@ def _print(out, gates, feats, inp, reg):
         print(f"[{'PASS' if g['pass'] else 'FAIL'}] gate {g['gate']}\n        {g['detail']}")
     mb = out["mass_base"]
     for lab, c in mb["cases"].items():
-        print(f"mass base {lab}: density {c['body_density_kg_per_l']:.4f} kg/l, M_mesh {c['mesh_mass_kg']:.2f} kg, sculpt BMI {c['sculpt_bmi_kg_per_m2']:.2f}, robot needs {c['robot_required_average_density_kg_per_l']:.3f} kg/l")
-    for n, r in mb["segments"].items():
-        print(f"  {n}: skin {r['skin_volume_l']:.3f} l, fraction {r['sheet_mass_fraction']:.4f}, implied density " + ", ".join(f"{k} {v['implied_density_kg_per_l']:.3f}" for k, v in r["cases"].items()) + f" (ref {r['reference_density_kg_per_l']})")
+        print(f"mass base {lab}: density {c['body_density_kg_per_l']:.4f} kg/l, M_mesh {c['mesh_mass_kg']:.2f} kg, mean mesh density {c['mean_mesh_density_kg_per_l']:.4f}, sculpt BMI {c['sculpt_bmi_kg_per_m2']:.2f}, robot needs {c['robot_required_average_density_kg_per_l']:.3f} kg/l")
+    nom = "nominal" if "nominal" in mb["cases"] else "f=0.15"
+    for n, r in mb["rows"].items():
+        c = r["cases"][nom]
+        print(f"  {n}: {r['volume_l']:.3f} l, volume share {r['volume_share'] * 100:.2f}%, mass share {r['mass_share'] * 100:.2f}%, ratio {r['ratio']:.3f}, "
+              f"normalised {c['normalised_ratio']:.3f} (expected {c['expected_tissue_ratio']:.3f}), implied density {c['implied_density_kg_per_l']:.3f} (ref {r['reference_density_kg_per_l']:.3f}) [{nom}]")
     for n, g in out["girth_check"].items():
         print(f"  girth {n}: loop {g['loop_length_mm']:.0f} mm, section {g['section_perimeter_mm']:.0f} mm ({g['difference_percent']:+.1f}%, flag {g['flag']}), equivalent circle {g['equivalent_circle_mm']:.0f}")

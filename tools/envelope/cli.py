@@ -1,7 +1,7 @@
 """
 `fy envelope` commands (tools/fy only dispatches here).
 
-    build  [--mesh FILE] [--knee ruler|ansur|chords|breadth] [--out DIR] [--cache-dir DIR] [--voxel MM]
+    build  [--mesh FILE] [--knee chords|ruler|ansur|breadth] [--base FILE] [--out DIR] [--cache-dir DIR] [--voxel MM]
                     register the mesh to the sheet's nodes, conform and voxelise the right thigh, shank and foot; write <seg>_R.yaml, <seg>_R_sections.csv,
                     the silhouette PNGs, the cache and the inspect bundle (cache/inspect/)
     gates  [same options]   the trial's gate table, the feature report and the Monte Carlo (writes thigh_R_trial.json beside the ledger)
@@ -40,9 +40,10 @@ def _label(p: Path, root: Path) -> str:
 
 def _common(sp):
     sp.add_argument("--mesh"), sp.add_argument("--out"), sp.add_argument("--cache-dir")
-    sp.add_argument("--knee", choices=("ruler", "ansur", "chords", "breadth"), default="ruler",
-                    help="mesh knee height: the Ruler knee loop plus the ANSUR epicondyle-above-midpatella offset (default), the ANSUR ratio, the mean of "
-                         "the two Ruler leg-height chord ends, or the knee-breadth peak (stops when the mesh has none)")
+    sp.add_argument("--knee", choices=("chords", "ruler", "ansur", "breadth"), default="chords",
+                    help="mesh knee height: the mean of the Ruler upper-leg chord's lower end and the lower-leg chord's upper end (default), the Ruler knee loop "
+                         "plus the ANSUR epicondyle-above-midpatella offset, the ANSUR ratio, or the knee-breadth peak (stops when the mesh has none)")
+    sp.add_argument("--base", help="MakeHuman base.obj for the topology gate (default data/makehuman/base.obj; the gate stops when it is absent)")
     sp.add_argument("--voxel", type=float, default=2.0)
 
 

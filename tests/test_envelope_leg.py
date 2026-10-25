@@ -138,3 +138,13 @@ def test_cli_ratios_regenerates_the_tracked_summary_byte_for_byte():
     before = p.read_bytes()
     r = run_cli("ratios")
     assert r.returncode == 0 and p.read_bytes() == before
+
+
+def test_the_default_knee_anchor_is_the_chord_mean_with_the_ansur_epicondyle_sd(inp_feats):
+    """Joe's decision after memo 29: chords, sigma = ANSUR lateral-epicondyle SD x stature, centred on the chord anchor."""
+    inp, f = inp_feats
+    reg = trial.make_registration(inp, f)
+    assert reg.knee_source == "chords"
+    assert abs(reg.mesh_nodes["kjc"] - f["kjc_estimates_mm"]["ruler_chords_mean"]) < 1e-9
+    assert abs(reg.sigmas["kjc"] - inp.ansur["landmarks"]["lateral_femoral_epicondyle"]["ratio"]["sd"] * inp.stature_mesh) < 1e-9
+    assert abs(reg.axial.stretches()["thigh"] - 1) < 0.08 and abs(reg.axial.stretches()["shank"] - 1) < 0.08          # the 8% gate is kept and passes

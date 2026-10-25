@@ -27,17 +27,22 @@ def read_obj(path):
     return np.array(v, dtype=float), polys
 
 
-def topology_difference(path, reference) -> str | None:
-    """None when `path` has the reference's vertex count and identical faces; else a sentence naming the first difference."""
+def topology_difference(path, reference, body_vertices=BODY_VERTICES) -> str | None:
+    """None when `path` has the body's vertex count and its faces equal, in order and by vertex index, the reference's faces among the first
+    `body_vertices` vertices (the reference may carry helper geometry after them, as MakeHuman's base.obj does); else a sentence naming the first
+    difference."""
     v, f = read_obj(path)
     rv, rf = read_obj(reference)
-    if len(v) != len(rv):
-        return f"{len(v)} vertices, reference has {len(rv)}"
+    if len(v) != body_vertices:
+        return f"{len(v)} vertices, expected {body_vertices}"
+    if len(rv) < body_vertices:
+        return f"reference has {len(rv)} vertices, fewer than the body's {body_vertices}"
+    rf = [q for q in rf if max(q) < body_vertices]
     for i, (a, b) in enumerate(zip(f, rf)):
         if a != b:
             return f"face {i}: {a} vs reference {b}"
     if len(f) != len(rf):
-        return f"{len(f)} faces, reference has {len(rf)}"
+        return f"{len(f)} faces, reference has {len(rf)} body faces"
     return None
 
 

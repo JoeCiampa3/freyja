@@ -1,0 +1,447 @@
+{
+ "attribution": {
+  "groups": {
+   "age": {
+    "left_out_of_the_sculpt": -0.00023248188577490447,
+    "modifiers": {
+     "macrodetails/Age": 0.44
+    },
+    "one_at_a_time_from_default": -0.0012877866919850378
+   },
+   "body proportions": {
+    "left_out_of_the_sculpt": 0.0016120833820110203,
+    "modifiers": {
+     "macrodetails-proportions/BodyProportions": 0.546
+    },
+    "one_at_a_time_from_default": 0.0011333762516738122
+   },
+   "body shapes": {
+    "left_out_of_the_sculpt": 0.0,
+    "modifiers": {
+     "bodyshapes/bodyshapes-elvs-fem-invert-triangle": 1.0,
+     "bodyshapes/bodyshapes-elvs-fem-neat-hourglass": 0.261
+    },
+    "one_at_a_time_from_default": 0.0
+   },
+   "breast": {
+    "left_out_of_the_sculpt": 0.0,
+    "modifiers": {
+     "breast/BreastFirmness": 0.734,
+     "breast/BreastSize": 0.628,
+     "breast/breast-dist-decr|incr": -0.362,
+     "breast/breast-volume-vert-down|up": -0.004
+    },
+    "one_at_a_time_from_default": 0.0
+   },
+   "ethnicity": {
+    "left_out_of_the_sculpt": -0.0006980306106174616,
+    "modifiers": {
+     "macrodetails/African": 0.0,
+     "macrodetails/Asian": 0.0,
+     "macrodetails/Caucasian": 1.0
+    },
+    "one_at_a_time_from_default": -0.0014780710097691552
+   },
+   "gender": {
+    "left_out_of_the_sculpt": -0.007034757205061137,
+    "modifiers": {
+     "macrodetails/Gender": 0.0
+    },
+    "one_at_a_time_from_default": -0.010067749503293366
+   },
+   "height": {
+    "left_out_of_the_sculpt": 0.003912614940513315,
+    "modifiers": {
+     "macrodetails-height/Height": 0.623
+    },
+    "one_at_a_time_from_default": 0.002507777459249627
+   },
+   "measure bust / underbust / waist / hips": {
+    "left_out_of_the_sculpt": 0.0,
+    "modifiers": {
+     "measure/measure-bust-circ-decr|incr": 0.40625,
+     "measure/measure-hips-circ-decr|incr": 0.44,
+     "measure/measure-underbust-circ-decr|incr": -0.594,
+     "measure/measure-waist-circ-decr|incr": 0.302734
+    },
+    "one_at_a_time_from_default": 0.0
+   },
+   "muscle": {
+    "left_out_of_the_sculpt": -0.0006838379152810381,
+    "modifiers": {
+     "macrodetails-universal/Muscle": 0.396
+    },
+    "one_at_a_time_from_default": 0.0
+   },
+   "pelvis bulge": {
+    "left_out_of_the_sculpt": 0.0,
+    "modifiers": {
+     "pelvis/bulge-decr|incr": -0.874
+    },
+    "one_at_a_time_from_default": 0.0
+   },
+   "weight": {
+    "left_out_of_the_sculpt": -0.0015144209009183562,
+    "modifiers": {
+     "macrodetails-universal/Weight": 0.232
+    },
+    "one_at_a_time_from_default": -0.0009367372889016456
+   }
+  },
+  "interaction_residual": 0.0030200764118179513,
+  "one_at_a_time_sum": -0.010129190783025765,
+  "total_fraction": -0.007109114371207814
+ },
+ "combined_slider_solution": {
+  "changes": {
+   "Height": 0.001976640188477208,
+   "measure lowerleg-height": -0.5154429447910548,
+   "measure upperleg-height": 0.2688888746064625
+  },
+  "note": "hip is the top of the Ruler upper-leg chord; the sliders other than these three, and the pose, are left as they are",
+  "residuals": {
+   "hip_fraction": 2.220446049250313e-16,
+   "knee_fraction": 5.551115123125783e-17,
+   "stature_mm": -6.821210263296962e-13
+  },
+  "result": {
+   "hip_fraction": 0.5123942436599678,
+   "hip_mm": 870.4995349740213,
+   "knee_fraction": 0.27822830058173226,
+   "knee_mm": 472.67823413280973,
+   "stature_mm": 1698.8862496895995
+  },
+  "targets": {
+   "hip_fraction": 0.5123942436599676,
+   "knee_fraction": 0.2782283005817322,
+   "stature_mm": 1698.8862496896002
+  },
+  "unknowns": {
+   "Height": 0.6249766401884772,
+   "measure lowerleg-height": -0.5154429447910548,
+   "measure upperleg-height": 0.2688888746064625
+  }
+ },
+ "inputs": {
+  "base_obj_sha256_12": "8e761e6624b8",
+  "mhm_modifiers": {
+   "bodyshapes/bodyshapes-elvs-fem-invert-triangle": 1.0,
+   "bodyshapes/bodyshapes-elvs-fem-neat-hourglass": 0.261,
+   "breast/BreastFirmness": 0.734,
+   "breast/BreastSize": 0.628,
+   "breast/breast-dist-decr|incr": -0.362,
+   "breast/breast-volume-vert-down|up": -0.004,
+   "macrodetails-height/Height": 0.623,
+   "macrodetails-proportions/BodyProportions": 0.546,
+   "macrodetails-universal/Muscle": 0.396,
+   "macrodetails-universal/Weight": 0.232,
+   "macrodetails/African": 0.0,
+   "macrodetails/Age": 0.44,
+   "macrodetails/Asian": 0.0,
+   "macrodetails/Caucasian": 1.0,
+   "macrodetails/Gender": 0.0,
+   "measure/measure-bust-circ-decr|incr": 0.40625,
+   "measure/measure-hips-circ-decr|incr": 0.44,
+   "measure/measure-underbust-circ-decr|incr": -0.594,
+   "measure/measure-waist-circ-decr|incr": 0.302734,
+   "pelvis/bulge-decr|incr": -0.874
+  },
+  "note": "MakeHuman master as fetched 2026-10-24; the rebuild omits pose, skeleton and proxies",
+  "target_files": 414
+ },
+ "knee": {
+  "base.obj (no targets)": {
+   "hip_fraction": 0.5001410657366332,
+   "hip_mm": 833.18,
+   "knee_fraction": 0.27746429836303715,
+   "knee_mm": 462.225,
+   "stature_mm": 1665.8900000000003
+  },
+  "committed OBJ": {
+   "hip_fraction": 0.5134537998809867,
+   "hip_mm": 871.4799999999999,
+   "knee_fraction": 0.2959128964407968,
+   "knee_mm": 502.25,
+   "stature_mm": 1697.29
+  },
+  "default human (macros at their defaults)": {
+   "hip_fraction": 0.5071080907891116,
+   "hip_mm": 841.4833333333333,
+   "knee_fraction": 0.30274118996490657,
+   "knee_mm": 502.3616666666668,
+   "stature_mm": 1659.3766666666668
+  },
+  "this sculpt (.mhm)": {
+   "hip_fraction": 0.5129693623013153,
+   "hip_mm": 871.4765961257472,
+   "knee_fraction": 0.29563207559369875,
+   "knee_mm": 502.2452681933312,
+   "stature_mm": 1698.8862496896002
+  }
+ },
+ "measure_slider_extremes": {
+  "measure lowerleg-height = +1": {
+   "hip_fraction": 0.5351334088298354,
+   "hip_mm": 952.4765961257472,
+   "knee_fraction": 0.3276868217252902,
+   "knee_mm": 583.2452681933313,
+   "stature_mm": 1779.8862496896
+  },
+  "measure lowerleg-height = -1": {
+   "hip_fraction": 0.4954469227847565,
+   "hip_mm": 812.4765961257472,
+   "knee_fraction": 0.270290252313067,
+   "knee_mm": 443.2452681933312,
+   "stature_mm": 1639.8862496896002
+  },
+  "measure upperleg-height = +1": {
+   "hip_fraction": 0.5409874818992265,
+   "hip_mm": 975.1765961257472,
+   "knee_fraction": 0.27862481935597605,
+   "knee_mm": 502.2452681933313,
+   "stature_mm": 1802.5862496896004
+  },
+  "measure upperleg-height = -1": {
+   "hip_fraction": 0.4909682536434702,
+   "hip_mm": 797.2765961257471,
+   "knee_fraction": 0.30928599111503874,
+   "knee_mm": 502.2452681933312,
+   "stature_mm": 1623.8862496896002
+  }
+ },
+ "reconstruction_vs_committed_obj": {
+  "legs (below 40% of stature)": {
+   "export_translation_dm": [
+    6.775067750669238e-08,
+    8.175039472659385,
+    -0.6573719245807069
+   ],
+   "residual_mm_max": 0.00872617960165591,
+   "residual_mm_mean": 0.004837013082372052,
+   "vertices": 2952
+  },
+  "torso and head (above 62% of stature)": {
+   "export_translation_dm": [
+    0.008497565514033108,
+    8.056739072530274,
+    -0.8004365548827945
+   ],
+   "residual_mm_max": 261.62149137309297,
+   "residual_mm_mean": 29.019136477758178,
+   "vertices": 6449
+  }
+ },
+ "shift": {
+  "default_minus_base_fraction": 0.02527689160186941,
+  "sculpt_minus_base_fraction": 0.018167777230661597,
+  "sculpt_minus_base_mm_at_sculpt_stature": 30.864986924594792,
+  "sculpt_minus_default_fraction": -0.007109114371207814,
+  "sheet_knee_fraction": 0.2782283005817322
+ },
+ "slider_changes": {
+  "base.obj": {
+   "sliders": {
+    "Age": {
+     "current": 0.44,
+     "knee_fraction_over_range": [
+      0.29432726569753803,
+      0.29586455747947366
+     ],
+     "modifier": "macrodetails/Age",
+     "range": [
+      0.1875,
+      0.5
+     ],
+     "value_that_hits_target": null
+    },
+    "BodyProportions": {
+     "current": 0.546,
+     "knee_fraction_over_range": [
+      0.2877224785161646,
+      0.3114578260258391
+     ],
+     "modifier": "macrodetails-proportions/BodyProportions",
+     "range": [
+      0.0,
+      1.0
+     ],
+     "value_that_hits_target": null
+    },
+    "Height": {
+     "change": -0.4816000106071364,
+     "current": 0.623,
+     "hip_fraction_there": 0.47150419735864796,
+     "knee_fraction_over_range": [
+      0.2700936414145852,
+      0.3041090215818165
+     ],
+     "modifier": "macrodetails-height/Height",
+     "range": [
+      0.0,
+      1.0
+     ],
+     "stature_mm_there": 1278.4761875060833,
+     "value_that_hits_target": 0.1413999893928636
+    },
+    "Muscle": {
+     "current": 0.396,
+     "knee_fraction_over_range": [
+      0.2930306910629605,
+      0.2963159135089798
+     ],
+     "modifier": "macrodetails-universal/Muscle",
+     "range": [
+      0.0,
+      1.0
+     ],
+     "value_that_hits_target": null
+    },
+    "Weight": {
+     "current": 0.232,
+     "knee_fraction_over_range": [
+      0.294321479034116,
+      0.2971464964946171
+     ],
+     "modifier": "macrodetails-universal/Weight",
+     "range": [
+      0.0,
+      1.0
+     ],
+     "value_that_hits_target": null
+    },
+    "measure lowerleg-height": {
+     "change": -0.724004789454347,
+     "current": 0.0,
+     "hip_fraction_there": 0.5004077661142604,
+     "knee_fraction_over_range": [
+      0.270290252313067,
+      0.3276868217252902
+     ],
+     "modifier": "measure/measure-lowerleg-height-decr|incr",
+     "range": [
+      -1.0,
+      1.0
+     ],
+     "stature_mm_there": 1656.1699671117935,
+     "value_that_hits_target": -0.724004789454347
+    },
+    "measure upperleg-height": {
+     "current": 0.0,
+     "knee_fraction_over_range": [
+      0.27862481935597605,
+      0.30928599111503874
+     ],
+     "modifier": "measure/measure-upperleg-height-decr|incr",
+     "range": [
+      -1.0,
+      1.0
+     ],
+     "value_that_hits_target": null
+    }
+   },
+   "target_knee_fraction": 0.27746429836303715
+  },
+  "sheet": {
+   "sliders": {
+    "Age": {
+     "current": 0.44,
+     "knee_fraction_over_range": [
+      0.29432726569753803,
+      0.29586455747947366
+     ],
+     "modifier": "macrodetails/Age",
+     "range": [
+      0.1875,
+      0.5
+     ],
+     "value_that_hits_target": null
+    },
+    "BodyProportions": {
+     "current": 0.546,
+     "knee_fraction_over_range": [
+      0.2877224785161646,
+      0.3114578260258391
+     ],
+     "modifier": "macrodetails-proportions/BodyProportions",
+     "range": [
+      0.0,
+      1.0
+     ],
+     "value_that_hits_target": null
+    },
+    "Height": {
+     "change": -0.4655185718132712,
+     "current": 0.623,
+     "hip_fraction_there": 0.4731769341901992,
+     "knee_fraction_over_range": [
+      0.2700936414145852,
+      0.3041090215818165
+     ],
+     "modifier": "macrodetails-height/Height",
+     "range": [
+      0.0,
+      1.0
+     ],
+     "stature_mm_there": 1290.2767472930216,
+     "value_that_hits_target": 0.15748142818672878
+    },
+    "Muscle": {
+     "current": 0.396,
+     "knee_fraction_over_range": [
+      0.2930306910629605,
+      0.2963159135089798
+     ],
+     "modifier": "macrodetails-universal/Muscle",
+     "range": [
+      0.0,
+      1.0
+     ],
+     "value_that_hits_target": null
+    },
+    "Weight": {
+     "current": 0.232,
+     "knee_fraction_over_range": [
+      0.294321479034116,
+      0.2971464964946171
+     ],
+     "modifier": "macrodetails-universal/Weight",
+     "range": [
+      0.0,
+      1.0
+     ],
+     "value_that_hits_target": null
+    },
+    "measure lowerleg-height": {
+     "change": -0.6943049982830078,
+     "current": 0.0,
+     "hip_fraction_there": 0.5009357940802803,
+     "knee_fraction_over_range": [
+      0.270290252313067,
+      0.3276868217252902
+     ],
+     "modifier": "measure/measure-lowerleg-height-decr|incr",
+     "range": [
+      -1.0,
+      1.0
+     ],
+     "stature_mm_there": 1657.9222547909026,
+     "value_that_hits_target": -0.6943049982830078
+    },
+    "measure upperleg-height": {
+     "current": 0.0,
+     "knee_fraction_over_range": [
+      0.27862481935597605,
+      0.30928599111503874
+     ],
+     "modifier": "measure/measure-upperleg-height-decr|incr",
+     "range": [
+      -1.0,
+      1.0
+     ],
+     "value_that_hits_target": null
+    }
+   },
+   "target_knee_fraction": 0.2782283005817322
+  }
+ }
+}

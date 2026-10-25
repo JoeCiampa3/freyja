@@ -90,3 +90,25 @@ def test_frame_map_is_a_proper_rotation_and_sends_mh_axes_to_the_sheet_frame():
 def test_to_sheet_mm_converts_decimeters():
     out = meshio.to_sheet_mm(np.array([[0.1, 0.2, 0.3]]))   # dm, MH axes
     assert np.allclose(out, [[30.0, 10.0, 20.0]])
+
+
+def test_topology_against_a_reference_that_carries_helper_geometry(tmp_path):
+    """MakeHuman's base.obj has helper vertices and faces after the body's 13,380; only the body faces are compared, in order and by index."""
+    text = OBJ.read_text()
+    ref = tmp_path / "base.obj"
+    ref.write_text(text + "v 0 0 0\nv 1 0 0\nv 0 1 0\nf 13381 13382 13383\n")
+    assert meshio.topology_difference(OBJ, ref) is None
+    lines = text.splitlines()
+    k = next(i for i, l in enumerate(lines) if l.startswith("f "))
+    p = lines[k].split()
+    p[2], p[3] = p[3], p[2]
+    lines[k] = " ".join(p)
+    ref.write_text("\n".join(lines) + "\nv 0 0 0\nf 13381 13381 13381\n")
+    d = meshio.topology_difference(OBJ, ref)
+    assert d is not None and d.startswith("face 0")
+
+
+def test_topology_reference_with_too_few_vertices_is_reported(tmp_path):
+    ref = tmp_path / "small.obj"
+    ref.write_text("v 0 0 0\nv 1 0 0\nv 0 1 0\nf 1 2 3\n")
+    assert "fewer than" in meshio.topology_difference(OBJ, ref)
