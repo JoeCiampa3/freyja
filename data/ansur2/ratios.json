@@ -1,4 +1,36 @@
 {
+ "circumferences_mm": {
+  "ankle_minimum": {
+   "column": "anklecircumference",
+   "mean": 215.73967774420947,
+   "sd": 14.891757451585576
+  },
+  "calf_maximum": {
+   "column": "calfcircumference",
+   "mean": 373.257804632427,
+   "sd": 28.515177840382005
+  },
+  "lower_thigh_suprapatella": {
+   "column": "lowerthighcircumference",
+   "mean": 400.7084592145015,
+   "sd": 35.163828147938204
+  },
+  "thigh_gluteal_furrow": {
+   "column": "thighcircumference",
+   "mean": 616.1485397784492,
+   "sd": 55.81029933373035
+  }
+ },
+ "epicondyle_minus_midpatella": {
+  "mm": {
+   "mean": 16.887210473313193,
+   "sd": 8.639454197998035
+  },
+  "ratio": {
+   "mean": 0.010391850037468743,
+   "sd": 0.005323368499658727
+  }
+ },
  "generated_by": "fy envelope ratios",
  "inputs": "ANSUR II female public CSV sha256:ed7e800aa97a",
  "landmarks": {
@@ -44,6 +76,17 @@
    "ratio": {
     "mean": 0.03853750150761193,
     "sd": 0.002826474076091087
+   }
+  },
+  "midpatella": {
+   "column": "kneeheightmidpatella",
+   "height_mm": {
+    "mean": 449.04934541792545,
+    "sd": 25.99165884560117
+   },
+   "ratio": {
+    "mean": 0.27564642687113694,
+    "sd": 0.008973872194039372
    }
   },
   "tenth_rib": {

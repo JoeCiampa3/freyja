@@ -1,9 +1,9 @@
 """
 `fy envelope` commands (tools/fy only dispatches here).
 
-    build  [--mesh FILE] [--knee auto|feature|ansur] [--out DIR] [--cache-dir DIR] [--voxel MM]
-                    register the mesh to the sheet's nodes, conform and voxelise the right thigh; write thigh_R.yaml, thigh_R_sections.csv,
-                    the two silhouette PNGs and the cache
+    build  [--mesh FILE] [--knee ruler|ansur|chords|breadth] [--out DIR] [--cache-dir DIR] [--voxel MM]
+                    register the mesh to the sheet's nodes, conform and voxelise the right thigh, shank and foot; write <seg>_R.yaml, <seg>_R_sections.csv,
+                    the silhouette PNGs, the cache and the inspect bundle (cache/inspect/)
     gates  [same options]   the trial's gate table, the feature report and the Monte Carlo (writes thigh_R_trial.json beside the ledger)
     ratios          write data/ansur2/ratios.json from the raw ANSUR II female CSV
     check  --segment thigh_R --shapes FILE --poses FILE [--required MM] [--cache-dir DIR]
@@ -40,36 +40,42 @@ def _label(p: Path, root: Path) -> str:
 
 def _common(sp):
     sp.add_argument("--mesh"), sp.add_argument("--out"), sp.add_argument("--cache-dir")
-    sp.add_argument("--knee", choices=("auto", "feature", "ansur"), default="auto",
-                    help="mesh knee height: the breadth feature when the mesh has one (auto), the feature regardless, or the ANSUR ratio")
+    sp.add_argument("--knee", choices=("ruler", "ansur", "chords", "breadth"), default="ruler",
+                    help="mesh knee height: the Ruler knee loop plus the ANSUR epicondyle-above-midpatella offset (default), the ANSUR ratio, the mean of "
+                         "the two Ruler leg-height chord ends, or the knee-breadth peak (stops when the mesh has none)")
     sp.add_argument("--voxel", type=float, default=2.0)
 
 
 def cmd_build(args, root):
-    from . import ledger, plots, trial
+    from . import bundle, ledger, plots, trial
     p = _paths(args, root)
     inp = trial.load_inputs(root, p["mesh"])
     feats = trial.find_features(inp)
-    reg = trial.make_registration(inp, feats, args.knee if args.knee != "ansur" else "ansur")
-    res = trial.build_thigh(inp, reg, args.voxel)
+    reg = trial.make_registration(inp, feats, args.knee)
     sha = trial.inputs_hash(inp, {"knee": reg.knee_source, "voxel": args.voxel})
-    rows = ledger.rows_for(res.seg, "right")
-    note = "sheet thigh mass over the skin volume of the conformed mesh thigh, hip zone included; soft tissue is about 1.0-1.1 kg/l"
-    hdr = ledger.header(res, rows, ledger.SHELL_MM, note, _label(p["mesh"], root), "data/ansur2/ratios.json", sha, trial.HIP_ZONE_MM)
-    hdr["checks"] = {k: (bool(v) if isinstance(v, (bool, np.bool_)) else int(v)) for k, v in res.checks.items()}
     out = p["out"]
     out.mkdir(parents=True, exist_ok=True)
-    (out / "thigh_R.yaml").write_text(ledger.to_yaml(hdr, sha), encoding="utf-8", newline="\n")
-    (out / "thigh_R_sections.csv").write_text(ledger.to_csv(rows, sha), encoding="utf-8", newline="\n")
-    st = reg.axial.stretches()
-    title = f"right thigh, conformed (stretch thigh {st['thigh']:.4f}, shank {st['shank']:.4f})"
-    for view in ("sagittal", "coronal"):
-        plots.silhouette_png(res.seg, out / f"thigh_R_{view}.png", view, ledger.SHELL_MM, f"{view}: {title}")
-    res.seg.meta = {"inputs_sha256_12": sha, "segment": "thigh_R", "knee_source": reg.knee_source}
     p["cache"].mkdir(parents=True, exist_ok=True)
-    res.seg.save(p["cache"] / "thigh_R.npz")
-    print(f"built thigh_R: L {res.seg.length:.1f} mm, stretch thigh {st['thigh']:.4f} shank {st['shank']:.4f}, skin volume {res.seg.volume() / 1e6:.3f} l, inputs {sha}")
-    print(f"wrote {_label(out / 'thigh_R.yaml', root)}, thigh_R_sections.csv, thigh_R_sagittal.png, thigh_R_coronal.png")
+    st = reg.axial.stretches()
+    results = {}
+    for name in trial.SEGMENTS:
+        res = trial.build_segment(inp, feats, reg, name, args.voxel)
+        results[name] = res
+        rows = ledger.rows_for(res.seg, "right")
+        hdr = ledger.header(res, rows, ledger.SHELL_MM, "", _label(p["mesh"], root), "data/ansur2/ratios.json", sha, trial.HIP_ZONE_MM)
+        hdr["checks"] = {k: (bool(v) if isinstance(v, (bool, np.bool_)) else int(v)) for k, v in res.checks.items()}
+        (out / f"{name}_R.yaml").write_text(ledger.to_yaml(hdr, sha), encoding="utf-8", newline="\n")
+        (out / f"{name}_R_sections.csv").write_text(ledger.to_csv(rows, sha), encoding="utf-8", newline="\n")
+        if name != "foot":
+            title = f"right {name}, conformed; knee anchor: {reg.knee_source}\nstretch thigh {st['thigh']:.4f}, shank {st['shank']:.4f}"
+            for view in ("sagittal", "coronal"):
+                plots.silhouette_png(res.seg, out / f"{name}_R_{view}.png", view, ledger.SHELL_MM, f"{view}: {title}")
+        res.seg.meta = {"inputs_sha256_12": sha, "segment": f"{name}_R", "knee_source": reg.knee_source}
+        res.seg.save(p["cache"] / f"{name}_R.npz")
+        print(f"built {name}_R: L {res.seg.length:.1f} mm, skin volume {res.seg.volume() / 1e6:.3f} l, inputs {sha}")
+    bdir = bundle.build(inp, feats, reg, results, root, p["cache"] / "inspect")
+    print(f"stretch thigh {st['thigh']:.4f} shank {st['shank']:.4f} foot {st['foot']:.4f}; knee source {reg.knee_source}")
+    print(f"wrote ledgers and silhouettes to {_label(out, root)}, the inspect bundle to {_label(bdir, root)}")
     return 0
 
 

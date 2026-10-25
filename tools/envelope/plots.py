@@ -38,7 +38,7 @@ def silhouette_png(seg: field.Segment, path, view: str, shells, title: str, side
     for s in np.arange(0, seg.length + 1, 50):
         ax.text(H.min(), -s, f"{s:.0f}", fontsize=7, va="center", ha="left", color="0.35")
     ax.set_xlabel(hlabel)
-    ax.set_ylabel("z (mm); stations measured down from the hip centre")
+    ax.set_ylabel("z (mm); stations measured down from the proximal plane")
     ax.set_aspect("equal")
     ax.set_xlim(H.min(), H.max())
     ax.set_ylim(-seg.length - 25, 25)

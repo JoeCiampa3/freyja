@@ -180,8 +180,12 @@ class Segment:
         """Per-voxel inside fraction of {sd >= t}: a linear ramp one voxel wide, which removes the staircase bias of a hard threshold."""
         return np.clip(0.5 + (self.sd - t) / self.h, 0.0, 1.0)
 
-    def volume(self, t=0.0) -> float:
-        return float((self._fraction(t) * self.region * self.zweight[None, None, :]).sum() * self.h ** 3)
+    def volume(self, t=0.0, s0=0.0, s1=None) -> float:
+        """Volume (mm3) of {sd >= t} inside the segment between stations s0 and s1 (default the whole slab; stations are distances below z_top)."""
+        s1 = self.length if s1 is None else s1
+        zl = self.centres(2)
+        w = np.clip((zl - (self.z_top - s1)) / self.h + 0.5, 0, 1) * np.clip((self.z_top - s0 - zl) / self.h + 0.5, 0, 1) * self.zweight
+        return float((self._fraction(t) * self.region * w[None, None, :]).sum() * self.h ** 3)
 
     def sd_max(self) -> float:
         return float(self.sd[self.region].max())
@@ -228,6 +232,19 @@ class Section:
 
     def area(self, t=0.0) -> float:
         return float(np.clip(0.5 + (self.sd - t) / SECTION_MM, 0, 1)[self.region].sum() * SECTION_MM ** 2)
+
+    def perimeter(self, t=0.0) -> float:
+        """Length (mm) of the contour {sd = t} inside the segment region: the skin's true section perimeter. Where the region's side clip (the
+        midplane) cuts the section, the cut line is not part of it; contour pieces outside the region are dropped."""
+        from contourpy import contour_generator
+        gen = contour_generator(self.x, self.y, self.sd.T.astype(float))        # z[j, i] at (x_i, y_j)
+        total = 0.0
+        for line in gen.lines(t):
+            xs, ys = line[:, 0], line[:, 1]
+            mid = np.column_stack([(xs[:-1] + xs[1:]) / 2, (ys[:-1] + ys[1:]) / 2, np.full(len(xs) - 1, self.seg.z_top - self.s)])
+            keep = self.seg.in_region(mid)
+            total += float((np.hypot(np.diff(xs), np.diff(ys)) * keep).sum())
+        return total
 
     def chebyshev(self, t=0.0):
         """(cx, cy, r) of the largest circle inside the section of {sd >= t}, mm, segment frame."""

@@ -1,0 +1,9 @@
+{
+  "note": "Joe's inputs for the mass base (volume-extractor brief 2, item 3). body_fat_fraction and v_lung_l are null until supplied; the report then gives the f = 0.15 / 0.35 bracket only. Never fill these in without Joe's value and source.",
+  "body_fat_fraction": null,
+  "body_fat_source": "",
+  "v_lung_l": null,
+  "v_lung_source": "",
+  "blender_volume_m3": 0.0512605,
+  "blender_volume_source": "Joe, Blender whole-body volume of data/makehuman/freyja-body-v1.obj, stated in docs/briefs/architecture/volume-extractor-brief-2.md"
+}

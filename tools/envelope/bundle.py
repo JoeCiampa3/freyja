@@ -1,0 +1,216 @@
+"""The inspect bundle: conformed, original and envelope meshes plus `inspect.json`, in MakeHuman OBJ axes (x subject-left, y up, z anterior) and decimetres, so
+every layer overlays in `tools/landmark-picker` Inspect mode without conversion.
+
+The envelope surface is extracted by marching tetrahedra (six tetrahedra per voxel around the main diagonal): the same iso-surface a marching-cubes
+routine gives, from a table small enough to check by hand, and without adding scikit-image as a dependency.
+"""
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import numpy as np
+
+from . import oracle
+from .meshio import DM_TO_MM, read_obj
+
+SCHEMA = "inspect-bundle/1"
+SHELL_MM = 5.0                      # the brief names envelope_t5.obj
+# corner index = x + 2 y + 4 z; six tetrahedra sharing the diagonal 0-7
+CORNERS = np.array([[(c >> 0) & 1, (c >> 1) & 1, (c >> 2) & 1] for c in range(8)])
+TETS = np.array([[0, 1, 3, 7], [0, 3, 2, 7], [0, 2, 6, 7], [0, 6, 4, 7], [0, 4, 5, 7], [0, 5, 1, 7]])
+
+
+def marching_tetrahedra(values, origin, h, iso):
+    """Triangles (vertices, faces) of the surface values == iso on a regular grid, outward normals (towards lower values). values[i, j, k] sits at
+    origin + h * (i, j, k)."""
+    v = np.asarray(values, float)
+    inside = v >= iso
+    s = np.zeros(inside[:-1, :-1, :-1].shape, int)
+    for c in range(8):
+        dx, dy, dz = CORNERS[c]
+        s += inside[dx:inside.shape[0] - 1 + dx, dy:inside.shape[1] - 1 + dy, dz:inside.shape[2] - 1 + dz]
+    cells = np.argwhere((s > 0) & (s < 8))
+    if not len(cells):
+        return np.zeros((0, 3)), np.zeros((0, 3), int)
+    idx = cells[:, None, :] + CORNERS[None, :, :]                         # (n, 8, 3)
+    val = v[idx[..., 0], idx[..., 1], idx[..., 2]]                       # (n, 8)
+    pos = origin + h * idx.astype(float)                                 # (n, 8, 3)
+    tris = []
+    for tet in TETS:
+        tv, tp = val[:, tet], pos[:, tet, :]                             # (n, 4), (n, 4, 3)
+        ins = tv >= iso
+        cnt = ins.sum(axis=1)
+        for k in (1, 2, 3):
+            sel = np.flatnonzero(cnt == k)
+            if not len(sel):
+                continue
+            I, P, B = ins[sel], tp[sel], tv[sel]
+
+            def cross(a, b):                                             # point on edge a-b (vertex indices per row)
+                r = np.arange(len(sel))
+                va, vb = B[r, a], B[r, b]
+                t = (iso - va) / (vb - va)
+                return P[r, a] + (P[r, b] - P[r, a]) * t[:, None]
+
+            order = np.argsort(~I if k != 3 else I, axis=1, kind="stable")    # k=1: the inside vertex first; k=3: the outside vertex first; k=2: inside pair first
+            o = order
+            if k in (1, 3):
+                a, b, c, d = o[:, 0], o[:, 1], o[:, 2], o[:, 3]
+                t3 = np.stack([cross(a, b), cross(a, c), cross(a, d)], axis=1)       # (m, 3, 3)
+                r = np.arange(len(sel))
+                ref = P[r, a]                                            # the lone vertex
+                direction = (t3.mean(axis=1) - ref) if k == 1 else (ref - t3.mean(axis=1))
+                tris.append(_orient(t3, direction))
+            else:
+                a, b, c, d = o[:, 0], o[:, 1], o[:, 2], o[:, 3]          # a, b inside; c, d outside
+                r = np.arange(len(sel))
+                q = np.stack([cross(a, c), cross(a, d), cross(b, d), cross(b, c)], axis=1)
+                direction = (P[r, c] + P[r, d]) / 2 - (P[r, a] + P[r, b]) / 2
+                tris.append(_orient(q[:, [0, 1, 2]], direction))
+                tris.append(_orient(q[:, [0, 2, 3]], direction))
+    T = np.concatenate(tris, axis=0)                                     # (m, 3, 3)
+    pts = T.reshape(-1, 3)
+    key = np.round(pts / (h * 1e-4)).astype(np.int64)
+    _, first, inv = np.unique(key, axis=0, return_index=True, return_inverse=True)
+    faces = inv.reshape(-1, 3)
+    keep = (faces[:, 0] != faces[:, 1]) & (faces[:, 1] != faces[:, 2]) & (faces[:, 0] != faces[:, 2])
+    return pts[first], faces[keep]
+
+
+def _orient(tri, direction):
+    n = np.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0])
+    flip = (n * direction).sum(axis=1) < 0
+    out = tri.copy()
+    out[flip] = tri[flip][:, [0, 2, 1], :]
+    return out
+
+
+def to_mh_dm(points_sheet_mm, inp):
+    """Sheet axes (x anterior, y left, z up; mm; floor at the sole, midplane y = 0) -> the mesh's own OBJ frame (x left, y up, z anterior; dm)."""
+    p = np.atleast_2d(np.asarray(points_sheet_mm, float))
+    return np.column_stack([(p[:, 1] + inp.y_mid), (p[:, 2] + inp.z_sole_mm), p[:, 0]]) / DM_TO_MM
+
+
+def dir_to_mh(d):
+    """A direction in sheet axes -> the same direction in MakeHuman OBJ axes (no offsets, no units)."""
+    d = np.asarray(d, float)
+    return np.array([d[1], d[2], d[0]])
+
+
+def write_obj(path, vertices, faces, groups=None):
+    """OBJ text with 1-based faces; `groups` is a list of (name, first_face_index)."""
+    lines = ["# GENERATED by fy envelope bundle (decimetres, MakeHuman OBJ axes)"]
+    lines += [f"v {x:.4f} {y:.4f} {z:.4f}" for x, y, z in vertices]
+    gi = {a: n for n, a in (groups or [])}
+    for i, f in enumerate(faces):
+        if i in gi:
+            lines.append(f"g {gi[i]}")
+        lines.append("f " + " ".join(str(int(j) + 1) for j in f))
+    Path(path).write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+
+
+def envelope_mesh(res, inp, shell_mm=SHELL_MM):
+    """Marching-tetrahedra surface of {sd >= t} inside a segment's region, as (vertices in MH dm, faces)."""
+    seg = res.seg
+    vals = np.where(seg.region, seg.sd.astype(float), -1.0e3)
+    V, F = marching_tetrahedra(vals, seg.o + seg.h / 2, seg.h, shell_mm)
+    return to_mh_dm(V + np.array(res.origin_xyz), inp), F
+
+
+def ansur_slabs(inp, scale_to_stature_mm):
+    """ANSUR mean +- SD slabs of the landmark heights, as heights above the floor at the given stature (mm)."""
+    out = []
+    for name, d in inp.ansur["landmarks"].items():
+        m, sd = d["ratio"]["mean"] * scale_to_stature_mm, d["ratio"]["sd"] * scale_to_stature_mm
+        out.append({"name": name, "mean_mm": m, "sd_mm": sd})
+    return out
+
+
+def build(inp, feats, reg, results, root, outdir, shapes_path=None, poses_path=None):
+    """Write conformed.obj, original.obj, envelope_t5.obj and inspect.json into outdir. results: segment name -> SegResult."""
+    outdir = Path(outdir)
+    outdir.mkdir(parents=True, exist_ok=True)
+    from . import trial
+    # original and conformed meshes keep the original quads
+    src_v, src_polys = read_obj(_mesh_path(inp, root))
+    write_obj(outdir / "original.obj", to_mh_dm(inp.V, inp), src_polys)
+    write_obj(outdir / "conformed.obj", to_mh_dm(reg.apply(inp.V), inp), src_polys)
+    # envelope: the three segments in one file, one group each
+    verts, faces, groups = [], [], []
+    for name in ("thigh", "shank", "foot"):
+        v, f = envelope_mesh(results[name], inp)
+        groups.append((name, len(faces), None))
+        faces += [(f_ + len(verts)).tolist() for f_ in f]
+        verts += v.tolist()
+    write_obj(outdir / "envelope_t5.obj", np.array(verts), faces, [(n, a) for n, a, _ in groups])
+    sh = inp.sheet
+    xs, ys = reg.target_xy
+    nodes_m = {n: [reg.centroids[n][0], reg.centroids[n][1], reg.mesh_nodes[n]] for n in ("hjc", "kjc", "ajc")}
+    nodes_c = {"hjc": [xs, ys, sh.hjc], "kjc": [xs, ys, sh.kjc], "ajc": [xs, ys, sh.ajc]}
+    mh = lambda d: {k: to_mh_dm(np.array(v), inp)[0].tolist() for k, v in d.items()}
+    plane = lambda name, z, frame: {"name": name, "y_dm": float(to_mh_dm([[0, 0, z]], inp)[0][1]), "frame": frame}
+    stature_c = sh.stature_mm
+    insp = {
+        "schema": SCHEMA, "frame": "MakeHuman OBJ axes (x subject-left, y up, z anterior), decimetres; heights are y",
+        "side": "right", "meshes": {"original": "original.obj", "conformed": "conformed.obj", "envelope": "envelope_t5.obj", "shell_mm": SHELL_MM},
+        "joint_centres": {"original": mh(nodes_m), "conformed": mh(nodes_c)},
+        "axes": {"original": {"thigh": [mh(nodes_m)["hjc"], mh(nodes_m)["kjc"]], "shank": [mh(nodes_m)["kjc"], mh(nodes_m)["ajc"]]},
+                 "conformed": {"thigh": [mh(nodes_c)["hjc"], mh(nodes_c)["kjc"]], "shank": [mh(nodes_c)["kjc"], mh(nodes_c)["ajc"]]}},
+        "cut_planes": {"original": [plane("HJC plane", reg.mesh_nodes["hjc"], "original"), plane("KJC plane", reg.mesh_nodes["kjc"], "original"),
+                                    plane("AJC plane", reg.mesh_nodes["ajc"], "original")],
+                       "conformed": [plane("HJC plane", sh.hjc, "conformed"), plane("KJC plane", sh.kjc, "conformed"), plane("AJC plane", sh.ajc, "conformed")]},
+        "hip_zone": {"conformed": {"y_top_dm": plane("", sh.hjc, "")["y_dm"], "y_bottom_dm": plane("", sh.hjc - trial.HIP_ZONE_MM, "")["y_dm"], "depth_mm": trial.HIP_ZONE_MM},
+                     "original": {"y_top_dm": plane("", reg.mesh_nodes["hjc"], "")["y_dm"],
+                                  "y_bottom_dm": plane("", reg.mesh_nodes["hjc"] - trial.HIP_ZONE_MM / reg.axial.stretches()["thigh"], "")["y_dm"]}},
+        "feature_levels": {"original": _feature_levels(inp, feats, plane)},
+        "ansur_slabs": {"original": _slabs(inp, inp.stature_mesh, plane), "conformed": _slabs(inp, stature_c, plane)},
+        "oracle_shapes": _oracle(inp, reg, results, root, shapes_path, poses_path),
+        "registration": reg.summary(),
+    }
+    (outdir / "inspect.json").write_text(json.dumps(insp, indent=1, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
+    return outdir
+
+
+def _mesh_path(inp, root):
+    return Path(root) / inp.mesh_label
+
+
+def _feature_levels(inp, feats, plane):
+    rl = inp.ruler
+    out = [plane("crotch apex (measured)", feats["crotch_apex_mm"], "original"), plane("knee Ruler loop", rl["knee"]["z_mm"], "original"),
+           plane("ankle Ruler loop", rl["ankle"]["z_mm"], "original"), plane("calf Ruler loop", rl["calf"]["z_mm"], "original"),
+           plane("thigh Ruler loop", rl["thigh"]["z_mm"], "original"), plane("upper-leg chord top", rl["upperleg_height"]["top_z_mm"], "original"),
+           plane("upper-leg chord bottom", rl["upperleg_height"]["bottom_z_mm"], "original"), plane("lower-leg chord top", rl["lowerleg_height"]["top_z_mm"], "original")]
+    if feats["knee"]["is_feature"]:
+        out.append(plane("knee breadth peak", feats["knee"]["z_mm"], "original"))
+    return out
+
+
+def _slabs(inp, stature_mm, plane):
+    out = []
+    for s in ansur_slabs(inp, stature_mm):
+        lo, hi, mid = (plane("", s["mean_mm"] + k * s["sd_mm"], "")["y_dm"] for k in (-1, 1, 0))
+        out.append({"name": s["name"], "y_lo_dm": lo, "y_hi_dm": hi, "y_mean_dm": mid})
+    return out
+
+
+def _oracle(inp, reg, results, root, shapes_path, poses_path):
+    """The worked example's shapes at every pose of both pose files, in the MakeHuman frame (centre and the three local axes), for the thigh."""
+    root = Path(root)
+    ex = root / "data/envelope/examples"
+    shapes = oracle.read_shapes(shapes_path or ex / "rod_shapes.yaml")
+    origin = np.array(results["thigh"].origin_xyz)
+    out = []
+    from scipy.spatial.transform import Rotation
+    for tag, f in (("feasible", "rod_feasible_poses.csv"), ("infeasible", "rod_infeasible_poses.csv")):
+        poses = oracle.read_poses(poses_path or ex / f)
+        for i, pose in enumerate(poses):
+            R = Rotation.from_euler("xyz", pose[3:], degrees=True).as_matrix()
+            for s in shapes:
+                c = np.asarray(s.get("offset", [0, 0, 0]), float)
+                centre = R @ c + pose[:3] + origin
+                ax_mh = [dir_to_mh(R[:, i]) for i in range(3)]       # the shape's local x, y, z in MakeHuman axes
+                out.append({"name": f"{s['name']} {tag} pose {i}", "type": s["type"], "params": {k: v for k, v in s.items() if k in ("radius", "diameter", "length", "half")},
+                            "centre_dm": to_mh_dm(centre[None, :], inp)[0].tolist(), "axes": [a.tolist() for a in ax_mh], "set": tag})
+    return out

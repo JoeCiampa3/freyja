@@ -37,12 +37,25 @@ class SheetNodes:
     k_pelvis: float
     thigh_mass_kg: float
     stature_mm: float
+    shank_mass_kg: float
+    foot_mass_kg: float
+    total_mass_kg: float          # the sum of the snapshot's segment masses (both sides), not the target
+    target_mass_kg: float
     checks: dict
+
+
+SEGMENT_MASS_KEYS = ("abdomen", "head_neck", "pelvis", "thorax")                       # one body each
+BILATERAL_MASS_KEYS = ("foot", "forearm", "hand", "shank", "thigh", "upper_arm")        # one per side
+
+
+def total_mass(snap) -> float:
+    """Sum of the sheet's segment masses (the toe is part of the foot row, not added again)."""
+    return float(sum(snap[f"{k}_mass"] for k in SEGMENT_MASS_KEYS) + sum(snap[f"{k}_{s}_mass"] for k in BILATERAL_MASS_KEYS for s in ("left", "right")))
 
 
 def sheet_nodes(snapshot_path, side="right") -> SheetNodes:
     snap = sheet.read_snapshot(snapshot_path)
-    need = [f"thigh_{side}_length", f"shank_{side}_length", f"thigh_{side}_mass", f"thigh_{side}_pos_y", "pelvis_length", "pelvis_pos_z",
+    need = [f"thigh_{side}_length", f"shank_{side}_length", f"thigh_{side}_mass", f"shank_{side}_mass", f"foot_{side}_mass", "target_mass", f"thigh_{side}_pos_y", "pelvis_length", "pelvis_pos_z",
             f"thigh_{side}_pos_z", "ansur_female_malleolusheight", "ansur_female_stature", "target_stature"]
     for k in need:
         if k not in snap:
@@ -66,7 +79,7 @@ def sheet_nodes(snapshot_path, side="right") -> SheetNodes:
         "ankle_height_mm": ajc,
     }
     return SheetNodes(ajc, kjc, hjc, Lt, Ls, snap[f"thigh_{side}_pos_y"] * mm, k, snap[f"thigh_{side}_mass"],
-                      snap["target_stature"] * mm, checks)
+                      snap["target_stature"] * mm, snap[f"shank_{side}_mass"], snap[f"foot_{side}_mass"], total_mass(snap), snap["target_mass"], checks)
 
 
 @dataclass(frozen=True)
@@ -171,43 +184,54 @@ def diagnostics(sh: SheetNodes, ansur: dict) -> dict:
     return out
 
 
-def monte_carlo(profile, reg: Registration, n=200, seed=0, shells=(0.0, 3.0, 5.0, 8.0, 10.0), hip_zone=40.0, stations=None) -> dict:
-    """Envelope outputs under uncertainty in the mesh node heights (normal, ANSUR SD) and the section-centre offsets (uniform +-10 mm).
+def monte_carlo(profile, reg: Registration, segment="thigh", n=200, seed=0, shells=(0.0, 3.0, 5.0, 8.0, 10.0), hip_zone=40.0, stations=None) -> dict:
+    """Envelope outputs of a segment under uncertainty in the mesh node heights (normal, SD from the registration) and the section-centre offsets
+    (uniform +-10 mm).
 
-    `profile` holds the unstretched section areas and Chebyshev radii on a fine height grid (they are invariant under the axial stretch and the
-    shear, so the sample's outputs follow by remapping): station s of a sample sits at mesh height hjc_m - s / stretch_thigh. Volume is
-    stretch_thigh x the integral of area over the mapped interval. The centre offsets move sections sideways and so change none of these
-    outputs; they are drawn and reported as the spread of the shear."""
+    `profile` holds the unconformed section areas and Chebyshev radii on a fine height grid (they are invariant under the axial stretch and the shear,
+    so each sample's outputs follow by remapping): station s of a sample sits at mesh height upper - s / stretch. Volume is the stretch times the
+    integral of area over the mapped interval. The centre offsets move sections sideways and so change none of these outputs; they are drawn and
+    reported as the spread of the shear. `hip_zone` (mm from the proximal plane) is excluded from the minimum radius for the thigh only."""
     rng = np.random.default_rng(seed)
     z, A, R = profile["z"], profile["area"], profile["radius"]
-    L = reg.sheet.thigh_length
+    upper, lower = {"thigh": ("hjc", "kjc"), "shank": ("kjc", "ajc"), "foot": ("ajc", None)}[segment]
+    sh = reg.sheet
+    L = {"thigh": sh.thigh_length, "shank": sh.shank_length, "foot": sh.ajc}[segment]
+    zone = hip_zone if segment == "thigh" else 0.0
     st = np.array(stations if stations is not None else np.arange(0.0, L + 1e-9, 10.0))
     names = ("ajc", "kjc", "hjc")
 
     def evaluate(nodes):
-        s_th = L / (nodes["hjc"] - nodes["kjc"])
-        zz = nodes["hjc"] - st / s_th
-        out = {"stretch_thigh": s_th, "stretch_shank": reg.sheet.shank_length / (nodes["kjc"] - nodes["ajc"]), "stretch_foot": reg.sheet.ajc / nodes["ajc"]}
-        body = st >= hip_zone
-        fine = np.linspace(nodes["kjc"], nodes["hjc"], 400)
+        zu, zl = nodes[upper], (nodes[lower] if lower else 0.0)
+        s_seg = L / (zu - zl)
+        zz = zu - st / s_seg
+        out = {"stretch": s_seg, "stretch_thigh": L_th / (nodes["hjc"] - nodes["kjc"]), "stretch_shank": L_sh / (nodes["kjc"] - nodes["ajc"]), "stretch_foot": sh.ajc / nodes["ajc"]}
+        body = st >= zone
+        fine = np.linspace(zl, zu, 400)
         for t in shells:
             a = np.interp(zz, z, A[t])
             r = np.interp(zz, z, R[t])
             out[f"area_t{t:g}"] = a
             out[f"rmin_t{t:g}"] = float(r[body].min())
             out[f"rmin_station_t{t:g}"] = float(st[body][np.argmin(r[body])])
-            out[f"volume_t{t:g}"] = float(s_th * np.trapezoid(np.interp(fine, z, A[t]), fine))
+            out[f"volume_t{t:g}"] = float(s_seg * np.trapezoid(np.interp(fine, z, A[t]), fine))
         return out
 
-    nominal = evaluate({n: reg.mesh_nodes[n] for n in names})
-    runs = [evaluate({n: reg.mesh_nodes[n] + rng.normal(0.0, reg.sigmas[n]) for n in names}) for _ in range(n)]
-    shear_thigh = []
+    L_th, L_sh = sh.thigh_length, sh.shank_length
+    nominal = evaluate({n_: reg.mesh_nodes[n_] for n_ in names})
+    runs = [evaluate({n_: reg.mesh_nodes[n_] + rng.normal(0.0, reg.sigmas[n_]) for n_ in names}) for _ in range(n)]
+    pair = {"thigh": ("hjc", "kjc"), "shank": ("kjc", "ajc"), "foot": ("kjc", "ajc")}[segment]
+    shear_seg = []
+    base = np.array([[reg.shear.dx[i], reg.shear.dy[i]] for i in range(3)])
     for _ in range(n):
         d = rng.uniform(-CENTRE_OFFSET_MM, CENTRE_OFFSET_MM, (3, 2))
-        sh = np.array([[reg.shear.dx[i], reg.shear.dy[i]] for i in range(3)]) - d    # the centres were off by d, so the shear differs by -d
-        shear_thigh.append(float(np.hypot(*(sh[2] - sh[1]))))
-    res = {"n": n, "nominal": {k: (v if np.isscalar(v) else [float(x) for x in v]) for k, v in nominal.items()}, "stations_mm": [float(x) for x in st],
-           "shear_thigh_mm": {"nominal": reg.summary()["shear_mm"]["thigh"], "p2_5": float(np.percentile(shear_thigh, 2.5)), "p97_5": float(np.percentile(shear_thigh, 97.5))}}
+        sh_ = base - d                      # the centres were off by d, so the shear differs by -d
+        i, j = names.index(pair[0]), names.index(pair[1])
+        shear_seg.append(float(np.hypot(*(sh_[i] - sh_[j]))))
+    res = {"n": n, "segment": segment, "nominal": {k: (v if np.isscalar(v) else [float(x) for x in v]) for k, v in nominal.items()},
+           "stations_mm": [float(x) for x in st],
+           "shear_mm": {"nominal": reg.summary()["shear_mm"]["thigh" if segment == "thigh" else "shank"], "p2_5": float(np.percentile(shear_seg, 2.5)),
+                        "p97_5": float(np.percentile(shear_seg, 97.5))}}
     spread = {}
     for key in runs[0]:
         vals = np.array([r[key] for r in runs])

@@ -53,18 +53,20 @@ def test_a_missing_snapshot_key_stops_and_names_it(tmp_path):
 # ---- ANSUR -------------------------------------------------------------------------------------------------------------------------
 
 def test_ansur_summary_ratios_on_a_tiny_csv(tmp_path):
-    cols = ["stature"] + list(anthro.COLUMNS.values())
+    girths = ["thighcircumference", "lowerthighcircumference", "calfcircumference", "anklecircumference"]
+    cols = ["stature"] + list(anthro.COLUMNS.values()) + girths
     p = tmp_path / "a.csv"
     with open(p, "w", newline="") as fh:
         w = csv.writer(fh)
         w.writerow(cols)
         for stature in (1600.0, 1700.0):
-            w.writerow([stature] + [stature * 0.5 + i for i in range(len(anthro.COLUMNS))])
+            w.writerow([stature] + [stature * 0.5 + i for i in range(len(anthro.COLUMNS))] + [400.0, 300.0, 350.0, 200.0])
     s = anthro.summarise(p)
     assert s["n"] == 2 and abs(s["stature_mm"]["mean"] - 1650) < 1e-9
     r = s["landmarks"]["crotch"]["ratio"]
     assert abs(r["mean"] - 0.5) < 1e-3
     assert abs(s["trochanterion_minus_crotch_ratio"]["mean"] - (1 / 1650)) < 1e-4       # one millimetre apart in the fixture
+    assert s["circumferences_mm"]["calf_maximum"]["mean"] == 350.0
 
 
 def test_the_tracked_ratios_match_the_published_female_means():
@@ -193,7 +195,7 @@ def profile_of_a_cone(z0=0.0, z1=1000.0):
 
 def test_monte_carlo_with_no_uncertainty_returns_the_nominal_everywhere():
     reg = make_reg(sigmas={"ajc": 0.0, "kjc": 0.0, "hjc": 0.0})
-    mc = register.monte_carlo(profile_of_a_cone(), reg, n=20, shells=(0.0, 5.0))
+    mc = register.monte_carlo(profile_of_a_cone(), reg, "thigh", n=20, shells=(0.0, 5.0))
     sp = mc["spread"]["rmin_t0"]
     assert sp["sd"] < 1e-9 and abs(sp["p5"] - mc["nominal"]["rmin_t0"]) < 1e-9
     assert mc["spread"]["volume_t0"]["sd"] < 1e-6
@@ -201,7 +203,7 @@ def test_monte_carlo_with_no_uncertainty_returns_the_nominal_everywhere():
 
 def test_monte_carlo_minimum_radius_sits_at_the_distal_end_and_the_5th_percentile_is_below_nominal():
     reg = make_reg()
-    mc = register.monte_carlo(profile_of_a_cone(), reg, n=200, shells=(0.0, 5.0))
+    mc = register.monte_carlo(profile_of_a_cone(), reg, "thigh", n=200, shells=(0.0, 5.0))
     nom = mc["nominal"]
     assert nom["rmin_station_t0"] == pytest.approx(reg.sheet.thigh_length, abs=10.0)       # the smallest section is the knee end
     assert mc["spread"]["rmin_t0"]["p5"] < nom["rmin_t0"] and abs(nom["rmin_t5"] - (nom["rmin_t0"] - 5)) < 1e-6
@@ -214,6 +216,6 @@ def test_monte_carlo_minimum_radius_sits_at_the_distal_end_and_the_5th_percentil
 
 def test_monte_carlo_is_reproducible_for_a_seed():
     reg = make_reg()
-    a = register.monte_carlo(profile_of_a_cone(), reg, n=30, seed=3, shells=(0.0,))
-    b = register.monte_carlo(profile_of_a_cone(), reg, n=30, seed=3, shells=(0.0,))
+    a = register.monte_carlo(profile_of_a_cone(), reg, "thigh", n=30, seed=3, shells=(0.0,))
+    b = register.monte_carlo(profile_of_a_cone(), reg, "thigh", n=30, seed=3, shells=(0.0,))
     assert a["spread"]["volume_t0"] == b["spread"]["volume_t0"]

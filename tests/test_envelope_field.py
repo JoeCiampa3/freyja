@@ -95,3 +95,27 @@ def test_parity_flags_columns_through_an_open_mesh():
     v, f = frustum(40, 40, 60, -360)
     seg = seg_for(v, np.delete(f, [0, 1], axis=0), 0.0, -300.0)   # open a hole in the side wall at angle 0
     assert seg.odd_columns > 0
+
+
+def test_section_perimeter_is_the_true_skin_contour_not_an_equivalent_circle():
+    R, H = 45.0, 300.0
+    v, f = frustum(R, R, 60, -H - 60)
+    seg = seg_for(v, f, 0.0, -H)
+    assert abs(seg.section(100.0).perimeter() - 2 * np.pi * R) / (2 * np.pi * R) < 0.005
+    hx, hy = 40.0, 25.0
+    v, f = box(hx, hy, (H + 120) / 2, center=(0, 0, -H / 2))
+    seg = seg_for(v, f, 0.0, -H)
+    p = seg.section(100.0).perimeter()
+    assert abs(p - 4 * (hx + hy)) / (4 * (hx + hy)) < 0.015                  # the grid rounds the four corners a little
+    equiv = 2 * np.sqrt(np.pi * seg.section(100.0).area())
+    assert equiv < p - 5.0                                                    # a long thin box: the equivalent circle undershoots by about 6 mm
+
+
+def test_volume_between_stations_and_the_hip_zone_exclusion():
+    R, H = 45.0, 300.0
+    v, f = frustum(R, R, 60, -H - 60)
+    seg = seg_for(v, f, 0.0, -H)
+    full = seg.volume()
+    assert abs(seg.volume(0.0, 40.0, H) - np.pi * R * R * (H - 40.0)) / (2 * np.pi * R * H) < TOL
+    assert abs(seg.volume(0.0, 0.0, 40.0) + seg.volume(0.0, 40.0, H) - full) < 1e-6 * full
+    assert abs(seg.volume(0.0, 100.0, 150.0) - np.pi * R * R * 50.0) / (2 * np.pi * R * 50.0) < TOL

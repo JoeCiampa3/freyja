@@ -44,7 +44,10 @@ def rows_for(seg: field.Segment, side: str, shells=SHELL_MM):
     for s in stations(seg.length):
         sec = seg.section(s)
         cx, cy, r = sec.chebyshev(0.0)
-        row = {"s_mm": round(s, 1), "area_mm2": round(sec.area(0.0), 1), "cheb_cx_mm": round(cx, 2), "cheb_cy_mm": round(cy, 2), "cheb_r_mm": round(r, 2)}
+        area = sec.area(0.0)
+        row = {"s_mm": round(s, 1), "area_mm2": round(area, 1), "perimeter_mm": round(sec.perimeter(0.0), 1),
+               "perimeter_equiv_circle_mm": round(2 * float(np.sqrt(np.pi * area)), 1),
+               "cheb_cx_mm": round(cx, 2), "cheb_cy_mm": round(cy, 2), "cheb_r_mm": round(r, 2)}
         for nm in ("ant", "post", "med", "lat"):
             row[f"hw_{nm}_mm"] = round(sec.ray((0.0, 0.0), dirs[nm]), 2)
         for a in DIRECTIONS:
@@ -60,21 +63,25 @@ def rows_for(seg: field.Segment, side: str, shells=SHELL_MM):
 
 
 def header(res, rows, shells, density_note, mesh_label, ansur_label, inputs_sha, hip_zone_mm) -> dict:
+    """Header scalars of a segment ledger. `hip_zone_mm` is the proximal zone reported apart (the thigh's; 0 or None for other segments)."""
     seg, reg = res.seg, res.reg
     skin = seg.volume(0.0)
-    body = [r for r in rows if r["s_mm"] >= hip_zone_mm]
-    hip = [r for r in rows if r["s_mm"] < hip_zone_mm]
+    zone = hip_zone_mm if (res.name == "thigh" and hip_zone_mm) else 0.0
+    body = [r for r in rows if r["s_mm"] >= zone] or rows
+    hip = [r for r in rows if r["s_mm"] < zone]
     summ = reg.summary()
 
     def minrow(rs, key):
         r = min(rs, key=lambda x: x[key])
         return {"r_mm": r[key], "station_mm": r["s_mm"]}
 
+    st = summ["stretch"]
+    mass = getattr(res, "mass_kg", None)
     return {
-        "segment": "thigh_R",
-        "frame": "segment: origin at the hip centre on the vertical axis, z up the thigh (knee at z = -length), x anterior, y left; stations are distances below the hip centre",
+        "segment": f"{res.name}_R",
+        "frame": "segment: origin at the proximal joint centre on the vertical axis, z up (distal end at z = -length), x anterior, y left; stations are distances below the origin",
         "length_mm": round(seg.length, 2),
-        "stretch": {k: round(v, 5) for k, v in summ["stretch"].items()},
+        "stretch": {k: round(v, 5) for k, v in st.items()},
         "shear_mm": {k: round(v, 2) for k, v in summ["shear_mm"].items()},
         "shear_deg": {k: round(v, 2) for k, v in summ["shear_deg"].items()},
         "pelvis_scale_k": round(reg.sheet.k_pelvis, 5),
@@ -86,14 +93,15 @@ def header(res, rows, shells, density_note, mesh_label, ansur_label, inputs_sha,
         "voxel_mm": seg.h,
         "skin_volume_l": round(skin / 1e6, 4),
         "inner_volume_l": {f"t{t:g}": round(seg.volume(t) / 1e6, 4) for t in shells},
-        "mass_budget": {"sheet_thigh_mass_kg": round(res.reg.sheet.thigh_mass_kg, 4), "implied_density_kg_per_l": round(res.reg.sheet.thigh_mass_kg / (skin / 1e6), 4), "note": density_note},
+        "skin_volume_excluding_hip_zone_l": round(seg.volume(0.0, zone, None) / 1e6, 4) if zone else None,
+        "sheet_mass_kg": round(mass, 4) if mass else None,
         "min_inscribed_radius": {
-            "outside_hip_zone": {**minrow(body, "cheb_r_mm"), "from_station_mm": hip_zone_mm},
-            "hip_zone": {**minrow(hip, "cheb_r_mm"), "below_station_mm": hip_zone_mm} if hip else None,
+            "outside_hip_zone": {**minrow(body, "cheb_r_mm"), "from_station_mm": zone},
+            "hip_zone": {**minrow(hip, "cheb_r_mm"), "below_station_mm": zone} if hip else None,
         },
         "min_inscribed_radius_inner": {f"t{t:g}": minrow(body, f"cheb_r_t{t:g}_mm") for t in shells if t != 0.0},
         "directions": {str(a): n for a, n in direction_names("right").items()},
-        "sections_csv": "thigh_R_sections.csv",
+        "sections_csv": f"{res.name}_R_sections.csv",
         "inputs_sha256_12": inputs_sha,
     }
 

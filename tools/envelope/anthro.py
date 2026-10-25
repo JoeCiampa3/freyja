@@ -20,6 +20,7 @@ COLUMNS = {
     "lateral_malleolus": "lateralmalleolusheight",
     "iliocristale": "iliocristaleheight",
     "tenth_rib": "tenthribheight",
+    "midpatella": "kneeheightmidpatella",
 }
 RAW = "data/ansur2/raw/ANSUR_II_FEMALE_Public.csv"
 SUMMARY = "data/ansur2/ratios.json"
@@ -39,6 +40,15 @@ def summarise(csv_path) -> dict:
                                   "ratio": {"mean": float(q.mean()), "sd": float(q.std(ddof=1))}}
     d = (heights["trochanterion"] - heights["crotch"]) / stature
     out["trochanterion_minus_crotch_ratio"] = {"mean": float(d.mean()), "sd": float(d.std(ddof=1))}
+    # per-subject offsets between landmarks, as a fraction of stature and in mm (the Ruler knee loop is taken to sit at the midpatella)
+    e = heights["lateral_femoral_epicondyle"] - heights["midpatella"]
+    out["epicondyle_minus_midpatella"] = {"ratio": {"mean": float((e / stature).mean()), "sd": float((e / stature).std(ddof=1))},
+                                          "mm": {"mean": float(e.mean()), "sd": float(e.std(ddof=1))}}
+    out["circumferences_mm"] = {}
+    for name, col in (("thigh_gluteal_furrow", "thighcircumference"), ("lower_thigh_suprapatella", "lowerthighcircumference"),
+                      ("calf_maximum", "calfcircumference"), ("ankle_minimum", "anklecircumference")):
+        c = np.array([float(r[col]) for r in rows])
+        out["circumferences_mm"][name] = {"column": col, "mean": float(c.mean()), "sd": float(c.std(ddof=1))}
     out["source_sha256_12"] = hashlib.sha256(Path(csv_path).read_bytes()).hexdigest()[:12]
     return out
 

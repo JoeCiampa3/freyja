@@ -38,9 +38,15 @@
       <button id="btnImport">Import JSON</button>
       <input id="fileJson" type="file" accept=".json" hidden>
     </div>
-    <label>Clipping plane (sagittal, subject-left cut)<span id="clipVal"></span></label>
+    <label>Clipping plane <select id="clipAxis"><option value="x">sagittal (x, subject left)</option><option value="z">coronal (z, anterior)</option><option value="y">horizontal (y, up)</option></select><span id="clipVal"></span></label>
     <input id="clip" type="range" min="-1" max="1" step="0.001" value="1">
-    <label><input id="clipOn" type="checkbox"> clip enabled (hides x &gt; slider; use to see inside the right side)</label>
+    <label><input id="clipOn" type="checkbox"> clip enabled (hides everything above the slider along that axis; sagittal: use it to see inside the right side)</label>
+    <div>
+      <button id="btnInspect">Load inspect bundle</button>
+      <input id="fileBundle" type="file" accept=".obj,.json" multiple hidden>
+      <span style="color:#8a909b;font-size:11px">select original.obj, conformed.obj, envelope_t5.obj and inspect.json together (or drop them)</span>
+    </div>
+    <div id="layers"></div>
     <ol id="list"></ol>
     <div id="info">Drop an OBJ on the page.</div>
     <div id="warn"></div>
@@ -146,19 +152,26 @@ function loadObj(text) {
   orb.target.set((bb.min.x + bb.max.x) / 2, (bb.min.y + bb.max.y) / 2, (bb.min.z + bb.max.z) / 2);
   orb.r = (bb.max.y - bb.min.y) * 2.2; orb.theta = 0; orb.phi = Math.PI / 2;
   const range = bb.max.x - bb.min.x;
-  $("clip").min = bb.min.x - 0.01; $("clip").max = bb.max.x + 0.01; $("clip").value = bb.max.x + 0.01;
+  clipBounds = { x: [bb.min.x, bb.max.x], y: [bb.min.y, bb.max.y], z: [bb.min.z, bb.max.z] };
+  setClipRange(...clipBounds[$("clipAxis").value]);
   placeCamera(); applyClip(); $("drop").style.display = "none";
   for (const k of Object.keys(markers)) { scene.remove(markers[k]); delete markers[k]; }
   for (const c of CHECKLIST) if (picks[c.name] !== undefined) addMarker(c.name);
   info(`Loaded ${v.length / 3} vertices, ${polys.length} faces. Extent x ${(range * DM_TO_MM).toFixed(0)} mm, height ${((bb.max.y - bb.min.y) * DM_TO_MM).toFixed(0)} mm.`);
 }
+let clipBounds = null;
+const clipMaterials = new Set();             // materials of the Inspect layers; the picker mesh and its wireframe are added in applyClip
 function applyClip() {
-  const on = $("clipOn").checked, c = +$("clip").value;
-  clipPlane.constant = c;                     // keeps points with -x + c >= 0, i.e. x <= c
+  const on = $("clipOn").checked, c = +$("clip").value, axis = $("clipAxis").value;
+  clipPlane.normal.set(axis === "x" ? -1 : 0, axis === "y" ? -1 : 0, axis === "z" ? -1 : 0);
+  clipPlane.constant = c;                     // keeps points with -a + c >= 0, i.e. a <= c along the chosen axis
   const planes = on ? [clipPlane] : [];
-  if (mesh) { mesh.material.clippingPlanes = planes; wire.material.clippingPlanes = planes; mesh.material.needsUpdate = true; wire.material.needsUpdate = true; }
-  $("clipVal").textContent = on ? `  x <= ${(c * DM_TO_MM).toFixed(0)} mm` : "  off";
+  const mats = [...clipMaterials];
+  if (mesh) mats.push(mesh.material, wire.material);
+  for (const m of mats) { m.clippingPlanes = planes; m.needsUpdate = true; }
+  $("clipVal").textContent = on ? `  ${axis} <= ${(c * DM_TO_MM).toFixed(0)} mm` : "  off";
 }
+function setClipRange(lo, hi) { $("clip").min = lo - 0.01; $("clip").max = hi + 0.01; $("clip").value = hi + 0.01; }
 
 // ---- coordinates ----
 function coordText(id) {
@@ -239,6 +252,118 @@ function importJson(text) {
   renderList();
 }
 
+// ---- Inspect mode: layers from an inspect bundle (original.obj, conformed.obj, envelope_t5.obj, inspect.json from `fy envelope build`) ----
+// Everything is in MakeHuman OBJ axes and decimetres, like the OBJs, so the layers overlay with no conversion.
+const inspectLayers = {};                    // name -> {obj: THREE.Object3D, box: checkbox}
+function clearInspect() {
+  for (const k of Object.keys(inspectLayers)) { scene.remove(inspectLayers[k].obj); delete inspectLayers[k]; }
+  clipMaterials.clear(); $("layers").innerHTML = "";
+}
+function trackMat(m) { clipMaterials.add(m); return m; }
+function addLayer(name, label, obj, on = true) {
+  obj.visible = on; scene.add(obj);
+  const row = document.createElement("label");
+  const box = document.createElement("input"); box.type = "checkbox"; box.checked = on;
+  box.onchange = () => { obj.visible = box.checked; };
+  row.appendChild(box); row.appendChild(document.createTextNode(" " + label));
+  $("layers").appendChild(row);
+  inspectLayers[name] = { obj, box };
+}
+function meshLayer(text, color, opacity) {
+  const { v, polys } = parseObj(text);
+  const idx = [];
+  for (const p of polys) for (let i = 1; i + 1 < p.length; i++) idx.push(p[0], p[i], p[i + 1]);
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(v), 3));
+  g.setIndex(idx); g.computeVertexNormals(); g.computeBoundingBox();
+  const m = trackMat(new THREE.MeshStandardMaterial({ color, roughness: 0.9, side: THREE.DoubleSide, transparent: opacity < 1, opacity, depthWrite: opacity >= 1, clippingPlanes: [] }));
+  return new THREE.Mesh(g, m);
+}
+function pointDot(p, color, r = 0.02) {
+  const s = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 10), trackMat(new THREE.MeshBasicMaterial({ color, depthTest: false })));
+  s.position.set(p[0], p[1], p[2]); s.renderOrder = 12; return s;
+}
+function lineObj(pts, color) {
+  const g = new THREE.BufferGeometry().setFromPoints(pts.map((p) => new THREE.Vector3(p[0], p[1], p[2])));
+  const l = new THREE.Line(g, trackMat(new THREE.LineBasicMaterial({ color, depthTest: false }))); l.renderOrder = 11; return l;
+}
+function levelPlane(y, color, opacity, size, centre) {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(size, size), trackMat(new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, transparent: true, opacity, depthWrite: false })));
+  m.rotation.x = Math.PI / 2; m.position.set(centre[0], y, centre[1]); m.renderOrder = 5; return m;
+}
+function slabObj(ylo, yhi, color, opacity, size, centre) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(size, Math.max(yhi - ylo, 0.002), size), trackMat(new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false })));
+  m.position.set(centre[0], (ylo + yhi) / 2, centre[1]); m.renderOrder = 4; return m;
+}
+function shapeObj(s, color) {
+  const q = s.params, t = s.type;
+  let g;
+  if (t === "box") g = new THREE.BoxGeometry(2 * q.half[0] / 100, 2 * q.half[1] / 100, 2 * q.half[2] / 100);
+  else {
+    const r = (q.radius !== undefined ? q.radius : q.diameter / 2) / 100, len = q.length / 100;
+    g = t === "capsule" ? new THREE.CapsuleGeometry(r, len, 8, 20) : new THREE.CylinderGeometry(r, r, len, 28);
+    g.rotateX(Math.PI / 2);                  // the shape's axis is its local z
+  }
+  const m = new THREE.Mesh(g, trackMat(new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.55, side: THREE.DoubleSide, clippingPlanes: [] })));
+  const [ax, ay, az] = s.axes.map((a) => new THREE.Vector3(a[0], a[1], a[2]));
+  m.matrix.makeBasis(ax, ay, az).setPosition(s.centre_dm[0], s.centre_dm[1], s.centre_dm[2]); m.matrixAutoUpdate = false;
+  return m;
+}
+async function loadBundle(files) {
+  const byName = {};
+  for (const f of files) byName[f.name.toLowerCase()] = await f.text();
+  const need = ["inspect.json", "original.obj", "conformed.obj", "envelope_t5.obj"];
+  const missing = need.filter((n) => byName[n] === undefined);
+  if (byName["inspect.json"] === undefined) { $("warn").textContent = "inspect.json is missing from the selection."; return; }
+  const J = JSON.parse(byName["inspect.json"]);
+  if (J.schema !== "inspect-bundle/1") { $("warn").textContent = `inspect.json has schema ${J.schema}, expected inspect-bundle/1.`; return; }
+  clearInspect();
+  $("warn").textContent = missing.length ? "Not in the selection: " + missing.join(", ") : "";
+  if (mesh) { scene.remove(mesh); scene.remove(wire); mesh = null; wire = null; }
+  const g = new THREE.Group();
+  const layers = [];
+  if (byName["original.obj"]) layers.push(["original", "original mesh", meshLayer(byName["original.obj"], 0xb9a99a, 0.35)]);
+  if (byName["conformed.obj"]) layers.push(["conformed", "conformed mesh", meshLayer(byName["conformed.obj"], 0x6fa8dc, 0.55)]);
+  if (byName["envelope_t5.obj"]) layers.push(["envelope", `envelope, shell ${J.meshes.shell_mm} mm (thigh, shank, foot)`, meshLayer(byName["envelope_t5.obj"], 0xe8a33d, 0.85)]);
+  for (const [n, l, o] of layers) addLayer(n, l, o, true);
+  const ref = layers.length ? layers[0][2].geometry.boundingBox : null;
+  const cx = ref ? (ref.min.x + ref.max.x) / 2 : 0, cz = ref ? (ref.min.z + ref.max.z) / 2 : 0, size = ref ? (ref.max.x - ref.min.x) * 0.8 : 4;
+  // joint centres and axes: original in red, conformed in blue
+  for (const fr of ["original", "conformed"]) {
+    const o = new THREE.Group(), col = fr === "original" ? 0xff5a4a : 0x4aa3ff;
+    for (const [k, p] of Object.entries(J.joint_centres[fr])) o.add(pointDot(p, col));
+    for (const pts of Object.values(J.axes[fr])) o.add(lineObj(pts, col));
+    addLayer("joints_" + fr, `joint centres and axes (${fr})`, o, true);
+  }
+  for (const fr of ["original", "conformed"]) {
+    const o = new THREE.Group();
+    for (const p of J.cut_planes[fr]) o.add(levelPlane(p.y_dm, fr === "original" ? 0xff8a7a : 0x7ab8ff, 0.18, size, [cx, cz]));
+    addLayer("cuts_" + fr, `cut planes HJC / KJC / AJC (${fr})`, o, false);
+  }
+  { const o = new THREE.Group(); for (const fr of ["original", "conformed"]) { const z = J.hip_zone[fr]; o.add(slabObj(z.y_bottom_dm, z.y_top_dm, fr === "original" ? 0xff5a4a : 0x4aa3ff, 0.3, size, [cx, cz])); } addLayer("hipzone", "hip zone, s < 40 mm (original red, conformed blue)", o, false); }
+  { const o = new THREE.Group(); for (const p of J.feature_levels.original) o.add(levelPlane(p.y_dm, 0x66dd88, 0.22, size * 0.7, [cx, cz])); addLayer("features", "feature levels (crotch, Ruler loops and chords, knee breadth)", o, false); }
+  for (const fr of ["original", "conformed"]) {
+    const o = new THREE.Group();
+    for (const s of J.ansur_slabs[fr]) o.add(slabObj(s.y_lo_dm, s.y_hi_dm, 0xc08cff, 0.18, size, [cx, cz]));
+    addLayer("ansur_" + fr, `ANSUR mean +- SD slabs (${fr}-stature scaling)`, o, false);
+  }
+  for (const set of ["feasible", "infeasible"]) {
+    const o = new THREE.Group();
+    for (const s of J.oracle_shapes) if (s.set === set) o.add(shapeObj(s, set === "feasible" ? 0x3fb57a : 0xd9534f));
+    addLayer("oracle_" + set, `oracle example shapes, ${set} poses (thigh)`, o, set === "feasible");
+  }
+  if (ref) {
+    const bb = new THREE.Box3(); for (const [, , o] of layers) bb.union(o.geometry.boundingBox);
+    clipBounds = { x: [bb.min.x, bb.max.x], y: [bb.min.y, bb.max.y], z: [bb.min.z, bb.max.z] };
+    setClipRange(...clipBounds[$("clipAxis").value]);
+    orb.target.set((bb.min.x + bb.max.x) / 2, (bb.min.y + bb.max.y) / 2, (bb.min.z + bb.max.z) / 2);
+    orb.r = (bb.max.y - bb.min.y) * 2.2; orb.theta = 0; orb.phi = Math.PI / 2; placeCamera();
+  }
+  applyClip(); $("drop").style.display = "none";
+  const s = J.registration.stretch;
+  info(`Inspect bundle: stretch thigh ${s.thigh.toFixed(4)}, shank ${s.shank.toFixed(4)}, foot ${s.foot.toFixed(4)}. Picking is off; load a plain OBJ to pick again.`);
+}
+
 // ---- UI wiring ----
 $("btnWire").onclick = () => { if (wire) wire.visible = !wire.visible; };
 $("btnUndo").onclick = undo;
@@ -246,12 +371,18 @@ $("btnExport").onclick = exportJson;
 $("btnImport").onclick = () => $("fileJson").click();
 $("fileJson").onchange = (e) => { const f = e.target.files[0]; if (f) f.text().then(importJson); e.target.value = ""; };
 $("clip").oninput = applyClip; $("clipOn").onchange = applyClip;
+$("clipAxis").onchange = () => { if (clipBounds) setClipRange(...clipBounds[$("clipAxis").value]); applyClip(); };
 document.addEventListener("dragover", (e) => e.preventDefault());
 document.addEventListener("drop", (e) => {
   e.preventDefault();
-  const f = e.dataTransfer.files[0]; if (!f) return;
-  f.text().then((t) => (f.name.toLowerCase().endsWith(".json") ? importJson(t) : loadObj(t)));
+  const files = [...e.dataTransfer.files]; if (!files.length) return;
+  const names = files.map((f) => f.name.toLowerCase());
+  if (files.length > 1 || names[0] === "inspect.json") { loadBundle(files); return; }       // an inspect bundle
+  const f = files[0];
+  f.text().then((t) => (f.name.toLowerCase().endsWith(".json") ? importJson(t) : (clearInspect(), loadObj(t))));
 });
+$("btnInspect").onclick = () => $("fileBundle").click();
+$("fileBundle").onchange = (e) => { if (e.target.files.length) loadBundle([...e.target.files]); e.target.value = ""; };
 window.addEventListener("keydown", (e) => { if ((e.ctrlKey || e.metaKey) && e.key === "z") { e.preventDefault(); undo(); } });
 
 // ---- axis gizmo (2D canvas, rotated with the camera) ----
