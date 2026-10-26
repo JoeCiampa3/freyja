@@ -1,7 +1,12 @@
 """The mass base: whole-body mesh volume, body density (Siri), expected segment masses and the densities they imply for the envelope's skin volumes.
 
 BODY_FAT_FRACTION and V_LUNG_L (value and source) are Joe's inputs, in `data/envelope/body_density.json`. Until they are supplied the report gives the
-bracket f = 0.15 and 0.35 and says so; nothing here picks a value.
+bracket f = 0.15 and 0.35 and says so; nothing here picks a value. The reference densities are Joe's transcription of Winter's Table 4.1
+(`data/envelope/reference_densities.json`) and the mass-cut landmarks are Dumas 2015 Table 1 (`data/envelope/dumas2015_table1_female.json`).
+
+The primary share number is the raw ratio: the sheet's mass share over the sculpt's volume share. Dumas 2015 (p.116) expresses the reference segment masses
+under a uniform density of 1 g/cm3, so the sheet's shares are volume shares of the reference women and 1.00 means the same distribution (lung gas is in both).
+The Dempster-normalised ratio (raw ratio over reference density / mean mesh density) is secondary.
 """
 from __future__ import annotations
 
@@ -15,9 +20,8 @@ from .sheet import StopAndAsk
 PATH = "data/envelope/body_density.json"
 BRACKET = (0.15, 0.35)                    # the brief's sensitivity bracket for the body fat fraction
 BLENDER_TOLERANCE = 0.005                 # the brief: the computed volume must match Joe's Blender volume within 0.5%
-REFERENCE_DENSITY = {"thigh": 1.05, "shank": 1.09, "foot": 1.10}   # kg/l, Dempster-type values quoted in the brief; eyeballing only
-ABDOMEN_REFERENCE_DENSITY = 1.01  # kg/l, the same recalled Dempster abdomen-pelvis value for the sheet's abdomen body; recalled, unverified, needs a cited source (brief 3, item 5)
-PELVIS_REFERENCE_DENSITY = 1.01   # kg/l, Dempster's abdomen-pelvis value as I recall it from Winter's tables; the brief gives none for the pelvis (a question for Joe)
+DENSITIES_PATH = "data/envelope/reference_densities.json"
+DUMAS_TABLE1_PATH = "data/envelope/dumas2015_table1_female.json"
 
 
 def body_density(f: float) -> float:
@@ -38,15 +42,48 @@ def load_constants(root: Path) -> dict:
     return json.loads(p.read_text(encoding="utf-8"))
 
 
-def report(inp, results: dict, constants: dict, cuts: dict | None = None) -> dict:
+def load_densities(root: Path) -> dict:
+    """segment name -> reference density (kg/l) as `use` in the densities file maps it onto Winter's rows: thigh, shank, foot, abdomen, pelvis, abdomen_and_pelvis."""
+    p = root / DENSITIES_PATH
+    if not p.exists():
+        raise StopAndAsk(f"{DENSITIES_PATH} is missing (Winter, Table 4.1 densities, transcribed by Joe)")
+    d = json.loads(p.read_text(encoding="utf-8"))
+    out = {}
+    for seg, row in d["use"].items():
+        if seg == "use_note":
+            continue
+        rho = d["rows"][row]["density_kg_per_l"]
+        if rho is None:
+            raise StopAndAsk(f"{DENSITIES_PATH}: row {row!r} has no density, needed for {seg!r}")
+        out[seg] = float(rho)
+    return out
+
+
+def load_dumas_table1(root: Path) -> dict:
+    p = root / DUMAS_TABLE1_PATH
+    if not p.exists():
+        raise StopAndAsk(f"{DUMAS_TABLE1_PATH} is missing (Dumas 2015 Table 1, female)")
+    return json.loads(p.read_text(encoding="utf-8"))
+
+
+def blender_volume_m3(constants: dict, mesh_label: str | None):
+    """Joe's Blender volume for the mesh being measured: `blender_volume_m3` is the v1 mesh's (the original key), `blender_volume_v2_m3` the v2 mesh's;
+    None when the mesh has no entry."""
+    key = "blender_volume_v2_m3" if mesh_label and "body-v2" in mesh_label else "blender_volume_m3"
+    return constants.get(key)
+
+
+def report(inp, results: dict, constants: dict, cuts: dict | None = None, densities: dict | None = None, mesh_label: str | None = None) -> dict:
     """results: segment name -> SegResult for thigh, shank, foot. cuts: the output of cuts.thigh_and_pelvis (adds the thigh variants, the pelvis and the
     lumped thigh+pelvis rows). Returns the mass-base tables (plain data).
 
     Mass share is the sheet's segment mass over the sheet total; volume share is the segment's skin volume over the whole mesh volume (lung gas
     included); their ratio is what a tissue of the segment's density over the mean mesh density would give, so ratio / expected tissue ratio, with
     expected = reference density / (M_mesh / V_mesh), is 1 when the sculpt's share matches the sheet's."""
+    if densities is None:
+        densities = load_densities(Path(__file__).resolve().parents[2])
     V_mesh = mesh_volume_l(inp.V, inp.F)
-    blender = constants.get("blender_volume_m3")
+    blender = blender_volume_m3(constants, mesh_label)
     blender_l = blender * 1000.0 if blender else None
     out = {"mesh_volume_l": V_mesh, "blender_volume_l": blender_l,
            "blender_relative_difference": (V_mesh - blender_l) / blender_l if blender_l else None,
@@ -85,34 +122,50 @@ def report(inp, results: dict, constants: dict, cuts: dict | None = None) -> dic
         rows[name] = row
 
     for name, r in results.items():
-        add(name, r.seg.volume(0.0) / 1e6, mass[name], REFERENCE_DENSITY[name])
+        add(name, r.seg.volume(0.0) / 1e6, mass[name], densities[name])
         rows[name]["inner_volume_l"] = {f"t{t:g}": r.seg.volume(t) / 1e6 for t in (3.0, 5.0, 8.0, 10.0)}
     if cuts:
         v = cuts["volumes_mm3"]
+        m_tp = 2 * mass["thigh"] + mass["pelvis"]
+        ref_tp = (2 * mass["thigh"] * densities["thigh"] + mass["pelvis"] * densities["pelvis"]) / m_tp
+        m_lump = sh.abdomen_mass_kg + mass["pelvis"] + 2 * mass["thigh"]
+        # the abdomen-plus-pelvis part takes Winter's combined density directly; the thighs their own
+        ref_lump = ((sh.abdomen_mass_kg + mass["pelvis"]) * densities["abdomen_and_pelvis"] + 2 * mass["thigh"] * densities["thigh"]) / m_lump
         for k in ("in", "out", "crotch"):
-            add(f"thigh_{k}", v[f"thigh_{k}"] / 1e6, mass["thigh"], REFERENCE_DENSITY["thigh"])
-        for k in ("hjc", "crotch"):
-            add(f"pelvis_{k}", v[f"pelvis_{k}"] / 1e6, mass["pelvis"], PELVIS_REFERENCE_DENSITY)
-        for k, th in (("hjc", "in"), ("crotch", "crotch")):
-            # both thighs (the mesh is left-right symmetric to under 0.5%) and the pelvis; the reference density is the mass-weighted mean of the parts'
-            vol = 2 * v[f"thigh_{th}"] / 1e6 + v[f"pelvis_{k}"] / 1e6
-            m = 2 * mass["thigh"] + mass["pelvis"]
-            ref = (2 * mass["thigh"] * REFERENCE_DENSITY["thigh"] + mass["pelvis"] * PELVIS_REFERENCE_DENSITY) / m
-            add(f"thigh_pelvis_{k}", vol, m, ref)
-        tops = ("_ilio", "_ilio_lo", "_ilio_hi")
-        for suffix in tops:
-            for k, th in (("hjc", "in"), ("crotch", "crotch")):
-                add(f"pelvis_{k}{suffix}", v[f"pelvis_{k}{suffix}"] / 1e6, mass["pelvis"], PELVIS_REFERENCE_DENSITY)
-                vol = 2 * v[f"thigh_{th}"] / 1e6 + v[f"pelvis_{k}{suffix}"] / 1e6
-                m = 2 * mass["thigh"] + mass["pelvis"]
-                ref = (2 * mass["thigh"] * REFERENCE_DENSITY["thigh"] + mass["pelvis"] * PELVIS_REFERENCE_DENSITY) / m
-                add(f"thigh_pelvis_{k}{suffix}", vol, m, ref)
-        # the lumped region: abdomen + pelvis + both thighs, from the tenth rib (mean, -1 SD, +1 SD) down to the KJC planes
-        m = sh.abdomen_mass_kg + mass["pelvis"] + 2 * mass["thigh"]
-        ref = (sh.abdomen_mass_kg * ABDOMEN_REFERENCE_DENSITY + mass["pelvis"] * PELVIS_REFERENCE_DENSITY + 2 * mass["thigh"] * REFERENCE_DENSITY["thigh"]) / m
-        for name in ("lumped", "lumped_lo", "lumped_hi"):
-            add(name, v[name] / 1e6, m, ref)
+            add(f"thigh_{k}", v[f"thigh_{k}"] / 1e6, mass["thigh"], densities["thigh"])
+        thigh_of = {"hjc": "in", "crotch": "crotch"}
+        # pelvis variants by top: the lumbosacral plane (frame cut, ''), the ANSUR iliocristale (mean, -1 SD, +1 SD) and the Dumas RI (mean, +-10 mm)
+        for suffix in ("", "_ilio", "_ilio_lo", "_ilio_hi", "_ri", "_ri_p10", "_ri_m10"):
+            for k, th in thigh_of.items():
+                key = f"pelvis_{k}{suffix}"
+                if key not in v:
+                    continue
+                add(key, v[key] / 1e6, mass["pelvis"], densities["pelvis"])
+                add(f"thigh_pelvis_{k}{suffix}", (2 * v[f"thigh_{th}"] + v[key]) / 1e6, m_tp, ref_tp)
+        # the abdomen slab (Dumas MSR10 to RI, its variants) and the lumped region (abdomen + pelvis + both thighs, top to the KJC planes)
+        for key in sorted(k for k in v if k.startswith("abdomen")):
+            add(key, v[key] / 1e6, sh.abdomen_mass_kg, densities["abdomen"])
+        for key in ("lumped", "lumped_lo", "lumped_hi") + tuple(sorted(k for k in v if k.startswith("lumped_msr10") or k == "lumped_rr10")):
+            if key in v:
+                add(key, v[key] / 1e6, m_lump, ref_lump)
+        if "abdomen" in v:
+            out["cut_diagnostics_per_10mm_l"] = {
+                "label": "diagnostic",
+                "abdomen_ri": (v["abdomen_ri_p10"] - v["abdomen_ri_m10"]) / 2.0 / 1e6,
+                "abdomen_msr10": (v["abdomen_msr10_p10"] - v["abdomen_msr10_m10"]) / 2.0 / 1e6,
+                "note": "volume change of the abdomen slab per 10 mm of the named cut moving up (central difference of the +-10 mm rows, litres); a diagnostic, not a result"}
         out["cut_stations"] = {"crotch_below_hip_centre_mm": cuts["s_crotch_mm"], "hip_zone_mm": 40.0, "ljc_mesh_mm": cuts["ljc_mesh_mm"]}
+        out["dempster_lumped_check"] = dempster_lumped_check(sh, mass, densities)
     out["rows"] = rows
     out["stature_mesh_m"] = stature_m
     return out
+
+
+def dempster_lumped_check(sh, mass: dict, densities: dict | None = None) -> dict:
+    """Winter's Table 4.1 lumped share (abdomen and pelvis 0.281 + two thighs 0.100 each) against the sheet's mass share of abdomen + pelvis + two thighs."""
+    root = Path(__file__).resolve().parents[2]
+    rows = json.loads((root / DENSITIES_PATH).read_text(encoding="utf-8"))["rows"]
+    d = rows["abdomen_and_pelvis"]["mass_fraction"] + 2 * rows["thigh"]["mass_fraction"]
+    m = sh.abdomen_mass_kg + mass["pelvis"] + 2 * mass["thigh"]
+    return {"dempster_share": d, "sheet_share": m / sh.total_mass_kg, "sheet_minus_dempster": m / sh.total_mass_kg - d, "sheet_mass_kg": m,
+            "source": "Winter Table 4.1 (after Dempster 1955): abdomen and pelvis 0.281 + 2 x thigh 0.100"}

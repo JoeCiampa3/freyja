@@ -1,0 +1,26 @@
+{
+  "schema": "reference-densities/1",
+  "note": "Segment length fractions and densities for the share tests of the volume extractor (volume-extractor brief 4, item 4a). Values are Joe's transcription of the table named below; edition and page are blank until Joe fills them. Nothing here is recalled.",
+  "source": "Winter, D. A., Biomechanics and Motor Control of Human Movement, Table 4.1 (after Dempster 1955)",
+  "edition": "",
+  "page": "",
+  "rows": {
+    "thigh": {"proximal": "greater trochanter", "distal": "femoral condyles", "mass_fraction": 0.100, "density_kg_per_l": 1.05},
+    "leg": {"proximal": "femoral condyles", "distal": "medial malleolus", "mass_fraction": 0.0465, "density_kg_per_l": 1.09},
+    "foot": {"proximal": "lateral malleolus", "distal": "head of metatarsal II", "mass_fraction": 0.0145, "density_kg_per_l": 1.10},
+    "abdomen": {"proximal": "T12-L1", "distal": "L4-L5", "mass_fraction": 0.139, "density_kg_per_l": null},
+    "pelvis": {"proximal": "L4-L5", "distal": "greater trochanter", "mass_fraction": 0.142, "density_kg_per_l": null},
+    "abdomen_and_pelvis": {"proximal": "T12-L1", "distal": "greater trochanter", "mass_fraction": 0.281, "density_kg_per_l": 1.01},
+    "thorax": {"mass_fraction": 0.216, "density_kg_per_l": 0.92},
+    "trunk": {"mass_fraction": 0.497, "density_kg_per_l": 1.03}
+  },
+  "use": {
+    "thigh": "thigh",
+    "shank": "leg",
+    "foot": "foot",
+    "abdomen": "abdomen_and_pelvis",
+    "pelvis": "abdomen_and_pelvis",
+    "abdomen_and_pelvis": "abdomen_and_pelvis",
+    "use_note": "Winter gives no density for the abdomen or the pelvis alone, only for the two together (1.01); the combined value is applied to each, and the lumped rows use it directly for their abdomen-plus-pelvis part."
+  }
+}

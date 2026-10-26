@@ -163,12 +163,19 @@ def run(p, args, root, label) -> int:
 
     # mass base (item 3), thigh restated (item 4)
     consts = masses.load_constants(root)
-    cut = cuts.thigh_and_pelvis(inp, feats, reg, results["thigh"])
-    mb = masses.report(inp, results, consts, cut)
+    dens = masses.load_densities(root)
+    table1 = masses.load_dumas_table1(root)
+    cut = cuts.thigh_and_pelvis(inp, feats, reg, results["thigh"], table1)
+    mb = masses.report(inp, results, consts, cut, dens, inp.mesh_label)
+    mb["densities_kg_per_l"] = dens
+    mb["cut_source"] = {"file": masses.DUMAS_TABLE1_PATH, "source": table1["source"], "page": table1["page"]}
     out["mass_base"] = mb
     out["cuts"] = cut
-    gates.append(_gate("6 mesh volume matches Joe's Blender volume within 0.5%", bool(mb["blender_within_tolerance"]),
-                       f"computed {mb['mesh_volume_l']:.4f} l, Blender {mb['blender_volume_l']:.4f} l ({mb['blender_relative_difference'] * 100:+.4f}%)"))
+    if mb["blender_volume_l"] is None:
+        gates.append(_gate("6 mesh volume matches Joe's Blender volume within 0.5%", False, f"no Blender volume for {inp.mesh_label} in {masses.PATH}"))
+    else:
+        gates.append(_gate("6 mesh volume matches Joe's Blender volume within 0.5%", bool(mb["blender_within_tolerance"]),
+                           f"computed {mb['mesh_volume_l']:.4f} l, Blender {mb['blender_volume_l']:.4f} l ({mb['blender_relative_difference'] * 100:+.4f}%)"))
 
     # how the knee anchor moves volume between thigh and shank, and what that does to the implied densities (profile volumes, so no extra voxel builds)
     kv = {}
@@ -240,9 +247,18 @@ def _print(out, gates, feats, inp, reg):
     for lab, c in mb["cases"].items():
         print(f"mass base {lab}: density {c['body_density_kg_per_l']:.4f} kg/l, M_mesh {c['mesh_mass_kg']:.2f} kg, mean mesh density {c['mean_mesh_density_kg_per_l']:.4f}, sculpt BMI {c['sculpt_bmi_kg_per_m2']:.2f}, robot needs {c['robot_required_average_density_kg_per_l']:.3f} kg/l")
     nom = "nominal" if "nominal" in mb["cases"] else "f=0.15"
+    dh = out["cuts"].get("dumas_cut_heights_mesh_mm")
+    if dh:
+        print("Dumas 2015 Table 1 cuts (mesh mm above the sole): " + "; ".join(f"{k} {dh[k]:.1f}" for k in ("LJC", "RI", "RR10", "MSR10", "TJC")) + f" (scale {dh['scale']:.4f})")
     for n, r in mb["rows"].items():
         c = r["cases"][nom]
-        print(f"  {n}: {r['volume_l']:.3f} l, volume share {r['volume_share'] * 100:.2f}%, mass share {r['mass_share'] * 100:.2f}%, ratio {r['ratio']:.3f}, "
-              f"normalised {c['normalised_ratio']:.3f} (expected {c['expected_tissue_ratio']:.3f}), implied density {c['implied_density_kg_per_l']:.3f} (ref {r['reference_density_kg_per_l']:.3f}) [{nom}]")
+        print(f"  {n}: {r['volume_l']:.3f} l, volume share {r['volume_share'] * 100:.2f}%, mass share {r['mass_share'] * 100:.2f}%, raw ratio {r['ratio']:.3f}, "
+              f"normalised {c['normalised_ratio']:.3f} (expected {c['expected_tissue_ratio']:.3f}), sheet mass/skin volume {r['sheet_mass_per_skin_volume_kg_per_l']:.3f}, implied density {c['implied_density_kg_per_l']:.3f} (ref {r['reference_density_kg_per_l']:.3f}) [{nom}]")
+    if "dempster_lumped_check" in mb:
+        d = mb["dempster_lumped_check"]
+        print(f"  Dempster lumped share {d['dempster_share'] * 100:.2f}% against the sheet's {d['sheet_share'] * 100:.2f}% (abdomen + pelvis + 2 thighs)")
+    if "cut_diagnostics_per_10mm_l" in mb:
+        d = mb["cut_diagnostics_per_10mm_l"]
+        print(f"  diagnostic: abdomen slab volume change per 10 mm: RI cut {d['abdomen_ri']:+.3f} l, MSR10 cut {d['abdomen_msr10']:+.3f} l")
     for n, g in out["girth_check"].items():
         print(f"  girth {n}: loop {g['loop_length_mm']:.0f} mm, section {g['section_perimeter_mm']:.0f} mm ({g['difference_percent']:+.1f}%, flag {g['flag']}), equivalent circle {g['equivalent_circle_mm']:.0f}")

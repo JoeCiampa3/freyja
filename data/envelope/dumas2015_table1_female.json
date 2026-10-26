@@ -1,0 +1,31 @@
+{
+  "schema": "dumas2015-table1/1",
+  "note": "Landmark coordinates for the mass cuts of the volume extractor (volume-extractor brief 4, item 4b), transcribed by Joe from the paper. Only the Y (up) coordinate is used by the cuts, as a horizontal plane.",
+  "source": "Dumas 2015 (as named in volume-extractor brief 4; full citation to be added by Joe), Table 1, female, segment coordinate systems; reference lengths from Table 2",
+  "page": "116-117",
+  "units": "mm",
+  "axes": "X anterior, Y up (along the segment's long axis), Z right; negative Y is below the origin",
+  "segments": {
+    "abdomen": {
+      "origin": "TJC",
+      "landmarks": {
+        "MSR10": [-53, -1, 0],
+        "RR10": [32, -21, 134],
+        "RI": [17, -75, 153],
+        "RASIS": [72, -172, 119],
+        "LJC": [0, -121, 0]
+      },
+      "definition": "below the 10th ribs (L1) and above the iliocristales (L4), p.117"
+    },
+    "thorax": {
+      "origin": "CJC",
+      "landmarks": {
+        "C7": [-61, 28, 0],
+        "SUP": [49, -35, 0],
+        "TJC": [0, -313, 0]
+      }
+    }
+  },
+  "reference_length_mm": {"thorax": 313, "abdomen": 121},
+  "mass_basis": "p.116: segment masses are expressed assuming a uniform density of 1 g.cm-3, so the sheet's shares are volume shares of the reference women"
+}

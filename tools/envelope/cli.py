@@ -9,7 +9,7 @@
     check  --segment thigh_R --shapes FILE --poses FILE [--required MM] [--cache-dir DIR]
                     clearance of posed shapes inside a built segment; exit 0 feasible, 1 infeasible
 
-Defaults: mesh data/makehuman/freyja-body-v1.obj, sheet values from params/snapshot.csv, out data/envelope, cache data/envelope/cache (gitignored).
+Defaults: mesh data/makehuman/freyja-body-v2.obj (the baseline since volume-extractor brief 4; v1 is historical), sheet values from params/snapshot.csv, out data/envelope, cache data/envelope/cache (gitignored).
 """
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ REPO = Path(__file__).resolve().parents[2]
 
 def _paths(args, root: Path):
     return {
-        "mesh": Path(args.mesh) if args.mesh else root / "data/makehuman/freyja-body-v1.obj",
+        "mesh": Path(args.mesh) if args.mesh else root / "data/makehuman/freyja-body-v2.obj",
         "out": Path(args.out) if args.out else root / "data/envelope",
         "cache": Path(args.cache_dir) if args.cache_dir else root / "data/envelope/cache",
     }

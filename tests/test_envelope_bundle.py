@@ -192,7 +192,7 @@ def test_mass_rows_for_the_new_cuts_carry_sheet_mass_per_skin_volume():
     assert r["pelvis_hjc_ilio"]["sheet_mass_per_skin_volume_kg_per_l"] == pytest.approx(1.0 / 0.35)
     assert r["thigh_pelvis_hjc_ilio"]["volume_l"] == pytest.approx(2 * 0.2 + 0.35) and r["thigh_pelvis_hjc_ilio"]["mass_kg_sheet"] == pytest.approx(3.0)
     assert r["lumped"]["mass_kg_sheet"] == pytest.approx(0.3 + 1.0 + 2 * 1.0) and r["lumped"]["volume_l"] == pytest.approx(0.9)
-    assert r["lumped"]["reference_density_kg_per_l"] == pytest.approx((0.3 * masses.ABDOMEN_REFERENCE_DENSITY + 1.0 * masses.PELVIS_REFERENCE_DENSITY + 2 * 1.05) / 3.3)
+    assert r["lumped"]["reference_density_kg_per_l"] == pytest.approx(((0.3 + 1.0) * 1.01 + 2 * 1.05) / 3.3)
     assert r["shank"]["sheet_mass_per_skin_volume_kg_per_l"] == pytest.approx(0.5 / 0.1) and r["foot"]["sheet_mass_per_skin_volume_kg_per_l"] == pytest.approx(0.2 / 0.02)
     assert {"lumped_lo", "lumped_hi", "pelvis_crotch_ilio_hi", "thigh_pelvis_crotch_ilio_lo"} <= set(r)
     assert r["pelvis_hjc"]["volume_l"] == pytest.approx(0.3)           # the lumbosacral-top rows are untouched

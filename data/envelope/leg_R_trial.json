@@ -30,205 +30,230 @@
   "shank": {
    "areas": [
     {
-     "conformed_mm2": 8071.221404758769,
-     "relative": 4.7731862926097875e-05,
+     "conformed_mm2": 8091.557712923075,
+     "relative": 0.0011611717593379292,
      "u": 0.1,
-     "unconformed_mm2": 8070.836168713065
+     "unconformed_mm2": 8082.1729219719955
     },
     {
-     "conformed_mm2": 7944.5405182169425,
-     "relative": -0.0012474808449932265,
+     "conformed_mm2": 7982.917580203473,
+     "relative": 0.0007378462792102383,
      "u": 0.2,
-     "unconformed_mm2": 7954.463559139165
+     "unconformed_mm2": 7977.031757002427
     },
     {
-     "conformed_mm2": 8242.414339082869,
-     "relative": -0.0002603728697706975,
+     "conformed_mm2": 8271.506371019663,
+     "relative": -0.0007182937254062799,
      "u": 0.3,
-     "unconformed_mm2": 8244.560999090201
+     "unconformed_mm2": 8277.452012862854
     },
     {
-     "conformed_mm2": 8012.50680901542,
-     "relative": 0.0002874202633263006,
+     "conformed_mm2": 8081.960024237542,
+     "relative": 0.00018805897380102553,
      "u": 0.4,
-     "unconformed_mm2": 8010.20451392473
+     "unconformed_mm2": 8080.440424903374
     },
     {
-     "conformed_mm2": 6862.350929254386,
-     "relative": -0.00011728227695560106,
+     "conformed_mm2": 6923.625512533406,
+     "relative": -6.795604352340657e-05,
      "u": 0.5,
-     "unconformed_mm2": 6863.155855800255
+     "unconformed_mm2": 6924.096046705717
     },
     {
-     "conformed_mm2": 5451.057595309676,
-     "relative": -8.38100504262464e-05,
+     "conformed_mm2": 5428.7366016877,
+     "relative": -0.0003973703277804256,
      "u": 0.6,
-     "unconformed_mm2": 5451.514487013732
+     "unconformed_mm2": 5430.894678086072
     },
     {
-     "conformed_mm2": 4059.538829170084,
-     "relative": -0.00042441670093929456,
+     "conformed_mm2": 3943.8118247745824,
+     "relative": 0.0006752532682532775,
      "u": 0.7,
-     "unconformed_mm2": 4061.262496800625
+     "unconformed_mm2": 3941.150549985027
     },
     {
-     "conformed_mm2": 3036.5604125843456,
-     "relative": -0.0003233258199261728,
+     "conformed_mm2": 2959.21635184124,
+     "relative": 0.00015348851520269294,
      "u": 0.8,
-     "unconformed_mm2": 3037.5425285129377
+     "unconformed_mm2": 2958.7622158218956
     },
     {
-     "conformed_mm2": 2867.7596116018385,
-     "relative": 0.0030771353561500608,
+     "conformed_mm2": 2908.8267080027827,
+     "relative": 0.0017823992336096826,
      "u": 0.9,
-     "unconformed_mm2": 2858.962197940659
+     "unconformed_mm2": 2903.6512422539195
     }
    ],
    "length_mm": 407.535240249,
    "sheet_length_mm": 407.535240249,
-   "volume_conformed_l": 2.4666933753198985,
-   "volume_profile_nominal_l": 2.467498553377291
+   "volume_conformed_l": 2.470396830118902,
+   "volume_profile_nominal_l": 2.470800369329565
   },
   "thigh": {
    "areas": [
     {
-     "conformed_mm2": 28490.828728091874,
-     "relative": 0.003149002401001261,
+     "conformed_mm2": 28243.754614251287,
+     "relative": -0.0024313992146701804,
      "u": 0.1,
-     "unconformed_mm2": 28401.392674368508
+     "unconformed_mm2": 28312.593832661296
     },
     {
-     "conformed_mm2": 21175.14480123187,
-     "relative": -0.0003354815843345207,
+     "conformed_mm2": 20673.749585156584,
+     "relative": 4.583715785499287e-05,
      "u": 0.2,
-     "unconformed_mm2": 21182.251056376033
+     "unconformed_mm2": 20672.802002667882
     },
     {
-     "conformed_mm2": 18015.20543953567,
-     "relative": 8.768873349367284e-05,
+     "conformed_mm2": 17684.632164923518,
+     "relative": -0.000547719189338796,
      "u": 0.3,
-     "unconformed_mm2": 18013.625847499476
+     "unconformed_mm2": 17694.323685548465
     },
     {
-     "conformed_mm2": 15705.031535229451,
-     "relative": -0.00023414461998382005,
+     "conformed_mm2": 15605.91480798242,
+     "relative": -0.0004694442784620948,
      "u": 0.4,
-     "unconformed_mm2": 15708.709645079734
+     "unconformed_mm2": 15613.244356213676
     },
     {
-     "conformed_mm2": 14328.797813618785,
-     "relative": -0.0007004733217606268,
+     "conformed_mm2": 14379.29879130326,
+     "relative": -0.00017539851285992874,
      "u": 0.5,
-     "unconformed_mm2": 14338.841789757456
+     "unconformed_mm2": 14381.821341378754
     },
     {
-     "conformed_mm2": 13267.60778092959,
-     "relative": 0.0006488628844033745,
+     "conformed_mm2": 13375.073929197917,
+     "relative": -0.0005503128048434964,
      "u": 0.6,
-     "unconformed_mm2": 13259.004505022143
+     "unconformed_mm2": 13382.438456440526
     },
     {
-     "conformed_mm2": 11902.273710063608,
-     "relative": -0.0004190727996442866,
+     "conformed_mm2": 12096.142513742221,
+     "relative": -3.933122228678553e-05,
      "u": 0.7,
-     "unconformed_mm2": 11907.263720407022
+     "unconformed_mm2": 12096.618288525046
     },
     {
-     "conformed_mm2": 10392.163306467115,
-     "relative": -0.0002275088791154112,
+     "conformed_mm2": 10614.296133263453,
+     "relative": 0.00044236056321702747,
      "u": 0.8,
-     "unconformed_mm2": 10394.528153916346
+     "unconformed_mm2": 10609.602863365306
     },
     {
-     "conformed_mm2": 8968.696198798998,
-     "relative": -0.0007899059307315353,
+     "conformed_mm2": 9091.899138897552,
+     "relative": 0.0014354348936580343,
      "u": 0.9,
-     "unconformed_mm2": 8975.786225571555
+     "unconformed_mm2": 9078.867016387348
     }
    ],
    "length_mm": 398.082103233,
    "sheet_length_mm": 398.082103233,
-   "volume_conformed_l": 6.448693996830584,
-   "volume_profile_nominal_l": 6.440067299267281
+   "volume_conformed_l": 6.419771021542359,
+   "volume_profile_nominal_l": 6.421042437196602
   }
  },
  "cuts": {
-  "core_profile_max_layer_step_fraction": 1.0545048143053646,
-  "core_profile_top_mesh_mm": 1119.4669175529707,
-  "crotch_apex_mesh_mm": 809.0867378272835,
-  "hjc_mesh_mm": 874.8674234322034,
+  "core_profile_max_layer_step_fraction": 1.0534536619229433,
+  "core_profile_top_mesh_mm": 1120.5617894270395,
+  "crotch_apex_mesh_mm": 808.3839168507818,
+  "dumas_cut_heights_mesh_mm": {
+   "LJC": 971.9113537508211,
+   "MSR10": 1097.9531806314824,
+   "RASIS": 918.3435773265402,
+   "RI": 1020.2273873884079,
+   "RR10": 1076.9462094847054,
+   "TJC": 1099.0035291888212,
+   "scale": 1.050348557338843
+  },
+  "hjc_mesh_mm": 874.2289379187658,
   "landmark_heights_mesh_mm": {
    "iliocristale": {
-    "hi": 1059.3787249566185,
-    "lo": 1015.7122793402241,
-    "mean": 1037.5455021484213,
-    "sd": 21.833222808197263
+    "hi": 1060.4148287947535,
+    "lo": 1016.705676098412,
+    "mean": 1038.5602524465828,
+    "sd": 21.854576348170756
    },
    "tenth_rib": {
-    "hi": 1119.4669175529707,
-    "lo": 1081.8811834653839,
-    "mean": 1100.6740505091773,
-    "sd": 18.792867043793496
+    "hi": 1120.5617894270395,
+    "lo": 1082.939295375872,
+    "mean": 1101.7505424014557,
+    "sd": 18.811247025583704
    }
   },
-  "ljc_mesh_mm": 972.5498392642587,
+  "ljc_mesh_mm": 971.9113537508211,
   "pelvis_core_area_mm2": {
    "area": [
-    20992.0,
-    51532.0,
-    57344.0,
-    60016.0,
-    61012.0,
-    60236.0,
-    57980.0,
-    55244.0,
-    51928.0,
-    47712.0,
-    42860.0,
-    37476.0,
-    32420.0,
-    28996.0,
-    27596.0,
-    28480.0,
-    31236.0
+    21204.0,
+    52064.0,
+    57632.0,
+    60192.0,
+    61168.0,
+    60264.0,
+    57968.0,
+    55176.0,
+    51856.0,
+    47632.0,
+    42696.0,
+    37292.0,
+    32292.0,
+    28948.0,
+    27664.0,
+    28624.0,
+    31416.0
    ],
    "z": [
-    799.0867378272835,
-    819.0867378272835,
-    839.0867378272835,
-    859.0867378272835,
-    879.0867378272835,
-    899.0867378272835,
-    919.0867378272835,
-    939.0867378272835,
-    959.0867378272835,
-    979.0867378272835,
-    999.0867378272835,
-    1019.0867378272835,
-    1039.0867378272835,
-    1059.0867378272835,
-    1079.0867378272835,
-    1099.0867378272835,
-    1119.0867378272835
+    798.3839168507818,
+    818.3839168507818,
+    838.3839168507818,
+    858.3839168507818,
+    878.3839168507818,
+    898.3839168507818,
+    918.3839168507818,
+    938.3839168507818,
+    958.3839168507818,
+    978.3839168507818,
+    998.3839168507818,
+    1018.3839168507818,
+    1038.3839168507818,
+    1058.3839168507818,
+    1078.3839168507818,
+    1098.3839168507818,
+    1118.3839168507818
    ]
   },
   "raster_odd_columns": 0,
-  "s_crotch_mm": 70.27613855657432,
+  "s_crotch_mm": 65.28141514328104,
   "volumes_mm3": {
-   "lumped": 22914559.93288017,
-   "lumped_hi": 23476268.028433725,
-   "lumped_lo": 22388719.672880214,
-   "pelvis_crotch": 9491016.581010014,
-   "pelvis_crotch_ilio": 12165177.385547815,
-   "pelvis_crotch_ilio_hi": 12835851.026616175,
-   "pelvis_crotch_ilio_lo": 11391281.386531308,
-   "pelvis_hjc": 5542527.717287045,
-   "pelvis_hjc_ilio": 8216654.20562188,
-   "pelvis_hjc_ilio_hi": 8887303.600725438,
-   "pelvis_hjc_ilio_lo": 7442779.324689854,
-   "thigh_crotch": 4461312.308909347,
-   "thigh_in": 6448693.996830584,
-   "thigh_out": 5259655.479002556
+   "abdomen": 2344263.1357712257,
+   "abdomen_msr10_m10": 2062388.198785712,
+   "abdomen_msr10_p10": 2635844.9056367385,
+   "abdomen_ri_m10": 2725776.8873691475,
+   "abdomen_ri_p10": 1990078.3788295966,
+   "abdomen_rr10": 1757205.4429425157,
+   "lumped": 22931972.750152048,
+   "lumped_hi": 23502265.17256324,
+   "lumped_lo": 22401437.93655353,
+   "lumped_msr10": 22822645.939881694,
+   "lumped_msr10_m10": 22540769.46838227,
+   "lumped_msr10_p10": 23114226.364396513,
+   "lumped_rr10": 22235585.265451886,
+   "pelvis_crotch": 9254228.733773604,
+   "pelvis_crotch_ilio": 11971289.142867044,
+   "pelvis_crotch_ilio_hi": 12634425.138301307,
+   "pelvis_crotch_ilio_lo": 11209680.074067365,
+   "pelvis_crotch_ri": 11340834.543127216,
+   "pelvis_crotch_ri_m10": 10959321.321318904,
+   "pelvis_crotch_ri_p10": 11695020.005871091,
+   "pelvis_hjc": 5540994.533595709,
+   "pelvis_hjc_ilio": 8258047.05352058,
+   "pelvis_hjc_ilio_hi": 8921186.238075167,
+   "pelvis_hjc_ilio_lo": 7496442.953242352,
+   "pelvis_hjc_ri": 7627602.169387525,
+   "pelvis_hjc_ri_m10": 7246090.791716747,
+   "pelvis_hjc_ri_p10": 7981786.752709635,
+   "thigh_crotch": 4568763.288869621,
+   "thigh_in": 6419771.021542359,
+   "thigh_out": 5232231.080624287
   }
  },
  "diagnostics": {
@@ -241,10 +266,10 @@
  "example": {
   "feasible": {
    "feasible": true,
-   "margin_mm": 15.57605401861595,
+   "margin_mm": 16.610435865918735,
    "point_mm": [
-    -2.738841331159465,
-    -44.87471754113723,
+    -3.7303111394245487,
+    -44.76717619800516,
     -275.0
    ],
    "pose_index": 3,
@@ -252,10 +277,10 @@
   },
   "infeasible": {
    "feasible": false,
-   "margin_mm": -9.211754064667058,
+   "margin_mm": -8.179687765816045,
    "point_mm": [
-    -2.738841331159465,
-    -69.87471754113723,
+    -3.7303111394245487,
+    -69.76717619800516,
     -275.0
    ],
    "pose_index": 3,
@@ -264,107 +289,107 @@
  },
  "features": {
   "ajc_estimates_mm": {
-   "ansur_ratio": 65.40931593385466,
-   "ruler_ankle_loop_height": 122.59450000000001,
-   "ruler_lowerleg_chord_bottom": 9.05
+   "ansur_ratio": 65.4732881863573,
+   "ruler_ankle_loop_height": 122.68350000000002,
+   "ruler_lowerleg_chord_bottom": 9.049999999999999
   },
   "ankle_offset_source": "none: ANSUR II gives the minimum ankle circumference but not its height above the floor, so the Ruler ankle loop cannot anchor the AJC",
   "ansur_scaled_to_mesh_stature_mm": {
-   "crotch": 815.0867378272835,
-   "iliocristale": 1037.5455021484213,
-   "lateral_femoral_epicondyle": 485.4899070142074,
-   "lateral_malleolus": 65.40931593385466,
-   "midpatella": 467.851923864112,
-   "tenth_rib": 1100.6740505091773,
-   "trochanterion": 880.8674234322036
+   "crotch": 815.8839168507818,
+   "iliocristale": 1038.5602524465828,
+   "lateral_femoral_epicondyle": 485.9647305538757,
+   "lateral_malleolus": 65.4732881863573,
+   "midpatella": 468.3094969327181,
+   "tenth_rib": 1101.7505424014557,
+   "trochanterion": 881.7289379187661
   },
-  "crotch_apex_mm": 809.0867378272835,
+  "crotch_apex_mm": 808.3839168507818,
   "hjc_estimates_mm": {
-   "ansur_trochanterion": 880.8674234322036,
-   "crotch_apex_plus_ansur_offset": 874.8674234322034,
-   "ruler_upperleg_chord_top": 871.4799999999999
+   "ansur_trochanterion": 881.7289379187661,
+   "crotch_apex_plus_ansur_offset": 874.2289379187658,
+   "ruler_upperleg_chord_top": 870.5500000000001
   },
   "kjc_disagreement_vs_ansur_ratio_mm": {
    "ansur_ratio": 0.0,
    "breadth_peak": null,
-   "ruler_chords_mean": 16.76009298579254,
-   "ruler_loop_plus_ansur_offset": 29.175076135887878
+   "ruler_chords_mean": -13.254730553875731,
+   "ruler_loop_plus_ansur_offset": -0.8214969327182189
   },
   "kjc_estimates_mm": {
-   "ansur_ratio": 485.4899070142074,
+   "ansur_ratio": 485.9647305538757,
    "breadth_peak": null,
-   "ruler_chords_mean": 502.24999999999994,
-   "ruler_loop_plus_ansur_offset": 514.6649831500953
+   "ruler_chords_mean": 472.71,
+   "ruler_loop_plus_ansur_offset": 485.1432336211575
   },
   "knee_breadth_feature": {
-   "breadth_mm": 102.6888812791876,
+   "breadth_mm": 106.59779627288529,
    "is_feature": false,
    "on_band_edge": true,
-   "prominence_mm": 2.765160503100759,
-   "z_mm": 535.4899070142073
+   "prominence_mm": 6.601630705734266,
+   "z_mm": 535.9647305538757
   },
-  "mesh_stature_mm": 1697.29,
+  "mesh_stature_mm": 1698.95,
   "ruler": {
    "ankle": {
     "centroid_xy_mm": [
-     -41.420500000000004,
-     177.33649999999997
+     24.266,
+     184.506
     ],
-    "length_mm": 191.20723560616483,
+    "length_mm": 191.49546217993702,
     "n": 20,
-    "tilt_deg": 9.754152098072364,
-    "z_max_mm": 128.11999999999998,
-    "z_min_mm": 118.44,
-    "z_mm": 122.59450000000001
+    "tilt_deg": 9.645296626839638,
+    "z_max_mm": 128.18,
+    "z_min_mm": 118.6,
+    "z_mm": 122.68350000000002
    },
    "calf": {
     "centroid_xy_mm": [
-     -42.6395,
-     156.72250000000003
+     23.098999999999997,
+     163.85800000000003
     ],
-    "length_mm": 331.8628378755159,
+    "length_mm": 329.80646251869604,
     "n": 20,
-    "tilt_deg": 27.336022555553207,
-    "z_max_mm": 375.06,
-    "z_min_mm": 326.55,
-    "z_mm": 349.9175
+    "tilt_deg": 25.56568139457887,
+    "z_max_mm": 351.3,
+    "z_min_mm": 306.03999999999996,
+    "z_mm": 327.344
    },
    "knee": {
     "centroid_xy_mm": [
-     -16.833499999999997,
-     135.208
+     48.9315,
+     142.32999999999998
     ],
-    "length_mm": 323.8607323026583,
+    "length_mm": 324.1741512353246,
     "n": 20,
-    "tilt_deg": 14.093130844759322,
-    "z_max_mm": 506.35999999999996,
-    "z_min_mm": 478.04999999999995,
-    "z_mm": 497.02699999999993
+    "tilt_deg": 14.044492545578866,
+    "z_max_mm": 476.84,
+    "z_min_mm": 448.53,
+    "z_mm": 467.488
    },
    "lowerleg_height": {
-    "bottom_z_mm": 9.05,
-    "length_mm": 497.90950312280637,
-    "top_z_mm": 505.48999999999995
+    "bottom_z_mm": 9.049999999999999,
+    "length_mm": 468.5092226413478,
+    "top_z_mm": 475.99
    },
    "thigh": {
     "centroid_xy_mm": [
-     -18.03,
-     108.18050000000001
+     47.736000000000004,
+     109.25450000000001
     ],
-    "length_mm": 475.04252083083264,
+    "length_mm": 476.0265780667023,
     "n": 20,
-    "tilt_deg": 24.365731940496808,
-    "z_max_mm": 767.6800000000001,
-    "z_min_mm": 703.57,
-    "z_mm": 737.5140000000001
+    "tilt_deg": 25.079386594205406,
+    "z_max_mm": 763.5,
+    "z_min_mm": 697.3700000000001,
+    "z_mm": 732.5535000000002
    },
    "upperleg_height": {
-    "bottom_z_mm": 499.00999999999993,
-    "length_mm": 374.295388296463,
-    "top_z_mm": 871.4799999999999
+    "bottom_z_mm": 469.42999999999995,
+    "length_mm": 403.38835543431355,
+    "top_z_mm": 870.5500000000001
    }
   },
-  "ruler_ankle_loop_above_ansur_ankle_ratio_mm": 57.185184066145354
+  "ruler_ankle_loop_above_ansur_ankle_ratio_mm": 57.21021181364273
  },
  "gates": [
   {
@@ -373,12 +398,12 @@
    "pass": true
   },
   {
-   "detail": "stretch 1.0683 (+6.8%); min inscribed radius nominal 46.75 mm at station 390, robust (5th pct) 46.36 mm (diff 0.39); skin volume nominal 6.440 l, 95% range 5.803-6.930 l (max diff 9.9%); N=200",
+   "detail": "stretch 0.9914 (-0.9%); min inscribed radius nominal 46.76 mm at station 390, robust (5th pct) 46.40 mm (diff 0.36); skin volume nominal 6.421 l, 95% range 5.824-6.879 l (max diff 9.3%); N=200",
    "gate": "2 thigh: |stretch-1| < 8%; robust radius within 5 mm, volume within 10%",
    "pass": true
   },
   {
-   "detail": "conformed length 398.082 mm vs sheet 398.082 mm (diff 0.0000); worst area change 0.315% over u = 0.1..0.9",
+   "detail": "conformed length 398.082 mm vs sheet 398.082 mm (diff 0.0000); worst area change 0.243% over u = 0.1..0.9",
    "gate": "3 thigh: length = sheet within 0.5 mm; matched-station areas within 1%",
    "pass": true
   },
@@ -388,17 +413,17 @@
    "pass": true
   },
   {
-   "detail": "stretch 0.9329 (-6.7%); min inscribed radius nominal 24.66 mm at station 370, robust (5th pct) 24.66 mm (diff 0.00); skin volume nominal 2.467 l, 95% range 2.408-2.538 l (max diff 2.9%); N=200",
+   "detail": "stretch 1.0007 (+0.1%); min inscribed radius nominal 24.75 mm at station 360, robust (5th pct) 24.66 mm (diff 0.09); skin volume nominal 2.471 l, 95% range 2.407-2.547 l (max diff 3.1%); N=200",
    "gate": "2 shank: |stretch-1| < 8%; robust radius within 5 mm, volume within 10%",
    "pass": true
   },
   {
-   "detail": "conformed length 407.535 mm vs sheet 407.535 mm (diff 0.0000); worst area change 0.308% over u = 0.1..0.9",
+   "detail": "conformed length 407.535 mm vs sheet 407.535 mm (diff 0.0000); worst area change 0.178% over u = 0.1..0.9",
    "gate": "3 shank: length = sheet within 0.5 mm; matched-station areas within 1%",
    "pass": true
   },
   {
-   "detail": "stretch 1.0007 (+0.07%)",
+   "detail": "stretch 0.9997 (-0.03%)",
    "gate": "2 foot: |stretch-1| < 8%",
    "pass": true
   },
@@ -408,163 +433,163 @@
    "pass": true
   },
   {
-   "detail": "feasible case: margin 15.58 mm at station 275.0 mm; infeasible case: margin -9.21 mm at station 275.0 mm (pose 3)",
+   "detail": "feasible case: margin 16.61 mm at station 275.0 mm; infeasible case: margin -8.18 mm at station 275.0 mm (pose 3)",
    "gate": "5 oracle CLI: margin and binding station, feasible and infeasible",
    "pass": true
   },
   {
-   "detail": "computed 51.2570 l, Blender 51.2605 l (-0.0068%)",
+   "detail": "computed 52.3315 l, Blender 52.3331 l (-0.0031%)",
    "gate": "6 mesh volume matches Joe's Blender volume within 0.5%",
    "pass": true
   }
  ],
  "girth_check": {
   "ankle": {
-   "difference_percent": 0.16800948034492996,
-   "equivalent_circle_mm": 185.58864085486732,
+   "difference_percent": 0.07983873965788867,
+   "equivalent_circle_mm": 186.004550293279,
    "flag": false,
-   "loop_height_mm": 122.59450000000001,
-   "loop_length_mm": 191.20723560616483,
-   "loop_tilt_deg": 9.754152098072364,
-   "section_perimeter_mm": 191.52848188908865
+   "loop_height_mm": 122.68350000000002,
+   "loop_length_mm": 191.49546217993702,
+   "loop_tilt_deg": 9.645296626839638,
+   "section_perimeter_mm": 191.64834974344353
   },
   "calf": {
-   "difference_percent": -2.3097106138326393,
-   "equivalent_circle_mm": 321.01260902133765,
-   "flag": true,
-   "loop_height_mm": 349.9175,
-   "loop_length_mm": 331.8628378755159,
-   "loop_tilt_deg": 27.336022555553207,
-   "section_perimeter_mm": 324.1977666857389
+   "difference_percent": -1.528641108057333,
+   "equivalent_circle_mm": 321.6309857833879,
+   "flag": false,
+   "loop_height_mm": 327.344,
+   "loop_length_mm": 329.80646251869604,
+   "loop_tilt_deg": 25.56568139457887,
+   "section_perimeter_mm": 324.76490535560555
   },
   "knee": {
-   "difference_percent": 0.7455119026018902,
-   "equivalent_circle_mm": 318.73708282987747,
+   "difference_percent": 0.6632300734831756,
+   "equivalent_circle_mm": 319.105249242034,
    "flag": false,
-   "loop_height_mm": 497.02699999999993,
-   "loop_length_mm": 323.8607323026583,
-   "loop_tilt_deg": 14.093130844759322,
-   "section_perimeter_mm": 326.27515260982824
+   "loop_height_mm": 467.488,
+   "loop_length_mm": 324.1741512353246,
+   "loop_tilt_deg": 14.044492545578866,
+   "section_perimeter_mm": 326.3241716967761
   },
   "thigh": {
-   "difference_percent": -2.6624382045637196,
-   "equivalent_circle_mm": 452.98748474535705,
+   "difference_percent": -2.7101116000577568,
+   "equivalent_circle_mm": 454.47072225636913,
    "flag": true,
-   "loop_height_mm": 737.5140000000001,
-   "loop_length_mm": 475.04252083083264,
-   "loop_tilt_deg": 24.365731940496808,
-   "section_perimeter_mm": 462.39480726831
+   "loop_height_mm": 732.5535000000002,
+   "loop_length_mm": 476.0265780667023,
+   "loop_tilt_deg": 25.079386594205406,
+   "section_perimeter_mm": 463.1257265551586
   }
  },
  "girth_vs_ansur": {
   "ankle_minimum": {
    "ansur_mean_mm": 215.73967774420947,
    "ansur_sd_mm": 14.891757451585576,
-   "height_mm": 123.40931593385466,
-   "mesh_equivalent_circle_mm": 185.51092259000976,
-   "mesh_true_perimeter_mm": 191.27455222634725,
-   "z_score": -1.6428635503499511
+   "height_mm": 125.4732881863573,
+   "mesh_equivalent_circle_mm": 186.25547257813827,
+   "mesh_true_perimeter_mm": 191.2185380939457,
+   "z_score": -1.646624968878533
   },
   "calf_maximum": {
    "ansur_mean_mm": 373.257804632427,
    "ansur_sd_mm": 28.515177840382005,
-   "height_mm": 369.40931593385466,
-   "mesh_equivalent_circle_mm": 322.0518482401111,
-   "mesh_true_perimeter_mm": 325.8662803476348,
-   "z_score": -1.661975406573768
+   "height_mm": 347.4732881863573,
+   "mesh_equivalent_circle_mm": 322.46690748721784,
+   "mesh_true_perimeter_mm": 326.26854027845593,
+   "z_score": -1.6478685357321121
   }
  },
  "knee_anchor_mass_sensitivity": {
   "ansur": {
    "cases": {
     "f=0.15": {
-     "shank_implied_density": 0.9546140478421903,
-     "thigh_implied_density": 1.1967207927616963
+     "shank_implied_density": 0.9509644868055189,
+     "thigh_implied_density": 1.1805881992301808
     },
     "f=0.35": {
-     "shank_implied_density": 0.9152485200961209,
-     "thigh_implied_density": 1.1473714817199772
+     "shank_implied_density": 0.9117494564217864,
+     "thigh_implied_density": 1.1319041497773903
     },
     "nominal": {
-     "shank_implied_density": 0.9430540306917751,
-     "thigh_implied_density": 1.182228953971083
+     "shank_implied_density": 0.9394486644668925,
+     "thigh_implied_density": 1.1662917200808034
     }
    },
-   "shank_skin_l": 2.4346960706304843,
+   "shank_skin_l": 2.4982166430153754,
    "stretch": {
-    "foot": 1.0006658807765874,
-    "shank": 0.9701358475070488,
-    "thigh": 1.0223551346648883
+    "foot": 0.9996881560865793,
+    "shank": 0.9691879529210623,
+    "thigh": 1.0252866364755664
    },
-   "thigh_skin_l": 6.301153813263732
+   "thigh_skin_l": 6.528844128015985
   },
   "chords": {
    "cases": {
     "f=0.15": {
-     "shank_implied_density": 0.9419235800843294,
-     "thigh_implied_density": 1.1709072958880886
+     "shank_implied_density": 0.961516493741968,
+     "thigh_implied_density": 1.2004088755897018
     },
     "f=0.35": {
-     "shank_implied_density": 0.9030813705963161,
-     "thigh_implied_density": 1.1226224589442504
+     "shank_implied_density": 0.9218663290515777,
+     "thigh_implied_density": 1.150907478658168
     },
     "nominal": {
-     "shank_implied_density": 0.9305172397263931,
-     "thigh_implied_density": 1.1567280488378187
+     "shank_implied_density": 0.9498728905672724,
+     "thigh_implied_density": 1.1858723755028922
     }
    },
-   "shank_skin_l": 2.467498553377291,
+   "shank_skin_l": 2.470800369329565,
    "stretch": {
-    "foot": 1.0006658807765874,
-    "shank": 0.9329150308428967,
-    "thigh": 1.0683400136425176
+    "foot": 0.9996881560865793,
+    "shank": 1.0007330587510832,
+    "thigh": 0.9914404169736543
    },
-   "thigh_skin_l": 6.440067299267281
+   "thigh_skin_l": 6.421042437196602
   },
   "ruler": {
    "cases": {
     "f=0.15": {
-     "shank_implied_density": 0.9328895719493299,
-     "thigh_implied_density": 1.1512835582285363
+     "shank_implied_density": 0.9516149907496562,
+     "thigh_implied_density": 1.1818239613359507
     },
     "f=0.35": {
-     "shank_implied_density": 0.8944198988792547,
-     "thigh_implied_density": 1.1038079475799374
+     "shank_implied_density": 0.9123731354610107,
+     "thigh_implied_density": 1.1330889526210663
     },
     "nominal": {
-     "shank_implied_density": 0.9215926300327988,
-     "thigh_implied_density": 1.1373419472620978
+     "shank_implied_density": 0.9400912910528789,
+     "thigh_implied_density": 1.167512517572163
     }
    },
-   "shank_skin_l": 2.491393559468667,
+   "shank_skin_l": 2.4965089147897928,
    "stretch": {
-    "foot": 1.0006658807765874,
-    "shank": 0.9071343334948755,
-    "thigh": 1.105162149710104
+    "foot": 0.9996881560865793,
+    "shank": 0.9710851222066237,
+    "thigh": 1.023121895345994
    },
-   "thigh_skin_l": 6.549838858400062
+   "thigh_skin_l": 6.5220173091056965
   }
  },
  "knee_source_used": "chords",
  "knee_variants": {
   "ansur": {
-   "kjc_sd_mm": 17.349822170838944,
+   "kjc_sd_mm": 17.36679081191006,
    "mesh_nodes_mm": {
-    "ajc": 65.40931593385466,
-    "hjc": 874.8674234322034,
-    "kjc": 485.4899070142074
+    "ajc": 65.4732881863573,
+    "hjc": 874.2289379187658,
+    "kjc": 485.9647305538757
    },
    "section_centre_offset_before_shear_mm": {
-    "shank": 44.89596958271439,
-    "thigh": 64.47196453440588
+    "shank": 51.528644874473265,
+    "thigh": 67.70953441488992
    },
    "shear_deg": {
-    "shank": 6.286618244280791,
-    "thigh": 9.199541770405494
+    "shank": 7.206223153473969,
+    "thigh": 9.653021977312731
    },
    "shear_mm": {
-    "shank": 44.89596958271439,
-    "thigh": 64.47196453440588
+    "shank": 51.528644874473265,
+    "thigh": 67.70953441488992
    },
    "sheet_nodes_mm": {
     "ajc": 65.45287073994474,
@@ -572,29 +597,29 @@
     "kjc": 472.98811098894475
    },
    "stretch": {
-    "foot": 1.0006658807765874,
-    "shank": 0.9701358475070488,
-    "thigh": 1.0223551346648883
+    "foot": 0.9996881560865793,
+    "shank": 0.9691879529210623,
+    "thigh": 1.0252866364755664
    }
   },
   "chords": {
-   "kjc_sd_mm": 17.349822170838944,
+   "kjc_sd_mm": 17.36679081191006,
    "mesh_nodes_mm": {
-    "ajc": 65.40931593385466,
-    "hjc": 874.8674234322034,
-    "kjc": 502.24999999999994
+    "ajc": 65.4732881863573,
+    "hjc": 874.2289379187658,
+    "kjc": 472.71
    },
    "section_centre_offset_before_shear_mm": {
-    "shank": 48.9170151872781,
-    "thigh": 62.84674191090539
+    "shank": 48.868829873365556,
+    "thigh": 69.23352472837492
    },
    "shear_deg": {
-    "shank": 6.844545533950612,
-    "thigh": 8.971457259574308
+    "shank": 6.837867236393903,
+    "thigh": 9.866066038227977
    },
    "shear_mm": {
-    "shank": 48.9170151872781,
-    "thigh": 62.84674191090539
+    "shank": 48.868829873365556,
+    "thigh": 69.23352472837492
    },
    "sheet_nodes_mm": {
     "ajc": 65.45287073994474,
@@ -602,29 +627,29 @@
     "kjc": 472.98811098894475
    },
    "stretch": {
-    "foot": 1.0006658807765874,
-    "shank": 0.9329150308428967,
-    "thigh": 1.0683400136425176
+    "foot": 0.9996881560865793,
+    "shank": 1.0007330587510832,
+    "thigh": 0.9914404169736543
    }
   },
   "ruler": {
-   "kjc_sd_mm": 9.520328159925539,
+   "kjc_sd_mm": 9.528715154309005,
    "mesh_nodes_mm": {
-    "ajc": 65.40931593385466,
-    "hjc": 874.8674234322034,
-    "kjc": 514.6649831500953
+    "ajc": 65.4732881863573,
+    "hjc": 874.2289379187658,
+    "kjc": 485.1432336211575
    },
    "section_centre_offset_before_shear_mm": {
-    "shank": 51.38166487976169,
-    "thigh": 61.610510463636544
+    "shank": 51.528644874473265,
+    "thigh": 67.70953441488992
    },
    "shear_deg": {
-    "shank": 7.185883337801689,
-    "thigh": 8.797771382180438
+    "shank": 7.206223153473969,
+    "thigh": 9.653021977312731
    },
    "shear_mm": {
-    "shank": 51.38166487976169,
-    "thigh": 61.610510463636544
+    "shank": 51.528644874473265,
+    "thigh": 67.70953441488992
    },
    "sheet_nodes_mm": {
     "ajc": 65.45287073994474,
@@ -632,46 +657,46 @@
     "kjc": 472.98811098894475
    },
    "stretch": {
-    "foot": 1.0006658807765874,
-    "shank": 0.9071343334948755,
-    "thigh": 1.105162149710104
+    "foot": 0.9996881560865793,
+    "shank": 0.9710851222066237,
+    "thigh": 1.023121895345994
    }
   }
  },
  "mass_base": {
-  "blender_relative_difference": -6.765914077084402e-05,
-  "blender_volume_l": 51.2605,
+  "blender_relative_difference": -3.1282788459943775e-05,
+  "blender_volume_l": 52.3331,
   "blender_within_tolerance": true,
   "cases": {
    "f=0.15": {
     "body_density_kg_per_l": 1.064516129032258,
     "body_fat_fraction": 0.15,
-    "mean_mesh_density_kg_per_l": 1.0066351642197708,
-    "mesh_mass_kg": 51.59713058175093,
-    "robot_required_average_density_kg_per_l": 1.3396937786915972,
-    "sculpt_bmi_kg_per_m2": 17.91073652937455,
+    "mean_mesh_density_kg_per_l": 1.0078235336290624,
+    "mesh_mass_kg": 52.74087983436152,
+    "robot_required_average_density_kg_per_l": 1.3106409118657527,
+    "sculpt_bmi_kg_per_m2": 18.2720037172138,
     "sheet_total_mass_kg": 64.935,
-    "sheet_total_over_mesh_mass": 1.258500216346652
+    "sheet_total_over_mesh_mass": 1.2312081293284345
    },
    "f=0.35": {
     "body_density_kg_per_l": 1.020618556701031,
     "body_fat_fraction": 0.35,
-    "mean_mesh_density_kg_per_l": 0.9651244357983373,
-    "mesh_mass_kg": 49.46941385673029,
-    "robot_required_average_density_kg_per_l": 1.3396937786915972,
-    "sculpt_bmi_kg_per_m2": 17.172149455998284,
+    "mean_mesh_density_kg_per_l": 0.9662638002835343,
+    "mesh_mass_kg": 50.56599819170745,
+    "robot_required_average_density_kg_per_l": 1.3106409118657527,
+    "sculpt_bmi_kg_per_m2": 17.51851902784416,
     "sheet_total_mass_kg": 64.935,
-    "sheet_total_over_mesh_mass": 1.3126292579099483
+    "sheet_total_over_mesh_mass": 1.2841633176866465
    },
    "nominal": {
     "body_density_kg_per_l": 1.0516252390057361,
     "body_fat_fraction": 0.207,
-    "mean_mesh_density_kg_per_l": 0.9944451909118195,
-    "mesh_mass_kg": 50.97230873276861,
-    "robot_required_average_density_kg_per_l": 1.3396937786915972,
-    "sculpt_bmi_kg_per_m2": 17.693844245080022,
+    "mean_mesh_density_kg_per_l": 0.995619169614434,
+    "mesh_mass_kg": 52.10220761202063,
+    "robot_required_average_density_kg_per_l": 1.3106409118657527,
+    "sculpt_bmi_kg_per_m2": 18.050736623123893,
     "sheet_total_mass_kg": 64.935,
-    "sheet_total_over_mesh_mass": 1.2739269931921915
+    "sheet_total_over_mesh_mass": 1.246300358010525
    }
   },
   "constants": {
@@ -683,1461 +708,2125 @@
    "v_lung_source": "Hall 2021, chosen value is FRC",
    "v_lung_supplied": true
   },
-  "cut_stations": {
-   "crotch_below_hip_centre_mm": 70.27613855657432,
-   "hip_zone_mm": 40.0,
-   "ljc_mesh_mm": 972.5498392642587
+  "cut_diagnostics_per_10mm_l": {
+   "abdomen_msr10": 0.2867283534255132,
+   "abdomen_ri": -0.3678492542697755,
+   "label": "diagnostic",
+   "note": "volume change of the abdomen slab per 10 mm of the named cut moving up (central difference of the +-10 mm rows, litres); a diagnostic, not a result"
   },
-  "mesh_volume_l": 51.25703175861452,
+  "cut_source": {
+   "file": "data/envelope/dumas2015_table1_female.json",
+   "page": "116-117",
+   "source": "Dumas 2015 (as named in volume-extractor brief 4; full citation to be added by Joe), Table 1, female, segment coordinate systems; reference lengths from Table 2"
+  },
+  "cut_stations": {
+   "crotch_below_hip_centre_mm": 65.28141514328104,
+   "hip_zone_mm": 40.0,
+   "ljc_mesh_mm": 971.9113537508211
+  },
+  "dempster_lumped_check": {
+   "dempster_share": 0.48100000000000004,
+   "sheet_mass_kg": 31.135,
+   "sheet_minus_dempster": -0.0015205205205205408,
+   "sheet_share": 0.4794794794794795,
+   "source": "Winter Table 4.1 (after Dempster 1955): abdomen and pelvis 0.281 + 2 x thigh 0.100"
+  },
+  "densities_kg_per_l": {
+   "abdomen": 1.01,
+   "abdomen_and_pelvis": 1.01,
+   "foot": 1.1,
+   "pelvis": 1.01,
+   "shank": 1.09,
+   "thigh": 1.05
+  },
+  "mesh_volume_l": 52.33146287470325,
   "rows": {
+   "abdomen": {
+    "cases": {
+     "f=0.15": {
+      "expected_mass_kg": 2.164540613822645,
+      "expected_tissue_ratio": 1.002159570895413,
+      "implied_density_kg_per_l": 0.9233351754731856,
+      "normalised_ratio": 0.9141932430427581
+     },
+     "f=0.35": {
+      "expected_mass_kg": 2.0752812070670723,
+      "expected_tissue_ratio": 1.04526320835328,
+      "implied_density_kg_per_l": 0.8852594981340853,
+      "normalised_ratio": 0.8764945526080052
+     },
+     "nominal": {
+      "expected_mass_kg": 2.1383288409337795,
+      "expected_tissue_ratio": 1.014444107570905,
+      "implied_density_kg_per_l": 0.9121539337051867,
+      "normalised_ratio": 0.9031227066387987
+     }
+    },
+    "mass_kg_sheet": 2.665,
+    "mass_share": 0.04104104104104104,
+    "ratio": 0.9161675081632163,
+    "reference_density_kg_per_l": 1.01,
+    "sheet_mass_per_skin_volume_kg_per_l": 1.1368177741374828,
+    "volume_l": 2.3442631357712256,
+    "volume_share": 0.04479643806984861
+   },
+   "abdomen_msr10_m10": {
+    "cases": {
+     "f=0.15": {
+      "expected_mass_kg": 2.164540613822645,
+      "expected_tissue_ratio": 1.002159570895413,
+      "implied_density_kg_per_l": 1.049531128570789,
+      "normalised_ratio": 1.0391397312582067
+     },
+     "f=0.35": {
+      "expected_mass_kg": 2.0752812070670723,
+      "expected_tissue_ratio": 1.04526320835328,
+      "implied_density_kg_per_l": 1.0062514944029215,
+      "normalised_ratio": 0.996288608319724
+     },
+     "nominal": {
+      "expected_mass_kg": 2.1383288409337795,
+      "expected_tissue_ratio": 1.014444107570905,
+      "implied_density_kg_per_l": 1.0368217012649603,
+      "normalised_ratio": 1.0265561398662972
+     }
+    },
+    "mass_kg_sheet": 2.665,
+    "mass_share": 0.04104104104104104,
+    "ratio": 1.041383827178099,
+    "reference_density_kg_per_l": 1.01,
+    "sheet_mass_per_skin_volume_kg_per_l": 1.2921912574796015,
+    "volume_l": 2.0623881987857122,
+    "volume_share": 0.039410100262697985
+   },
+   "abdomen_msr10_p10": {
+    "cases": {
+     "f=0.15": {
+      "expected_mass_kg": 2.164540613822645,
+      "expected_tissue_ratio": 1.002159570895413,
+      "implied_density_kg_per_l": 0.8211942247412918,
+      "normalised_ratio": 0.8130635888527642
+     },
+     "f=0.35": {
+      "expected_mass_kg": 2.0752812070670723,
+      "expected_tissue_ratio": 1.04526320835328,
+      "implied_density_kg_per_l": 0.787330545370517,
+      "normalised_ratio": 0.7795351934361555
+     },
+     "nominal": {
+      "expected_mass_kg": 2.1383288409337795,
+      "expected_tissue_ratio": 1.014444107570905,
+      "implied_density_kg_per_l": 0.811249871478013,
+      "normalised_ratio": 0.8032176945326862
+     }
+    },
+    "mass_kg_sheet": 2.665,
+    "mass_share": 0.04104104104104104,
+    "ratio": 0.8148194573153706,
+    "reference_density_kg_per_l": 1.01,
+    "sheet_mass_per_skin_volume_kg_per_l": 1.0110610052590399,
+    "volume_l": 2.6358449056367386,
+    "volume_share": 0.05036826338961168
+   },
+   "abdomen_ri_m10": {
+    "cases": {
+     "f=0.15": {
+      "expected_mass_kg": 2.164540613822645,
+      "expected_tissue_ratio": 1.002159570895413,
+      "implied_density_kg_per_l": 0.7941004356786537,
+      "normalised_ratio": 0.78623805512738
+     },
+     "f=0.35": {
+      "expected_mass_kg": 2.0752812070670723,
+      "expected_tissue_ratio": 1.04526320835328,
+      "implied_density_kg_per_l": 0.7613540259599465,
+      "normalised_ratio": 0.7538158672870757
+     },
+     "nominal": {
+      "expected_mass_kg": 2.1383288409337795,
+      "expected_tissue_ratio": 1.014444107570905,
+      "implied_density_kg_per_l": 0.7844841780126919,
+      "normalised_ratio": 0.7767170079333583
+     }
+    },
+    "mass_kg_sheet": 2.665,
+    "mass_share": 0.04104104104104104,
+    "ratio": 0.7879359919480992,
+    "reference_density_kg_per_l": 1.01,
+    "sheet_mass_per_skin_volume_kg_per_l": 0.9777029119108102,
+    "volume_l": 2.7257768873691477,
+    "volume_share": 0.052086770322004004
+   },
+   "abdomen_ri_p10": {
+    "cases": {
+     "f=0.15": {
+      "expected_mass_kg": 2.164540613822645,
+      "expected_tissue_ratio": 1.002159570895413,
+      "implied_density_kg_per_l": 1.0876660119767005,
+      "normalised_ratio": 1.0768970415610897
+     },
+     "f=0.35": {
+      "expected_mass_kg": 2.0752812070670723,
+      "expected_tissue_ratio": 1.04526320835328,
+      "implied_density_kg_per_l": 1.0428138052972493,
+      "normalised_ratio": 1.0324889161358903
+     },
+     "nominal": {
+      "expected_mass_kg": 2.1383288409337795,
+      "expected_tissue_ratio": 1.014444107570905,
+      "implied_density_kg_per_l": 1.074494785572904,
+      "normalised_ratio": 1.0638562233395088
+     }
+    },
+    "mass_kg_sheet": 2.665,
+    "mass_share": 0.04104104104104104,
+    "ratio": 1.0792226770694013,
+    "reference_density_kg_per_l": 1.01,
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3391432359399522,
+    "volume_l": 1.9900783788295966,
+    "volume_share": 0.03802833457177422
+   },
+   "abdomen_rr10": {
+    "cases": {
+     "f=0.15": {
+      "expected_mass_kg": 2.164540613822645,
+      "expected_tissue_ratio": 1.002159570895413,
+      "implied_density_kg_per_l": 1.231808507375227,
+      "normalised_ratio": 1.2196123835398287
+     },
+     "f=0.35": {
+      "expected_mass_kg": 2.0752812070670723,
+      "expected_tissue_ratio": 1.04526320835328,
+      "implied_density_kg_per_l": 1.1810122802669705,
+      "normalised_ratio": 1.1693190893732381
+     },
+     "nominal": {
+      "expected_mass_kg": 2.1383288409337795,
+      "expected_tissue_ratio": 1.014444107570905,
+      "implied_density_kg_per_l": 1.216891769554877,
+      "normalised_ratio": 1.2048433361929476
+     }
+    },
+    "mass_kg_sheet": 2.665,
+    "mass_share": 0.04104104104104104,
+    "ratio": 1.2222462229470066,
+    "reference_density_kg_per_l": 1.01,
+    "sheet_mass_per_skin_volume_kg_per_l": 1.5166126480563045,
+    "volume_l": 1.7572054429425157,
+    "volume_share": 0.03357837420195527
+   },
    "foot": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 0.5164877936111204,
-      "expected_tissue_ratio": 1.0927494280935388,
-      "implied_density_kg_per_l": 0.9165956532709847,
-      "normalised_ratio": 0.8332687757008952
+      "expected_mass_kg": 0.5279367350786939,
+      "expected_tissue_ratio": 1.0914609187969846,
+      "implied_density_kg_per_l": 0.9331432716105732,
+      "normalised_ratio": 0.8483120651005209
      },
      "f=0.35": {
-      "expected_mass_kg": 0.4951893278951981,
-      "expected_tissue_ratio": 1.139749403495411,
-      "implied_density_kg_per_l": 0.8787978943732124,
-      "normalised_ratio": 0.7989071767029206
+      "expected_mass_kg": 0.5061661480651396,
+      "expected_tissue_ratio": 1.1384054744441663,
+      "implied_density_kg_per_l": 0.8946631366987972,
+      "normalised_ratio": 0.8133301242716338
      },
      "nominal": {
-      "expected_mass_kg": 0.5102333206483344,
-      "expected_tissue_ratio": 1.1061444210830724,
-      "implied_density_kg_per_l": 0.9054960245825534,
-      "normalised_ratio": 0.8231782041659578
+      "expected_mass_kg": 0.5215436197399462,
+      "expected_tissue_ratio": 1.1048401171564313,
+      "implied_density_kg_per_l": 0.9218432574865447,
+      "normalised_ratio": 0.8380393249877679
      }
     },
     "inner_volume_l": {
-     "t10": 0.22109939616951005,
-     "t3": 0.43901669827685735,
-     "t5": 0.36537733759223406,
-     "t8": 0.27288016501319456
+     "t10": 0.2223741409009976,
+     "t3": 0.4409096184912687,
+     "t5": 0.3670507315804237,
+     "t8": 0.27428982621547643
     },
     "mass_kg_sheet": 0.65,
     "mass_share": 0.01001001001001001,
-    "ratio": 0.9105539780953565,
+    "ratio": 0.925899466001182,
     "reference_density_kg_per_l": 1.1,
-    "sheet_mass_per_skin_volume_kg_per_l": 1.1535358279439352,
-    "volume_l": 0.5634848820938327,
-    "volume_share": 0.010993318628894865
+    "sheet_mass_per_skin_volume_kg_per_l": 1.1488935818350692,
+    "volume_l": 0.5657617122047006,
+    "volume_share": 0.010811119757139196
    },
    "lumped": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 24.73976531397267,
-      "expected_tissue_ratio": 1.0275660640301871,
-      "implied_density_kg_per_l": 1.0796526482044067,
-      "normalised_ratio": 1.0437637364318948
+      "expected_mass_kg": 25.28816961026944,
+      "expected_tissue_ratio": 1.0263544153280355,
+      "implied_density_kg_per_l": 1.1027472379192396,
+      "normalised_ratio": 1.0660906350804604
      },
      "f=0.35": {
-      "expected_mass_kg": 23.71956880617999,
-      "expected_tissue_ratio": 1.0717624538809476,
-      "implied_density_kg_per_l": 1.0351308895155655,
-      "normalised_ratio": 1.0007219328676933
+      "expected_mass_kg": 24.24535849232019,
+      "expected_tissue_ratio": 1.0704986912561227,
+      "implied_density_kg_per_l": 1.0572731250153535,
+      "normalised_ratio": 1.0221281346647717
      },
      "nominal": {
-      "expected_mass_kg": 24.440176059055222,
-      "expected_tissue_ratio": 1.040162035137654,
-      "implied_density_kg_per_l": 1.0665784606225817,
-      "normalised_ratio": 1.031124150076123
+      "expected_mass_kg": 24.981939385543424,
+      "expected_tissue_ratio": 1.0389355339675403,
+      "implied_density_kg_per_l": 1.0893933835403578,
+      "normalised_ratio": 1.0531806783777653
      }
     },
     "mass_kg_sheet": 31.135,
     "mass_share": 0.4794794794794795,
-    "ratio": 1.0725361944227638,
+    "ratio": 1.0941868304547,
     "reference_density_kg_per_l": 1.034384133611691,
-    "sheet_mass_per_skin_volume_kg_per_l": 1.3587430913444818,
-    "volume_l": 22.91455993288017,
-    "volume_share": 0.44705202675004746
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3577113639206448,
+    "volume_l": 22.93197275015205,
+    "volume_share": 0.43820622414202076
    },
    "lumped_hi": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 24.73976531397267,
-      "expected_tissue_ratio": 1.0275660640301871,
-      "implied_density_kg_per_l": 1.053820193397376,
-      "normalised_ratio": 1.018789982516284
+      "expected_mass_kg": 25.28816961026944,
+      "expected_tissue_ratio": 1.0263544153280355,
+      "implied_density_kg_per_l": 1.0759886089529396,
+      "normalised_ratio": 1.040221494113585
      },
      "f=0.35": {
-      "expected_mass_kg": 23.71956880617999,
-      "expected_tissue_ratio": 1.0717624538809476,
-      "implied_density_kg_per_l": 1.0103636905768663,
-      "normalised_ratio": 0.9767780244743758
+      "expected_mass_kg": 24.24535849232019,
+      "expected_tissue_ratio": 1.0704986912561227,
+      "implied_density_kg_per_l": 1.0316179446662206,
+      "normalised_ratio": 0.9973257623975612
      },
      "nominal": {
-      "expected_mass_kg": 24.440176059055222,
-      "expected_tissue_ratio": 1.040162035137654,
-      "implied_density_kg_per_l": 1.0410588271293393,
-      "normalised_ratio": 1.0064528189294075
+      "expected_mass_kg": 24.981939385543424,
+      "expected_tissue_ratio": 1.0389355339675403,
+      "implied_density_kg_per_l": 1.06295879150864,
+      "normalised_ratio": 1.0276248029802784
      }
     },
     "mass_kg_sheet": 31.135,
     "mass_share": 0.4794794794794795,
-    "ratio": 1.0468740124076412,
+    "ratio": 1.067635923402604,
     "reference_density_kg_per_l": 1.034384133611691,
-    "sheet_mass_per_skin_volume_kg_per_l": 1.3262329413810687,
-    "volume_l": 23.476268028433726,
-    "volume_share": 0.45801068112938836
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3247659224076531,
+    "volume_l": 23.50226517256324,
+    "volume_share": 0.449103921073915
    },
    "lumped_lo": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 24.73976531397267,
-      "expected_tissue_ratio": 1.0275660640301871,
-      "implied_density_kg_per_l": 1.105010276400053,
-      "normalised_ratio": 1.068278447525835
+      "expected_mass_kg": 25.28816961026944,
+      "expected_tissue_ratio": 1.0263544153280355,
+      "implied_density_kg_per_l": 1.12886367749659,
+      "normalised_ratio": 1.091338933781796
      },
      "f=0.35": {
-      "expected_mass_kg": 23.71956880617999,
-      "expected_tissue_ratio": 1.0717624538809476,
-      "implied_density_kg_per_l": 1.0594428423217006,
-      "normalised_ratio": 1.0242257280402338
+      "expected_mass_kg": 24.24535849232019,
+      "expected_tissue_ratio": 1.0704986912561227,
+      "implied_density_kg_per_l": 1.0823125980121946,
+      "normalised_ratio": 1.0463352664093513
      },
      "nominal": {
-      "expected_mass_kg": 24.440176059055222,
-      "expected_tissue_ratio": 1.040162035137654,
-      "implied_density_kg_per_l": 1.091629017476152,
-      "normalised_ratio": 1.0553419972371219
+      "expected_mass_kg": 24.981939385543424,
+      "expected_tissue_ratio": 1.0389355339675403,
+      "implied_density_kg_per_l": 1.1151935628551397,
+      "normalised_ratio": 1.0781232296760892
      }
     },
     "mass_kg_sheet": 31.135,
     "mass_share": 0.4794794794794795,
-    "ratio": 1.097726679612401,
+    "ratio": 1.120100533306337,
     "reference_density_kg_per_l": 1.034384133611691,
-    "sheet_mass_per_skin_volume_kg_per_l": 1.3906556719147405,
-    "volume_l": 22.388719672880214,
-    "volume_share": 0.4367931365654519
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3898661366373934,
+    "volume_l": 22.40143793655353,
+    "volume_share": 0.4280682538951585
+   },
+   "lumped_msr10": {
+    "cases": {
+     "f=0.15": {
+      "expected_mass_kg": 25.28816961026944,
+      "expected_tissue_ratio": 1.0263544153280355,
+      "implied_density_kg_per_l": 1.1080297033430002,
+      "normalised_ratio": 1.0711975051997036
+     },
+     "f=0.35": {
+      "expected_mass_kg": 24.24535849232019,
+      "expected_tissue_ratio": 1.0704986912561227,
+      "implied_density_kg_per_l": 1.0623377568133923,
+      "normalised_ratio": 1.027024412201778
+     },
+     "nominal": {
+      "expected_mass_kg": 24.981939385543424,
+      "expected_tissue_ratio": 1.0389355339675403,
+      "implied_density_kg_per_l": 1.0946118802942322,
+      "normalised_ratio": 1.0582257062202298
+     }
+    },
+    "mass_kg_sheet": 31.135,
+    "mass_share": 0.4794794794794795,
+    "ratio": 1.099428289150092,
+    "reference_density_kg_per_l": 1.034384133611691,
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3642151782932754,
+    "volume_l": 22.822645939881692,
+    "volume_share": 0.4361171021441871
+   },
+   "lumped_msr10_m10": {
+    "cases": {
+     "f=0.15": {
+      "expected_mass_kg": 25.28816961026944,
+      "expected_tissue_ratio": 1.0263544153280355,
+      "implied_density_kg_per_l": 1.1218858187490415,
+      "normalised_ratio": 1.084593027187904
+     },
+     "f=0.35": {
+      "expected_mass_kg": 24.24535849232019,
+      "expected_tissue_ratio": 1.0704986912561227,
+      "implied_density_kg_per_l": 1.0756224860171226,
+      "normalised_ratio": 1.0398675415306713
+     },
+     "nominal": {
+      "expected_mass_kg": 24.981939385543424,
+      "expected_tissue_ratio": 1.0389355339675403,
+      "implied_density_kg_per_l": 1.1083002033531002,
+      "normalised_ratio": 1.0714590134743478
+     }
+    },
+    "mass_kg_sheet": 31.135,
+    "mass_share": 0.4794794794794795,
+    "ratio": 1.1131768422883055,
+    "reference_density_kg_per_l": 1.034384133611691,
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3812749402221065,
+    "volume_l": 22.54076946838227,
+    "volume_share": 0.4307307350140666
+   },
+   "lumped_msr10_p10": {
+    "cases": {
+     "f=0.15": {
+      "expected_mass_kg": 25.28816961026944,
+      "expected_tissue_ratio": 1.0263544153280355,
+      "implied_density_kg_per_l": 1.0940521742584262,
+      "normalised_ratio": 1.057684605465086
+     },
+     "f=0.35": {
+      "expected_mass_kg": 24.24535849232019,
+      "expected_tissue_ratio": 1.0704986912561227,
+      "implied_density_kg_per_l": 1.0489366206807593,
+      "normalised_ratio": 1.0140687454459074
+     },
+     "nominal": {
+      "expected_mass_kg": 24.981939385543424,
+      "expected_tissue_ratio": 1.0389355339675403,
+      "implied_density_kg_per_l": 1.0808036138308226,
+      "normalised_ratio": 1.0448764426200658
+     }
+    },
+    "mass_kg_sheet": 31.135,
+    "mass_share": 0.4794794794794795,
+    "ratio": 1.0855592648435821,
+    "reference_density_kg_per_l": 1.034384133611691,
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3470059308564233,
+    "volume_l": 23.11422636439651,
+    "volume_share": 0.44168890175569325
+   },
+   "lumped_rr10": {
+    "cases": {
+     "f=0.15": {
+      "expected_mass_kg": 25.28816961026944,
+      "expected_tissue_ratio": 1.0263544153280355,
+      "implied_density_kg_per_l": 1.1372837417308934,
+      "normalised_ratio": 1.0994791052719597
+     },
+     "f=0.35": {
+      "expected_mass_kg": 24.24535849232019,
+      "expected_tissue_ratio": 1.0704986912561227,
+      "implied_density_kg_per_l": 1.0903854431028155,
+      "normalised_ratio": 1.0541397607246625
+     },
+     "nominal": {
+      "expected_mass_kg": 24.981939385543424,
+      "expected_tissue_ratio": 1.0389355339675403,
+      "implied_density_kg_per_l": 1.1235116632778106,
+      "normalised_ratio": 1.086164826750502
+     }
+    },
+    "mass_kg_sheet": 31.135,
+    "mass_share": 0.4794794794794795,
+    "ratio": 1.1284552342567937,
+    "reference_density_kg_per_l": 1.034384133611691,
+    "sheet_mass_per_skin_volume_kg_per_l": 1.4002329881721356,
+    "volume_l": 22.235585265451885,
+    "volume_share": 0.424898981300988
    },
    "pelvis_crotch": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 7.540721786722359,
-      "expected_tissue_ratio": 1.0033426567040673,
-      "implied_density_kg_per_l": 0.7945114964618354,
-      "normalised_ratio": 0.7866450460018174
+      "expected_mass_kg": 7.707876332148931,
+      "expected_tissue_ratio": 1.002159570895413,
+      "implied_density_kg_per_l": 0.8329031574526345,
+      "normalised_ratio": 0.824656591537262
      },
      "f=0.35": {
-      "expected_mass_kg": 7.229764187269893,
-      "expected_tissue_ratio": 1.046497179573059,
-      "implied_density_kg_per_l": 0.7617481357829972,
-      "normalised_ratio": 0.7542060750326705
+      "expected_mass_kg": 7.39002576175104,
+      "expected_tissue_ratio": 1.04526320835328,
+      "implied_density_kg_per_l": 0.7985566354958251,
+      "normalised_ratio": 0.7906501341542822
      },
      "nominal": {
-      "expected_mass_kg": 7.449406481465683,
-      "expected_tissue_ratio": 1.0156416957217302,
-      "implied_density_kg_per_l": 0.7848902610043627,
-      "normalised_ratio": 0.7771190703013491
+      "expected_mass_kg": 7.614536848203215,
+      "expected_tissue_ratio": 1.014444107570905,
+      "implied_density_kg_per_l": 0.822817013417198,
+      "normalised_ratio": 0.8146703103140576
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 0.7892745303385567,
+    "ratio": 0.8264374959110563,
     "reference_density_kg_per_l": 1.01,
-    "sheet_mass_per_skin_volume_kg_per_l": 0.999892890187122,
-    "volume_l": 9.491016581010014,
-    "volume_share": 0.18516516183976856
+    "sheet_mass_per_skin_volume_kg_per_l": 1.0254771383990047,
+    "volume_l": 9.254228733773605,
+    "volume_share": 0.17683871662313208
    },
    "pelvis_crotch_ilio": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 7.540721786722359,
-      "expected_tissue_ratio": 1.0033426567040673,
-      "implied_density_kg_per_l": 0.6198612274803907,
-      "normalised_ratio": 0.6137239876043474
+      "expected_mass_kg": 7.707876332148931,
+      "expected_tissue_ratio": 1.002159570895413,
+      "implied_density_kg_per_l": 0.6438635171335396,
+      "normalised_ratio": 0.6374886308252867
      },
      "f=0.35": {
-      "expected_mass_kg": 7.229764187269893,
-      "expected_tissue_ratio": 1.046497179573059,
-      "implied_density_kg_per_l": 0.5942999397492409,
-      "normalised_ratio": 0.5884157819299415
+      "expected_mass_kg": 7.39002576175104,
+      "expected_tissue_ratio": 1.04526320835328,
+      "implied_density_kg_per_l": 0.6173124442620537,
+      "normalised_ratio": 0.6112004398634193
      },
      "nominal": {
-      "expected_mass_kg": 7.449406481465683,
-      "expected_tissue_ratio": 1.0156416957217302,
-      "implied_density_kg_per_l": 0.6123549411055486,
-      "normalised_ratio": 0.6062920208965827
+      "expected_mass_kg": 7.614536848203215,
+      "expected_tissue_ratio": 1.014444107570905,
+      "implied_density_kg_per_l": 0.6360665720567155,
+      "normalised_ratio": 0.6297688832244708
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 0.61577545620596,
+    "ratio": 0.6388653327185737,
     "reference_density_kg_per_l": 1.01,
-    "sheet_mass_per_skin_volume_kg_per_l": 0.780095488888973,
-    "volume_l": 12.165177385547814,
-    "volume_share": 0.2373367510400809
+    "sheet_mass_per_skin_volume_kg_per_l": 0.7927299964728117,
+    "volume_l": 11.971289142867043,
+    "volume_share": 0.22875892408224463
    },
    "pelvis_crotch_ilio_hi": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 7.540721786722359,
-      "expected_tissue_ratio": 1.0033426567040673,
-      "implied_density_kg_per_l": 0.5874734578241881,
-      "normalised_ratio": 0.5816568889348398
+      "expected_mass_kg": 7.707876332148931,
+      "expected_tissue_ratio": 1.002159570895413,
+      "implied_density_kg_per_l": 0.6100694133508675,
+      "normalised_ratio": 0.6040291221295718
      },
      "f=0.35": {
-      "expected_mass_kg": 7.229764187269893,
-      "expected_tissue_ratio": 1.046497179573059,
-      "implied_density_kg_per_l": 0.5632477482231909,
-      "normalised_ratio": 0.5576710378447435
+      "expected_mass_kg": 7.39002576175104,
+      "expected_tissue_ratio": 1.04526320835328,
+      "implied_density_kg_per_l": 0.5849119117693886,
+      "normalised_ratio": 0.5791207047221669
      },
      "nominal": {
-      "expected_mass_kg": 7.449406481465683,
-      "expected_tissue_ratio": 1.0156416957217302,
-      "implied_density_kg_per_l": 0.5803593751609252,
-      "normalised_ratio": 0.5746132427335893
+      "expected_mass_kg": 7.614536848203215,
+      "expected_tissue_ratio": 1.014444107570905,
+      "implied_density_kg_per_l": 0.6026817021630623,
+      "normalised_ratio": 0.5967145565970915
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 0.5836011682341048,
+    "ratio": 0.6053335658417047,
     "reference_density_kg_per_l": 1.01,
-    "sheet_mass_per_skin_volume_kg_per_l": 0.7393354737696565,
-    "volume_l": 12.835851026616174,
-    "volume_share": 0.2504212707256291
+    "sheet_mass_per_skin_volume_kg_per_l": 0.7511224211722171,
+    "volume_l": 12.634425138301307,
+    "volume_share": 0.2414307654374539
    },
    "pelvis_crotch_ilio_lo": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 7.540721786722359,
-      "expected_tissue_ratio": 1.0033426567040673,
-      "implied_density_kg_per_l": 0.6619730942331273,
-      "normalised_ratio": 0.6554189051813142
+      "expected_mass_kg": 7.707876332148931,
+      "expected_tissue_ratio": 1.002159570895413,
+      "implied_density_kg_per_l": 0.6876089488031368,
+      "normalised_ratio": 0.6808009394090464
      },
      "f=0.35": {
-      "expected_mass_kg": 7.229764187269893,
-      "expected_tissue_ratio": 1.046497179573059,
-      "implied_density_kg_per_l": 0.6346752346771224,
-      "normalised_ratio": 0.6283913214624973
+      "expected_mass_kg": 7.39002576175104,
+      "expected_tissue_ratio": 1.04526320835328,
+      "implied_density_kg_per_l": 0.6592539406050696,
+      "normalised_ratio": 0.6527266738664054
      },
      "nominal": {
-      "expected_mass_kg": 7.449406481465683,
-      "expected_tissue_ratio": 1.0156416957217302,
-      "implied_density_kg_per_l": 0.6539568489874744,
-      "normalised_ratio": 0.6474820287004697
+      "expected_mass_kg": 7.614536848203215,
+      "expected_tissue_ratio": 1.014444107570905,
+      "implied_density_kg_per_l": 0.6792822629986376,
+      "normalised_ratio": 0.672556696038255
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 0.657609745578691,
+    "ratio": 0.682271177303364,
     "reference_density_kg_per_l": 1.01,
-    "sheet_mass_per_skin_volume_kg_per_l": 0.8330932823080534,
-    "volume_l": 11.391281386531308,
-    "volume_share": 0.2222384128713585
+    "sheet_mass_per_skin_volume_kg_per_l": 0.8465897275654014,
+    "volume_l": 11.209680074067366,
+    "volume_share": 0.21420536438865856
+   },
+   "pelvis_crotch_ri": {
+    "cases": {
+     "f=0.15": {
+      "expected_mass_kg": 7.707876332148931,
+      "expected_tissue_ratio": 1.002159570895413,
+      "implied_density_kg_per_l": 0.6796568896968932,
+      "normalised_ratio": 0.6729276135612804
+     },
+     "f=0.35": {
+      "expected_mass_kg": 7.39002576175104,
+      "expected_tissue_ratio": 1.04526320835328,
+      "implied_density_kg_per_l": 0.65162980146197,
+      "normalised_ratio": 0.6451780212494751
+     },
+     "nominal": {
+      "expected_mass_kg": 7.614536848203215,
+      "expected_tissue_ratio": 1.014444107570905,
+      "implied_density_kg_per_l": 0.6714265003379124,
+      "normalised_ratio": 0.6647787132058539
+     }
+    },
+    "mass_kg_sheet": 9.49,
+    "mass_share": 0.14614614614614616,
+    "ratio": 0.674380848450247,
+    "reference_density_kg_per_l": 1.01,
+    "sheet_mass_per_skin_volume_kg_per_l": 0.836799087748894,
+    "volume_l": 11.340834543127217,
+    "volume_share": 0.21671159031576234
+   },
+   "pelvis_crotch_ri_m10": {
+    "cases": {
+     "f=0.15": {
+      "expected_mass_kg": 7.707876332148931,
+      "expected_tissue_ratio": 1.002159570895413,
+      "implied_density_kg_per_l": 0.7033169396315615,
+      "normalised_ratio": 0.6963534055758034
+     },
+     "f=0.35": {
+      "expected_mass_kg": 7.39002576175104,
+      "expected_tissue_ratio": 1.04526320835328,
+      "implied_density_kg_per_l": 0.6743141792343839,
+      "normalised_ratio": 0.6676378012221621
+     },
+     "nominal": {
+      "expected_mass_kg": 7.614536848203215,
+      "expected_tissue_ratio": 1.014444107570905,
+      "implied_density_kg_per_l": 0.694800035964895,
+      "normalised_ratio": 0.687920827688015
+     }
+    },
+    "mass_kg_sheet": 9.49,
+    "mass_share": 0.14614614614614616,
+    "ratio": 0.6978572301234066,
+    "reference_density_kg_per_l": 1.01,
+    "sheet_mass_per_skin_volume_kg_per_l": 0.8659295335687742,
+    "volume_l": 10.959321321318903,
+    "volume_share": 0.20942126818733708
+   },
+   "pelvis_crotch_ri_p10": {
+    "cases": {
+     "f=0.15": {
+      "expected_mass_kg": 7.707876332148931,
+      "expected_tissue_ratio": 1.002159570895413,
+      "implied_density_kg_per_l": 0.659073377239154,
+      "normalised_ratio": 0.6525478982565882
+     },
+     "f=0.35": {
+      "expected_mass_kg": 7.39002576175104,
+      "expected_tissue_ratio": 1.04526320835328,
+      "implied_density_kg_per_l": 0.6318950936416633,
+      "normalised_ratio": 0.6256387065759043
+     },
+     "nominal": {
+      "expected_mass_kg": 7.614536848203215,
+      "expected_tissue_ratio": 1.014444107570905,
+      "implied_density_kg_per_l": 0.6510922464759011,
+      "normalised_ratio": 0.6446457885900012
+     }
+    },
+    "mass_kg_sheet": 9.49,
+    "mass_share": 0.14614614614614616,
+    "ratio": 0.653957121705526,
+    "reference_density_kg_per_l": 1.01,
+    "sheet_mass_per_skin_volume_kg_per_l": 0.8114564998807924,
+    "volume_l": 11.695020005871092,
+    "volume_share": 0.2234797073009859
    },
    "pelvis_hjc": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 7.540721786722359,
-      "expected_tissue_ratio": 1.0033426567040673,
-      "implied_density_kg_per_l": 1.36052035666019,
-      "normalised_ratio": 1.3470498580793961
+      "expected_mass_kg": 7.707876332148931,
+      "expected_tissue_ratio": 1.002159570895413,
+      "implied_density_kg_per_l": 1.3910636954097608,
+      "normalised_ratio": 1.3772907875344167
      },
      "f=0.35": {
-      "expected_mass_kg": 7.229764187269893,
-      "expected_tissue_ratio": 1.046497179573059,
-      "implied_density_kg_per_l": 1.3044164244267806,
-      "normalised_ratio": 1.2915014103235454
+      "expected_mass_kg": 7.39002576175104,
+      "expected_tissue_ratio": 1.04526320835328,
+      "implied_density_kg_per_l": 1.3337002440526577,
+      "normalised_ratio": 1.320495291141245
      },
      "nominal": {
-      "expected_mass_kg": 7.449406481465683,
-      "expected_tissue_ratio": 1.0156416957217302,
-      "implied_density_kg_per_l": 1.3440449667452483,
-      "normalised_ratio": 1.3307375908368795
+      "expected_mass_kg": 7.614536848203215,
+      "expected_tissue_ratio": 1.014444107570905,
+      "implied_density_kg_per_l": 1.3742184371479473,
+      "normalised_ratio": 1.3606123140078688
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 1.3515525833182183,
+    "ratio": 1.3802651446336964,
     "reference_density_kg_per_l": 1.01,
-    "sheet_mass_per_skin_volume_kg_per_l": 1.712215163200873,
-    "volume_l": 5.542527717287045,
-    "volume_share": 0.1081320460261638
+    "sheet_mass_per_skin_volume_kg_per_l": 1.7126889302021506,
+    "volume_l": 5.540994533595709,
+    "volume_share": 0.10588266081654286
    },
    "pelvis_hjc_ilio": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 7.540721786722359,
-      "expected_tissue_ratio": 1.0033426567040673,
-      "implied_density_kg_per_l": 0.917736294848937,
-      "normalised_ratio": 0.9086497968801357
+      "expected_mass_kg": 7.707876332148931,
+      "expected_tissue_ratio": 1.002159570895413,
+      "implied_density_kg_per_l": 0.9333776233283754,
+      "normalised_ratio": 0.9241362607211637
      },
      "f=0.35": {
-      "expected_mass_kg": 7.229764187269893,
-      "expected_tissue_ratio": 1.046497179573059,
-      "implied_density_kg_per_l": 0.8798914991850637,
-      "normalised_ratio": 0.8711797021634293
+      "expected_mass_kg": 7.39002576175104,
+      "expected_tissue_ratio": 1.04526320835328,
+      "implied_density_kg_per_l": 0.8948878244282364,
+      "normalised_ratio": 0.8860275489388478
      },
      "nominal": {
-      "expected_mass_kg": 7.449406481465683,
-      "expected_tissue_ratio": 1.0156416957217302,
-      "implied_density_kg_per_l": 0.9066228534199187,
-      "normalised_ratio": 0.8976463895246718
+      "expected_mass_kg": 7.614536848203215,
+      "expected_tissue_ratio": 1.014444107570905,
+      "implied_density_kg_per_l": 0.9220747712931688,
+      "normalised_ratio": 0.9129453181120485
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 0.9116871012153265,
+    "ratio": 0.9261319984932129,
     "reference_density_kg_per_l": 1.01,
-    "sheet_mass_per_skin_volume_kg_per_l": 1.154971325616562,
-    "volume_l": 8.216654205621879,
-    "volume_share": 0.1603029657338858
+    "sheet_mass_per_skin_volume_kg_per_l": 1.149182117575149,
+    "volume_l": 8.25804705352058,
+    "volume_share": 0.1578027175218233
    },
    "pelvis_hjc_ilio_hi": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 7.540721786722359,
-      "expected_tissue_ratio": 1.0033426567040673,
-      "implied_density_kg_per_l": 0.8484825235526822,
-      "normalised_ratio": 0.8400817064878042
+      "expected_mass_kg": 7.707876332148931,
+      "expected_tissue_ratio": 1.002159570895413,
+      "implied_density_kg_per_l": 0.8639967966650117,
+      "normalised_ratio": 0.8554423729356553
      },
      "f=0.35": {
-      "expected_mass_kg": 7.229764187269893,
-      "expected_tissue_ratio": 1.046497179573059,
-      "implied_density_kg_per_l": 0.8134935535092729,
-      "normalised_ratio": 0.8054391618903692
+      "expected_mass_kg": 7.39002576175104,
+      "expected_tissue_ratio": 1.04526320835328,
+      "implied_density_kg_per_l": 0.8283680627819188,
+      "normalised_ratio": 0.8201663987939789
      },
      "nominal": {
-      "expected_mass_kg": 7.449406481465683,
-      "expected_tissue_ratio": 1.0156416957217302,
-      "implied_density_kg_per_l": 0.8382077192521717,
-      "normalised_ratio": 0.8299086329229421
+      "expected_mass_kg": 7.614536848203215,
+      "expected_tissue_ratio": 1.014444107570905,
+      "implied_density_kg_per_l": 0.8535341203510315,
+      "normalised_ratio": 0.8450832874762689
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 0.84288981123596,
+    "ratio": 0.8572897613869501,
     "reference_density_kg_per_l": 1.01,
-    "sheet_mass_per_skin_volume_kg_per_l": 1.0678154394574038,
-    "volume_l": 8.887303600725438,
-    "volume_share": 0.17338701239233958
+    "sheet_mass_per_skin_volume_kg_per_l": 1.0637598797676888,
+    "volume_l": 8.921186238075167,
+    "volume_share": 0.1704746198178156
    },
    "pelvis_hjc_ilio_lo": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 7.540721786722359,
-      "expected_tissue_ratio": 1.0033426567040673,
-      "implied_density_kg_per_l": 1.0131593935222023,
-      "normalised_ratio": 1.0031281123982203
+      "expected_mass_kg": 7.707876332148931,
+      "expected_tissue_ratio": 1.002159570895413,
+      "implied_density_kg_per_l": 1.028204493814647,
+      "normalised_ratio": 1.0180242513016307
      },
      "f=0.35": {
-      "expected_mass_kg": 7.229764187269893,
-      "expected_tissue_ratio": 1.046497179573059,
-      "implied_density_kg_per_l": 0.9713796247171633,
-      "normalised_ratio": 0.9617620046704589
+      "expected_mass_kg": 7.39002576175104,
+      "expected_tissue_ratio": 1.04526320835328,
+      "implied_density_kg_per_l": 0.9858043085027032,
+      "normalised_ratio": 0.9760438698046564
      },
      "nominal": {
-      "expected_mass_kg": 7.449406481465683,
-      "expected_tissue_ratio": 1.0156416957217302,
-      "implied_density_kg_per_l": 1.0008904142507415,
-      "normalised_ratio": 0.9909806081690511
+      "expected_mass_kg": 7.614536848203215,
+      "expected_tissue_ratio": 1.014444107570905,
+      "implied_density_kg_per_l": 1.0157533240361396,
+      "normalised_ratio": 1.0056963604318214
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 1.0064812253081665,
+    "ratio": 1.0202227468455662,
     "reference_density_kg_per_l": 1.01,
-    "sheet_mass_per_skin_volume_kg_per_l": 1.2750613159413342,
-    "volume_l": 7.442779324689854,
-    "volume_share": 0.14520503956881942
+    "sheet_mass_per_skin_volume_kg_per_l": 1.2659337313966215,
+    "volume_l": 7.496442953242353,
+    "volume_share": 0.14324925277153094
+   },
+   "pelvis_hjc_ri": {
+    "cases": {
+     "f=0.15": {
+      "expected_mass_kg": 7.707876332148931,
+      "expected_tissue_ratio": 1.002159570895413,
+      "implied_density_kg_per_l": 1.0105241674878611,
+      "normalised_ratio": 1.0005189777107535
+     },
+     "f=0.35": {
+      "expected_mass_kg": 7.39002576175104,
+      "expected_tissue_ratio": 1.04526320835328,
+      "implied_density_kg_per_l": 0.9688530677976402,
+      "normalised_ratio": 0.9592604631659802
+     },
+     "nominal": {
+      "expected_mass_kg": 7.614536848203215,
+      "expected_tissue_ratio": 1.014444107570905,
+      "implied_density_kg_per_l": 0.9982870998127372,
+      "normalised_ratio": 0.9884030691215221
+     }
+    },
+    "mass_kg_sheet": 9.49,
+    "mass_share": 0.14614614614614616,
+    "ratio": 1.002679669375326,
+    "reference_density_kg_per_l": 1.01,
+    "sheet_mass_per_skin_volume_kg_per_l": 1.244165569893903,
+    "volume_l": 7.627602169387525,
+    "volume_share": 0.1457555694105136
+   },
+   "pelvis_hjc_ri_m10": {
+    "cases": {
+     "f=0.15": {
+      "expected_mass_kg": 7.707876332148931,
+      "expected_tissue_ratio": 1.002159570895413,
+      "implied_density_kg_per_l": 1.0637289200074704,
+      "normalised_ratio": 1.0531969505024459
+     },
+     "f=0.35": {
+      "expected_mass_kg": 7.39002576175104,
+      "expected_tissue_ratio": 1.04526320835328,
+      "implied_density_kg_per_l": 1.0198638099040698,
+      "normalised_ratio": 1.009766148419871
+     },
+     "nominal": {
+      "expected_mass_kg": 7.614536848203215,
+      "expected_tissue_ratio": 1.014444107570905,
+      "implied_density_kg_per_l": 1.0508475627862202,
+      "normalised_ratio": 1.040443131471505
+     }
+    },
+    "mass_kg_sheet": 9.49,
+    "mass_share": 0.14614614614614616,
+    "ratio": 1.0554714039838886,
+    "reference_density_kg_per_l": 1.01,
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3096716937149535,
+    "volume_l": 7.246090791716747,
+    "volume_share": 0.13846528252164472
+   },
+   "pelvis_hjc_ri_p10": {
+    "cases": {
+     "f=0.15": {
+      "expected_mass_kg": 7.707876332148931,
+      "expected_tissue_ratio": 1.002159570895413,
+      "implied_density_kg_per_l": 0.9656830695874308,
+      "normalised_ratio": 0.9561218510766643
+     },
+     "f=0.35": {
+      "expected_mass_kg": 7.39002576175104,
+      "expected_tissue_ratio": 1.04526320835328,
+      "implied_density_kg_per_l": 0.925861087336403,
+      "normalised_ratio": 0.9166941458776267
+     },
+     "nominal": {
+      "expected_mass_kg": 7.614536848203215,
+      "expected_tissue_ratio": 1.014444107570905,
+      "implied_density_kg_per_l": 0.9539890107460279,
+      "normalised_ratio": 0.9445435749960674
+     }
+    },
+    "mass_kg_sheet": 9.49,
+    "mass_share": 0.14614614614614616,
+    "ratio": 0.9581866639987178,
+    "reference_density_kg_per_l": 1.01,
+    "sheet_mass_per_skin_volume_kg_per_l": 1.188956845630881,
+    "volume_l": 7.981786752709635,
+    "volume_share": 0.15252366959089897
    },
    "shank": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 2.324195071250042,
-      "expected_tissue_ratio": 1.0828153423835976,
-      "implied_density_kg_per_l": 0.9422310427815632,
-      "normalised_ratio": 0.8644321493408836
+      "expected_mass_kg": 2.3757153078541227,
+      "expected_tissue_ratio": 1.081538546807921,
+      "implied_density_kg_per_l": 0.9616735574178087,
+      "normalised_ratio": 0.8822693187319345
      },
      "f=0.35": {
-      "expected_mass_kg": 2.2283519755283914,
-      "expected_tissue_ratio": 1.1293880452818164,
-      "implied_density_kg_per_l": 0.9033761544194372,
-      "normalised_ratio": 0.8287854627701259
+      "expected_mass_kg": 2.2777476662931284,
+      "expected_tissue_ratio": 1.1280563337674012,
+      "implied_density_kg_per_l": 0.9220169158748065,
+      "normalised_ratio": 0.8458870787842261
      },
      "nominal": {
-      "expected_mass_kg": 2.296049942917505,
-      "expected_tissue_ratio": 1.09608856270959,
-      "implied_density_kg_per_l": 0.9308209791659804,
-      "normalised_ratio": 0.8539642010697066
+      "expected_mass_kg": 2.346946288829758,
+      "expected_tissue_ratio": 1.0947961160913728,
+      "implied_density_kg_per_l": 0.9500280522610602,
+      "normalised_ratio": 0.8715853690468442
      }
     },
     "inner_volume_l": {
-     "t10": 1.4669423271930646,
-     "t3": 2.1426854231906933,
-     "t5": 1.934955214823013,
-     "t8": 1.6453795289166129
+     "t10": 1.469778128751502,
+     "t3": 2.145996459508328,
+     "t5": 1.938124804660329,
+     "t8": 1.6483834528094397
     },
     "mass_kg_sheet": 2.925,
     "mass_share": 0.04504504504504504,
-    "ratio": 0.936020393755938,
+    "ratio": 0.9542082768745509,
     "reference_density_kg_per_l": 1.09,
-    "sheet_mass_per_skin_volume_kg_per_l": 1.1857979711891287,
-    "volume_l": 2.4666933753198985,
-    "volume_share": 0.04812399958968232
+    "sheet_mass_per_skin_volume_kg_per_l": 1.1840203016530009,
+    "volume_l": 2.470396830118902,
+    "volume_share": 0.047206722197576455
    },
    "thigh": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 7.540721786722359,
-      "expected_tissue_ratio": 1.0430789995438325,
-      "implied_density_kg_per_l": 1.1693409224299505,
-      "normalised_ratio": 1.1136580213618574
+      "expected_mass_kg": 7.707876332148931,
+      "expected_tissue_ratio": 1.041849058851667,
+      "implied_density_kg_per_l": 1.200646612828428,
+      "normalised_ratio": 1.1434729645985031
      },
      "f=0.35": {
-      "expected_mass_kg": 7.229764187269893,
-      "expected_tissue_ratio": 1.0879426124274378,
-      "implied_density_kg_per_l": 1.1211206782060354,
-      "normalised_ratio": 1.0677339792438432
+      "expected_mass_kg": 7.39002576175104,
+      "expected_tissue_ratio": 1.0866597710603405,
+      "implied_density_kg_per_l": 1.1511354122994213,
+      "normalised_ratio": 1.096319440285163
      },
      "nominal": {
-      "expected_mass_kg": 7.449406481465683,
-      "expected_tissue_ratio": 1.05586512921566,
-      "implied_density_kg_per_l": 1.1551806435732461,
-      "normalised_ratio": 1.1001720414983296
+      "expected_mass_kg": 7.614536848203215,
+      "expected_tissue_ratio": 1.054620111831139,
+      "implied_density_kg_per_l": 1.1861072338330554,
+      "normalised_ratio": 1.1296259369838624
      }
     },
     "inner_volume_l": {
-     "t10": 4.809600459862876,
-     "t3": 5.9390821149176585,
-     "t5": 5.602617692851551,
-     "t8": 5.118495500344341
+     "t10": 4.778006141346859,
+     "t3": 5.909329926069158,
+     "t5": 5.572253780153464,
+     "t8": 5.087338610002063
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 1.1616332947560903,
+    "ratio": 1.191326231989276,
     "reference_density_kg_per_l": 1.05,
-    "sheet_mass_per_skin_volume_kg_per_l": 1.4716158038610863,
-    "volume_l": 6.448693996830584,
-    "volume_share": 0.12581091365570118
+    "sheet_mass_per_skin_volume_kg_per_l": 1.47824587016501,
+    "volume_l": 6.419771021542359,
+    "volume_share": 0.12267516841470988
    },
    "thigh_crotch": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 7.540721786722359,
-      "expected_tissue_ratio": 1.0430789995438325,
-      "implied_density_kg_per_l": 1.6902474573822948,
-      "normalised_ratio": 1.609759483221233
+      "expected_mass_kg": 7.707876332148931,
+      "expected_tissue_ratio": 1.041849058851667,
+      "implied_density_kg_per_l": 1.687081567768413,
+      "normalised_ratio": 1.6067443502556316
      },
      "f=0.35": {
-      "expected_mass_kg": 7.229764187269893,
-      "expected_tissue_ratio": 1.0879426124274378,
-      "implied_density_kg_per_l": 1.620546531304675,
-      "normalised_ratio": 1.5433776488615951
+      "expected_mass_kg": 7.39002576175104,
+      "expected_tissue_ratio": 1.0866597710603405,
+      "implied_density_kg_per_l": 1.6175111938398192,
+      "normalised_ratio": 1.5404868512760184
      },
      "nominal": {
-      "expected_mass_kg": 7.449406481465683,
-      "expected_tissue_ratio": 1.05586512921566,
-      "implied_density_kg_per_l": 1.6697791962667667,
-      "normalised_ratio": 1.5902659012064444
+      "expected_mass_kg": 7.614536848203215,
+      "expected_tissue_ratio": 1.054620111831139,
+      "implied_density_kg_per_l": 1.6666516443856216,
+      "normalised_ratio": 1.5872872803672589
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 1.6791063112646005,
+    "ratio": 1.6739850891290629,
     "reference_density_kg_per_l": 1.05,
-    "sheet_mass_per_skin_volume_kg_per_l": 2.127176790794996,
-    "volume_l": 4.461312308909347,
-    "volume_share": 0.08703805421115819
+    "sheet_mass_per_skin_volume_kg_per_l": 2.07714854107663,
+    "volume_l": 4.568763288869621,
+    "volume_share": 0.08730432970713183
    },
    "thigh_in": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 7.540721786722359,
-      "expected_tissue_ratio": 1.0430789995438325,
-      "implied_density_kg_per_l": 1.1693409224299505,
-      "normalised_ratio": 1.1136580213618574
+      "expected_mass_kg": 7.707876332148931,
+      "expected_tissue_ratio": 1.041849058851667,
+      "implied_density_kg_per_l": 1.200646612828428,
+      "normalised_ratio": 1.1434729645985031
      },
      "f=0.35": {
-      "expected_mass_kg": 7.229764187269893,
-      "expected_tissue_ratio": 1.0879426124274378,
-      "implied_density_kg_per_l": 1.1211206782060354,
-      "normalised_ratio": 1.0677339792438432
+      "expected_mass_kg": 7.39002576175104,
+      "expected_tissue_ratio": 1.0866597710603405,
+      "implied_density_kg_per_l": 1.1511354122994213,
+      "normalised_ratio": 1.096319440285163
      },
      "nominal": {
-      "expected_mass_kg": 7.449406481465683,
-      "expected_tissue_ratio": 1.05586512921566,
-      "implied_density_kg_per_l": 1.1551806435732461,
-      "normalised_ratio": 1.1001720414983296
+      "expected_mass_kg": 7.614536848203215,
+      "expected_tissue_ratio": 1.054620111831139,
+      "implied_density_kg_per_l": 1.1861072338330554,
+      "normalised_ratio": 1.1296259369838624
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 1.1616332947560903,
+    "ratio": 1.191326231989276,
     "reference_density_kg_per_l": 1.05,
-    "sheet_mass_per_skin_volume_kg_per_l": 1.4716158038610863,
-    "volume_l": 6.448693996830584,
-    "volume_share": 0.12581091365570118
+    "sheet_mass_per_skin_volume_kg_per_l": 1.47824587016501,
+    "volume_l": 6.419771021542359,
+    "volume_share": 0.12267516841470988
    },
    "thigh_out": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 7.540721786722359,
-      "expected_tissue_ratio": 1.0430789995438325,
-      "implied_density_kg_per_l": 1.4336912021759238,
-      "normalised_ratio": 1.3654201925484986
+      "expected_mass_kg": 7.707876332148931,
+      "expected_tissue_ratio": 1.041849058851667,
+      "implied_density_kg_per_l": 1.473152888964006,
+      "normalised_ratio": 1.4030027513942915
      },
      "f=0.35": {
-      "expected_mass_kg": 7.229764187269893,
-      "expected_tissue_ratio": 1.0879426124274378,
-      "implied_density_kg_per_l": 1.3745699154882574,
-      "normalised_ratio": 1.3091142052269114
+      "expected_mass_kg": 7.39002576175104,
+      "expected_tissue_ratio": 1.0866597710603405,
+      "implied_density_kg_per_l": 1.4124043162232227,
+      "normalised_ratio": 1.3451469678316406
      },
      "nominal": {
-      "expected_mass_kg": 7.449406481465683,
-      "expected_tissue_ratio": 1.05586512921566,
-      "implied_density_kg_per_l": 1.416329740836636,
-      "normalised_ratio": 1.3488854674634627
+      "expected_mass_kg": 7.614536848203215,
+      "expected_tissue_ratio": 1.054620111831139,
+      "implied_density_kg_per_l": 1.4553135614367172,
+      "normalised_ratio": 1.3860129156540166
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 1.424241128400435,
+    "ratio": 1.4617170961064418,
     "reference_density_kg_per_l": 1.05,
-    "sheet_mass_per_skin_volume_kg_per_l": 1.8043006881126915,
-    "volume_l": 5.259655479002556,
-    "volume_share": 0.1026133449118148
+    "sheet_mass_per_skin_volume_kg_per_l": 1.8137578126361527,
+    "volume_l": 5.232231080624287,
+    "volume_share": 0.09998251134602851
    },
    "thigh_pelvis_crotch": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 22.622165360167074,
-      "expected_tissue_ratio": 1.0298335519305775,
-      "implied_density_kg_per_l": 1.2285546957223252,
-      "normalised_ratio": 1.1851009926581912
+      "expected_mass_kg": 23.12362899644679,
+      "expected_tissue_ratio": 1.0286192295329157,
+      "implied_density_kg_per_l": 1.2572823313918218,
+      "normalised_ratio": 1.212812538320085
      },
      "f=0.35": {
-      "expected_mass_kg": 21.689292561809676,
-      "expected_tissue_ratio": 1.0741274681426451,
-      "implied_density_kg_per_l": 1.1778926464141886,
-      "normalised_ratio": 1.1362308486310495
+      "expected_mass_kg": 22.170077285253114,
+      "expected_tissue_ratio": 1.072860916824654,
+      "implied_density_kg_per_l": 1.2054356373138089,
+      "normalised_ratio": 1.1627996501419373
      },
      "nominal": {
-      "expected_mass_kg": 22.348219444397046,
-      "expected_tissue_ratio": 1.0424573180510168,
-      "implied_density_kg_per_l": 1.2136773603375424,
-      "normalised_ratio": 1.1707498652773718
+      "expected_mass_kg": 22.843610544609643,
+      "expected_tissue_ratio": 1.0412281104110612,
+      "implied_density_kg_per_l": 1.2420571151416977,
+      "normalised_ratio": 1.1981258345418302
      }
     },
     "mass_kg_sheet": 28.47,
     "mass_share": 0.4384384384384384,
-    "ratio": 1.2204567646656383,
+    "ratio": 1.2475222987346657,
     "reference_density_kg_per_l": 1.0366666666666668,
-    "sheet_mass_per_skin_volume_kg_per_l": 1.5461363503602414,
-    "volume_l": 18.413641198828707,
-    "volume_share": 0.3592412702620849
+    "sheet_mass_per_skin_volume_kg_per_l": 1.5479762272706177,
+    "volume_l": 18.391755311512846,
+    "volume_share": 0.35144737603739573
    },
    "thigh_pelvis_crotch_ilio": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 22.622165360167074,
-      "expected_tissue_ratio": 1.0298335519305775,
-      "implied_density_kg_per_l": 1.072760705765144,
-      "normalised_ratio": 1.0348174010596243
+      "expected_mass_kg": 23.12362899644679,
+      "expected_tissue_ratio": 1.0286192295329157,
+      "implied_density_kg_per_l": 1.0954489016583557,
+      "normalised_ratio": 1.0567031205707609
      },
      "f=0.35": {
-      "expected_mass_kg": 21.689292561809676,
-      "expected_tissue_ratio": 1.0741274681426451,
-      "implied_density_kg_per_l": 1.0285231508882313,
-      "normalised_ratio": 0.9921445185417017
+      "expected_mass_kg": 22.170077285253114,
+      "expected_tissue_ratio": 1.072860916824654,
+      "implied_density_kg_per_l": 1.0502757510745062,
+      "normalised_ratio": 1.013127734155472
      },
      "nominal": {
-      "expected_mass_kg": 22.348219444397046,
-      "expected_tissue_ratio": 1.0424573180510168,
-      "implied_density_kg_per_l": 1.059769977014642,
-      "normalised_ratio": 1.022286151461069
+      "expected_mass_kg": 22.843610544609643,
+      "expected_tissue_ratio": 1.0412281104110612,
+      "implied_density_kg_per_l": 1.0821834273871584,
+      "normalised_ratio": 1.0439068431387377
      }
     },
     "mass_kg_sheet": 28.47,
     "mass_share": 0.4384384384384384,
-    "ratio": 1.0656896797328017,
+    "ratio": 1.086945149726524,
     "reference_density_kg_per_l": 1.0366666666666668,
-    "sheet_mass_per_skin_volume_kg_per_l": 1.350069580293621,
-    "volume_l": 21.08780200336651,
-    "volume_share": 0.4114128594623973
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3487255929856725,
+    "volume_l": 21.108815720606287,
+    "volume_share": 0.4033675834965083
    },
    "thigh_pelvis_crotch_ilio_hi": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 22.622165360167074,
-      "expected_tissue_ratio": 1.0298335519305775,
-      "implied_density_kg_per_l": 1.039694403681864,
-      "normalised_ratio": 1.0029206466384541
+      "expected_mass_kg": 23.12362899644679,
+      "expected_tissue_ratio": 1.0286192295329157,
+      "implied_density_kg_per_l": 1.0620834226547722,
+      "normalised_ratio": 1.0245177710496194
      },
      "f=0.35": {
-      "expected_mass_kg": 21.689292561809676,
-      "expected_tissue_ratio": 1.0741274681426451,
-      "implied_density_kg_per_l": 0.9968204076537464,
-      "normalised_ratio": 0.961563094199755
+      "expected_mass_kg": 22.170077285253114,
+      "expected_tissue_ratio": 1.072860916824654,
+      "implied_density_kg_per_l": 1.0182861681123077,
+      "normalised_ratio": 0.9822696155424187
      },
      "nominal": {
-      "expected_mass_kg": 22.348219444397046,
-      "expected_tissue_ratio": 1.0424573180510168,
-      "implied_density_kg_per_l": 1.0271040954154809,
-      "normalised_ratio": 0.9907756547416213
+      "expected_mass_kg": 22.843610544609643,
+      "expected_tissue_ratio": 1.0412281104110612,
+      "implied_density_kg_per_l": 1.0492219917876975,
+      "normalised_ratio": 1.0121112460974568
      }
     },
     "mass_kg_sheet": 28.47,
     "mass_share": 0.4384384384384384,
-    "ratio": 1.0328413318321907,
+    "ratio": 1.0538386802998396,
     "reference_density_kg_per_l": 1.0366666666666668,
-    "sheet_mass_per_skin_volume_kg_per_l": 1.3084556319680294,
-    "volume_l": 21.758475644434867,
-    "volume_share": 0.42449737914794544
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3076457439975233,
+    "volume_l": 21.77195171604055,
+    "volume_share": 0.4160394248517176
    },
    "thigh_pelvis_crotch_ilio_lo": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 22.622165360167074,
-      "expected_tissue_ratio": 1.0298335519305775,
-      "implied_density_kg_per_l": 1.113629518386212,
-      "normalised_ratio": 1.0742406929770534
+      "expected_mass_kg": 23.12362899644679,
+      "expected_tissue_ratio": 1.0286192295329157,
+      "implied_density_kg_per_l": 1.1364522606052003,
+      "normalised_ratio": 1.0962561999407077
      },
      "f=0.35": {
-      "expected_mass_kg": 21.689292561809676,
-      "expected_tissue_ratio": 1.0741274681426451,
-      "implied_density_kg_per_l": 1.0677066516486367,
-      "normalised_ratio": 1.0299421076996491
+      "expected_mass_kg": 22.170077285253114,
+      "expected_tissue_ratio": 1.072860916824654,
+      "implied_density_kg_per_l": 1.0895882498585945,
+      "normalised_ratio": 1.0510497587060394
      },
      "nominal": {
-      "expected_mass_kg": 22.348219444397046,
-      "expected_tissue_ratio": 1.0424573180510168,
-      "implied_density_kg_per_l": 1.100143883683001,
-      "normalised_ratio": 1.061232042137943
+      "expected_mass_kg": 22.843610544609643,
+      "expected_tissue_ratio": 1.0412281104110612,
+      "implied_density_kg_per_l": 1.1226902510758832,
+      "normalised_ratio": 1.082980949590884
      }
     },
     "mass_kg_sheet": 28.47,
     "mass_share": 0.4384384384384384,
-    "ratio": 1.1062891084769237,
+    "ratio": 1.1276302077536928,
     "reference_density_kg_per_l": 1.0366666666666668,
-    "sheet_mass_per_skin_volume_kg_per_l": 1.4015029898190656,
-    "volume_l": 20.313906004350002,
-    "volume_share": 0.3963145212936749
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3992092618507994,
+    "volume_l": 20.34720665180661,
+    "volume_share": 0.3888140238029222
+   },
+   "thigh_pelvis_crotch_ri": {
+    "cases": {
+     "f=0.15": {
+      "expected_mass_kg": 23.12362899644679,
+      "expected_tissue_ratio": 1.0286192295329157,
+      "implied_density_kg_per_l": 1.1291738074139601,
+      "normalised_ratio": 1.0892351840006043
+     },
+     "f=0.35": {
+      "expected_mass_kg": 22.170077285253114,
+      "expected_tissue_ratio": 1.072860916824654,
+      "implied_density_kg_per_l": 1.082609939066993,
+      "normalised_ratio": 1.0443182691964559
+     },
+     "nominal": {
+      "expected_mass_kg": 22.843610544609643,
+      "expected_tissue_ratio": 1.0412281104110612,
+      "implied_density_kg_per_l": 1.1154999372158307,
+      "normalised_ratio": 1.0760449555136626
+     }
+    },
+    "mass_kg_sheet": 28.47,
+    "mass_share": 0.4384384384384384,
+    "ratio": 1.1204082557468453,
+    "reference_density_kg_per_l": 1.0366666666666668,
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3902479711128077,
+    "volume_l": 20.47836112086646,
+    "volume_share": 0.391320249730026
+   },
+   "thigh_pelvis_crotch_ri_m10": {
+    "cases": {
+     "f=0.15": {
+      "expected_mass_kg": 23.12362899644679,
+      "expected_tissue_ratio": 1.0286192295329157,
+      "implied_density_kg_per_l": 1.1506097430100217,
+      "normalised_ratio": 1.1099129353794421
+     },
+     "f=0.35": {
+      "expected_mass_kg": 22.170077285253114,
+      "expected_tissue_ratio": 1.072860916824654,
+      "implied_density_kg_per_l": 1.1031619185560004,
+      "normalised_ratio": 1.0641433297967848
+     },
+     "nominal": {
+      "expected_mass_kg": 22.843610544609643,
+      "expected_tissue_ratio": 1.0412281104110612,
+      "implied_density_kg_per_l": 1.1366762916925008,
+      "normalised_ratio": 1.096472307098875
+     }
+    },
+    "mass_kg_sheet": 28.47,
+    "mass_share": 0.4384384384384384,
+    "ratio": 1.1416777884386187,
+    "reference_density_kg_per_l": 1.0366666666666668,
+    "sheet_mass_per_skin_volume_kg_per_l": 1.4166400692784398,
+    "volume_l": 20.096847899058147,
+    "volume_share": 0.38402992760160076
+   },
+   "thigh_pelvis_crotch_ri_p10": {
+    "cases": {
+     "f=0.15": {
+      "expected_mass_kg": 23.12362899644679,
+      "expected_tissue_ratio": 1.0286192295329157,
+      "implied_density_kg_per_l": 1.109976108952466,
+      "normalised_ratio": 1.0707165038126683
+     },
+     "f=0.35": {
+      "expected_mass_kg": 22.170077285253114,
+      "expected_tissue_ratio": 1.072860916824654,
+      "implied_density_kg_per_l": 1.0642038982740143,
+      "normalised_ratio": 1.0265632459234861
+     },
+     "nominal": {
+      "expected_mass_kg": 22.843610544609643,
+      "expected_tissue_ratio": 1.0412281104110612,
+      "implied_density_kg_per_l": 1.0965347156636855,
+      "normalised_ratio": 1.0577505295791176
+     }
+    },
+    "mass_kg_sheet": 28.47,
+    "mass_share": 0.4384384384384384,
+    "ratio": 1.101359585199964,
+    "reference_density_kg_per_l": 1.0366666666666668,
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3666116087026206,
+    "volume_l": 20.832546583610334,
+    "volume_share": 0.39808836671524955
    },
    "thigh_pelvis_hjc": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 22.622165360167074,
-      "expected_tissue_ratio": 1.0298335519305775,
-      "implied_density_kg_per_l": 1.2268041630329014,
-      "normalised_ratio": 1.183412375915982
+      "expected_mass_kg": 23.12362899644679,
+      "expected_tissue_ratio": 1.0286192295329157,
+      "implied_density_kg_per_l": 1.2580497255876615,
+      "normalised_ratio": 1.2135527899559433
      },
      "f=0.35": {
-      "expected_mass_kg": 21.689292561809676,
-      "expected_tissue_ratio": 1.0741274681426451,
-      "implied_density_kg_per_l": 1.1762143006397925,
-      "normalised_ratio": 1.1346118655689315
+      "expected_mass_kg": 22.170077285253114,
+      "expected_tissue_ratio": 1.072860916824654,
+      "implied_density_kg_per_l": 1.2061713863881707,
+      "normalised_ratio": 1.1635093759371415
      },
      "nominal": {
-      "expected_mass_kg": 22.348219444397046,
-      "expected_tissue_ratio": 1.0424573180510168,
-      "implied_density_kg_per_l": 1.211948025940725,
-      "normalised_ratio": 1.1690816970489306
+      "expected_mass_kg": 22.843610544609643,
+      "expected_tissue_ratio": 1.0412281104110612,
+      "implied_density_kg_per_l": 1.2428152164823936,
+      "normalised_ratio": 1.1988571220087394
      }
     },
     "mass_kg_sheet": 28.47,
     "mass_share": 0.4384384384384384,
-    "ratio": 1.2187177704881595,
+    "ratio": 1.2482837358020027,
     "reference_density_kg_per_l": 1.0366666666666668,
-    "sheet_mass_per_skin_volume_kg_per_l": 1.54393330459188,
-    "volume_l": 18.439915710948213,
-    "volume_share": 0.35975387333756614
+    "sheet_mass_per_skin_volume_kg_per_l": 1.548921049242935,
+    "volume_l": 18.38053657668043,
+    "volume_share": 0.3512329976459627
    },
    "thigh_pelvis_hjc_ilio": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 22.622165360167074,
-      "expected_tissue_ratio": 1.0298335519305775,
-      "implied_density_kg_per_l": 1.0714274958176997,
-      "normalised_ratio": 1.0335313464479416
+      "expected_mass_kg": 23.12362899644679,
+      "expected_tissue_ratio": 1.0286192295329157,
+      "implied_density_kg_per_l": 1.0960318210087565,
+      "normalised_ratio": 1.0572654221949418
      },
      "f=0.35": {
-      "expected_mass_kg": 21.689292561809676,
-      "expected_tissue_ratio": 1.0741274681426451,
-      "implied_density_kg_per_l": 1.0272449186705785,
-      "normalised_ratio": 0.9909114971098825
+      "expected_mass_kg": 22.170077285253114,
+      "expected_tissue_ratio": 1.072860916824654,
+      "implied_density_kg_per_l": 1.0508346325135505,
+      "normalised_ratio": 1.0136668480838105
      },
      "nominal": {
-      "expected_mass_kg": 22.348219444397046,
-      "expected_tissue_ratio": 1.0424573180510168,
-      "implied_density_kg_per_l": 1.0584529117383268,
-      "normalised_ratio": 1.0210156704871318
+      "expected_mass_kg": 22.843610544609643,
+      "expected_tissue_ratio": 1.0412281104110612,
+      "implied_density_kg_per_l": 1.0827592878034245,
+      "normalised_ratio": 1.0444623355016953
      }
     },
     "mass_kg_sheet": 28.47,
     "mass_share": 0.4384384384384384,
-    "ratio": 1.064365257544076,
+    "ratio": 1.087523543989954,
     "reference_density_kg_per_l": 1.0366666666666668,
-    "sheet_mass_per_skin_volume_kg_per_l": 1.3483917352863266,
-    "volume_l": 21.11404219928305,
-    "volume_share": 0.4119247930452882
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3494432880286287,
+    "volume_l": 21.097589096605297,
+    "volume_share": 0.40315305435124305
    },
    "thigh_pelvis_hjc_ilio_hi": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 22.622165360167074,
-      "expected_tissue_ratio": 1.0298335519305775,
-      "implied_density_kg_per_l": 1.0384432234053873,
-      "normalised_ratio": 1.0017137203267399
+      "expected_mass_kg": 23.12362899644679,
+      "expected_tissue_ratio": 1.0286192295329157,
+      "implied_density_kg_per_l": 1.0626312087388585,
+      "normalised_ratio": 1.0250461820632075
      },
      "f=0.35": {
-      "expected_mass_kg": 21.689292561809676,
-      "expected_tissue_ratio": 1.0741274681426451,
-      "implied_density_kg_per_l": 0.995620822440217,
-      "normalised_ratio": 0.960405938045225
+      "expected_mass_kg": 22.170077285253114,
+      "expected_tissue_ratio": 1.072860916824654,
+      "implied_density_kg_per_l": 1.0188113650795243,
+      "normalised_ratio": 0.9827762364111167
      },
      "nominal": {
-      "expected_mass_kg": 22.348219444397046,
-      "expected_tissue_ratio": 1.0424573180510168,
-      "implied_density_kg_per_l": 1.0258680664616637,
-      "normalised_ratio": 0.9895833438536946
+      "expected_mass_kg": 22.843610544609643,
+      "expected_tissue_ratio": 1.0412281104110612,
+      "implied_density_kg_per_l": 1.0497631443882924,
+      "normalised_ratio": 1.0126332582523718
      }
     },
     "mass_kg_sheet": 28.47,
     "mass_share": 0.4384384384384384,
-    "ratio": 1.0315983986216797,
+    "ratio": 1.0543822140295134,
     "reference_density_kg_per_l": 1.0366666666666668,
-    "sheet_mass_per_skin_volume_kg_per_l": 1.3068810213193944,
-    "volume_l": 21.784691594386608,
-    "volume_share": 0.425008839703742
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3083201826773831,
+    "volume_l": 21.760728281159885,
+    "volume_share": 0.41582495664723534
    },
    "thigh_pelvis_hjc_ilio_lo": {
     "cases": {
      "f=0.15": {
-      "expected_mass_kg": 22.622165360167074,
-      "expected_tissue_ratio": 1.0298335519305775,
-      "implied_density_kg_per_l": 1.1121917045272887,
-      "normalised_ratio": 1.0728537342706965
+      "expected_mass_kg": 23.12362899644679,
+      "expected_tissue_ratio": 1.0286192295329157,
+      "implied_density_kg_per_l": 1.1370793694341925,
+      "normalised_ratio": 1.0968611280715683
      },
      "f=0.35": {
-      "expected_mass_kg": 21.689292561809676,
-      "expected_tissue_ratio": 1.0741274681426451,
-      "implied_density_kg_per_l": 1.0663281290828648,
-      "normalised_ratio": 1.0286123431667504
+      "expected_mass_kg": 22.170077285253114,
+      "expected_tissue_ratio": 1.072860916824654,
+      "implied_density_kg_per_l": 1.09018949852969,
+      "normalised_ratio": 1.0516297413469677
      },
      "nominal": {
-      "expected_mass_kg": 22.348219444397046,
-      "expected_tissue_ratio": 1.0424573180510168,
-      "implied_density_kg_per_l": 1.09872348120924,
-      "normalised_ratio": 1.0598618789799743
+      "expected_mass_kg": 22.843610544609643,
+      "expected_tissue_ratio": 1.0412281104110612,
+      "implied_density_kg_per_l": 1.1233097658527715,
+      "normalised_ratio": 1.0835785522695545
      }
     },
     "mass_kg_sheet": 28.47,
     "mass_share": 0.4384384384384384,
-    "ratio": 1.1048607718659753,
+    "ratio": 1.1282524484615815,
     "reference_density_kg_per_l": 1.0366666666666668,
-    "sheet_mass_per_skin_volume_kg_per_l": 1.3996935007665445,
-    "volume_l": 20.34016731835102,
-    "volume_share": 0.39682686688022173
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3999813633390281,
+    "volume_l": 20.335984996327074,
+    "volume_share": 0.38859958960095076
+   },
+   "thigh_pelvis_hjc_ri": {
+    "cases": {
+     "f=0.15": {
+      "expected_mass_kg": 23.12362899644679,
+      "expected_tissue_ratio": 1.0286192295329157,
+      "implied_density_kg_per_l": 1.1297926450508782,
+      "normalised_ratio": 1.0898321334895928
+     },
+     "f=0.35": {
+      "expected_mass_kg": 22.170077285253114,
+      "expected_tissue_ratio": 1.072860916824654,
+      "implied_density_kg_per_l": 1.0832032576261,
+      "normalised_ratio": 1.0448906022116717
+     },
+     "nominal": {
+      "expected_mass_kg": 22.843610544609643,
+      "expected_tissue_ratio": 1.0412281104110612,
+      "implied_density_kg_per_l": 1.1161112809616707,
+      "normalised_ratio": 1.076634676168814
+     }
+    },
+    "mass_kg_sheet": 28.47,
+    "mass_share": 0.4384384384384384,
+    "ratio": 1.1210222894702788,
+    "reference_density_kg_per_l": 1.0366666666666668,
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3910098890421156,
+    "volume_l": 20.467144212472245,
+    "volume_share": 0.3911059062399334
+   },
+   "thigh_pelvis_hjc_ri_m10": {
+    "cases": {
+     "f=0.15": {
+      "expected_mass_kg": 23.12362899644679,
+      "expected_tissue_ratio": 1.0286192295329157,
+      "implied_density_kg_per_l": 1.1512522003479784,
+      "normalised_ratio": 1.1105326691459598
+     },
+     "f=0.35": {
+      "expected_mass_kg": 22.170077285253114,
+      "expected_tissue_ratio": 1.072860916824654,
+      "implied_density_kg_per_l": 1.103777882807856,
+      "normalised_ratio": 1.0647375075316936
+     },
+     "nominal": {
+      "expected_mass_kg": 22.843610544609643,
+      "expected_tissue_ratio": 1.0412281104110612,
+      "implied_density_kg_per_l": 1.1373109691136818,
+      "normalised_ratio": 1.0970845361225223
+     }
+    },
+    "mass_kg_sheet": 28.47,
+    "mass_share": 0.4384384384384384,
+    "ratio": 1.1423152585080496,
+    "reference_density_kg_per_l": 1.0366666666666668,
+    "sheet_mass_per_skin_volume_kg_per_l": 1.4174310679756785,
+    "volume_l": 20.085632834801466,
+    "volume_share": 0.3838156193510645
+   },
+   "thigh_pelvis_hjc_ri_p10": {
+    "cases": {
+     "f=0.15": {
+      "expected_mass_kg": 23.12362899644679,
+      "expected_tissue_ratio": 1.0286192295329157,
+      "implied_density_kg_per_l": 1.1105741244102283,
+      "normalised_ratio": 1.0712933675982907
+     },
+     "f=0.35": {
+      "expected_mass_kg": 22.170077285253114,
+      "expected_tissue_ratio": 1.072860916824654,
+      "implied_density_kg_per_l": 1.0647772533005286,
+      "normalised_ratio": 1.0271163215117636
+     },
+     "nominal": {
+      "expected_mass_kg": 22.843610544609643,
+      "expected_tissue_ratio": 1.0412281104110612,
+      "implied_density_kg_per_l": 1.0971254893791296,
+      "normalised_ratio": 1.0583204077612178
+     }
+    },
+    "mass_kg_sheet": 28.47,
+    "mass_share": 0.4384384384384384,
+    "ratio": 1.1019529583826766,
+    "reference_density_kg_per_l": 1.0366666666666668,
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3673478901956815,
+    "volume_l": 20.821328795794354,
+    "volume_share": 0.3978740064203188
    }
   },
-  "stature_mesh_m": 1.69729
+  "stature_mesh_m": 1.69895
  },
- "mesh_file": "data/makehuman/freyja-body-v1.obj",
+ "mesh_file": "data/makehuman/freyja-body-v2.obj",
  "monte_carlo": {
   "shank": {
    "n": 200,
    "nominal": {
     "area_t0": [
-     8117.7737378821885,
-     8052.98537798995,
-     8057.9128156218485,
-     8068.946190687094,
-     8069.584756050555,
-     8046.788658286368,
-     8020.774064675361,
-     7960.575750938366,
-     7944.794823059811,
-     8041.364947613447,
-     8106.0238522419,
-     8171.658414981168,
-     8243.016687721896,
-     8239.12924287891,
-     8207.76360560935,
-     8151.084993568669,
-     8058.239809979535,
-     7851.721281842589,
-     7593.524887226228,
-     7302.986589951535,
-     6991.528685160553,
-     6635.348743369294,
-     6272.208500579452,
-     5921.02904109298,
-     5598.976811702658,
-     5265.033126905463,
-     4886.893446391486,
-     4547.537010044987,
-     4222.558426075808,
-     3913.637751419551,
-     3631.670844673427,
-     3403.1042523654205,
-     3175.829976357629,
-     2967.1141581134425,
-     2857.0834237055055,
-     2760.4569423884677,
-     2780.893987850653,
-     2896.383583441826,
-     3108.581460721758,
-     3466.960461954206,
-     4021.949832353305
+     8132.011760267945,
+     8071.893808454557,
+     8057.157832189915,
+     8079.8672272073045,
+     8082.636379749803,
+     8089.059803125769,
+     8059.65231037872,
+     8026.533767022953,
+     7980.996809986289,
+     8050.341860317852,
+     8123.215223812709,
+     8186.412489604081,
+     8259.585158727921,
+     8281.961287160286,
+     8253.369650492317,
+     8191.395866851906,
+     8114.558490703565,
+     7939.0522997225435,
+     7677.642809169387,
+     7379.467371961248,
+     7058.830167530754,
+     6683.845786879278,
+     6300.272434180074,
+     5931.104166088324,
+     5588.7922604687665,
+     5220.633286065763,
+     4820.475015573679,
+     4465.067816304159,
+     4118.031889707096,
+     3796.2901665633462,
+     3532.6378087597286,
+     3296.7549307326394,
+     3064.585874400919,
+     2918.243386598006,
+     2824.773448187902,
+     2752.4970436670096,
+     2834.2439787209564,
+     2948.1042677493433,
+     3188.2556396736413,
+     3524.382939105579,
+     4069.2438301262478
     ],
     "area_t10": [
-     5152.086898979976,
-     5106.562150979991,
-     5084.23170399996,
-     5087.512823587727,
-     5073.815317092534,
-     5042.443431230392,
-     5027.228013580361,
-     5015.671820975275,
-     5031.853742779506,
-     5125.3027814812685,
-     5185.365030279581,
-     5249.2209847614695,
-     5303.76054977937,
-     5308.946387659182,
-     5285.140472503614,
-     5232.387211021676,
-     5158.37294765504,
-     5000.72172022556,
-     4788.06168487461,
-     4553.456388991521,
-     4302.307835669743,
-     4023.2759828748963,
-     3739.6846786734727,
-     3471.859436315843,
-     3220.4726652568543,
-     2963.618609802289,
-     2681.982348639981,
-     2435.2189019717493,
-     2201.355744466955,
-     1974.1194793141938,
-     1778.7375983680763,
-     1616.0969053289334,
-     1455.129891589637,
-     1316.2525512380455,
-     1240.5760056173813,
-     1170.152606808239,
-     1173.7520580221662,
-     1237.4846945156312,
-     1328.5690383425797,
-     1538.2065018402732,
-     1804.2744642810014
+     5164.665358146074,
+     5122.422295934969,
+     5092.594341760282,
+     5105.237698204221,
+     5088.738523273144,
+     5070.194539857178,
+     5046.782696464183,
+     5043.020016856627,
+     5034.740178452049,
+     5110.412226639201,
+     5187.897045659947,
+     5248.305845324831,
+     5312.015783343917,
+     5337.269588716797,
+     5318.897047895043,
+     5275.855789560459,
+     5203.902126090033,
+     5064.81874379584,
+     4852.172406704537,
+     4610.246299285802,
+     4347.60148603743,
+     4053.93584246025,
+     3754.3526904788896,
+     3471.4716714871224,
+     3206.8595042948928,
+     2922.65002725104,
+     2627.4264253112146,
+     2367.3989226163794,
+     2117.7101029367486,
+     1883.9283105445752,
+     1704.8338930196812,
+     1539.8637728465192,
+     1378.7641193080524,
+     1282.067768297655,
+     1213.6050624571594,
+     1163.5400870980516,
+     1199.8181742451359,
+     1261.8734312873216,
+     1372.0396666164336,
+     1576.3308530912755,
+     1832.9746555995155
     ],
     "area_t3": [
-     7168.3558770571035,
-     7114.197731408948,
-     7102.334578761021,
-     7118.383679486704,
-     7110.425499930075,
-     7085.712972435384,
-     7059.340056849768,
-     7018.804906774649,
-     7011.873632866855,
-     7110.470929596452,
-     7172.19316429599,
-     7241.47572347662,
-     7303.996997537936,
-     7304.473667818812,
-     7273.445930422651,
-     7213.579551814933,
-     7128.189800887519,
-     6941.3545254037535,
-     6695.049908625543,
-     6419.4278964352225,
-     6124.169370509731,
-     5794.557793702612,
-     5455.314033657808,
-     5130.60134240313,
-     4824.934762851493,
-     4512.784447723133,
-     4165.191938635962,
-     3855.68706833038,
-     3561.2438497661215,
-     3272.546123810649,
-     3018.246247836608,
-     2807.512481871919,
-     2598.720350009524,
-     2412.392920259776,
-     2316.8744714699214,
-     2223.2313235102433,
-     2242.394422159281,
-     2343.969931769969,
-     2505.5999614075045,
-     2822.695112833135,
-     3269.9191713488963
+     7182.192667270897,
+     7132.181206957041,
+     7111.895454592064,
+     7133.018567372445,
+     7127.507163622718,
+     7120.6634612775815,
+     7095.201056601147,
+     7070.628717585961,
+     7036.105234310237,
+     7108.813523472276,
+     7183.129964550219,
+     7244.599223334143,
+     7316.921907205098,
+     7342.035064665932,
+     7316.320149811471,
+     7264.707188003239,
+     7183.821137903043,
+     7018.646430528156,
+     6771.783591522144,
+     6489.550512145897,
+     6183.2190908845405,
+     5835.492895849821,
+     5477.12885778097,
+     5133.130757324098,
+     4811.70311000789,
+     4468.7669876644995,
+     4100.928105978223,
+     3773.4376244442215,
+     3458.727094378346,
+     3160.1246885797414,
+     2924.023958877783,
+     2709.376680292964,
+     2498.057956564463,
+     2369.313628494521,
+     2281.2531135665,
+     2216.8242322334113,
+     2281.4400104724,
+     2380.2183130274366,
+     2575.739669645021,
+     2876.2531932172324,
+     3320.0030612217674
     ],
     "area_t5": [
-     6553.897326976641,
-     6501.691615584729,
-     6487.278165617283,
-     6499.28599514938,
-     6487.465031646055,
-     6460.652424417207,
-     6438.346733440893,
-     6406.908904492617,
-     6406.349425977645,
-     6506.313501628594,
-     6566.754361374047,
-     6635.082913383391,
-     6696.92116552324,
-     6697.5857260512175,
-     6668.5297009254755,
-     6610.151363691343,
-     6529.816434700894,
-     6351.4408822070045,
-     6113.702560126878,
-     5850.56616931424,
-     5567.349739778978,
-     5251.108252471235,
-     4928.303259791626,
-     4620.327691322983,
-     4330.419621197249,
-     4033.676515419942,
-     3705.1515095185396,
-     3414.4399462413758,
-     3136.980815024086,
-     2866.961619570203,
-     2629.4372909204335,
-     2432.3305376539597,
-     2237.1779718400862,
-     2064.388109968491,
-     1973.996436303374,
-     1887.484360170539,
-     1901.8271093320984,
-     1992.3691188944654,
-     2131.5421081649056,
-     2417.4031078522644,
-     2802.6484802284626
+     6567.681605397665,
+     6520.2218203026,
+     6496.510799618694,
+     6514.608110304543,
+     6505.017406410596,
+     6494.757063009769,
+     6468.745245458722,
+     6452.795160902341,
+     6425.197367855634,
+     6499.972406478299,
+     6575.672619582321,
+     6637.050370195484,
+     6707.506685356734,
+     6732.651315685188,
+     6709.359307761618,
+     6659.720722634764,
+     6582.4774045322765,
+     6425.290951300253,
+     6187.791996995543,
+     5916.956277777516,
+     5622.611775226988,
+     5290.247027990613,
+     4947.952046187176,
+     4622.597508107069,
+     4316.749317544695,
+     3990.7682470677746,
+     3644.1578526410626,
+     3336.4897504963915,
+     3039.623954446944,
+     2760.1966743215166,
+     2541.5109005708564,
+     2340.3745925981216,
+     2143.798858873413,
+     2023.378971667702,
+     1940.5396977445662,
+     1880.7159635082787,
+     1937.0890558909462,
+     2025.2487590435833,
+     2194.9949230038555,
+     2466.0813504153566,
+     2847.3138306935266
     ],
     "area_t8": [
-     5689.684618106088,
-     5640.687952673806,
-     5621.115445417235,
-     5628.541546439338,
-     5614.444551141524,
-     5583.655586911502,
-     5566.485716333785,
-     5547.334790618066,
-     5558.090097721766,
-     5653.944480066312,
-     5714.789103339389,
-     5781.119094222767,
-     5838.575674341475,
-     5841.61473026189,
-     5815.458061430221,
-     5762.286971883745,
-     5684.780132793197,
-     5518.037427302068,
-     5296.861198061653,
-     5049.553319115739,
-     4786.077379870147,
-     4492.253385073376,
-     4193.1953631629,
-     3908.978130178935,
-     3642.491909650577,
-     3369.0584544385806,
-     3069.833054683318,
-     2805.381995491024,
-     2554.0127589260937,
-     2310.3220514499744,
-     2097.258452804889,
-     1921.6703509941328,
-     1747.4956679397712,
-     1594.812070560253,
-     1513.4780909253095,
-     1436.415759808304,
-     1443.6783796021944,
-     1517.9604953855583,
-     1625.938541258798,
-     1866.425082112782,
-     2171.258081731515
+     5702.682686805033,
+     5657.775609485816,
+     5630.255669167411,
+     5644.6141779147865,
+     5630.275818392766,
+     5614.976712542723,
+     5589.788838008228,
+     5582.582103012229,
+     5566.649154817219,
+     5642.631364629429,
+     5719.972253964849,
+     5781.239631418884,
+     5846.380025479071,
+     5872.774283015049,
+     5852.565259686289,
+     5806.093257543615,
+     5733.199028958176,
+     5587.119151481021,
+     5364.7471773625875,
+     5110.539407918392,
+     4834.843715483784,
+     4526.150584739693,
+     4209.604015238936,
+     3909.5838056476346,
+     3628.443113449567,
+     3327.9340484132613,
+     3012.395618366389,
+     2733.326907414904,
+     2464.6198533390548,
+     2212.5324795814167,
+     2018.0001812700257,
+     1839.031266960674,
+     1663.554120298084,
+     1557.8531888130642,
+     1483.2017936050288,
+     1429.8747730256925,
+     1473.1133278950947,
+     1546.2863533392213,
+     1678.4160897127067,
+     1908.525709820436,
+     2207.5542604633833
     ],
-    "rmin_station_t0": 370.0,
+    "rmin_station_t0": 360.0,
     "rmin_station_t10": 370.0,
     "rmin_station_t3": 370.0,
-    "rmin_station_t5": 370.0,
+    "rmin_station_t5": 360.0,
     "rmin_station_t8": 370.0,
-    "rmin_t0": 24.6598374141623,
-    "rmin_t10": 14.786733195584114,
-    "rmin_t3": 21.87766007055012,
-    "rmin_t5": 19.799588956704607,
-    "rmin_t8": 16.775942855051074,
-    "stretch": 0.9329150308428967,
-    "stretch_foot": 1.0006658807765874,
-    "stretch_shank": 0.9329150308428967,
-    "stretch_thigh": 1.0683400136425176,
-    "volume_t0": 2467498.553377291,
-    "volume_t10": 1464555.7275472688,
-    "volume_t3": 2142233.976395825,
-    "volume_t5": 1933524.764660243,
-    "volume_t8": 1642877.9888753975
+    "rmin_t0": 24.75,
+    "rmin_t10": 14.824813431681335,
+    "rmin_t3": 21.840722034374522,
+    "rmin_t5": 19.84975124224178,
+    "rmin_t8": 16.85263137648707,
+    "stretch": 1.0007330587510832,
+    "stretch_foot": 0.9996881560865793,
+    "stretch_shank": 1.0007330587510832,
+    "stretch_thigh": 0.9914404169736543,
+    "volume_t0": 2470800.3693295647,
+    "volume_t10": 1465452.159819157,
+    "volume_t3": 2144584.363922923,
+    "volume_t5": 1935438.965292503,
+    "volume_t8": 1644131.5674215455
    },
    "segment": "shank",
    "shear_mm": {
-    "nominal": 48.9170151872781,
-    "p2_5": 34.597648247311604,
-    "p97_5": 63.92152350805065
+    "nominal": 48.868829873365556,
+    "p2_5": 34.54361176744236,
+    "p97_5": 63.868535929801325
    },
    "spread": {
     "area_t0": {
      "p2_5": [
-      8037.705431493309,
-      8037.71057287116,
-      8037.641520127717,
-      8035.424805654943,
-      8009.610523248023,
-      7954.895368315623,
-      7934.213647825706,
-      7934.218663159949,
-      7934.206016172674,
-      7934.171732813751,
-      7938.098207194493,
-      8015.52251064354,
-      8081.938703313695,
-      8144.061800390646,
-      8077.106301708677,
-      7912.254233150602,
-      7677.863315476862,
-      7409.598974966742,
-      7135.8496283230215,
-      6833.179112626059,
-      6495.21679542193,
-      6174.256440162217,
-      5855.43388839407,
-      5545.663604102515,
-      5213.609209611722,
-      4843.436612040059,
-      4514.762854360518,
-      4201.242704062718,
-      3904.647773467049,
-      3625.6601899184366,
-      3405.8269421427967,
-      3193.8215207775625,
-      2982.421396100788,
-      2866.526122316312,
-      2766.7222079332932,
-      2739.6996300963874,
-      2740.489202778915,
-      2807.04422809918,
-      2925.1322385957887,
-      3186.632072811088,
-      3564.109104877846
+      8050.307374663668,
+      8050.340172833547,
+      8049.819799762862,
+      8050.468265968888,
+      8049.057152608555,
+      8007.298088356798,
+      7983.008562154871,
+      7977.694766674717,
+      7977.728196893324,
+      7978.10968731334,
+      7977.924654131336,
+      7985.660065517732,
+      8085.804626078666,
+      8144.442663824626,
+      8119.442104563302,
+      7970.506763071941,
+      7733.590445171115,
+      7456.203325710756,
+      7171.586248687313,
+      6854.297654299208,
+      6498.0979295248835,
+      6162.583222696785,
+      5829.350952102597,
+      5503.2284548854295,
+      5125.915875019551,
+      4744.137166150272,
+      4403.813389314672,
+      4072.5848209823816,
+      3765.488576973881,
+      3510.72618018741,
+      3285.7386683673235,
+      3067.9645949049814,
+      2921.5809147488303,
+      2827.679314086031,
+      2756.245545732454,
+      2751.927242906122,
+      2760.684971284736,
+      2844.590867089518,
+      2964.8707244994325,
+      3241.792593571431,
+      3599.512099402429
      ],
      "p97_5": [
-      8895.586294559553,
-      8500.206770446468,
-      8235.356131214367,
-      8118.382875562879,
-      8072.599144925341,
-      8072.40694349089,
-      8072.092711518575,
-      8070.762316232272,
-      8111.10558971776,
-      8178.0776795868305,
-      8237.730580904232,
-      8251.630411674483,
-      8252.280763925639,
-      8250.993330418329,
-      8251.245356795542,
-      8240.51900315963,
-      8207.433387141926,
-      8141.266022753032,
-      8031.203907704388,
-      7792.949664786408,
-      7498.384818517981,
-      7175.213788444087,
-      6817.091903334899,
-      6424.83410704252,
-      6046.691237848231,
-      5681.598094053392,
-      5340.330007708497,
-      4955.964021744769,
-      4601.021760856003,
-      4248.252095682875,
-      3906.8415989874043,
-      3619.6249312885093,
-      3382.7419944767466,
-      3147.6907769439285,
-      2948.848704222973,
-      2844.8524202576687,
-      2876.796655988551,
-      3059.1942174127944,
-      3412.1799557691975,
-      3968.2441749263967,
-      4790.775939719529
+      8907.152158330466,
+      8539.673734703174,
+      8278.279314609508,
+      8146.636212429963,
+      8094.697882532567,
+      8092.474184352056,
+      8092.521950747692,
+      8092.4352636361455,
+      8138.1011228311,
+      8198.088053255557,
+      8254.018225786429,
+      8280.582454125695,
+      8282.221833249203,
+      8282.56866016015,
+      8282.287484896815,
+      8281.248108934766,
+      8258.399509134213,
+      8193.26830448642,
+      8111.147467957049,
+      7902.854183855456,
+      7616.264415319593,
+      7287.014593886694,
+      6918.73918792527,
+      6498.767692452457,
+      6093.654632866639,
+      5708.605761212281,
+      5341.572246970931,
+      4928.543252251497,
+      4550.21713574589,
+      4167.29234659772,
+      3811.2326700334256,
+      3535.276069187626,
+      3290.8118569960334,
+      3053.4740854566007,
+      2912.0262607412983,
+      2839.151333031769,
+      2938.367546760182,
+      3161.9899962201284,
+      3492.29537128185,
+      4066.4577083635245,
+      4850.908718090935
      ]
     },
     "area_t10": {
      "p2_5": [
-      5078.270924061081,
-      5077.480917038049,
-      5061.770744990291,
-      5029.633523196357,
-      5026.155393988708,
-      5014.147350639881,
-      5010.320597235033,
-      5010.302384780957,
-      5010.3214920936125,
-      5010.837587064778,
-      5012.16282181478,
-      5089.109899448199,
-      5163.767598768752,
-      5219.875987751096,
-      5176.670123607127,
-      5049.408333716933,
-      4859.710294542508,
-      4642.254728230572,
-      4417.533636342175,
-      4179.196636720524,
-      3916.2947233041796,
-      3660.9384460914184,
-      3422.620327432901,
-      3180.3089601543525,
-      2922.302453558061,
-      2650.642562134325,
-      2412.3145752090936,
-      2187.7396822371034,
-      1967.84437488631,
-      1774.1405126324012,
-      1618.1515929769002,
-      1468.4655819386421,
-      1326.7053810221282,
-      1247.0850830138418,
-      1174.6585042173938,
-      1156.4078925666245,
-      1155.7732721646544,
-      1185.0794116366433,
-      1250.668401823517,
-      1372.1592416521476,
-      1595.6315999375179
+      5089.888298332929,
+      5089.75253144885,
+      5083.429868060062,
+      5050.939831531316,
+      5046.749044628013,
+      5038.649281251396,
+      5032.85888141672,
+      5032.738953204211,
+      5032.787560913474,
+      5032.807106678272,
+      5034.38267334133,
+      5059.955956648882,
+      5154.842179379326,
+      5215.0830184808665,
+      5209.005981337019,
+      5088.380909110469,
+      4895.779400102667,
+      4673.16088768753,
+      4438.858136289627,
+      4187.0401732147775,
+      3911.2025744196753,
+      3643.8383925824805,
+      3396.540455804799,
+      3140.999737431735,
+      2853.612155995834,
+      2573.801696830447,
+      2322.6487132794955,
+      2083.8871398823917,
+      1862.147867128279,
+      1687.37565386493,
+      1529.6340816522727,
+      1380.8668513636846,
+      1284.7840893987307,
+      1215.0350257095824,
+      1166.3233012825578,
+      1161.9172840160195,
+      1163.4823749553377,
+      1207.884591625496,
+      1271.4485141125713,
+      1405.4989427400926,
+      1617.3603349388964
      ],
      "p97_5": [
-      5798.830661837819,
-      5480.127479365376,
-      5254.923793638767,
-      5152.606473467018,
-      5108.111371982268,
-      5092.275981507854,
-      5091.60251397267,
-      5139.215960053726,
-      5193.57266718573,
-      5254.086327086987,
-      5294.284815346186,
-      5312.6122377063775,
-      5312.813903504037,
-      5312.797117751254,
-      5312.792816826685,
-      5309.568916439895,
-      5284.172028082735,
-      5226.064522803878,
-      5138.692419124795,
-      4950.8195450456615,
-      4711.412411090832,
-      4450.2228694307105,
-      4167.0598276185465,
-      3858.065912016231,
-      3560.670285939058,
-      3286.171886430971,
-      3026.5236836354193,
-      2735.295241378039,
-      2473.4487855310163,
-      2217.7559180394387,
-      1969.375967185092,
-      1769.5246092924674,
-      1599.989947198174,
-      1436.5661761173683,
-      1304.0719980607805,
-      1229.4748559575594,
-      1228.1611645203807,
-      1307.423680884604,
-      1505.712764910754,
-      1782.470909448046,
-      2252.1388752687753
+      5811.131299403309,
+      5509.9586354211215,
+      5282.55735715317,
+      5182.621034904904,
+      5133.647491748821,
+      5106.649002144241,
+      5104.875873754161,
+      5148.328254971769,
+      5205.309936081261,
+      5266.0283506968635,
+      5313.741227463698,
+      5336.800851589282,
+      5337.969117327989,
+      5337.828446524172,
+      5337.650901022999,
+      5337.167153553115,
+      5321.886996779947,
+      5278.281162480897,
+      5200.312752033917,
+      5040.419354051724,
+      4801.847961824066,
+      4533.749234557104,
+      4239.626914137245,
+      3911.732655340721,
+      3593.8662314337967,
+      3301.0892663413447,
+      3019.947616182839,
+      2708.82789644973,
+      2429.2725889750063,
+      2155.1232933646074,
+      1894.5038230433038,
+      1706.9300255698606,
+      1534.2600222725737,
+      1371.8487456390724,
+      1277.0078229160852,
+      1212.300554274452,
+      1256.7914440421625,
+      1356.9167136382075,
+      1558.046016869376,
+      1831.6373116612633,
+      2292.1249582228743
      ]
     },
     "area_t3": {
      "p2_5": [
-      7092.904296209009,
-      7092.193282702376,
-      7092.402795512068,
-      7072.3365617740865,
-      7053.601493014435,
-      7012.060060273345,
-      7000.075506281204,
-      7000.160495115875,
-      7000.039348246586,
-      7000.0770555130275,
-      7001.6585732695585,
-      7076.430940518721,
-      7149.564381898634,
-      7204.575251258005,
-      7148.009931543674,
-      6997.286700735604,
-      6775.649137333047,
-      6523.766260705128,
-      6260.935583303725,
-      5979.346968295678,
-      5666.365084993317,
-      5360.860437063728,
-      5069.02464320781,
-      4775.5587393926635,
-      4462.669884391719,
-      4126.057451933991,
-      3826.9160025231386,
-      3544.5519848538856,
-      3264.5983980209276,
-      3012.0505404605024,
-      2810.1178276812097,
-      2616.095301499042,
-      2426.069277959115,
-      2324.6663397383127,
-      2229.3665776708103,
-      2209.034647475254,
-      2209.0629756772764,
-      2260.5911862491616,
-      2364.2085023299073,
-      2576.080949522025,
-      2904.8801442130753
+      7107.313226982606,
+      7106.859396617094,
+      7106.484421059028,
+      7105.398747750486,
+      7089.993750486796,
+      7056.935912573706,
+      7038.61680440555,
+      7035.94467401085,
+      7035.809829933867,
+      7036.284003656288,
+      7035.927687181347,
+      7052.237490182144,
+      7150.2894042693215,
+      7209.9803381209895,
+      7190.282395512808,
+      7046.178580814134,
+      6821.6403194001205,
+      6562.692203129705,
+      6290.460318423381,
+      5992.5840405523095,
+      5664.578786318523,
+      5344.626015208439,
+      5040.613143501322,
+      4731.417370084479,
+      4384.353239545162,
+      4031.6447570650116,
+      3716.644529351094,
+      3416.105304386151,
+      3131.2608391287563,
+      2901.494345816017,
+      2696.7309911026755,
+      2501.1822229686036,
+      2372.851864849881,
+      2283.2014063945853,
+      2219.491300169102,
+      2216.79720407305,
+      2220.112068113209,
+      2293.249924504008,
+      2394.842886356941,
+      2626.07552574991,
+      2936.490657327804
      ],
      "p97_5": [
-      7907.825404792648,
-      7540.749172313035,
-      7285.594523567579,
-      7168.911462366989,
-      7118.75014191512,
-      7118.532190298585,
-      7117.115228019775,
-      7125.229526199971,
-      7180.81312890293,
-      7248.87120480182,
-      7294.386204162914,
-      7311.581950172459,
-      7311.7553353478215,
-      7311.546221171669,
-      7311.541045998575,
-      7305.824263525783,
-      7272.579805414437,
-      7205.876472027156,
-      7104.711542484263,
-      6881.619647986271,
-      6603.538674357016,
-      6298.679593917274,
-      5964.625651111845,
-      5596.1696449146975,
-      5241.151299294918,
-      4905.404888957685,
-      4589.68594575316,
-      4230.780576109157,
-      3902.8975177536213,
-      3581.3461930128738,
-      3266.5453449604383,
-      3005.8294717193476,
-      2787.285487212639,
-      2574.7141109600643,
-      2396.2839914772467,
-      2301.6601922199557,
-      2328.6467339012247,
-      2466.390618161472,
-      2775.0735471095145,
-      3225.9624696239134,
-      3945.4550571210707
+      7922.588391945902,
+      7576.855958622198,
+      7319.616795871749,
+      7200.719317724429,
+      7146.753389584064,
+      7132.988850606917,
+      7132.970199838152,
+      7144.993476572041,
+      7200.721759777536,
+      7263.0735641477,
+      7313.880348951338,
+      7340.9244357113275,
+      7342.237184341,
+      7342.51184941519,
+      7342.319715893459,
+      7341.570291497844,
+      7320.445992146674,
+      7267.415781064751,
+      7179.220566338454,
+      6989.889233869306,
+      6712.858691412326,
+      6399.99456844828,
+      6053.711119890065,
+      5665.206247001212,
+      5283.378128040317,
+      4926.377954404427,
+      4586.493706948371,
+      4202.220174575137,
+      3850.3923674533194,
+      3504.8192152381685,
+      3174.1251499710957,
+      2926.736563601484,
+      2702.4744011760476,
+      2487.7830051895576,
+      2362.7226246923137,
+      2287.2447113382027,
+      2372.4412038490827,
+      2551.773523848843,
+      2849.5529587302817,
+      3317.608147804811,
+      4002.4324605539314
      ]
     },
     "area_t5": {
      "p2_5": [
-      6478.793876030549,
-      6478.185024647636,
-      6477.998251291374,
-      6448.348529539616,
-      6434.0720054785825,
-      6401.829101809481,
-      6393.7562810302325,
-      6393.881852398141,
-      6393.668409572195,
-      6393.760045982079,
-      6394.542478037151,
-      6470.327541483262,
-      6545.66110508752,
-      6600.136864788032,
-      6547.981488280369,
-      6405.0516978391715,
-      6191.711649840576,
-      5950.836094796834,
-      5698.009437295855,
-      5428.263441898796,
-      5130.549435692149,
-      4838.897857110562,
-      4562.287525980433,
-      4283.44680078721,
-      3986.3947144794806,
-      3668.5008924254107,
-      3387.556911140477,
-      3120.76595159381,
-      2859.4570832905856,
-      2623.739849557622,
-      2434.870467166252,
-      2253.6196727704396,
-      2077.7800431494506,
-      1981.7479719309956,
-      1893.313706646489,
-      1873.154488477236,
-      1873.3087747338388,
-      1918.083001010823,
-      2010.6702453099372,
-      2195.214406653892,
-      2492.0641930234806
+      6492.428512078016,
+      6492.3548966855615,
+      6491.672655578666,
+      6477.2327687510615,
+      6466.179055545534,
+      6440.651999515235,
+      6426.449779364394,
+      6425.20662899442,
+      6425.119193940642,
+      6425.274752701819,
+      6426.192089910625,
+      6443.238857158904,
+      6542.36634271396,
+      6603.168048946086,
+      6588.489593253553,
+      6451.833121250925,
+      6235.733099874058,
+      5987.06105445953,
+      5725.042483784746,
+      5440.488332788202,
+      5127.097530120512,
+      4822.1235274042865,
+      4534.306314676256,
+      4240.809824706161,
+      3909.8709575408193,
+      3579.0309809192017,
+      3283.19023680867,
+      3000.0574753993524,
+      2733.2837095087116,
+      2520.2899458834704,
+      2328.419806908219,
+      2146.6627699571395,
+      2026.6041600567573,
+      1942.3977271355022,
+      1884.0137768371953,
+      1879.920508694263,
+      1882.66291131381,
+      1947.776800712411,
+      2038.5275674175723,
+      2240.594806047384,
+      2520.757185654688
      ],
      "p97_5": [
-      7267.486167791529,
-      6913.295805164073,
-      6668.60542456492,
-      6554.489676864496,
-      6503.773919883021,
-      6499.837795433421,
-      6497.792313987654,
-      6520.700740118112,
-      6575.896702791387,
-      6640.95341860378,
-      6686.877484990132,
-      6703.84686758895,
-      6704.05355360348,
-      6703.98494384885,
-      6703.966712481335,
-      6698.779134612327,
-      6667.626167742674,
-      6603.283256339137,
-      6507.753651976457,
-      6293.99974083714,
-      6027.0931028570885,
-      5734.333241556562,
-      5414.128616104949,
-      5064.313185992325,
-      4723.213472223416,
-      4406.59854207319,
-      4107.357348790883,
-      3766.905957919627,
-      3458.0789831860056,
-      3156.510453167969,
-      2861.290195310081,
-      2618.0190864203173,
-      2412.9862625761903,
-      2215.03805439478,
-      2048.751178561679,
-      1960.1938252843775,
-      1978.1599493790955,
-      2097.651081546389,
-      2373.753179450303,
-      2764.4046767681884,
-      3415.453104567585
+      7281.713236905044,
+      6947.68713227403,
+      6700.550916649755,
+      6585.258055509362,
+      6533.752581764134,
+      6515.318731693183,
+      6514.093133452532,
+      6536.637821495393,
+      6594.13290551042,
+      6655.91393248863,
+      6704.377535084685,
+      6731.890274664853,
+      6733.365390231081,
+      6733.344557829671,
+      6733.299349216047,
+      6732.301075672219,
+      6713.417407330445,
+      6662.155822792359,
+      6578.199544683785,
+      6397.459383548255,
+      6131.425505136071,
+      5830.583158831592,
+      5499.263743874058,
+      5127.697854154862,
+      4764.288467082872,
+      4425.535624332646,
+      4102.361241191258,
+      3738.1598691107124,
+      3409.034649306111,
+      3083.7450523721186,
+      2773.2528634168793,
+      2544.0605031052414,
+      2333.841187702234,
+      2134.3801527450432,
+      2017.3711115927538,
+      1946.2642418721625,
+      2018.2451898576078,
+      2173.331851286547,
+      2441.842765495907,
+      2845.169873518443,
+      3466.647824464594
      ]
     },
     "area_t8": {
      "p2_5": [
-      5614.508969200572,
-      5614.076744682258,
-      5604.600654857692,
-      5570.7086368051205,
-      5564.068065304337,
-      5544.9254883780095,
-      5539.755457611805,
-      5539.852418047193,
-      5539.817377951785,
-      5540.308434733705,
-      5541.9035479687445,
-      5618.0972289272495,
-      5694.174127613183,
-      5748.0480512924105,
-      5702.728984425493,
-      5568.0820510591175,
-      5369.5011187383625,
-      5143.396022552909,
-      4907.479057355481,
-      4656.360029756772,
-      4380.04718339507,
-      4110.494992962456,
-      3856.0825248814167,
-      3599.1833483786254,
-      3325.820302760285,
-      3035.7100784672193,
-      2780.7898436882815,
-      2539.2942393819935,
-      2303.5342080264318,
-      2092.1309643782274,
-      1923.9186178001487,
-      1762.077571622058,
-      1606.7180123596697,
-      1520.4293302287147,
-      1441.3806839032432,
-      1422.3667803224093,
-      1422.127897007592,
-      1457.0001268640997,
-      1533.5452141150402,
-      1678.739796216697,
-      1930.1148400694465
+      5627.096573722754,
+      5627.095224041204,
+      5625.958294811818,
+      5595.494910827328,
+      5589.425881195131,
+      5574.9961517877855,
+      5565.8725168676365,
+      5565.764291206376,
+      5565.766093311684,
+      5565.829815844965,
+      5567.57072741336,
+      5589.171710326744,
+      5685.711502975947,
+      5746.878068504483,
+      5738.716930820795,
+      5612.017455042438,
+      5409.807125632275,
+      5176.535253921063,
+      4930.920587209765,
+      4665.855313111822,
+      4375.336872061819,
+      4093.20774967253,
+      3828.4012470660355,
+      3558.953396083529,
+      3254.461217562817,
+      2954.1546669644918,
+      2685.4382634523386,
+      2428.689597222505,
+      2188.811032992679,
+      1999.1106662269358,
+      1828.3167069581252,
+      1665.9123516741724,
+      1560.7008287816402,
+      1484.8608144678944,
+      1432.5157361532192,
+      1428.5616107230742,
+      1430.1919437845024,
+      1482.0683115662837,
+      1557.142198229875,
+      1716.6985550510933,
+      1955.5013811854892
      ],
      "p97_5": [
-      6363.456718304849,
-      6028.690493910773,
-      5797.376035121753,
-      5690.22018438206,
-      5642.566465415582,
-      5631.622248107791,
-      5627.51020555715,
-      5669.102159615808,
-      5724.203583993486,
-      5786.919523420185,
-      5829.7185294393485,
-      5846.372676271622,
-      5846.666709584008,
-      5846.666823598821,
-      5846.665385854555,
-      5842.719560819849,
-      5814.651788095324,
-      5755.309818074963,
-      5664.065479705713,
-      5464.133450822733,
-      5215.097776564561,
-      4941.295359544186,
-      4643.309065406749,
-      4318.750210792157,
-      4003.9194033150297,
-      3712.9237577689937,
-      3436.938078093464,
-      3125.2832902056825,
-      2845.362755668634,
-      2571.7403698142107,
-      2305.191292621483,
-      2086.982487209218,
-      1904.3867282539888,
-      1727.1746554581923,
-      1580.883708220211,
-      1500.834726408982,
-      1506.5338454463367,
-      1600.3440123453918,
-      1829.538064348673,
-      2144.599060779961,
-      2688.816140532878
+      6376.078379417444,
+      6060.658281356515,
+      5826.838602372479,
+      5719.735496239147,
+      5670.46281607253,
+      5646.25459177301,
+      5644.3926301605625,
+      5680.027159798794,
+      5737.966700909027,
+      5798.812994919157,
+      5846.552435411376,
+      5872.029319326099,
+      5873.073175433629,
+      5873.164210235945,
+      5873.1188804767025,
+      5872.468384959978,
+      5856.21045299113,
+      5808.495270884961,
+      5729.281067008158,
+      5560.64762177108,
+      5311.765428328187,
+      5029.481849487915,
+      4720.59263216154,
+      4375.892984693801,
+      4039.6309868252924,
+      3728.531431451499,
+      3430.4235515992223,
+      3097.386231640095,
+      2799.6558878087603,
+      2504.4108288433886,
+      2224.049683756529,
+      2020.2695986091358,
+      1833.175019577682,
+      1655.798471583887,
+      1552.5486234943098,
+      1483.9580231291259,
+      1540.4717964820743,
+      1660.5005677913953,
+      1887.7735838514495,
+      2205.8238818900577,
+      2733.3228845252966
      ]
     },
     "rmin_station_t0": {
-     "mean": 370.4,
-     "p2_5": 360.0,
-     "p5": 360.0,
-     "p95": 380.0,
-     "p97_5": 380.0,
-     "sd": 4.9964811738465515
-    },
-    "rmin_station_t10": {
-     "mean": 366.6,
+     "mean": 364.2,
      "p2_5": 360.0,
      "p5": 360.0,
      "p95": 370.0,
      "p97_5": 370.0,
-     "sd": 5.251465457111584
+     "sd": 5.614052719711358
+    },
+    "rmin_station_t10": {
+     "mean": 367.5,
+     "p2_5": 360.0,
+     "p5": 360.0,
+     "p95": 370.0,
+     "p97_5": 380.0,
+     "sd": 5.375357882207383
     },
     "rmin_station_t3": {
      "mean": 367.5,
@@ -2145,135 +2834,135 @@
      "p5": 360.0,
      "p95": 370.0,
      "p97_5": 380.0,
-     "sd": 5.2810460361732225
+     "sd": 5.375357882207383
     },
     "rmin_station_t5": {
-     "mean": 366.95,
-     "p2_5": 360.0,
-     "p5": 360.0,
+     "mean": 362.2,
+     "p2_5": 350.0,
+     "p5": 350.0,
      "p95": 370.0,
-     "p97_5": 370.25000000000006,
-     "sd": 5.228209144082833
+     "p97_5": 370.0,
+     "sd": 5.7729224112081345
     },
     "rmin_station_t8": {
-     "mean": 366.95,
-     "p2_5": 360.0,
+     "mean": 365.15,
+     "p2_5": 350.0,
      "p5": 360.0,
      "p95": 370.0,
-     "p97_5": 370.25000000000006,
-     "sd": 5.228209144082833
+     "p97_5": 380.0,
+     "sd": 6.4174307230719005
     },
     "rmin_t0": {
-     "mean": 24.67793387320786,
+     "mean": 24.697378389692098,
      "p2_5": 24.6598374141623,
      "p5": 24.6598374141623,
-     "p95": 24.73977849925623,
-     "p97_5": 24.748109406479163,
-     "sd": 0.02831256652416761
+     "p95": 24.75,
+     "p97_5": 24.75,
+     "sd": 0.038645583896073685
     },
     "rmin_t10": {
-     "mean": 14.777703117407349,
-     "p2_5": 14.75,
-     "p5": 14.75,
-     "p95": 14.84575383260403,
-     "p97_5": 14.850741656245713,
-     "sd": 0.03313321248863346
+     "mean": 14.810961835181468,
+     "p2_5": 14.783296378372908,
+     "p5": 14.783296378372908,
+     "p95": 14.824813431681335,
+     "p97_5": 14.824813431681335,
+     "sd": 0.01737626985418458
     },
     "rmin_t3": {
-     "mean": 21.814285959475257,
-     "p2_5": 21.753452182468962,
-     "p5": 21.756270147777606,
-     "p95": 21.881654619342157,
-     "p97_5": 21.885590603575576,
-     "sd": 0.0432803089640164
+     "mean": 21.832037630264203,
+     "p2_5": 21.80360124394115,
+     "p5": 21.80763130560751,
+     "p95": 21.840722034374522,
+     "p97_5": 21.840722034374522,
+     "sd": 0.0118193873681841
     },
     "rmin_t5": {
-     "mean": 19.782470784362996,
-     "p2_5": 19.75,
-     "p5": 19.75,
-     "p95": 19.83711040986561,
-     "p97_5": 19.840467036006807,
-     "sd": 0.03114482021548372
+     "mean": 19.827633197117112,
+     "p2_5": 19.77844184070035,
+     "p5": 19.78369782672542,
+     "p95": 19.84975124224178,
+     "p97_5": 19.84975124224178,
+     "sd": 0.025233225786481708
     },
     "rmin_t8": {
-     "mean": 16.776278699397473,
-     "p2_5": 16.75,
-     "p5": 16.75,
-     "p95": 16.83461271662025,
-     "p97_5": 16.838458313415828,
-     "sd": 0.030097682746208415
+     "mean": 16.825392990358527,
+     "p2_5": 16.779386365926403,
+     "p5": 16.779386365926403,
+     "p95": 16.85263137648707,
+     "p97_5": 16.85263137648707,
+     "sd": 0.030608283051415643
     },
     "stretch": {
-     "mean": 0.9323830901516693,
-     "p2_5": 0.8575746506952788,
-     "p5": 0.8679887622879894,
-     "p95": 0.9926860181594789,
-     "p97_5": 1.0046983707851622,
-     "sd": 0.038853123897361314
+     "mean": 1.0002572953845665,
+     "p2_5": 0.9144697935664092,
+     "p5": 0.9263328579890351,
+     "p95": 1.0699040634929577,
+     "p97_5": 1.083884892739173,
+     "sd": 0.044801707079399115
     },
     "stretch_foot": {
-     "mean": 1.0110923745519742,
-     "p2_5": 0.8901181938370777,
-     "p5": 0.9016130775450175,
-     "p95": 1.1224817106857314,
-     "p97_5": 1.1936831358435251,
-     "sd": 0.07795573281532851
+     "mean": 1.0101044624052036,
+     "p2_5": 0.8892484824260477,
+     "p5": 0.9007321347811194,
+     "p95": 1.1213849629063743,
+     "p97_5": 1.1925168189975317,
+     "sd": 0.07787956428978424
     },
     "stretch_shank": {
-     "mean": 0.9323830901516693,
-     "p2_5": 0.8575746506952788,
-     "p5": 0.8679887622879894,
-     "p95": 0.9926860181594789,
-     "p97_5": 1.0046983707851622,
-     "sd": 0.038853123897361314
+     "mean": 1.0002572953845665,
+     "p2_5": 0.9144697935664092,
+     "p5": 0.9263328579890351,
+     "p95": 1.0699040634929577,
+     "p97_5": 1.083884892739173,
+     "sd": 0.044801707079399115
     },
     "stretch_thigh": {
-     "mean": 1.0772409268228216,
-     "p2_5": 0.9602113944227103,
-     "p5": 0.9712399495532632,
-     "p95": 1.201210329200012,
-     "p97_5": 1.2310115950682363,
-     "sd": 0.07166787593814063
+     "mean": 0.9988167620588367,
+     "p2_5": 0.8975522377054199,
+     "p5": 0.9071901709848391,
+     "p95": 1.1049772781084914,
+     "p97_5": 1.130171498441349,
+     "sd": 0.06162788265605678
     },
     "volume_t0": {
-     "mean": 2469312.610989826,
-     "p2_5": 2408194.8553330903,
-     "p5": 2423306.0870372825,
-     "p95": 2528065.841080541,
-     "p97_5": 2538435.051240403,
-     "sd": 35535.74477461563
+     "mean": 2472655.055758183,
+     "p2_5": 2406697.02260573,
+     "p5": 2422911.505739212,
+     "p95": 2535717.5697526527,
+     "p97_5": 2546787.548746083,
+     "sd": 38305.95721145565
     },
     "volume_t10": {
-     "mean": 1465835.2061183604,
-     "p2_5": 1420628.1024008733,
-     "p5": 1428592.335183971,
-     "p95": 1511397.333618893,
-     "p97_5": 1518973.8716828057,
-     "sd": 27214.492180032226
+     "mean": 1466756.5840756756,
+     "p2_5": 1417528.679281593,
+     "p5": 1426672.5050646553,
+     "p95": 1515806.021020732,
+     "p97_5": 1523888.9042791969,
+     "sd": 29405.5940608932
     },
     "volume_t3": {
-     "mean": 2143882.0201035314,
-     "p2_5": 2086962.6146350773,
-     "p5": 2100790.1595672634,
-     "p95": 2198714.073200099,
-     "p97_5": 2208325.8597339666,
-     "sd": 33084.24751835307
+     "mean": 2146261.822725558,
+     "p2_5": 2084751.1155363661,
+     "p5": 2099960.8220321536,
+     "p95": 2205208.181389329,
+     "p97_5": 2215437.608712602,
+     "sd": 35696.746612666364
     },
     "volume_t5": {
-     "mean": 1935066.7488504148,
-     "p2_5": 1881273.67318096,
-     "p5": 1893572.9274839335,
-     "p95": 1987741.6414839255,
-     "p97_5": 1996260.4970342857,
-     "sd": 31391.38214700679
+     "mean": 1937006.386626827,
+     "p2_5": 1878589.8010358901,
+     "p5": 1892403.041216157,
+     "p95": 1993646.5956374442,
+     "p97_5": 2002721.1962456917,
+     "sd": 33883.75360992565
     },
     "volume_t8": {
-     "mean": 1644263.4837659227,
-     "p2_5": 1595689.2377869145,
-     "p5": 1605283.4623854079,
-     "p95": 1692790.9794879097,
-     "p97_5": 1700606.7358987925,
-     "sd": 28872.832082511824
+     "mean": 1645539.37118915,
+     "p2_5": 1592684.7660071608,
+     "p5": 1603612.9230358459,
+     "p95": 1697733.5916865685,
+     "p97_5": 1706086.8925234394,
+     "sd": 31185.430539413937
     }
    },
    "stations_mm": [
@@ -2324,823 +3013,823 @@
    "n": 200,
    "nominal": {
     "area_t0": [
-     30330.436327452106,
-     30054.761984953333,
-     29706.104028445752,
-     29148.23998286522,
-     28384.55911248595,
-     27238.724003828385,
-     25623.620886815945,
-     23350.644669833644,
-     21132.191692406508,
-     20183.858544841798,
-     19362.192167266632,
-     18621.673002579566,
-     17978.364393011376,
-     17350.975991963634,
-     16718.249050826857,
-     16147.182403483026,
-     15676.031170841245,
-     15269.951272033588,
-     14891.096866883428,
-     14582.731637017865,
-     14313.915079976054,
-     14049.945520415693,
-     13797.022360954717,
-     13512.752155180155,
-     13226.044503291589,
-     12908.28057622446,
-     12570.367683978597,
-     12212.95056492789,
-     11857.848068554076,
-     11484.779126371846,
-     11090.559122723338,
-     10690.66499872735,
-     10343.328679293138,
-     9973.2988033481,
-     9603.379910158268,
-     9251.228466247983,
-     8922.987306456473,
-     8598.605963749233,
-     8334.951407396882,
-     8189.051427279293
+     30551.84161617908,
+     30249.699916983045,
+     29852.589000662145,
+     29196.838979389653,
+     28288.72018577102,
+     26882.776391524545,
+     24912.24765552898,
+     22146.15296278461,
+     20637.10144096678,
+     19748.195944725783,
+     18961.442790198587,
+     18287.616713728625,
+     17657.773420955084,
+     17053.15536307809,
+     16461.794574821866,
+     15975.756325414184,
+     15582.579749609049,
+     15226.447223632606,
+     14900.54169187645,
+     14615.22065258678,
+     14358.872767580579,
+     14116.130840370957,
+     13884.149453400209,
+     13612.839734886644,
+     13350.38137380806,
+     13057.023801940097,
+     12738.293126379182,
+     12397.997876598687,
+     12054.214505368365,
+     11710.871960484441,
+     11331.899063170227,
+     10925.41595267344,
+     10556.89800765733,
+     10181.564220365677,
+     9783.777471132249,
+     9394.976239923302,
+     9024.50646492005,
+     8687.072987815001,
+     8377.900587684248,
+     8217.643964341341
     ],
     "area_t10": [
-     25560.308338466144,
-     25250.638498895663,
-     24779.15286656553,
-     24101.154166124066,
-     23089.318394425445,
-     21574.421361922174,
-     19248.10062241354,
-     17087.86397049704,
-     16010.859631442867,
-     15261.666820618004,
-     14572.934147134663,
-     13967.870158511127,
-     13423.308820577035,
-     12887.367997889924,
-     12345.180984505012,
-     11866.763010461236,
-     11478.368210090224,
-     11131.564242890956,
-     10818.218810986307,
-     10557.664741231303,
-     10328.921764224828,
-     10110.477028970523,
-     9890.37725167008,
-     9652.988674599967,
-     9406.873504470965,
-     9141.298400168476,
-     8853.341101853386,
-     8554.578205686606,
-     8255.130062996835,
-     7948.068732297898,
-     7618.897456453939,
-     7297.697225287134,
-     7003.862311087793,
-     6695.700875655101,
-     6393.602224594366,
-     6098.3350860197415,
-     5824.30454800435,
-     5558.63704444529,
-     5332.161097465356,
-     5217.45033016622
+     25763.55586262005,
+     25423.60387316612,
+     24879.385939566182,
+     24096.16785496396,
+     22866.092486766454,
+     21004.383802465236,
+     18273.285594358327,
+     16485.928315692134,
+     15649.689438833368,
+     14899.535181380696,
+     14250.157824804053,
+     13692.561613731008,
+     13159.73401526134,
+     12627.738799040053,
+     12136.524023477019,
+     11740.731835821993,
+     11403.854688785916,
+     11100.8442558809,
+     10829.04079483421,
+     10586.502947887742,
+     10368.900022908198,
+     10159.822430112734,
+     9960.088301688555,
+     9739.621418150422,
+     9504.818489062647,
+     9257.310135544958,
+     8993.084304693715,
+     8710.22029509324,
+     8427.722736400492,
+     8138.223313373912,
+     7821.765943469068,
+     7487.997145361055,
+     7180.753000632769,
+     6868.065084436247,
+     6540.161807908239,
+     6219.591375338626,
+     5918.092589708999,
+     5623.8441296618585,
+     5372.769951751883,
+     5234.600081720066
     ],
     "area_t3": [
-     28883.341402397382,
-     28595.15121242832,
-     28222.968709895784,
-     27627.714508899335,
-     26811.58961481884,
-     25570.496036873352,
-     23834.57899228388,
-     21333.070485338176,
-     19508.017539586846,
-     18656.221847128858,
-     17867.683587423075,
-     17176.66096922424,
-     16562.06892307334,
-     15960.475450264295,
-     15358.080031602414,
-     14811.520395655001,
-     14366.77027852738,
-     13974.412120272076,
-     13617.95578620039,
-     13319.823110053561,
-     13061.980954011013,
-     12817.129079604321,
-     12569.273457208708,
-     12303.807908997102,
-     12023.625977257567,
-     11726.060962745127,
-     11399.129387541132,
-     11058.621419026005,
-     10717.125265946548,
-     10367.623017851321,
-     9990.0294344357,
-     9623.308173948888,
-     9286.341451545639,
-     8932.954018036708,
-     8587.602716312686,
-     8249.02873847166,
-     7935.94487611767,
-     7631.129585159361,
-     7373.062697890228,
-     7242.73766668883
+     29099.242555838155,
+     28782.96462896943,
+     28348.93992268358,
+     27658.23899045117,
+     26660.317330726557,
+     25153.763733709555,
+     22929.815408735278,
+     20267.05227390218,
+     19086.07705356932,
+     18237.194177066678,
+     17490.952002112794,
+     16856.295473299568,
+     16260.04911554944,
+     15667.542903376001,
+     15110.486920455092,
+     14653.431128094464,
+     14275.433933907978,
+     13930.773544988882,
+     13622.841278751739,
+     13350.01169343467,
+     13105.172715595556,
+     12873.994280754141,
+     12646.967664856254,
+     12399.319367953456,
+     12137.775619512331,
+     11857.253160453627,
+     11557.411548930504,
+     11236.127936884903,
+     10912.209286178339,
+     10582.193595828678,
+     10222.873396808282,
+     9840.417463341813,
+     9484.785379927605,
+     9129.156811653038,
+     8754.540689545986,
+     8386.063344083715,
+     8041.027358359395,
+     7709.079480292581,
+     7418.623610996861,
+     7264.1825414840305
     ],
     "area_t5": [
-     27911.461725573598,
-     27616.41673470891,
-     27216.644623416025,
-     26599.23372068902,
-     25732.860155107835,
-     24439.300171734016,
-     22562.726224482456,
-     20029.704876084757,
-     18456.794135780565,
-     17645.23487696091,
-     16883.82818809781,
-     16218.40889056904,
-     15625.0406580871,
-     15042.016565713026,
-     14457.162146931652,
-     13930.238012529999,
-     13502.667393050368,
-     13123.116706843686,
-     12779.474147559169,
-     12492.806672184246,
-     12243.579148445982,
-     12005.128895328982,
-     11766.208960325594,
-     11508.549351710411,
-     11237.247477054785,
-     10950.117257233931,
-     10633.653073170843,
-     10306.54120392331,
-     9976.303648734993,
-     9639.155462061202,
-     9274.828668037604,
-     8920.956058496402,
-     8595.74080693357,
-     8255.66276557746,
-     7922.367585291103,
-     7597.224131015582,
-     7294.973271491695,
-     7002.131265221109,
-     6752.293814686102,
-     6626.551787707044
+     28123.656870028997,
+     27799.63956307907,
+     27334.221364188103,
+     26619.47679221223,
+     25556.769041407533,
+     23960.972316054365,
+     21525.37592036678,
+     19100.999525306615,
+     18061.056261737787,
+     17241.0563804955,
+     16524.117492546688,
+     15911.890339660968,
+     15334.213570241012,
+     14758.978474881651,
+     14220.119092868414,
+     13781.990172711203,
+     13415.389089842118,
+     13084.82964069818,
+     12786.91528334677,
+     12522.056181252457,
+     12286.218352533137,
+     12060.340973210557,
+     11841.206883406048,
+     11601.116501474677,
+     11347.705353099407,
+     11077.166405022766,
+     10786.497047588244,
+     10477.220855919806,
+     10164.468127901902,
+     9846.196977401278,
+     9499.27785859301,
+     9131.079508196919,
+     8789.318251392557,
+     8444.932481108428,
+     8083.439094445029,
+     7728.094245730555,
+     7396.4105905738,
+     7074.866523172132,
+     6796.039132059656,
+     6646.819899520433
     ],
     "area_t8": [
-     26485.519274174676,
-     26181.917385936646,
-     25737.520986373045,
-     25084.63085032787,
-     24134.49156238858,
-     22715.97011994401,
-     20620.18346014396,
-     18195.785017693994,
-     16959.47573958227,
-     16187.01756776717,
-     15469.520810224867,
-     14842.54891633306,
-     14278.988060054802,
-     13723.506019001306,
-     13165.494439147189,
-     12666.548951602656,
-     12264.220643826848,
-     11904.335287924769,
-     11579.205068133706,
-     11308.339685360443,
-     11070.471709844122,
-     10844.090816782835,
-     10616.563903703744,
-     10371.75967017436,
-     10114.91865766147,
-     9841.1960228119,
-     9541.95815214077,
-     9231.334851208092,
-     8920.39434593536,
-     8601.050947879658,
-     8257.933094009555,
-     7923.93248238724,
-     7617.432504459179,
-     7295.917733328406,
-     6981.801545083523,
-     6675.78146403368,
-     6390.077364952698,
-     6111.5586758214795,
-     5877.002974783099,
-     5758.2776635630335
+     26691.27445991345,
+     26357.301952525373,
+     25844.190421579315,
+     25091.365056662846,
+     23929.24420557249,
+     22182.253021056797,
+     19498.555839481665,
+     17482.580641917808,
+     16586.433074979854,
+     15809.531061369285,
+     15133.95227749168,
+     14554.39436453579,
+     14004.3021117347,
+     13454.84420993048,
+     12943.9961373096,
+     12532.103056669886,
+     12184.008195221286,
+     11871.055055301715,
+     11588.013597610177,
+     11335.831441344984,
+     11111.02873227513,
+     10896.550394512815,
+     10687.966512288403,
+     10459.495695988438,
+     10218.72049824275,
+     9961.729843801464,
+     9686.788576441766,
+     9394.022142349539,
+     9098.831157569277,
+     8798.078034262842,
+     8469.674051155802,
+     8122.310815083819,
+     7801.233721925469,
+     7475.092960150483,
+     7134.522546889528,
+     6799.506077121219,
+     6485.781086895457,
+     6180.092301138311,
+     5918.694062377916,
+     5776.8309066342235
     ],
     "rmin_station_t0": 390.0,
     "rmin_station_t10": 390.0,
     "rmin_station_t3": 390.0,
     "rmin_station_t5": 390.0,
     "rmin_station_t8": 390.0,
-    "rmin_t0": 46.75,
-    "rmin_t10": 36.75293795056102,
-    "rmin_t3": 43.75061773016156,
-    "rmin_t5": 41.752588300328206,
-    "rmin_t8": 38.75069692019806,
-    "stretch": 1.0683400136425176,
-    "stretch_foot": 1.0006658807765874,
-    "stretch_shank": 0.9329150308428967,
-    "stretch_thigh": 1.0683400136425176,
-    "volume_t0": 6440067.299267281,
-    "volume_t10": 4790484.8036113605,
-    "volume_t3": 5926834.75778893,
-    "volume_t5": 5587747.231828771,
-    "volume_t8": 5100166.897118194
+    "rmin_t0": 46.759882749108336,
+    "rmin_t10": 36.763511046643494,
+    "rmin_t3": 43.813924861252396,
+    "rmin_t5": 41.83734856799038,
+    "rmin_t8": 38.753204996512785,
+    "stretch": 0.9914404169736543,
+    "stretch_foot": 0.9996881560865793,
+    "stretch_shank": 1.0007330587510832,
+    "stretch_thigh": 0.9914404169736543,
+    "volume_t0": 6421042.437196602,
+    "volume_t10": 4770497.819310618,
+    "volume_t3": 5906308.476277942,
+    "volume_t5": 5567272.46365489,
+    "volume_t8": 5079912.179196483
    },
    "segment": "thigh",
    "shear_mm": {
-    "nominal": 62.84674191090539,
-    "p2_5": 48.0716351283032,
-    "p97_5": 77.9965610494453
+    "nominal": 69.23352472837492,
+    "p2_5": 54.09578563520071,
+    "p97_5": 84.25787342924063
    },
    "spread": {
     "area_t0": {
      "p2_5": [
-      28789.673708291244,
-      27953.752702884023,
-      26748.017890095074,
-      25102.58095250223,
-      22784.798478523157,
-      20971.58161247852,
-      20116.015248226566,
-      19320.446832944122,
-      18634.044623198377,
-      18025.5833592975,
-      17365.088578452844,
-      16746.816373429374,
-      16185.005104111713,
-      15717.095137265822,
-      15318.949424098508,
-      14939.957182408358,
-      14614.96036587012,
-      14339.0615661081,
-      14098.728215867259,
-      13804.029785231196,
-      13519.2875378075,
-      13259.345553041174,
-      12988.002393636853,
-      12700.746647825083,
-      12355.596133494782,
-      11997.808961782735,
-      11671.162742624883,
-      11261.031409977673,
-      10854.618977761083,
-      10461.59916280339,
-      10082.149642832523,
-      9731.996469917485,
-      9378.918176392386,
-      9038.255018654017,
-      8730.15065187595,
-      8439.19432758522,
-      8234.474997804922,
-      8125.846530706186,
-      8067.025333164264,
-      8042.64346004751
+      29008.21592023216,
+      28067.381768145526,
+      26705.358308702896,
+      24813.5517910775,
+      22207.50748590238,
+      20721.38528633609,
+      19863.77304669785,
+      19077.09296240883,
+      18432.596397937345,
+      17833.353480840153,
+      17191.511321548813,
+      16608.359110770056,
+      16090.295617561178,
+      15701.037896836013,
+      15336.679055000963,
+      15011.083476660046,
+      14700.232692581838,
+      14434.839648519324,
+      14203.911738287808,
+      13944.38057705315,
+      13677.953178924032,
+      13433.12268640521,
+      13181.804569593512,
+      12912.235533844594,
+      12591.20300455309,
+      12251.656789028973,
+      11945.364332235487,
+      11583.7546874798,
+      11160.812485957034,
+      10743.891058315521,
+      10372.531883080732,
+      9990.102158515137,
+      9604.463710134694,
+      9237.584508259499,
+      8895.209145995843,
+      8557.639700721023,
+      8286.448106431675,
+      8153.448117015941,
+      8088.823125261427,
+      8059.033751881827
      ],
      "p97_5": [
-      30363.17406592544,
-      30363.57365596375,
-      30361.499695234448,
-      30300.5876618891,
-      30013.713905982615,
-      29601.94846058751,
-      28906.900077300616,
-      27917.80278447635,
-      26410.70386780297,
-      24193.76517808585,
-      21484.793159375575,
-      20393.12448658697,
-      19515.40183482758,
-      18743.9756551317,
-      18095.678850192646,
-      17476.240050283654,
-      16857.716404229075,
-      16275.146995515006,
-      15784.343148947893,
-      15374.288003508109,
-      14990.017180739462,
-      14672.581695912706,
-      14401.214400878851,
-      14149.747258697695,
-      13895.142160940966,
-      13630.916273951905,
-      13352.864116745017,
-      13063.999062357361,
-      12777.555147151095,
-      12471.6096236152,
-      12162.244221946985,
-      11822.533941495602,
-      11491.283976612132,
-      11137.22731177324,
-      10776.616581796457,
-      10444.57827402908,
-      10112.843571077667,
-      9785.45722314998,
-      9464.484321971755,
-      9126.127662949842
+      30582.584693651228,
+      30581.433759212876,
+      30574.71245204616,
+      30464.824903609406,
+      30138.384029053726,
+      29605.37613282044,
+      28770.7333687826,
+      27448.088936126118,
+      25497.52843717817,
+      22557.779902336446,
+      20706.219562839127,
+      19819.351609500645,
+      18987.96452232267,
+      18300.60967359049,
+      17679.97119860969,
+      17081.334033725587,
+      16497.22516343889,
+      16004.071319133272,
+      15618.175246023175,
+      15258.91496603581,
+      14937.883827873438,
+      14649.529878684023,
+      14402.503344111641,
+      14163.878497062256,
+      13936.436482523235,
+      13680.42404385624,
+      13416.828969002348,
+      13140.987531378116,
+      12869.001573136611,
+      12579.366063825795,
+      12273.870438274658,
+      11956.740536096062,
+      11645.780979239784,
+      11295.545692278007,
+      10922.26334772932,
+      10581.639679781092,
+      10237.356405412622,
+      9878.835681332826,
+      9536.19501598765,
+      9170.259521756267
      ]
     },
     "area_t10": {
      "p2_5": [
-      23673.65216613811,
-      22539.620134206114,
-      20925.186142212635,
-      18567.955195126407,
-      16782.956640838653,
-      15910.54731816519,
-      15200.99699052874,
-      14537.874736812171,
-      13977.984971231675,
-      13465.824690445676,
-      12900.042518182088,
-      12369.526725523488,
-      11897.751634215596,
-      11513.368686839032,
-      11172.294654013078,
-      10861.083542952225,
-      10585.90284273571,
-      10350.191697363896,
-      10152.820615887473,
-      9896.641566726215,
-      9658.93497525628,
-      9435.949723282527,
-      9204.785073833742,
-      8956.836688123185,
-      8671.560660904033,
-      8380.90775838186,
-      8102.813387476839,
-      7766.831074568937,
-      7421.790445258573,
-      7109.557557244047,
-      6792.658613609277,
-      6496.672456826,
-      6205.204351626952,
-      5933.4645355520015,
-      5664.837658655505,
-      5428.218383431076,
-      5249.753817974399,
-      5159.681334209191,
-      5113.70629492913,
-      5079.168253142007
+      23853.573636904795,
+      22600.712773938107,
+      20762.933730604815,
+      18172.59678158457,
+      16512.30113340082,
+      15722.217313540823,
+      14993.46478406632,
+      14348.564530676775,
+      13816.605398941801,
+      13309.57495559486,
+      12752.637579606446,
+      12255.092248782928,
+      11838.5603204084,
+      11499.425805996925,
+      11196.710747490983,
+      10918.67379438208,
+      10659.82467039255,
+      10434.560654615607,
+      10238.8871472657,
+      10009.008979735074,
+      9793.222418049667,
+      9581.701102288129,
+      9367.289981437425,
+      9140.063188518217,
+      8875.152750423891,
+      8597.83599779505,
+      8334.131598014465,
+      8024.620219723913,
+      7681.791821827373,
+      7344.296809116385,
+      7032.081066460482,
+      6714.1083298978465,
+      6396.476130303776,
+      6087.516119557145,
+      5798.771869379235,
+      5524.7746175934635,
+      5291.232313514663,
+      5187.72381438965,
+      5132.241578169218,
+      5091.716485157294
      ],
      "p97_5": [
-      25686.360885869286,
-      25684.602806588486,
-      25673.104105516624,
-      25520.732306746653,
-      25199.43595511006,
-      24643.652946278726,
-      23817.62976359336,
-      22494.745910144724,
-      20434.61083673217,
-      17679.716680002974,
-      16190.62013577922,
-      15441.817014840755,
-      14698.356002901433,
-      14069.104299310573,
-      13528.494975505957,
-      12997.583777506323,
-      12460.664013502535,
-      11970.733260960766,
-      11569.60849698575,
-      11219.707127609185,
-      10901.429134614744,
-      10629.305222472836,
-      10408.344093271946,
-      10190.494348735157,
-      9975.105484939246,
-      9754.463737077078,
-      9513.221995676686,
-      9267.342998590228,
-      9024.545599984742,
-      8774.561869361085,
-      8515.944241006053,
-      8226.153566040479,
-      7953.681327685002,
-      7662.11914252529,
-      7365.634532350658,
-      7095.862712136386,
-      6817.157152967711,
-      6538.281006871182,
-      6278.593924396635,
-      6006.733289585936
+      25883.696772149044,
+      25881.867928293803,
+      25869.37537658311,
+      25649.583720414827,
+      25273.829190721273,
+      24581.707539960782,
+      23519.66920100712,
+      21767.015694074933,
+      18921.540528718044,
+      16673.339389642704,
+      15709.126760318288,
+      14957.16361070787,
+      14273.023673914513,
+      13704.072264676024,
+      13178.054995392797,
+      12653.51208752469,
+      12164.4784579807,
+      11767.050580335448,
+      11431.544776295406,
+      11130.663311070139,
+      10858.71320360376,
+      10615.918457785201,
+      10408.233323712137,
+      10200.347279003254,
+      10002.573087706794,
+      9795.260929962244,
+      9566.030289411341,
+      9332.2908448719,
+      9102.837754874841,
+      8863.77500512127,
+      8615.93637079521,
+      8342.19858393433,
+      8078.8022088886,
+      7790.3846246560615,
+      7485.347476970787,
+      7201.533096765593,
+      6917.4886236685725,
+      6615.367020721485,
+      6332.190013506124,
+      6036.971852663798
      ]
     },
     "area_t3": {
      "p2_5": [
-      27261.901347119572,
-      26332.102969672764,
-      25034.78005657477,
-      23217.397920964693,
-      20851.658765949138,
-      19385.011208414697,
-      18588.062457961507,
-      17827.485547660184,
-      17188.506392681353,
-      16609.01880136162,
-      15974.431841996515,
-      15385.371996963626,
-      14847.464835036784,
-      14406.14327057517,
-      14021.081048765596,
-      13665.697586791845,
-      13351.477503955142,
-      13086.40288174085,
-      12863.566011454863,
-      12576.176919279653,
-      12310.459130300465,
-      12057.184787617924,
-      11797.786513230938,
-      11518.740439449068,
-      11191.489618738577,
-      10859.661555683191,
-      10542.941763985425,
-      10159.81664909749,
-      9767.228116082691,
-      9403.979198237445,
-      9043.237328973648,
-      8703.913683847064,
-      8370.063029938583,
-      8058.635640757565,
-      7756.883240884572,
-      7481.630083225934,
-      7279.952930591467,
-      7175.736055169885,
-      7122.325803684142,
-      7095.114220826605
+      27457.552227322773,
+      26427.768170175477,
+      24950.576068515053,
+      22816.23699987837,
+      20315.475127832702,
+      19164.51787390738,
+      18348.15568091117,
+      17604.332640375793,
+      16994.419769255896,
+      16426.740881888316,
+      15807.355632831357,
+      15246.495253551155,
+      14767.401574280751,
+      14386.13361873787,
+      14040.452829612159,
+      13724.919605777071,
+      13433.300467562914,
+      13177.869921591198,
+      12963.06177144311,
+      12702.76215775657,
+      12459.317311728115,
+      12223.000947711833,
+      11980.698155554655,
+      11723.488063680777,
+      11422.535639914524,
+      11106.440251476162,
+      10803.952595542967,
+      10454.559409557556,
+      10063.806167081992,
+      9672.935950998408,
+      9315.77661827051,
+      8951.364245197748,
+      8588.782131373238,
+      8236.437111550616,
+      7908.415518228318,
+      7594.677986902637,
+      7328.6264860977535,
+      7208.646193443393,
+      7144.159251446781,
+      7108.734471485489
      ],
      "p97_5": [
-      28937.8083084363,
-      28937.66757333278,
-      28935.72456372567,
-      28849.57587165513,
-      28551.289177814568,
-      28102.359330554176,
-      27378.8240710871,
-      26293.551306556717,
-      24658.134474076687,
-      22182.009020238962,
-      19773.864450594832,
-      18857.407669255383,
-      18010.944828827935,
-      17291.077407528916,
-      16678.252511963074,
-      16082.93027730435,
-      15487.654923357903,
-      14932.162552835614,
-      14469.725414891356,
-      14075.088119271744,
-      13712.040527297097,
-      13401.417878357204,
-      13150.340878473611,
-      12907.413285678062,
-      12664.49942790886,
-      12416.39191171675,
-      12145.529499737275,
-      11868.437175413359,
-      11594.496637147418,
-      11307.603500145071,
-      11014.917632975283,
-      10683.92184012161,
-      10373.797282799442,
-      10039.497265221764,
-      9702.09792246036,
-      9388.614530738532,
-      9070.795901824318,
-      8751.172781128658,
-      8454.714107253325,
-      8142.184379918145
+      29148.756362893615,
+      29146.36236068695,
+      29139.56557250037,
+      28998.335538525414,
+      28664.758300427544,
+      28084.898815630284,
+      27204.675704046593,
+      25773.16047297462,
+      23636.97547878076,
+      20613.950310534146,
+      19150.39457344937,
+      18305.57654760532,
+      17517.247824743867,
+      16869.04822592678,
+      16280.385337028669,
+      15696.231494739422,
+      15143.101178218585,
+      14683.485217734104,
+      14307.88060492412,
+      13965.022021687484,
+      13656.623319019074,
+      13382.88401870733,
+      13148.786590297595,
+      12919.518773452259,
+      12695.37737213098,
+      12461.605453956114,
+      12205.896686195616,
+      11940.663965619044,
+      11681.435957779164,
+      11409.727193488185,
+      11128.160164232773,
+      10813.366365155714,
+      10515.624025972555,
+      10188.17201131469,
+      9837.454165930743,
+      9509.247459165212,
+      9185.654405012372,
+      8840.549361782883,
+      8517.328887776386,
+      8177.786436637527
      ]
     },
     "area_t5": {
      "p2_5": [
-      26222.835431685555,
-      25233.437754503142,
-      23853.038016139508,
-      21890.749696218918,
-      19580.672731715185,
-      18345.31187363233,
-      17579.14172659676,
-      16844.87635563101,
-      16229.760358095782,
-      15670.953765641108,
-      15055.588893482553,
-      14483.40440086382,
-      13964.782179923015,
-      13541.187142988438,
-      13168.333708963013,
-      12825.661876061477,
-      12523.294809089071,
-      12266.880138585142,
-      12050.427724852256,
-      11772.980848807656,
-      11515.030685921547,
-      11269.587503352179,
-      11019.872996953654,
-      10749.338414745976,
-      10434.712442753367,
-      10114.809379665621,
-      9807.777190802994,
-      9437.825109472318,
-      9058.79162367665,
-      8710.772114381163,
-      8361.216024262038,
-      8034.805630652397,
-      7714.271774133362,
-      7413.229477821798,
-      7121.627690518739,
-      6857.290319429355,
-      6662.299612982864,
-      6561.978179527444,
-      6511.114816018405,
-      6480.814695914658
+      26412.3277994,
+      25318.09446450284,
+      23748.26987661876,
+      21386.508309190718,
+      19141.720395509023,
+      18138.175393863614,
+      17348.39673838085,
+      16632.595260629543,
+      16045.505422393524,
+      15496.116022522145,
+      14894.008627846302,
+      14351.64998452455,
+      13891.625099627356,
+      13522.90085395341,
+      13189.827946007948,
+      12885.900376671845,
+      12602.916132846012,
+      12356.513018285403,
+      12147.186572303115,
+      11895.24753668108,
+      11659.442803617092,
+      11430.883734839026,
+      11196.41892207786,
+      10947.561898029968,
+      10656.74118521064,
+      10352.042428104565,
+      10060.968748351796,
+      9722.795222577313,
+      9346.266689658942,
+      8969.735906785161,
+      8625.876430720198,
+      8274.812756566616,
+      7924.749439138458,
+      7585.445897311802,
+      7267.8914676311015,
+      6964.687106511382,
+      6708.736640853134,
+      6593.138532012885,
+      6531.903369174735,
+      6494.165087668691
      ],
      "p97_5": [
-      27985.377340566683,
-      27980.39808522469,
-      27975.504276421285,
-      27875.241235914957,
-      27570.944297946153,
-      27091.50681522176,
-      26343.628238724126,
-      25193.431466010512,
-      23460.585385132254,
-      20794.971227733204,
-      18686.471431336933,
-      17839.092176594466,
-      17021.484304557176,
-      16329.031139902008,
-      15738.62813601032,
-      15160.86419296895,
-      14583.19571267185,
-      14046.152128358995,
-      13602.361962551278,
-      13220.696677363412,
-      12870.467338423172,
-      12571.69401038169,
-      12328.817311579702,
-      12092.394479928358,
-      11858.189941149678,
-      11617.410327049114,
-      11354.743177267354,
-      11088.006839691727,
-      10822.715151616165,
-      10546.081725359978,
-      10264.097747904525,
-      9944.264764022826,
-      9645.17238342204,
-      9322.56485373711,
-      8996.660755980836,
-      8695.73110432359,
-      8388.529005268918,
-      8081.0599030246785,
-      7795.734782551111,
-      7494.759482376245
+      28191.423509469278,
+      28189.020813907988,
+      28182.295436134053,
+      28017.4232228619,
+      27675.045906551855,
+      27061.864932199238,
+      26143.00719504535,
+      24634.85706633605,
+      22307.10026972457,
+      19388.368766870793,
+      18124.270485347377,
+      17307.221043976097,
+      16549.243875746914,
+      15924.244844877245,
+      15354.124463949116,
+      14786.55243959097,
+      14251.519231853374,
+      13811.095700106367,
+      13446.88246693988,
+      13117.47225687972,
+      12819.57422268067,
+      12554.210315339786,
+      12328.587671215044,
+      12104.788537217262,
+      11888.113330503915,
+      11661.66930786692,
+      11414.460573986158,
+      11158.495801819727,
+      10906.77776610349,
+      10644.52834460107,
+      10372.532856127264,
+      10069.950493242872,
+      9781.56270666318,
+      9465.238226546002,
+      9128.206974578348,
+      8812.570229543919,
+      8499.452405624192,
+      8166.647834858115,
+      7855.471985749454,
+      7528.493587921238
      ]
     },
     "area_t8": {
      "p2_5": [
-      24686.78078353826,
-      23606.332514170175,
-      22088.493396299087,
-      19809.298739853366,
-      17843.043605558047,
-      16855.76944765233,
-      16124.26535711534,
-      15432.628269739456,
-      14853.24187483485,
-      14322.743814957674,
-      13736.490451494788,
-      13190.672555577348,
-      12699.11412882809,
-      12300.688092404544,
-      11946.595802914253,
-      11622.713532791779,
-      11337.60285418327,
-      11092.868643862936,
-      10886.645501048168,
-      10623.032421560714,
-      10378.065647762993,
-      10145.005819219457,
-      9907.990366167234,
-      9650.528097127397,
-      9353.725353062773,
-      9050.707943643445,
-      8761.165067332842,
-      8411.303533781345,
-      8053.86782969748,
-      7726.551432197211,
-      7396.250740558754,
-      7088.776849865723,
-      6785.418857070954,
-      6500.8342922014435,
-      6224.78512672504,
-      5976.537416908884,
-      5791.7785743933055,
-      5696.808181792795,
-      5649.784894820778,
-      5615.701349698767
+      24868.317527408148,
+      23677.626113426875,
+      21960.88621256905,
+      19395.22828320868,
+      17513.288250703237,
+      16659.874559725544,
+      15908.373305066989,
+      15236.305055480572,
+      14681.651884068533,
+      14159.006075738245,
+      13583.873307231965,
+      13068.580211085253,
+      12635.47377100435,
+      12285.511455559918,
+      11970.960622572968,
+      11682.171006268996,
+      11413.459889177138,
+      11178.858291782873,
+      10979.599959914214,
+      10739.131778510327,
+      10515.131563568133,
+      10297.676636580727,
+      10075.039442826912,
+      9839.038191166894,
+      9563.695071734688,
+      9275.885863073994,
+      9000.902548451068,
+      8681.122949118759,
+      8324.234440132359,
+      7970.310390708997,
+      7646.428026229733,
+      7314.04577596315,
+      6983.0486519485175,
+      6664.241365202972,
+      6362.9724284487265,
+      6076.7259535406065,
+      5835.192009217699,
+      5726.582752720237,
+      5668.09316691998,
+      5628.641810395284
      ],
      "p97_5": [
-      26590.714318437844,
-      26586.680636477115,
-      26578.904206327283,
-      26447.188217925628,
-      26133.615374591456,
-      25607.619811143646,
-      24816.943723090215,
-      23564.25451195492,
-      21670.95289259587,
-      18890.60572810756,
-      17150.14447292333,
-      16371.418263066933,
-      15600.34643344166,
-      14947.027867086268,
-      14387.242032721715,
-      13837.065607463326,
-      13285.122048728477,
-      12775.800638984168,
-      12358.982240518568,
-      11995.315917458962,
-      11665.007561908938,
-      11383.346403062189,
-      11151.889975208842,
-      10926.895015186878,
-      10705.030493934464,
-      10475.373011849526,
-      10226.246847866572,
-      9972.569001291651,
-      9720.179880421627,
-      9458.896455022443,
-      9191.228033408752,
-      8890.285488399693,
-      8606.798718015423,
-      8302.640145997359,
-      7994.724848755244,
-      7712.47839802406,
-      7421.398691640217,
-      7132.254607968313,
-      6861.842577772997,
-      6578.9154527115
+      26792.42589470762,
+      26788.038491638792,
+      26771.24065317166,
+      26580.846514416087,
+      26219.743249487197,
+      25558.79924229083,
+      24556.95688201894,
+      22911.91023380469,
+      20271.792774451325,
+      17702.83817174805,
+      16646.63472584027,
+      15870.324282682137,
+      15157.690662811323,
+      14566.201981815379,
+      14023.155196214026,
+      13481.316226335966,
+      12973.662729711128,
+      12559.848202882838,
+      12213.514941472706,
+      11902.316585363791,
+      11618.974344582006,
+      11366.570303745964,
+      11151.813397282936,
+      10938.788155625993,
+      10732.340145255763,
+      10517.257232554128,
+      10281.719041771146,
+      10039.012004234284,
+      9800.433479001924,
+      9552.048920455427,
+      9295.43045683285,
+      9009.40078718756,
+      8736.678601509222,
+      8437.74068762297,
+      8119.603957815816,
+      7823.384373559825,
+      7526.801418158557,
+      7213.15128481567,
+      6917.796619006471,
+      6610.2212059945405
      ]
     },
     "rmin_station_t0": {
-     "mean": 387.5,
-     "p2_5": 370.0,
+     "mean": 388.2,
+     "p2_5": 379.75,
      "p5": 380.0,
      "p95": 390.0,
      "p97_5": 390.0,
-     "sd": 6.399591695518295
+     "sd": 5.468962217705792
     },
     "rmin_station_t10": {
+     "mean": 388.45,
+     "p2_5": 379.75,
+     "p5": 380.0,
+     "p95": 390.0,
+     "p97_5": 390.0,
+     "sd": 5.314009170799076
+    },
+    "rmin_station_t3": {
+     "mean": 388.75,
+     "p2_5": 380.0,
+     "p5": 380.0,
+     "p95": 390.0,
+     "p97_5": 390.0,
+     "sd": 5.006277466376765
+    },
+    "rmin_station_t5": {
+     "mean": 388.75,
+     "p2_5": 380.0,
+     "p5": 380.0,
+     "p95": 390.0,
+     "p97_5": 390.0,
+     "sd": 5.006277466376765
+    },
+    "rmin_station_t8": {
      "mean": 388.7,
      "p2_5": 380.0,
      "p5": 380.0,
      "p95": 390.0,
      "p97_5": 390.0,
-     "sd": 5.427456718589362
-    },
-    "rmin_station_t3": {
-     "mean": 388.6,
-     "p2_5": 380.0,
-     "p5": 380.0,
-     "p95": 390.0,
-     "p97_5": 390.0,
-     "sd": 5.494629630272576
-    },
-    "rmin_station_t5": {
-     "mean": 388.6,
-     "p2_5": 379.75,
-     "p5": 380.0,
-     "p95": 390.0,
-     "p97_5": 390.0,
-     "sd": 5.5853361491943785
-    },
-    "rmin_station_t8": {
-     "mean": 388.8,
-     "p2_5": 380.0,
-     "p5": 380.0,
-     "p95": 390.0,
-     "p97_5": 390.0,
-     "sd": 5.262935726598944
+     "sd": 5.043529114583184
     },
     "rmin_t0": {
-     "mean": 47.19309328196319,
-     "p2_5": 46.36222035274608,
-     "p5": 46.36407735937571,
-     "p95": 49.71600564892903,
-     "p97_5": 50.17074586570762,
-     "sd": 1.0614776028256554
+     "mean": 47.288760527556136,
+     "p2_5": 46.373905566763895,
+     "p5": 46.39800977834592,
+     "p95": 49.90799446476809,
+     "p97_5": 50.34557669074283,
+     "sd": 1.0939023494442666
     },
     "rmin_t10": {
-     "mean": 37.20689875998919,
-     "p2_5": 36.38798923899493,
-     "p5": 36.39248714200907,
-     "p95": 39.71602295662591,
-     "p97_5": 40.30688574908196,
-     "sd": 1.0604374048131715
+     "mean": 37.29429567767006,
+     "p2_5": 36.454904304465906,
+     "p5": 36.454904304465906,
+     "p95": 39.83623132480513,
+     "p97_5": 40.447794574502936,
+     "sd": 1.0943798138088832
     },
     "rmin_t3": {
-     "mean": 44.322078713693045,
-     "p2_5": 43.48717687288048,
-     "p5": 43.52052531621187,
-     "p95": 46.75711198359511,
-     "p97_5": 47.374534405849616,
-     "sd": 1.0585601488458163
+     "mean": 44.38430092397802,
+     "p2_5": 43.56396304064334,
+     "p5": 43.565596125419376,
+     "p95": 46.895404271095416,
+     "p97_5": 47.433232368235096,
+     "sd": 1.092877644317015
     },
     "rmin_t5": {
-     "mean": 42.261860657748336,
-     "p2_5": 41.392646893667234,
-     "p5": 41.40624917732844,
-     "p95": 44.74722665853491,
-     "p97_5": 45.32506608759474,
-     "sd": 1.069658409567271
+     "mean": 42.34033424365745,
+     "p2_5": 41.46927120812072,
+     "p5": 41.481019117666776,
+     "p95": 44.86618905902413,
+     "p97_5": 45.45168853371861,
+     "sd": 1.094008216082924
     },
     "rmin_t8": {
-     "mean": 39.21565407466688,
-     "p2_5": 38.36705724023206,
-     "p5": 38.37584619660989,
-     "p95": 41.71266880811346,
-     "p97_5": 42.34248709659104,
-     "sd": 1.0653304674394148
+     "mean": 39.30486105561433,
+     "p2_5": 38.46673642633505,
+     "p5": 38.47220292883747,
+     "p95": 41.8158288870648,
+     "p97_5": 42.39391704803122,
+     "sd": 1.088572235296356
     },
     "stretch": {
-     "mean": 1.0772409268228216,
-     "p2_5": 0.9602113944227103,
-     "p5": 0.9712399495532632,
-     "p95": 1.201210329200012,
-     "p97_5": 1.2310115950682363,
-     "sd": 0.07166787593814063
+     "mean": 0.9988167620588367,
+     "p2_5": 0.8975522377054199,
+     "p5": 0.9071901709848391,
+     "p95": 1.1049772781084914,
+     "p97_5": 1.130171498441349,
+     "sd": 0.06162788265605678
     },
     "stretch_foot": {
-     "mean": 1.0110923745519742,
-     "p2_5": 0.8901181938370777,
-     "p5": 0.9016130775450175,
-     "p95": 1.1224817106857314,
-     "p97_5": 1.1936831358435251,
-     "sd": 0.07795573281532851
+     "mean": 1.0101044624052036,
+     "p2_5": 0.8892484824260477,
+     "p5": 0.9007321347811194,
+     "p95": 1.1213849629063743,
+     "p97_5": 1.1925168189975317,
+     "sd": 0.07787956428978424
     },
     "stretch_shank": {
-     "mean": 0.9323830901516693,
-     "p2_5": 0.8575746506952788,
-     "p5": 0.8679887622879894,
-     "p95": 0.9926860181594789,
-     "p97_5": 1.0046983707851622,
-     "sd": 0.038853123897361314
+     "mean": 1.0002572953845665,
+     "p2_5": 0.9144697935664092,
+     "p5": 0.9263328579890351,
+     "p95": 1.0699040634929577,
+     "p97_5": 1.083884892739173,
+     "sd": 0.044801707079399115
     },
     "stretch_thigh": {
-     "mean": 1.0772409268228216,
-     "p2_5": 0.9602113944227103,
-     "p5": 0.9712399495532632,
-     "p95": 1.201210329200012,
-     "p97_5": 1.2310115950682363,
-     "sd": 0.07166787593814063
+     "mean": 0.9988167620588367,
+     "p2_5": 0.8975522377054199,
+     "p5": 0.9071901709848391,
+     "p95": 1.1049772781084914,
+     "p97_5": 1.130171498441349,
+     "sd": 0.06162788265605678
     },
     "volume_t0": {
-     "mean": 6430858.075294578,
-     "p2_5": 5803343.988544238,
-     "p5": 5880253.213102624,
-     "p95": 6831804.575393982,
-     "p97_5": 6930017.781558644,
-     "sd": 287829.0201775568
+     "mean": 6412264.934711283,
+     "p2_5": 5823778.602242878,
+     "p5": 5894737.194555962,
+     "p95": 6794608.825784966,
+     "p97_5": 6879053.775162917,
+     "sd": 270280.04983156355
     },
     "volume_t10": {
-     "mean": 4782117.400538556,
-     "p2_5": 4205864.769125953,
-     "p5": 4265432.322771749,
-     "p95": 5169619.267401368,
-     "p97_5": 5240248.563242641,
-     "sd": 267183.81648134976
+     "mean": 4762616.182412741,
+     "p2_5": 4222253.270334699,
+     "p5": 4277366.752074914,
+     "p95": 5126589.7573868325,
+     "p97_5": 5190953.528031227,
+     "sd": 251014.64832925427
     },
     "volume_t3": {
-     "mean": 5917803.297363278,
-     "p2_5": 5304318.5075929165,
-     "p5": 5375536.658106475,
-     "p95": 6316471.310496758,
-     "p97_5": 6405607.109607741,
-     "sd": 282194.2647740208
+     "mean": 5897757.527190328,
+     "p2_5": 5322524.63862205,
+     "p5": 5388188.986376701,
+     "p95": 6277784.6963413665,
+     "p97_5": 6353865.452224285,
+     "sd": 265007.51665739034
     },
     "volume_t5": {
-     "mean": 5578885.938809841,
-     "p2_5": 4975562.33513951,
-     "p5": 5043107.006993073,
-     "p95": 5975536.968187847,
-     "p97_5": 6058554.49480929,
-     "sd": 278116.11333116057
+     "mean": 5558893.595649127,
+     "p2_5": 4993179.943460987,
+     "p5": 5055686.725276078,
+     "p95": 5936898.063853218,
+     "p97_5": 6007380.222196674,
+     "sd": 261202.50099497047
     },
     "volume_t8": {
-     "mean": 5091588.592800132,
-     "p2_5": 4504241.662421524,
-     "p5": 4566950.800319524,
-     "p95": 5484587.759944292,
-     "p97_5": 5558523.222129823,
-     "sd": 271678.9130029368
+     "mean": 5071822.16436526,
+     "p2_5": 4521088.5230062995,
+     "p5": 4579128.705262073,
+     "p95": 5441834.629395406,
+     "p97_5": 5508385.055220808,
+     "sd": 255194.02216260656
     }
    },
    "stations_mm": [
@@ -3189,21 +3878,21 @@
  },
  "registration": {
   "mesh_nodes_mm": {
-   "ajc": 65.40931593385466,
-   "hjc": 874.8674234322034,
-   "kjc": 502.24999999999994
+   "ajc": 65.4732881863573,
+   "hjc": 874.2289379187658,
+   "kjc": 472.71
   },
   "section_centre_offset_before_shear_mm": {
-   "shank": 48.9170151872781,
-   "thigh": 62.84674191090539
+   "shank": 48.868829873365556,
+   "thigh": 69.23352472837492
   },
   "shear_deg": {
-   "shank": 6.844545533950612,
-   "thigh": 8.971457259574308
+   "shank": 6.837867236393903,
+   "thigh": 9.866066038227977
   },
   "shear_mm": {
-   "shank": 48.9170151872781,
-   "thigh": 62.84674191090539
+   "shank": 48.868829873365556,
+   "thigh": 69.23352472837492
   },
   "sheet_nodes_mm": {
    "ajc": 65.45287073994474,
@@ -3211,63 +3900,63 @@
    "kjc": 472.98811098894475
   },
   "stretch": {
-   "foot": 1.0006658807765874,
-   "shank": 0.9329150308428967,
-   "thigh": 1.0683400136425176
+   "foot": 0.9996881560865793,
+   "shank": 1.0007330587510832,
+   "thigh": 0.9914404169736543
   }
  },
  "section_centroids_before_shear_mm": {
   "ajc": [
-   -28.916560619088557,
-   -178.1515907136715
+   36.76627249357327,
+   -185.33799485861175
   ],
   "hjc": [
-   -45.13527234818868,
-   -75.57172270002602
+   20.61786347055758,
+   -75.60113600833762
   ],
   "kjc": [
-   -15.644409448818891,
-   -131.06948818897635
+   49.99397934087554,
+   -138.29343826856854
   ]
  },
  "shank_cut_sensitivity": {
   "t0": {
    "AJC plane +15": {
-    "change_percent": -2.459496483375229,
-    "volume_l": 2.406810513229642
+    "change_percent": -2.4836073240115395,
+    "volume_l": 2.4094353903951915
    },
    "AJC plane -15": {
-    "change_percent": 3.279561259304717,
-    "volume_l": 2.548421680007757
+    "change_percent": 3.2449735297491866,
+    "volume_l": 2.550977187287254
    },
    "KJC plane +15": {
-    "change_percent": 4.9842940129778395,
-    "volume_l": 2.5904859360435903
+    "change_percent": 4.983002899956198,
+    "volume_l": 2.5939204233853856
    },
    "KJC plane -15": {
-    "change_percent": -4.907823147611894,
-    "volume_l": 2.346398088207652
+    "change_percent": -4.910780329132489,
+    "volume_l": 2.3494647908203956
    },
-   "nominal_l": 2.467498553377291
+   "nominal_l": 2.470800369329565
   },
   "t5": {
    "AJC plane +15": {
-    "change_percent": -2.2002093927903363,
-    "volume_l": 1.890983171176261
+    "change_percent": -2.2271573868784964,
+    "volume_l": 1.8923336934084662
    },
    "AJC plane -15": {
-    "change_percent": 2.9910059856021345,
-    "volume_l": 1.9913566061043304
+    "change_percent": 2.9641273578911846,
+    "volume_l": 1.9928078411580241
    },
    "KJC plane +15": {
-    "change_percent": 5.145916858797968,
-    "volume_l": 2.033022341493928
+    "change_percent": 5.1466019242033045,
+    "volume_l": 2.0350483043220273
    },
    "KJC plane -15": {
-    "change_percent": -5.054000303953812,
-    "volume_l": 1.835804417177292
+    "change_percent": -5.061680160209135,
+    "volume_l": 1.8374732351733354
    },
-   "nominal_l": 1.933524764660243
+   "nominal_l": 1.9354389652925028
   }
  },
  "sheet_checks": {
@@ -3281,7 +3970,7 @@
   "vertices_within_1mm": 6,
   "vertices_within_3mm": 34,
   "y_mid_mm": 0.0,
-  "z_mm": -3.84
+  "z_mm": -9.959999999999999
  },
  "synthetic_mm": {
   "box": {
