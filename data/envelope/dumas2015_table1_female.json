@@ -1,7 +1,7 @@
 {
   "schema": "dumas2015-table1/1",
   "note": "Landmark coordinates for the mass cuts of the volume extractor (volume-extractor brief 4, item 4b), transcribed by Joe from the paper. Only the Y (up) coordinate is used by the cuts, as a horizontal plane.",
-  "source": "Dumas 2015 (as named in volume-extractor brief 4; full citation to be added by Joe), Table 1, female, segment coordinate systems; reference lengths from Table 2",
+  "source": "Dumas R, Robert T, Chèze L, Verriest J-P (2015). Thorax and abdomen body segment inertial parameters adjusted from McConville et al. and Young et al. International Biomechanics 2(1):113-118. doi:10.1080/23335432.2015.1112244. Table 1, female, segment coordinate systems; reference lengths from Table 2",
   "page": "116-117",
   "units": "mm",
   "axes": "X anterior, Y up (along the segment's long axis), Z right; negative Y is below the origin",

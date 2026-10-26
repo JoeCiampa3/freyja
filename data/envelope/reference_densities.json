@@ -2,8 +2,8 @@
   "schema": "reference-densities/1",
   "note": "Segment length fractions and densities for the share tests of the volume extractor (volume-extractor brief 4, item 4a). Values are Joe's transcription of the table named below; edition and page are blank until Joe fills them. Nothing here is recalled.",
   "source": "Winter, D. A., Biomechanics and Motor Control of Human Movement, Table 4.1 (after Dempster 1955)",
-  "edition": "",
-  "page": "",
+  "edition": "5",
+  "page": "71",
   "rows": {
     "thigh": {"proximal": "greater trochanter", "distal": "femoral condyles", "mass_fraction": 0.100, "density_kg_per_l": 1.05},
     "leg": {"proximal": "femoral condyles", "distal": "medial malleolus", "mass_fraction": 0.0465, "density_kg_per_l": 1.09},
