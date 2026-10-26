@@ -34,6 +34,17 @@
  "generated_by": "fy envelope ratios",
  "inputs": "ANSUR II female public CSV sha256:ed7e800aa97a",
  "landmarks": {
+  "cervicale": {
+   "column": "cervicaleheight",
+   "height_mm": {
+    "mean": 1395.6671701913394,
+    "sd": 59.523731056951476
+   },
+   "ratio": {
+    "mean": 0.8569538148442432,
+    "sd": 0.0068244391592440735
+   }
+  },
   "crotch": {
    "column": "crotchheight",
    "height_mm": {
@@ -87,6 +98,17 @@
    "ratio": {
     "mean": 0.27564642687113694,
     "sd": 0.008973872194039372
+   }
+  },
+  "suprasternale": {
+   "column": "suprasternaleheight",
+   "height_mm": {
+    "mean": 1329.6888217522658,
+    "sd": 57.1760271576554
+   },
+   "ratio": {
+    "mean": 0.8164354450762412,
+    "sd": 0.007128588880525632
    }
   },
   "tenth_rib": {

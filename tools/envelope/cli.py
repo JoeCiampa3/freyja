@@ -5,6 +5,8 @@
                     register the mesh to the sheet's nodes, conform and voxelise the right thigh, shank and foot; write <seg>_R.yaml, <seg>_R_sections.csv,
                     the silhouette PNGs, the cache and the inspect bundle (cache/inspect/)
     gates  [same options]   the trial's gate table, the feature report and the Monte Carlo (writes thigh_R_trial.json beside the ledger)
+    trunk  [--mesh FILE] [--n N]
+                    trunk registration (brief 5, item 1): the CJC anchor candidates and the stretch per sub-segment, written to data/envelope/trunk_registration.json
     ratios          write data/ansur2/ratios.json from the raw ANSUR II female CSV
     check  --segment thigh_R --shapes FILE --poses FILE [--required MM] [--cache-dir DIR]
                     clearance of posed shapes inside a built segment; exit 0 feasible, 1 infeasible
@@ -85,6 +87,15 @@ def cmd_gates(args, root):
     return gates.run(_paths(args, root), args, root, _label)
 
 
+def cmd_trunk(args, root):
+    from . import trunk
+    p = _paths(args, root)
+    res = trunk.run(root, p["mesh"], n=args.n)
+    print(trunk.format_report(res))
+    print("wrote", _label(trunk.write(res, root), root))
+    return 0
+
+
 def cmd_ratios(args, root):
     from . import anthro
     print("wrote", _label(anthro.write_summary(root), root))
@@ -118,6 +129,9 @@ def main(argv=None, default_root=None) -> int:
     _common(sub.add_parser("build"))
     _common(sub.add_parser("gates"))
     sub.add_parser("ratios")
+    t = sub.add_parser("trunk")
+    t.add_argument("--mesh"), t.add_argument("--out"), t.add_argument("--cache-dir")
+    t.add_argument("--n", type=int, default=200, help="Monte Carlo samples")
     c = sub.add_parser("check")
     c.add_argument("--segment", required=True), c.add_argument("--shapes", required=True), c.add_argument("--poses", required=True)
     c.add_argument("--required", type=float, default=0.0, help="required clearance in mm (default 0: inside the skin)")
@@ -125,7 +139,7 @@ def main(argv=None, default_root=None) -> int:
     args = ap.parse_args(argv)
     from . import sheet
     try:
-        return {"build": cmd_build, "gates": cmd_gates, "check": cmd_check, "ratios": cmd_ratios}[args.cmd](args, root)
+        return {"build": cmd_build, "gates": cmd_gates, "check": cmd_check, "ratios": cmd_ratios, "trunk": cmd_trunk}[args.cmd](args, root)
     except sheet.StopAndAsk as e:
         print(f"fy envelope: STOP, ask Joe: {e}", file=sys.stderr)
         return 3

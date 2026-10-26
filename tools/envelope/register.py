@@ -20,7 +20,8 @@ CENTRE_OFFSET_MM = 10.0            # half-range of the section-centre offsets in
 MAX_STRETCH_DEVIATION = 0.08       # gate 2: |stretch - 1| per sub-segment (the brief; provisional)
 ROBUST_RADIUS_MM = 5.0             # gate 2: robust minimum inscribed radius within this of nominal (the brief; provisional)
 ROBUST_VOLUME = 0.10               # gate 2: robust interior volume within this fraction of nominal (the brief; provisional)
-TROCH_BELOW_HJC_FLAG_MM = 20.0     # the brief: flag when the HJC is more than this below the scaled trochanterion
+DUMAS_GT_ABOVE_HJC_MM = 8.0        # Dumas 2007 Table 1B (female), greater trochanter Y in the thigh frame (up), unscaled; times the pelvis scale it is the expected trochanterion-above-HJC offset (brief 5, step 0)
+TROCH_OFFSET_FLAG_MM = 10.0        # brief 5: flag when the ANSUR trochanterion, scaled, is more than this from the HJC plus the expected offset (the old 20 mm flag assumed zero offset)
 
 # Values the brief asks to be asserted from the sheet pull (ISB frame, metres in the snapshot)
 EXPECTED = {"rasis": (0.087, -0.013, 0.119), "mpsis": (-0.108, -0.013, 0.0), "hjc_dumas": (0.054, -0.093, 0.088)}
@@ -47,6 +48,8 @@ class SheetNodes:
     abdomen_mass_kg: float = float("nan")
     thorax_mass_kg: float = float("nan")
     abdomen_length_mm: float = float("nan")      # the sheet abdomen body's length (LJC to TJC); scales the Dumas 2015 Table 1 landmarks
+    thorax_length_mm: float = float("nan")       # TJC to CJC
+    head_neck_length_mm: float = float("nan")    # CJC to the vertex
 
 
 SEGMENT_MASS_KEYS = ("abdomen", "head_neck", "pelvis", "thorax")                       # one body each
@@ -61,7 +64,7 @@ def total_mass(snap) -> float:
 def sheet_nodes(snapshot_path, side="right") -> SheetNodes:
     snap = sheet.read_snapshot(snapshot_path)
     need = [f"thigh_{side}_length", f"shank_{side}_length", f"thigh_{side}_mass", f"shank_{side}_mass", f"foot_{side}_mass", "target_mass", f"thigh_{side}_pos_y", "pelvis_length", "pelvis_pos_z",
-            f"thigh_{side}_pos_z", "ansur_female_malleolusheight", "ansur_female_stature", "target_stature", "pelvis_mass", "abdomen_mass", "abdomen_length", "thorax_mass"]
+            f"thigh_{side}_pos_z", "ansur_female_malleolusheight", "ansur_female_stature", "target_stature", "pelvis_mass", "abdomen_mass", "abdomen_length", "thorax_mass", "thorax_length", "head_neck_length"]
     for k in need:
         if k not in snap:
             raise StopAndAsk(f"snapshot key {k} is missing")
@@ -85,7 +88,8 @@ def sheet_nodes(snapshot_path, side="right") -> SheetNodes:
     }
     return SheetNodes(ajc, kjc, hjc, Lt, Ls, snap[f"thigh_{side}_pos_y"] * mm, k, snap[f"thigh_{side}_mass"],
                       snap["target_stature"] * mm, snap[f"shank_{side}_mass"], snap[f"foot_{side}_mass"], total_mass(snap), snap["target_mass"],
-                      snap["pelvis_pos_z"] * mm, snap["pelvis_mass"], checks, snap["abdomen_mass"], snap["thorax_mass"], snap["abdomen_length"] * mm)
+                      snap["pelvis_pos_z"] * mm, snap["pelvis_mass"], checks, snap["abdomen_mass"], snap["thorax_mass"], snap["abdomen_length"] * mm,
+                      snap["thorax_length"] * mm, snap["head_neck_length"] * mm)
 
 
 @dataclass(frozen=True)
@@ -179,13 +183,16 @@ def diagnostics(sh: SheetNodes, ansur: dict) -> dict:
     scale = sh.stature_mm / ansur["stature_mm"]["mean"]
     L = ansur["landmarks"]
     troch = L["trochanterion"]["height_mm"]["mean"] * scale
+    expected = DUMAS_GT_ABOVE_HJC_MM * sh.k_pelvis      # the trochanterion sits this far above the HJC (Dumas 2007 Table 1B)
     epi = L["lateral_femoral_epicondyle"]["height_mm"]["mean"] * scale
     out = {
         "scale_to_sheet_stature": scale,
         "hjc_minus_scaled_trochanterion_mm": sh.hjc - troch,
+        "expected_trochanterion_above_hjc_mm": expected,
+        "trochanterion_minus_expected_mm": troch - (sh.hjc + expected),
         "kjc_minus_scaled_lateral_epicondyle_mm": sh.kjc - epi,
         "ajc_minus_scaled_lateral_malleolus_mm": sh.ajc - L["lateral_malleolus"]["height_mm"]["mean"] * scale,
-        "hjc_flag": bool(sh.hjc < troch - TROCH_BELOW_HJC_FLAG_MM),
+        "hjc_flag": bool(abs(troch - (sh.hjc + expected)) > TROCH_OFFSET_FLAG_MM),
     }
     return out
 

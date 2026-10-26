@@ -21,6 +21,8 @@ COLUMNS = {
     "iliocristale": "iliocristaleheight",
     "tenth_rib": "tenthribheight",
     "midpatella": "kneeheightmidpatella",
+    "cervicale": "cervicaleheight",             # brief 5: the C7 cross-check of the trunk registration
+    "suprasternale": "suprasternaleheight",     # the sternal notch; Dumas's SUP, an extra CJC cross-check
 }
 RAW = "data/ansur2/raw/ANSUR_II_FEMALE_Public.csv"
 SUMMARY = "data/ansur2/ratios.json"
