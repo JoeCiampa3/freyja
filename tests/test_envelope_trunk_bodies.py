@@ -158,3 +158,14 @@ def test_the_union_needs_built_bodies_and_says_so(tmp_path):
     ex = ENV / "examples"
     r = run_cli("check", "--segment", "pelvis,abdomen", "--shapes", str(ex / "trunk_union_shapes.yaml"), "--poses", str(ex / "trunk_union_feasible_poses.csv"), "--cache-dir", str(tmp_path))
     assert r.returncode == 2 and "fy envelope build" in r.stderr
+
+
+# ---- brief 6, item 0c: the whole-body average density on both bases ------------------------------------------------------------------------
+
+def test_the_whole_body_average_density_is_reported_on_the_robot_and_the_tissue_basis(res):
+    from envelope import bodies_report
+    d = bodies_report.whole_body_density(64.94, 52.3315, 2.787)
+    assert d["robot_kg_per_l"] == pytest.approx(64.94 / 52.3315) and d["tissue_kg_per_l"] == pytest.approx(64.94 / (52.3315 - 2.787))
+    w = res["whole_body_density"]
+    assert w["robot_kg_per_l"] == pytest.approx(1.241, abs=0.002) and w["tissue_kg_per_l"] == pytest.approx(1.311, abs=0.002)        # memo 32: about 1.24 and 1.311
+    assert w["sheet_total_mass_kg"] == pytest.approx(64.94, abs=0.01) and w["v_lung_l"] == pytest.approx(2.787) and "packaging" in w["comparator"]

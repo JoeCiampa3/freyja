@@ -672,6 +672,14 @@
   "thorax_with_zone_l": 15.853807366352783,
   "thorax_without_zone_l": 15.786615748201843
  },
+ "whole_body_density": {
+  "comparator": "robot_kg_per_l (sheet total mass over the mesh volume) is the comparator for a packaging density; tissue_kg_per_l is the same mass over the volume less the lung gas",
+  "mesh_volume_l": 52.33146287470325,
+  "robot_kg_per_l": 1.2408405275326104,
+  "sheet_total_mass_kg": 64.935,
+  "tissue_kg_per_l": 1.3106409118657527,
+  "v_lung_l": 2.787
+ },
  "zone_h_mm": 25.0,
  "zone_planes_raw_l": {
   "cjc": {

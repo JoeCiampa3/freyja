@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
-from . import bodies, oracle, trunk
+from . import bodies, masses, oracle, trunk
 from .bodies import BODIES
 
 EXAMPLES = {"pelvis_box": "pelvis", "thorax_box": "thorax"}       # worked examples in data/envelope/examples: <name>_shapes.yaml, <name>_feasible_poses.csv, <name>_infeasible_poses.csv
@@ -44,6 +44,14 @@ def example_gates(tb: bodies.TrunkBuild, root) -> tuple:
     return gates, out
 
 
+def whole_body_density(total_mass_kg: float, mesh_volume_l: float, v_lung_l: float) -> dict:
+    """The whole-body average density the sheet's total mass needs, on two bases (brief 6, item 0c): over the whole mesh volume (the robot has no lungs: the comparator for a packaging
+    density) and over the mesh volume less the lung gas (the tissue basis of memo 32)."""
+    return {"sheet_total_mass_kg": total_mass_kg, "mesh_volume_l": mesh_volume_l, "v_lung_l": v_lung_l, "robot_kg_per_l": total_mass_kg / mesh_volume_l,
+            "tissue_kg_per_l": total_mass_kg / (mesh_volume_l - v_lung_l),
+            "comparator": "robot_kg_per_l (sheet total mass over the mesh volume) is the comparator for a packaging density; tissue_kg_per_l is the same mass over the volume less the lung gas"}
+
+
 def report(tb: bodies.TrunkBuild, leg_results: dict, mesh_volume_l: float, topo, root, inputs_sha: str) -> tuple:
     """(result dict, gates) of the trunk bodies: design numbers, the pair, zones, shoulders, closure, shares, the arm rule's cross-check and the gates."""
     built = {n: tb.design[n]["skin_volume_l"] for n in BODIES}
@@ -72,6 +80,7 @@ def report(tb: bodies.TrunkBuild, leg_results: dict, mesh_volume_l: float, topo,
         "generated_by": "fy envelope gates", "inputs": f"mesh, snapshot, ANSUR II ratios, Dumas 2015 Table 1 (inputs sha256:{inputs_sha})", "schema": "trunk-bodies/1",
         "cjc_anchor": trunk.PRIMARY_CANDIDATE, "map": trunk.PRIMARY_MODE, "mesh_nodes_mm": dict(zip(("hjc", "tjc", "cjc", "vertex"), tb.tm.mesh)), "sheet_nodes_mm": tb.sheet,
         "neck_plane_mm": tb.neck_mm, "zone_h_mm": bodies.ZONE_H_MM,
+        "whole_body_density": whole_body_density(leg_results["thigh"].reg.sheet.total_mass_kg, mesh_volume_l, masses.load_constants(Path(root))["v_lung_l"]),
         "design": tb.design, "pair_abdomen_pelvis": bodies.pair_numbers(tb.design["abdomen"], tb.design["pelvis"]),
         "pinch_prominence_mm": bodies.PINCH_PROMINENCE_MM, "free_end_mm": bodies.FREE_END_MM,
         "zones": zt, "zone_planes_raw_l": tb.acc["zones"], "shoulder": shoulder,
@@ -91,6 +100,9 @@ def format_summary(res: dict) -> str:
                  f"{d['required_density_inner_kg_per_l']['t5']:.3f} over t5; min r {r['r_mm']:.1f} mm at station {r['station_mm']:.0f}; pinch " + (", ".join(f"{p['station_mm']:.0f} ({p['r_mm']:.1f} mm)" for p in d["pinch_stations"]) or "none"))
     p = res["pair_abdomen_pelvis"]
     L.append(f"  abdomen + pelvis: skin {p['skin_volume_l']:.3f} l, sheet {p['sheet_mass_kg']:.3f} kg -> {p['required_density_skin_kg_per_l']:.3f} kg/l over the skin, {p['required_density_inner_kg_per_l']['t5']:.3f} over t5")
+    w = res["whole_body_density"]
+    L.append(f"  whole body: sheet {w['sheet_total_mass_kg']:.3f} kg over the mesh {w['mesh_volume_l']:.3f} l = {w['robot_kg_per_l']:.3f} kg/l (robot basis, the packaging comparator), "
+             f"over the mesh less {w['v_lung_l']:.3f} l of lung gas = {w['tissue_kg_per_l']:.3f} kg/l (tissue basis)")
     c = res["closure"]
     L.append(f"  closure: {c['sum_l']:.4f} l against {c['mesh_volume_l']:.4f} l ({c['relative_difference'] * 100:+.3f}%); shares sum to {sum(c['shares'].values()):.6f}")
     return "\n".join(L)
