@@ -1,0 +1,4 @@
+# Worked example for the component registry (brief 6, item 7): a candidate sensor pod, a cylinder of OD 30 mm and length 50 mm, local z along its axis. Checked against the right
+# thigh's skin and against data/envelope/components/thigh_R.yaml (the actuator and the driver). Segment frame: origin at the hip joint centre, z up, x anterior, y left.
+shapes:
+  - {name: pod, type: cylinder, diameter: 30, length: 50}

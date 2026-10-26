@@ -1,0 +1,10 @@
+segment thigh_R (inputs 9a3cbd0ac767), 1 pose(s), 1 shape(s)
+  pose 0: margin    33.26 mm   slab overrun   0.00 mm
+binds at pose 0 on pod: margin 33.26 mm at station 325.0 mm, point (x -14.3, y 4.4, z -325.0) mm
+slab overrun 0.00 mm; required margin 0.00 mm
+components (data/envelope/components/thigh_R.yaml): 2 placed
+  actuator [designed]: margin 27.00 mm (distance 30.00 - clearance 3.00) at pose 0 on pod, station 275.0 mm, point (x 15.0, y 0.0, z -275.0) mm
+  driver [designed]: margin 172.00 mm (distance 175.00 - clearance 3.00) at pose 0 on pod, station 275.0 mm, point (x 15.0, y 0.0, z -275.0) mm
+binding constraint: component actuator: slack 27.00 mm at pose 0, station 275.0 mm, point (x 15.0, y 0.0, z -275.0) mm
+voxel 2 mm; confidence: clear
+FEASIBLE

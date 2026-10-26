@@ -144,3 +144,22 @@ def test_a_gap_between_two_bodies_is_an_overrun():
     b = field.build_segment(v, f, length=60.0, voxel=2.0, z_top=-100.0, margin=40.0)
     out = oracle.clearance_union([(a, (0, 0, 0)), (b, (0, 0, 0))], [rod(radius=10.0, length=120.0)], [pose(tz=-80.0)])      # spans -20 to -140: the gap -60 to -100 is in no slab
     assert out["slab_overrun_mm"] == pytest.approx(20.0, abs=1.0)
+
+
+# ---- brief 6, item 1: the pose convention, pinned -------------------------------------------------------------------------------------------
+
+def test_pose_rotations_are_degrees_extrinsic_x_then_y_then_z_right_handed():
+    """R = Rz(rz) Ry(ry) Rx(rx) about the fixed segment axes, applied before the translation: p_segment = R p + t."""
+    pts = np.array([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+    assert np.allclose(oracle.pose_points(pts, pose(tx=0, ty=0, tz=0, rx=90)), [[1, 0, 0], [0, 0, 1], [0, -1, 0]])        # y -> z, z -> -y
+    assert np.allclose(oracle.pose_points(pts, pose(tx=0, ty=0, tz=0, ry=90)), [[0, 0, -1], [0, 1, 0], [1, 0, 0]])        # z -> x, x -> -z
+    assert np.allclose(oracle.pose_points(pts, pose(tx=0, ty=0, tz=0, rz=90)), [[0, 1, 0], [-1, 0, 0], [0, 0, 1]])        # x -> y, y -> -x
+    both = oracle.pose_points(np.array([[1.0, 0.0, 0.0]]), pose(tx=5, ty=6, tz=7, rx=90, rz=90))                          # x first (no effect on x), then z: x -> y; then the translation
+    assert np.allclose(both, [[5, 7, 7]])
+    assert np.allclose(oracle.pose_points(np.array([[0.0, 0.0, 1.0]]), pose(tx=0, ty=0, tz=0, rx=90, rz=90)), [[1, 0, 0]])  # z -> -y by rx, then -y -> x by rz: the order matters
+    # the shape's own rpy_deg uses the same convention, applied before its offset
+    s = {"type": "cylinder", "radius": 1, "length": 10, "rpy_deg": [0, 90, 0], "offset": [0, 0, 5]}
+    p = oracle.sample_shape(s)
+    assert np.allclose([p[:, 0].min(), p[:, 0].max()], [-5, 5]) and np.allclose([p[:, 2].min(), p[:, 2].max()], [4, 6], atol=1e-9)   # laid along x, centred at z = 5
+    cols = ("tx", "ty", "tz", "rx", "ry", "rz")
+    assert oracle.POSE_COLUMNS == cols

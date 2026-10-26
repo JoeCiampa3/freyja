@@ -8,9 +8,17 @@
     trunk  [--mesh FILE] [--n N]
                     trunk registration (brief 5, item 1): the CJC anchor candidates and the stretch per sub-segment, written to data/envelope/trunk_registration.json
     ratios          write data/ansur2/ratios.json from the raw ANSUR II female CSV
-    check  --segment thigh_R --shapes FILE --poses FILE [--required MM] [--cache-dir DIR]
+    check  --segment thigh_R --shapes FILE --poses FILE [--required MM] [--cache-dir DIR] [--occupied | --no-occupied] [--components-dir DIR]
                     clearance of posed shapes inside a built segment; exit 0 feasible, 1 infeasible. --segment a,b,... (built trunk bodies, e.g. pelvis,abdomen) checks
-                    containment in their union; the poses are then in the frame of the first body
+                    containment in their union; the poses are then in the frame of the first body. When the segment has a component registry (<cache-dir>/../components/<segment>.yaml,
+                    or --components-dir) the margin to each placed component is reported as well and enters the verdict (--no-occupied ignores the registry, --occupied requires one)
+    foreign --owner BODY --host SEGMENT --placement tx,ty,tz[,rx,ry,rz] --out FILE [--samples FILE] [--model FILE]
+                    the poses of a part fixed to the owner body (e.g. pelvis), in the host segment's frame (e.g. thigh_R), for joint-angle samples (a CSV with one column per model
+                    joint name, degrees; default: the hip's single-axis sweeps at 5 degrees and the three-axis grid at 15 degrees over the model's limits), built on the MuJoCo
+                    model; the placement is in the owner's model body frame. Right side only. The output is a poses CSV for `check` or a registry's `poses_file`
+    free   --segment S [--required MM] [--union ADJACENT] [--cache-dir DIR] [--components-dir DIR] [--out DIR]
+                    the free field of a segment (skin margin at least --required, every placed component dilated by its clearance and swept over its poses removed): free and occupied
+                    volume, the largest free sphere, the free-space ledger at 10 mm stations in <out>/free/<segment>.yaml and the inspect-bundle layer
 
 Defaults: mesh data/makehuman/freyja-body-v2.obj (the baseline since volume-extractor brief 4; v1 is historical), sheet values from params/snapshot.csv, out data/envelope, cache data/envelope/cache (gitignored).
 """
@@ -117,17 +125,24 @@ def cmd_ratios(args, root):
     return 0
 
 
+def _components_dir(args, cache: Path) -> Path:
+    return Path(args.components_dir) if args.components_dir else cache.parent / "components"
+
+
 def cmd_check(args, root):
-    from . import field, oracle
+    from . import field, occupancy, oracle, registry
     cache = Path(args.cache_dir) if args.cache_dir else root / "data/envelope/cache"
     f = cache / f"{args.segment}.npz"
     if "," not in args.segment and not f.exists():
         print(f"fy envelope check: no built segment at {_label(f, root)}; run `fy envelope build` first", file=sys.stderr)
         return 2
+    if args.occupied and args.no_occupied:
+        print("fy envelope check: --occupied and --no-occupied exclude each other", file=sys.stderr)
+        return 2
     shapes, poses = oracle.read_shapes(args.shapes), oracle.read_poses(args.poses)
+    names = args.segment.split(",")
     if "," in args.segment:
         import numpy as np
-        names = args.segment.split(",")
         segs = []
         for n in names:
             fn = cache / f"{n}.npz"
@@ -139,19 +154,155 @@ def cmd_check(args, root):
             print("fy envelope check: a union needs the bodies' origins; rebuild with `fy envelope build`", file=sys.stderr)
             return 2
         o0 = np.array(segs[0].meta["origin_xyz"])
-        out = oracle.clearance_union([(sg, np.array(sg.meta["origin_xyz"]) - o0) for sg in segs], shapes, poses, args.required)
+        offsets = [np.array(sg.meta["origin_xyz"]) - o0 for sg in segs]
+        out = oracle.clearance_union(list(zip(segs, offsets)), shapes, poses, args.required)
         seg = segs[0]
     else:
         seg = field.Segment.load(f)
+        offsets = [(0.0, 0.0, 0.0)]
         out = oracle.clearance(seg, shapes, poses, args.required)
+    regs = []
+    if not args.no_occupied:
+        cdir = _components_dir(args, cache)
+        for n, off in zip(names, offsets):
+            r = registry.find(cdir, n)
+            if r is not None:
+                regs.append((r, off, cdir / f"{n}.yaml"))
+        if args.occupied and not regs:
+            print(f"fy envelope check: --occupied, but there is no component registry for {args.segment} in {_label(cdir, root)}", file=sys.stderr)
+            return 2
     print(f"segment {args.segment} (inputs {seg.meta.get('inputs_sha256_12', '?')}), {len(poses)} pose(s), {len(shapes)} shape(s)")
     for i, (m, o) in enumerate(zip(out["margins_mm"], out["slab_overruns_mm"])):
         print(f"  pose {i}: margin {m:8.2f} mm   slab overrun {o:6.2f} mm")
     x, y, z = out["point_mm"]
     print(f"binds at pose {out['pose_index']} on {out['shape']}: margin {out['margin_mm']:.2f} mm at station {out['station_mm']:.1f} mm, point (x {x:.1f}, y {y:.1f}, z {z:.1f}) mm")
     print(f"slab overrun {out['slab_overrun_mm']:.2f} mm; required margin {out['required_mm']:.2f} mm")
-    print("FEASIBLE" if out["feasible"] else "INFEASIBLE")
-    return 0 if out["feasible"] else 1
+    feasible = out["feasible"]
+    if regs:
+        skin_sd = seg.signed_distance if len(names) == 1 else occupancy.skin_field(list(zip(segs, offsets)), 0.0).signed_distance
+        feasible = _report_components(root, seg, out, shapes, poses, regs, occupancy, skin_sd) and feasible
+    print("FEASIBLE" if feasible else "INFEASIBLE")
+    return 0 if feasible else 1
+
+
+def _report_components(root, seg, skin, shapes, poses, regs, occupancy, skin_sd) -> bool:
+    """Print the margin to each placed component, the binding constraint and the confidence; True when every component margin is at least 0."""
+    import numpy as np
+    poses = np.atleast_2d(np.asarray(poses, float))
+    if poses.shape[1] == 3:
+        poses = np.hstack([poses, np.zeros((len(poses), 3))])
+    rows = []
+    for reg, off, path in regs:
+        shifted = poses - np.r_[np.asarray(off, float), 0.0, 0.0, 0.0]            # the candidate's poses in this registry's frame
+        for e in occupancy.component_margins(shapes, shifted, reg, 0.0):
+            e["point_mm"] = [float(p + o) for p, o in zip(e["point_mm"], off)]
+            e["station_mm"] = seg.z_top - e["point_mm"][2]
+            e["registry"] = _label(path, root)
+            rows.append(e)
+        inside = occupancy.component_skin_margins(skin_sd, reg)
+        for e in rows:
+            if e["name"] in inside and "inside_skin_mm" not in e:
+                e["inside_skin_mm"] = inside[e["name"]]
+    print(f"components ({', '.join(sorted({_label(p, root) for _, _, p in regs}))}): {len(rows)} placed")
+    for e in rows:
+        px, py, pz = e["point_mm"]
+        sweep = f", sweep pose {e['component_pose_index']} of {e['sweep_poses']}" if e["sweep_poses"] > 1 else ""
+        print(f"  {e['name']} [{e['status']}]: margin {e['margin_mm']:.2f} mm (distance {e['distance_mm']:.2f} - clearance {e['clearance_mm']:.2f}) at pose {e['pose_index']} on {e['shape']}{sweep}, "
+              f"station {e['station_mm']:.1f} mm, point (x {px:.1f}, y {py:.1f}, z {pz:.1f}) mm")
+        if e["inside_skin_mm"] < 0 and e["status"] != "foreign":
+            print(f"    WARNING: {e['name']} sticks out of the skin by {-e['inside_skin_mm']:.2f} mm (a registry fault; it does not change the verdict)")
+        if "bend" in e and not e["bend"]["ok"]:
+            print(f"    WARNING: {e['name']} bends to {e['bend']['min_radius_mm']:.1f} mm, tighter than its bend_radius_mm {e['bend']['required_mm']:.1f}")
+    # the binding constraint is the least slack: the skin's margin less what is required of it, a component's margin
+    cands = [("skin", skin["margin_mm"] - skin["required_mm"], skin)] + [(f"component {e['name']}", e["margin_mm"], e) for e in rows]
+    label, slack, b = min(cands, key=lambda c: c[1])
+    bx, by, bz = b["point_mm"]
+    print(f"binding constraint: {label}: slack {slack:.2f} mm at pose {b['pose_index']}, station {b['station_mm']:.1f} mm, point (x {bx:.1f}, y {by:.1f}, z {bz:.1f}) mm")
+    if label != "skin":
+        ex = occupancy.exact_binding_distance(b)
+        if ex is not None:
+            print("  exact mesh-to-mesh distance of the binding pair: " + ("the meshes overlap" if ex["interpenetrating"] else f"{ex['exact_mm']:.3f} mm (sampled {b['distance_mm']:.3f})"))
+    print(f"voxel {seg.h:g} mm; confidence: {'clear' if abs(slack) >= seg.h else 'marginal'}")
+    return all(e["margin_mm"] >= 0.0 for e in rows)
+
+
+def cmd_foreign(args, root):
+    import numpy as np
+    from . import foreign
+    place = [float(x) for x in args.placement.split(",")]
+    if len(place) not in (3, 6):
+        print("fy envelope foreign: --placement needs tx,ty,tz or tx,ty,tz,rx,ry,rz (mm, degrees)", file=sys.stderr)
+        return 2
+    place = place + [0.0] * (6 - len(place))
+    model = foreign.load_model(args.model)
+    if args.samples:
+        names, angles = foreign.read_samples(args.samples)
+        src = f"{_label(Path(args.samples), root)}"
+    else:
+        names, angles = foreign.default_samples(model, args.host)
+        src = "the default hip sampling"
+    poses = foreign.foreign_poses(model, args.owner, args.host, place, names, angles)
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    foreign.write_poses(out, poses, f"{args.owner} part {','.join(f'{v:.10g}' for v in place)} in {args.host}, {src} ({len(poses)} poses), joints {','.join(names)}")
+    print(f"{len(poses)} pose(s) of the {args.owner} part in the {args.host} frame ({src}); joints {', '.join(names)}")
+    print("wrote", _label(out, root))
+    return 0
+
+
+def cmd_free(args, root):
+    import json
+    import numpy as np
+    import yaml
+    from . import bundle, field, ledger, occupancy, registry, trial
+    cache = Path(args.cache_dir) if args.cache_dir else root / "data/envelope/cache"
+    names = [args.segment] + ([args.union] if args.union else [])
+    segs = []
+    for n in names:
+        fn = cache / f"{n}.npz"
+        if not fn.exists():
+            print(f"fy envelope free: no built segment at {_label(fn, root)}; run `fy envelope build` first", file=sys.stderr)
+            return 2
+        segs.append(field.Segment.load(fn))
+    if args.union and any("origin_xyz" not in sg.meta for sg in segs):
+        print("fy envelope free: a union needs the bodies' origins; rebuild with `fy envelope build`", file=sys.stderr)
+        return 2
+    o0 = np.array(segs[0].meta.get("origin_xyz", [0.0, 0.0, 0.0]))
+    offsets = [np.array(sg.meta.get("origin_xyz", [0.0, 0.0, 0.0])) - o0 for sg in segs]
+    cdir = _components_dir(args, cache)
+    regs = [(r, off) for n, off in zip(names, offsets) for r in [registry.find(cdir, n)] if r is not None]
+    zone = trial.HIP_ZONE_MM if args.segment.startswith("thigh") else 0.0              # the thigh's hip zone is reported apart, as in its ledger
+    virt, rep = occupancy.free_field(list(zip(segs, offsets)), regs, args.required, zone)
+    sha = occupancy.inputs_hash({n: sg.meta.get("inputs_sha256_12", "?") for n, sg in zip(names, segs)}, regs, args.required, names[1:])
+    side = "right" if args.segment.endswith("_R") else ("left" if args.segment.endswith("_L") else "trunk")
+    rows = ledger.rows_for(virt, side)
+    tag = "+".join(names)
+    s = rep["largest_free_sphere"]
+    hdr = {"segment": args.segment, "union": names[1:], "frame": "the first segment's frame: z up, x anterior, y left; stations are distances below the topmost plane",
+           "required_skin_margin_mm": args.required, "voxel_mm": virt.h, "length_mm": round(virt.length, 2),
+           "skin_volume_l": round(rep["skin_volume_l"], 4), "free_volume_l": round(rep["free_volume_l"], 4), "occupied_volume_l": round(rep["occupied_volume_l"], 4),
+           "largest_free_sphere": {"diameter_mm": round(s["diameter_mm"], 2), "centre_mm": [round(v, 2) for v in s["centre_mm"]], "station_mm": round(s["station_mm"], 2), "searched_from_station_mm": zone},
+           "components": rep["components"], "registries": [f"components/{r.segment}.yaml" for r, _ in regs],
+           "directions": {str(a): n for a, n in ledger.direction_names(side).items()}, "inputs_sha256_12": sha, "rows": rows}
+    out = (Path(args.out) if args.out else root / "data/envelope") / "free"
+    out.mkdir(parents=True, exist_ok=True)
+    text = (f"# GENERATED by fy envelope free from the built segment(s), the component registry and the arguments (inputs sha256:{sha}). Do not edit; change the inputs and rerun.\n"
+            + yaml.safe_dump(hdr, sort_keys=True, default_flow_style=None, allow_unicode=True, width=100000))
+    (out / f"{tag}.yaml").write_text(text, encoding="utf-8", newline="\n")
+    print(f"free field of {tag} (skin margin >= {args.required:g} mm, {len(rep['components'])} component(s), voxel {virt.h:g} mm):")
+    print(f"  skin volume {rep['skin_volume_l']:.4f} l; free {rep['free_volume_l']:.4f} l; occupied {rep['occupied_volume_l']:.4f} l")
+    print(f"  largest free sphere: diameter {s['diameter_mm']:.1f} mm at (x {s['centre_mm'][0]:.1f}, y {s['centre_mm'][1]:.1f}, z {s['centre_mm'][2]:.1f}) mm, station {s['station_mm']:.1f} mm" + (f" (searched from station {zone:g} mm: the hip zone is left out)" if zone else ""))
+    print("wrote", _label(out / f"{tag}.yaml", root))
+    insp = cache / "inspect"
+    if (insp / "inspect.json").exists():
+        inp = trial.load_inputs(root, Path(args.mesh) if args.mesh else root / "data/makehuman/freyja-body-v2.obj")
+        V, F = bundle.marching_tetrahedra(np.where(virt.region, virt.sd.astype(float), -1.0e3), virt.o + virt.h / 2, virt.h, 0.0)
+        bundle.write_obj(insp / f"free_{tag}.obj", bundle.to_mh_dm(V + o0, inp), F)
+        j = json.loads((insp / "inspect.json").read_text(encoding="utf-8"))
+        j.setdefault("free_space", {})[tag] = f"free_{tag}.obj"
+        (insp / "inspect.json").write_text(json.dumps(j, indent=1, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
+        print("wrote the inspect layer", _label(insp / f"free_{tag}.obj", root))
+    return 0
 
 
 def main(argv=None, default_root=None) -> int:
@@ -168,10 +319,24 @@ def main(argv=None, default_root=None) -> int:
     c.add_argument("--segment", required=True), c.add_argument("--shapes", required=True), c.add_argument("--poses", required=True)
     c.add_argument("--required", type=float, default=0.0, help="required clearance in mm (default 0: inside the skin)")
     c.add_argument("--cache-dir")
+    c.add_argument("--occupied", action="store_true", help="require the segment's component registry and check against it (default: use it when it exists)")
+    c.add_argument("--no-occupied", action="store_true", help="ignore the component registry")
+    c.add_argument("--components-dir", help="default <cache-dir>/../components")
+    fo = sub.add_parser("foreign")
+    fo.add_argument("--owner", required=True), fo.add_argument("--host", required=True), fo.add_argument("--placement", required=True), fo.add_argument("--out", required=True)
+    fo.add_argument("--samples"), fo.add_argument("--model")
+    fr = sub.add_parser("free")
+    fr.add_argument("--segment", required=True)
+    fr.add_argument("--required", type=float, default=0.0, help="margin kept from the skin in mm (default 0)")
+    fr.add_argument("--union", help="an adjacent built body whose space joins the segment's (brief 5's union query)")
+    fr.add_argument("--cache-dir"), fr.add_argument("--components-dir"), fr.add_argument("--out"), fr.add_argument("--mesh")
     args = ap.parse_args(argv)
     from . import sheet
     try:
-        return {"build": cmd_build, "gates": cmd_gates, "check": cmd_check, "ratios": cmd_ratios, "trunk": cmd_trunk}[args.cmd](args, root)
+        return {"build": cmd_build, "gates": cmd_gates, "check": cmd_check, "free": cmd_free, "foreign": cmd_foreign, "ratios": cmd_ratios, "trunk": cmd_trunk}[args.cmd](args, root)
     except sheet.StopAndAsk as e:
         print(f"fy envelope: STOP, ask Joe: {e}", file=sys.stderr)
         return 3
+    except NotImplementedError as e:
+        print(f"fy envelope: {e}", file=sys.stderr)
+        return 2

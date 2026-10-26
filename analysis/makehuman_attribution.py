@@ -154,8 +154,11 @@ class Targets:
 
 # ---- measuring ---------------------------------------------------------------------------------------------------------------------
 
-def read_obj_vertices(path):
-    return np.array([[float(t) for t in line.split()[1:4]] for line in Path(path).read_text().splitlines() if line.startswith("v ")])
+def read_obj_vertices(path, include_helpers=False):
+    """The OBJ's vertices. MakeHuman's base.obj carries helper geometry after the body's BODY_VERTICES; unless the caller opts in with `include_helpers`, only the body is returned, so a
+    result computed from base.obj cannot pick the helpers up by accident. Targets are applied to, and the rebuild is made on, the whole array, so those callers opt in."""
+    V = np.array([[float(t) for t in line.split()[1:4]] for line in Path(path).read_text().splitlines() if line.startswith("v ")])
+    return V if include_helpers else V[:BODY_VERTICES]
 
 
 def knee_metrics(V, chords) -> dict:
@@ -199,7 +202,7 @@ SLIDERS = {   # candidate sliders for removing the shift: name -> (modifier, low
 
 
 def run(base_path, targets_dir, mhm_path, obj_path, ruler_path, sheet_knee_fraction=None, sheet_hip_fraction=None):
-    base = read_obj_vertices(base_path)
+    base = read_obj_vertices(base_path, include_helpers=True)
     T = Targets(targets_dir)
     mhm = read_mhm(mhm_path)
     ruler = json.loads(Path(ruler_path).read_text())["measures"]

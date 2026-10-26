@@ -1,0 +1,30 @@
+# Worked example of a foreign component (components/1, volume-extractor brief 6, item 6): the registry of examples/thigh_components with one more entry, a pelvis-fixed cylinder at the
+# groin whose poses in the thigh frame were built by `fy envelope foreign` for hip flexion 0 to 130 degrees in 10 degree steps (groin_poses.csv from hip_flexion_samples.csv; the
+# command is in groin_poses.csv's first line). The actuator and driver are the hand-typed placeholders of data/envelope/components/thigh_R.yaml.
+schema: components/1
+segment: thigh_R
+components:
+  - id: part.thigh.actuator-example
+    name: actuator
+    status: designed
+    owner: thigh_R
+    primitive: {type: cylinder, diameter: 70, length: 110}
+    pose: {tx: 6, ty: -10, tz: -190}
+    clearance_mm: 3.0
+    source: worked example, hand-typed cylinder (not a catalogue part)
+  - id: part.thigh.driver-example
+    name: driver
+    status: designed
+    owner: thigh_R
+    primitive: {type: box, half: [30, 25, 30]}
+    pose: {tx: 20, ty: -10, tz: -70}
+    clearance_mm: 3.0
+    source: worked example, hand-typed box (not a catalogue part)
+  - id: part.pelvis.groin-example
+    name: groin unit
+    status: foreign
+    owner: pelvis
+    primitive: {type: cylinder, diameter: 40, length: 50}
+    poses_file: groin_poses.csv
+    clearance_mm: 3.0
+    source: worked example, hand-typed cylinder fixed to the pelvis 45 mm ahead of, 30 mm medial to and 25 mm above the hip joint centre (pelvis body frame)

@@ -1,0 +1,24 @@
+# Component registry of the right thigh (components/1, volume-extractor brief 6, item 7). Authored; the worked example of docs/schemas/envelope-oracle.md.
+# Hand-typed primitives, not CAD: the actuator and the driver are placeholders sized and placed to make the three cases below distinct. Segment frame: origin at the hip joint
+# centre, z up the thigh (the knee is 398 mm below), x anterior, y left (lateral is -y for the right thigh).
+schema: components/1
+segment: thigh_R
+components:
+  - id: part.thigh.actuator-example
+    name: actuator
+    status: designed
+    owner: thigh_R
+    primitive: {type: cylinder, diameter: 70, length: 110}
+    pose: {tx: 6, ty: -10, tz: -190, rx: 0, ry: 0, rz: 0}
+    clearance_mm: 3.0
+    mass_kg: 0.60
+    source: worked example, hand-typed cylinder (not a catalogue part)
+  - id: part.thigh.driver-example
+    name: driver
+    status: designed
+    owner: thigh_R
+    primitive: {type: box, half: [30, 25, 30]}
+    pose: {tx: 20, ty: -10, tz: -70, rx: 0, ry: 0, rz: 0}
+    clearance_mm: 3.0
+    mass_kg: 0.25
+    source: worked example, hand-typed box (not a catalogue part)

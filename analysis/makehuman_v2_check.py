@@ -74,7 +74,7 @@ def gate1(rebuilt_dm, obj_dm, inp, planes, raster) -> dict:
 
 
 def run(targets_dir, root=REPO) -> dict:
-    base = A.read_obj_vertices(root / "data/makehuman/base.obj")
+    base = A.read_obj_vertices(root / "data/makehuman/base.obj", include_helpers=True)
     T = A.Targets(targets_dir)
     v1_mhm = A.read_mhm(M.V1_MHM)
     v2_mhm = A.read_mhm_text(M.v2_mhm_text(M.V1_MHM.read_text()))

@@ -44,7 +44,7 @@
     <div>
       <button id="btnInspect">Load inspect bundle</button>
       <input id="fileBundle" type="file" accept=".obj,.json" multiple hidden>
-      <span style="color:#8a909b;font-size:11px">select original.obj, conformed.obj, envelope_t5.obj and inspect.json together (or drop them)</span>
+      <span style="color:#8a909b;font-size:11px">select original.obj, conformed.obj, envelope_t5.obj, inspect.json (and any free_*.obj) together (or drop them)</span>
     </div>
     <div id="layers"></div>
     <ol id="list"></ol>
@@ -132,14 +132,25 @@ function parseObj(text) {
   }
   return { v, polys };
 }
+// ---- helper geometry (pure; tests/test_landmark_picker.py runs this block in a headless browser) ----
+// MakeHuman's base.obj carries helper geometry after the body's TOPOLOGY vertices. An OBJ with more vertices than that shows the body's faces only (faces whose vertices are all
+// below TOPOLOGY) and has no picks: the helper vertices are not the body, and a pick on such a file would not be a pick on the pipeline's mesh.
+function bodyFaces(polys, nVertices, topology) { return nVertices > topology ? polys.filter((p) => p.every((i) => i < topology)) : polys; }
+function hasHelpers(nVertices, topology) { return nVertices > topology; }
+// ---- end helper geometry ----
+let picksEnabled = true;
 function loadObj(text) {
   const { v, polys } = parseObj(text);
-  if (v.length / 3 !== TOPOLOGY) {
-    $("warn").textContent = `This OBJ has ${v.length / 3} vertices, not ${TOPOLOGY}. Picks would not be valid for the pipeline.`;
+  const nV = v.length / 3, helper = hasHelpers(nV, TOPOLOGY);
+  picksEnabled = !helper;
+  if (helper) {
+    $("warn").textContent = `This OBJ has ${nV} vertices: the body's ${TOPOLOGY} and ${nV - TOPOLOGY} of helper geometry. Helper geometry hidden; picks are disabled on this file.`;
+  } else if (nV !== TOPOLOGY) {
+    $("warn").textContent = `This OBJ has ${nV} vertices, not ${TOPOLOGY}. Picks would not be valid for the pipeline.`;
   } else $("warn").textContent = "";
-  positions = new Float32Array(v);
+  positions = new Float32Array(helper ? v.slice(0, 3 * TOPOLOGY) : v);
   const idx = []; quadOfTri = [];
-  for (const p of polys) for (let i = 1; i + 1 < p.length; i++) { idx.push(p[0], p[i], p[i + 1]); quadOfTri.push(p); }
+  for (const p of bodyFaces(polys, nV, TOPOLOGY)) for (let i = 1; i + 1 < p.length; i++) { idx.push(p[0], p[i], p[i + 1]); quadOfTri.push(p); }
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   g.setIndex(idx); g.computeVertexNormals(); g.computeBoundingBox(); g.computeBoundingSphere();
@@ -157,7 +168,7 @@ function loadObj(text) {
   placeCamera(); applyClip(); $("drop").style.display = "none";
   for (const k of Object.keys(markers)) { scene.remove(markers[k]); delete markers[k]; }
   for (const c of CHECKLIST) if (picks[c.name] !== undefined) addMarker(c.name);
-  info(`Loaded ${v.length / 3} vertices, ${polys.length} faces. Extent x ${(range * DM_TO_MM).toFixed(0)} mm, height ${((bb.max.y - bb.min.y) * DM_TO_MM).toFixed(0)} mm.`);
+  info(`Loaded ${nV} vertices, ${polys.length} faces${helper ? " (helper geometry hidden, picks disabled)" : ""}. Extent x ${(range * DM_TO_MM).toFixed(0)} mm, height ${((bb.max.y - bb.min.y) * DM_TO_MM).toFixed(0)} mm.`);
 }
 let clipBounds = null;
 const clipMaterials = new Set();             // materials of the Inspect layers; the picker mesh and its wireframe are added in applyClip
@@ -185,6 +196,7 @@ function info(t) { $("info").textContent = t; }
 const ray = new THREE.Raycaster();
 function pick(e) {
   if (!mesh) return;
+  if (!picksEnabled) { info("Picks are disabled: this OBJ carries helper geometry (helper geometry hidden). Load the body-only OBJ to pick."); return; }
   const r = cv.getBoundingClientRect();
   const m = new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
   ray.setFromCamera(m, camera);
@@ -325,6 +337,7 @@ async function loadBundle(files) {
   if (byName["original.obj"]) layers.push(["original", "original mesh", meshLayer(byName["original.obj"], 0xb9a99a, 0.35)]);
   if (byName["conformed.obj"]) layers.push(["conformed", "conformed mesh", meshLayer(byName["conformed.obj"], 0x6fa8dc, 0.55)]);
   if (byName["envelope_t5.obj"]) layers.push(["envelope", `envelope, shell ${J.meshes.shell_mm} mm (thigh, shank, foot)`, meshLayer(byName["envelope_t5.obj"], 0xe8a33d, 0.85)]);
+  for (const [tag, file] of Object.entries(J.free_space || {})) if (byName[file.toLowerCase()]) layers.push(["free_" + tag, `free space ${tag} (fy envelope free)`, meshLayer(byName[file.toLowerCase()], 0x57c785, 0.6)]);
   for (const [n, l, o] of layers) addLayer(n, l, o, true);
   const ref = layers.length ? layers[0][2].geometry.boundingBox : null;
   const cx = ref ? (ref.min.x + ref.max.x) / 2 : 0, cz = ref ? (ref.min.z + ref.max.z) / 2 : 0, size = ref ? (ref.max.x - ref.min.x) * 0.8 : 4;

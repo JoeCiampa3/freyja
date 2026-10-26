@@ -86,7 +86,7 @@ def loop_heights_mm(V, measures, keys=("thigh-circ", "knee-circ", "calf-circ", "
 
 
 def predict(base_path, targets_dir, ruler_path=A.REPO / "data/makehuman/ruler_measures.json", obj_path=A.REPO / "data/makehuman/freyja-body-v1.obj") -> dict:
-    base = A.read_obj_vertices(base_path)
+    base = A.read_obj_vertices(base_path, include_helpers=True)
     T = A.Targets(targets_dir)
     measures = json.loads(Path(ruler_path).read_text())["measures"]
     v1 = A.read_mhm(V1_MHM)
