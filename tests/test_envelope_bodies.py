@@ -225,3 +225,29 @@ def test_the_trunk_ledger_uses_left_and_right_not_medial_and_lateral():
     assert {"hw_ant_mm", "hw_post_mm", "hw_left_mm", "hw_right_mm", "r_left_mm", "r_ant_right_mm"} <= set(r) and "hw_med_mm" not in r
     assert r["hw_left_mm"] == pytest.approx(45.0, abs=0.7) and r["hw_right_mm"] == pytest.approx(45.0, abs=0.7)
     assert set(ledger.rows_for(res.seg, "right")[0]) >= {"hw_med_mm", "hw_lat_mm"}              # the legs' schema is unchanged
+
+
+# ---- the shoulder joint centre from the sheet (brief 6, item 0b) ----------------------------------------------------------------------
+
+def test_the_sjc_is_the_sheets_upper_arm_origin_and_the_dumas_2015_one_is_a_cross_check_only():
+    from envelope import masses
+    table = masses.load_dumas_table1(REPO)
+    sh = SimpleNamespace(thorax_length_mm=328.759098448, sjc_mm=(13.8136749663, -192.328859146, -77.5690978875))
+    s = bodies.sjc(table, sh)
+    assert s["lateral_mm"] == pytest.approx(192.328859146) and s["below_cjc_mm"] == pytest.approx(77.5690978875) and s["ahead_of_cjc_mm"] == pytest.approx(13.8136749663)
+    d = s["dumas2015"]                                                      # 178 and 84 mm of Table 1, scaled by 328.76 / 313
+    assert d["lateral_mm"] == pytest.approx(178.0 * 328.759098448 / 313.0) and d["below_cjc_mm"] == pytest.approx(84.0 * 328.759098448 / 313.0)
+    assert s["sheet_minus_dumas_mm"]["lateral"] == pytest.approx(5.3, abs=0.1) and s["sheet_minus_dumas_mm"]["z"] == pytest.approx(10.6, abs=0.1)
+    with pytest.raises(StopAndAsk):
+        bodies.sjc(table, SimpleNamespace(thorax_length_mm=328.759098448, sjc_mm=(float("nan"),) * 3))
+
+
+def test_the_sphere_centre_is_the_thorax_centre_line_at_the_cjc_plus_the_sheets_x_offset():
+    raster, V, arm = synthetic_body()
+    tm = make_map()
+    tm = bodies.TrunkMap(tm.reg, mesh=(50.0, 150.0, 300.0, 400.0), sheet=(52.0, 152.0, 332.0, 422.0))
+    sheet = {**SHEET, "hjc": 52.0, "ljc": 103.0, "tjc": 152.0, "cjc": 332.0, "vertex": 422.0}
+    a = bodies.classify(raster, V, arm, tm, sheet, apex_mm=0.0, axilla_mm=200.0, lateral_mm=50.0, sjc_below_mm=88.0, h_zone=25.0, sjc_ahead_mm=10.0)["spheres"]
+    assert a["cjc_x_mesh_mm"] == pytest.approx(30.0, abs=1.0) and a["centre_x_mesh_mm"] == pytest.approx(a["cjc_x_mesh_mm"] + 10.0)
+    b = bodies.classify(raster, V, arm, tm, sheet, apex_mm=0.0, axilla_mm=200.0, lateral_mm=50.0, sjc_below_mm=88.0, h_zone=25.0)["spheres"]
+    assert b["centre_x_mesh_mm"] == pytest.approx(b["centre_x_thorax_mean_mesh_mm"])      # without an offset: the previous rule (the thorax's mean x at the sphere height)

@@ -79,6 +79,7 @@ def cmd_build(args, root):
         print(f"built {name}_R: L {res.seg.length:.1f} mm, skin volume {res.seg.volume() / 1e6:.3f} l, inputs {sha}")
     from . import bodies, masses
     tb = bodies.build(inp, feats, reg, masses.load_dumas_table1(root), args.voxel)
+    sha = trial.inputs_hash(inp, {"knee": reg.knee_source, "voxel": args.voxel, "sjc_mm": [round(v, 6) for v in inp.sheet.sjc_mm]})      # the trunk's ledgers also depend on the sheet's SJC
     for name in bodies.BODIES:
         res, rows = tb.results[name], tb.rows[name]
         hdr = bodies.body_header(name, tb, rows, sha, _label(p["mesh"], root))

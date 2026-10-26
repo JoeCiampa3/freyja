@@ -55,8 +55,11 @@ def report(tb: bodies.TrunkBuild, leg_results: dict, mesh_volume_l: float, topo,
     gates += eg
     zt = bodies.zone_table(tb.acc)
     sph = tb.acc["spheres"]
-    shoulder = {"plane": {"lateral_mm": tb.sjc["lateral_mm"], "below_cjc_mm": tb.sjc["below_cjc_mm"], "scale": tb.sjc["scale"], "x_mesh_mm": sph["centre_x_mesh_mm"],
-                          "x_note": "Table 1 gives no X: the thorax's mean x at that height"},
+    shoulder = {"plane": {"lateral_mm": tb.sjc["lateral_mm"], "below_cjc_mm": tb.sjc["below_cjc_mm"], "ahead_of_cjc_mm": tb.sjc["ahead_of_cjc_mm"], "x_mesh_mm": sph["centre_x_mesh_mm"],
+                          "source": tb.sjc["source"], "dumas2015_cross_check": tb.sjc["dumas2015"], "sheet_minus_dumas_mm": tb.sjc["sheet_minus_dumas_mm"],
+                          "x_note": "the sheet's x offset (ahead of the CJC) added to the mesh thorax's centre line at the CJC plane (cjc_x_mesh_mm)",
+                          "cjc_x_mesh_mm": sph["cjc_x_mesh_mm"], "thorax_mean_x_at_sphere_height_mesh_mm": sph["centre_x_thorax_mean_mesh_mm"],
+                          "x_sheet_minus_previous_rule_mm": sph["centre_x_mesh_mm"] - sph["centre_x_thorax_mean_mesh_mm"]},
                 "sphere_radius_mm": sph["radius_mm"], "centre_height_mm": sph["centre_height_mm"],
                 "thorax_with_zone_l": tb.acc["volume_l"]["thorax"],
                 "thorax_without_zone_l": tb.acc["volume_l"]["thorax"] - zt["thorax"]["shoulder_spheres_in_thorax_l"],

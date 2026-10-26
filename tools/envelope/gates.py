@@ -179,7 +179,7 @@ def run(p, args, root, label) -> int:
 
     # the trunk bodies (brief 5): built, accounted, designed and closed against the mesh volume
     tb = bodies.build(inp, feats, reg, table1, args.voxel)
-    trunk_res, trunk_gates = bodies_report.report(tb, results, mb["mesh_volume_l"], topo, root, trial.inputs_hash(inp, {"knee": reg.knee_source, "voxel": args.voxel, "trunk": True}))
+    trunk_res, trunk_gates = bodies_report.report(tb, results, mb["mesh_volume_l"], topo, root, trial.inputs_hash(inp, {"knee": reg.knee_source, "voxel": args.voxel, "trunk": True, "sjc_mm": [round(v, 6) for v in inp.sheet.sjc_mm]}))
     gates += trunk_gates
 
     # how the knee anchor moves volume between thigh and shank, and what that does to the implied densities (profile volumes, so no extra voxel builds)

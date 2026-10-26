@@ -490,27 +490,27 @@
    "pass": true
   },
   {
-   "detail": "worst 0.459% over u = 0.1..0.9",
+   "detail": "worst 0.653% over u = 0.1..0.9",
    "gate": "3 thorax: matched-station areas within 1% of the raster layers",
    "pass": true
   },
   {
-   "detail": "field 15.7521 l, raster 15.7649 l (-0.081%)",
+   "detail": "field 15.8420 l, raster 15.8538 l (-0.075%)",
    "gate": "3b thorax: field volume within 1% of the raster accounting",
    "pass": true
   },
   {
-   "detail": "worst 0.212% over u = 0.1..0.9",
+   "detail": "worst 0.221% over u = 0.1..0.9",
    "gate": "3 head_neck: matched-station areas within 1% of the raster layers",
    "pass": true
   },
   {
-   "detail": "field 3.7805 l, raster 3.7840 l (-0.092%)",
+   "detail": "field 3.7807 l, raster 3.7840 l (-0.087%)",
    "gate": "3b head_neck: field volume within 1% of the raster accounting",
    "pass": true
   },
   {
-   "detail": "sum 52.1264 l against mesh 52.3315 l (-0.392%); remainder 3.7003 l; conform effect -0.1430 l; raster minus mesh -0.0006 l",
+   "detail": "sum 52.1278 l against mesh 52.3315 l (-0.389%); remainder 3.6118 l; conform effect -0.1427 l; raster minus mesh -0.0006 l",
    "gate": "7 closure: conformed bodies + remainder = mesh volume within 0.5%",
    "pass": true
   },
@@ -520,7 +520,7 @@
    "pass": true
   },
   {
-   "detail": "feasible: margin 17.45 mm at station 210.0 mm; infeasible: margin -34.38 mm at station 210.0 mm (pose 1)",
+   "detail": "feasible: margin 17.50 mm at station 210.0 mm; infeasible: margin -34.40 mm at station 210.0 mm (pose 1)",
    "gate": "5 oracle example thorax_box: box in the thorax, feasible and infeasible",
    "pass": true
   },

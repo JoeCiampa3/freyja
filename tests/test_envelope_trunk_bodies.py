@@ -103,7 +103,9 @@ def test_joint_zones_report_each_body_with_and_without_the_slabs(res):
 
 def test_the_shoulder_cut_is_the_vertical_plane_through_the_sjc_with_a_sphere_zone_owned_jointly(res):
     s = res["shoulder"]
-    assert s["plane"]["lateral_mm"] == pytest.approx(178.0 * 328.759098448 / 313.0) and s["plane"]["below_cjc_mm"] == pytest.approx(84.0 * 328.759098448 / 313.0)
+    assert s["plane"]["lateral_mm"] == pytest.approx(192.328859146) and s["plane"]["below_cjc_mm"] == pytest.approx(77.5690978875) and s["plane"]["ahead_of_cjc_mm"] == pytest.approx(13.8136749663)
+    assert s["plane"]["dumas2015_cross_check"]["lateral_mm"] == pytest.approx(178.0 * 328.759098448 / 313.0)                  # Dumas 2015 Table 1 is a cross-check only
+    assert s["plane"]["sheet_minus_dumas_mm"]["lateral"] == pytest.approx(5.4, abs=0.1) and s["plane"]["sheet_minus_dumas_mm"]["z"] == pytest.approx(10.7, abs=0.1)
     assert s["sphere_radius_mm"] == bodies.ZONE_H_MM
     assert s["thorax_with_zone_l"] > s["thorax_without_zone_l"] > 0 and s["thorax_in_spheres_l"] == pytest.approx(s["thorax_with_zone_l"] - s["thorax_without_zone_l"])
     g = s["shoulder_girdle_assigned_to_the_arm_side_l"]

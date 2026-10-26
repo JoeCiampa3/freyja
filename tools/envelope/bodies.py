@@ -8,7 +8,7 @@ the anchor of `trunk.PRIMARY_CANDIDATE`), plus the legs' shear, which is a const
 
 Arms: a vertex is an arm vertex by the rule of memo 32 (`decompose.vertex_regions`: below the crotch apex a piece far from the midline, above it every piece but the largest in its
 layer), and a cell goes to the arm when its nearest vertex is one. Where an arm and the core are one connected piece, above the axilla, the thorax is cut at the vertical plane
-through the shoulder joint centres (Dumas 2015 Table 1 SJC, scaled to the thorax); what lies beyond the plane is the shoulder girdle of that side, part of the unbuilt remainder.
+through the shoulder joint centres (the sheet's SJC: the upper-arm body origin in the thorax frame); what lies beyond the plane is the shoulder girdle of that side, part of the unbuilt remainder.
 The axilla is found from the layer topology: the top of the highest layer in which a separate arm piece (at least ARM_PIECE_MIN_MM2) still exists, on each side.
 """
 from __future__ import annotations
@@ -93,10 +93,17 @@ def trunk_map(inp, reg, table, candidate=trunk.PRIMARY_CANDIDATE) -> TrunkMap:
 
 
 def sjc(table: dict, sh) -> dict:
-    """The shoulder joint centre of the Dumas 2015 Table 1 thorax frame, scaled to the sheet's thorax: lateral distance from the midline and distance below the CJC."""
+    """The shoulder joint centre in the sheet's thorax frame (origin CJC): the snapshot's upper-arm body origin, `upper_arm_right_pos_x/y/z` (the sheet scales Dumas 2007 torso values by
+    the torso length). Returns the lateral distance from the midline, the distance below the CJC and the distance ahead of it (mm; the left side mirrors y). The Dumas 2015 Table 1 SJC,
+    scaled to the sheet's thorax, is kept as a cross-check only, with the difference sheet minus Dumas in the thorax frame's own signs (z is up, so a smaller drop is positive)."""
+    x, y, z = (float(v) for v in sh.sjc_mm)
+    if not np.isfinite([x, y, z]).all():
+        raise StopAndAsk("the snapshot has no upper_arm_right_pos_x/y/z (the shoulder joint centre in the thorax frame)")
     s = sh.thorax_length_mm / float(table["reference_length_mm"]["thorax"])
-    _, y, z = table["segments"]["thorax"]["landmarks"]["SJC"]
-    return {"lateral_mm": abs(z) * s, "below_cjc_mm": -y * s, "scale": s}
+    _, ty, tz = table["segments"]["thorax"]["landmarks"]["SJC"]
+    dumas = {"lateral_mm": abs(tz) * s, "below_cjc_mm": -ty * s, "scale": s}
+    return {"lateral_mm": abs(y), "below_cjc_mm": -z, "ahead_of_cjc_mm": x, "source": "snapshot upper_arm_right_pos_x/y/z (the sheet's upper-arm body origin)",
+            "dumas2015": dumas, "sheet_minus_dumas_mm": {"lateral": abs(y) - dumas["lateral_mm"], "z": z - (-dumas["below_cjc_mm"])}}
 
 
 def planes_sheet(sheet: dict) -> dict:
@@ -132,7 +139,7 @@ def axilla(prof: dict, apex_mm: float) -> dict:
 
 # ---- accounting of every cell ----------------------------------------------------------------------------------------------------------
 
-def classify(raster, V, arm_mask, tm: TrunkMap, sheet: dict, apex_mm: float, axilla_mm: float, lateral_mm: float, sjc_below_mm: float, h_zone: float = ZONE_H_MM) -> dict:
+def classify(raster, V, arm_mask, tm: TrunkMap, sheet: dict, apex_mm: float, axilla_mm: float, lateral_mm: float, sjc_below_mm: float, h_zone: float = ZONE_H_MM, sjc_ahead_mm: float | None = None) -> dict:
     """Every inside cell of the raster (mesh frame, sole at 0) to a class, with the conformed volumes. Returns volumes (litres, conformed and unconformed) by class, the per-layer
     areas by class (mm2, for the matched-station check), the zone accounting and the shoulder spheres.
 
@@ -208,12 +215,14 @@ def classify(raster, V, arm_mask, tm: TrunkMap, sheet: dict, apex_mm: float, axi
             zones[pname][side] = {CLASSES[c]: float(v[c]) for c in range(len(CLASSES)) if v[c] > 0}
     slope = thick / h
     arm_above = is_arm & (zc >= axilla_mm) & (np.abs(y) <= lateral_mm)
-    # shoulder spheres: centre at the SJC, the plane's lateral distance from the midline, sjc_below_mm below the CJC; x is the thorax's mean x at that height (Table 1 gives no X)
+    # shoulder spheres: centre at the SJC, the plane's lateral distance from the midline, sjc_below_mm below the CJC. x: the thorax's centre line in the mesh is its mean x within 5 mm
+    # of the CJC plane (thorax cells inside the shoulder planes), and the SJC lies sjc_ahead_mm in front of it (the sheet's x offset in the thorax frame). Without an offset the
+    # centre is the thorax's mean x at the sphere height, the rule before the sheet's SJC was used; that mean is reported either way
     zs = sheet["cjc"] - sjc_below_mm
-    near = np.abs(zf - zs) < 5.0
-    sel = near & (cls == CODE["thorax"]) & (np.abs(y) < lateral_mm)
-    xc = float(P[sel, 0].mean()) if sel.any() else float("nan")
-    spheres = {"centre_height_mm": zs, "centre_x_mesh_mm": xc, "lateral_mm": lateral_mm, "radius_mm": h_zone, "sides": {}}
+    mean_x = lambda z0: (lambda sel: float(P[sel, 0].mean()) if sel.any() else float("nan"))((np.abs(zf - z0) < 5.0) & (cls == CODE["thorax"]) & (np.abs(y) < lateral_mm))
+    x_sphere_level, x_cjc = mean_x(zs), mean_x(sheet["cjc"])
+    xc = x_sphere_level if sjc_ahead_mm is None else x_cjc + sjc_ahead_mm
+    spheres = {"centre_height_mm": zs, "centre_x_mesh_mm": xc, "cjc_x_mesh_mm": x_cjc, "centre_x_thorax_mean_mesh_mm": x_sphere_level, "lateral_mm": lateral_mm, "radius_mm": h_zone, "sides": {}}
     for side, sgn in (("R", -1.0), ("L", 1.0)):
         dist = np.sqrt((P[:, 0] - xc) ** 2 + (y - sgn * lateral_mm) ** 2 + (zf - zs) ** 2)
         m = dist < h_zone
@@ -410,7 +419,7 @@ def build(inp, feats, reg, table, voxel=trial.VOXEL_MM, h_zone=ZONE_H_MM) -> Tru
     if ax["merged_below_axilla"]:
         raise StopAndAsk(f"an arm piece is missing from a layer below the axilla (right {ax['right']['layers_missing_between']}, left {ax['left']['layers_missing_between']} layers): an arm merges with the trunk raster")
     sj = sjc(table, sh)
-    acc = classify(raster, inp.V, arm_mask, tm, sheet, apex, ax["level_mm"], sj["lateral_mm"], sj["below_cjc_mm"], h_zone)
+    acc = classify(raster, inp.V, arm_mask, tm, sheet, apex, ax["level_mm"], sj["lateral_mm"], sj["below_cjc_mm"], h_zone, sj["ahead_of_cjc_mm"])
     results, rows, design, matched = {}, {}, {}, {}
     for name in BODIES:
         res = build_body(inp, raster, tm, name, arm_mask, sheet, ax["level_mm"], sj["lateral_mm"], voxel)

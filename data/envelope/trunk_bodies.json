@@ -9,11 +9,11 @@
    "pelvis": 5.548598226558505,
    "shank_L": 2.4720477600833015,
    "shank_R": 2.4715628843595256,
-   "shoulder_L": 0.30675097766552323,
-   "shoulder_R": 0.2962229256282649,
+   "shoulder_L": 0.26183610730367285,
+   "shoulder_R": 0.2522556602552753,
    "thigh_L": 6.416185579409405,
    "thigh_R": 6.426651212141441,
-   "thorax": 15.76492523061085
+   "thorax": 15.853807366352783
   },
   "raster_total": 52.330872,
   "unconformed": {
@@ -25,52 +25,52 @@
    "pelvis": 5.548598226558505,
    "shank_L": 2.470236931287762,
    "shank_R": 2.4697524107459987,
-   "shoulder_L": 0.305584,
-   "shoulder_R": 0.295096,
+   "shoulder_L": 0.26084,
+   "shoulder_R": 0.251296,
    "thigh_L": 6.471579602274625,
    "thigh_R": 6.482135589858378,
-   "thorax": 15.70495047217455
+   "thorax": 15.793494472174565
   }
  },
  "arm_rule_cross_check": {
   "core_by_layer_topology_l": 30.27428316786818,
-  "core_by_vertex_label_l": 30.20704316786913,
-  "difference_l": -0.06723999999904962,
-  "relative": -0.0022210269893496687
+  "core_by_vertex_label_l": 30.20704316786915,
+  "difference_l": -0.06723999999903185,
+  "relative": -0.002221026989349082
  },
  "cjc_anchor": "ansur_cervicale",
  "closure": {
   "built_l": {
    "abdomen": 4.448969976829189,
    "foots": 1.1315234244094012,
-   "head_neck": 3.7805386148210482,
+   "head_neck": 3.7807394644982404,
    "pelvis": 5.532549244952524,
    "shanks": 4.940793660237804,
    "thighs": 12.839542043084718,
-   "thorax": 15.752130645748077
+   "thorax": 15.841964046557061
   },
-  "conform_effect_l": -0.14303892284477004,
+  "conform_effect_l": -0.14270078710285172,
   "mesh_volume_l": 52.33146287470325,
   "raster_minus_mesh_l": -0.0005908747032492556,
   "raster_total_l": 52.330872,
-  "relative_difference": -0.003919463614297433,
+  "relative_difference": -0.0038909864725491486,
   "remainder_l": {
    "arms": 3.0996240000001314,
-   "shoulder_L": 0.305584,
-   "shoulder_R": 0.295096
+   "shoulder_L": 0.26084,
+   "shoulder_R": 0.251296
   },
-  "share_denominator_l": 52.12635161008289,
+  "share_denominator_l": 52.12784186056907,
   "shares": {
-   "abdomen": 0.08534972886858663,
-   "foots": 0.021707320567406232,
-   "head_neck": 0.07252643812673382,
-   "pelvis": 0.10613728131861723,
-   "remainder": 0.07098720485330064,
-   "shanks": 0.09478495056005604,
-   "thighs": 0.24631576249815923,
-   "thorax": 0.3021913132071402
+   "abdomen": 0.0853472888582121,
+   "foots": 0.02170669999030435,
+   "head_neck": 0.07252821773460173,
+   "pelvis": 0.10613424702582012,
+   "remainder": 0.06928658220036854,
+   "shanks": 0.09478224081199026,
+   "thighs": 0.2463087207298505,
+   "thorax": 0.30390600264885237
   },
-  "sum_l": 52.12635161008289,
+  "sum_l": 52.12784186056907,
   "tolerance": 0.005,
   "within_tolerance": true
  },
@@ -119,15 +119,15 @@
   },
   "head_neck": {
    "inner_volume_l": {
-    "t10": 2.244387393136888,
-    "t3": 3.282297873021828,
-    "t5": 2.9615951042065958,
-    "t8": 2.515168399419286
+    "t10": 2.2444692096622165,
+    "t3": 3.282283314819898,
+    "t5": 2.961707396219803,
+    "t8": 2.515415687554225
    },
    "length_mm": 265.7381850080001,
    "min_inscribed_radius": {
     "from_station_mm": 20.0,
-    "r_mm": 27.97,
+    "r_mm": 28.11,
     "station_mm": 170.0
    },
    "min_inscribed_radius_inner": {
@@ -136,7 +136,7 @@
      "station_mm": 180.0
     },
     "t3": {
-     "r_mm": 25.15,
+     "r_mm": 25.25,
      "station_mm": 180.0
     },
     "t5": {
@@ -150,20 +150,20 @@
    },
    "pinch_stations": [
     {
-     "prominence_mm": 21.28,
-     "r_mm": 27.97,
+     "prominence_mm": 21.14,
+     "r_mm": 28.11,
      "station_mm": 170.0
     }
    ],
    "required_density_inner_kg_per_l": {
-    "t10": 1.9403958573805726,
-    "t3": 1.326814374708349,
-    "t5": 1.4704913557610348,
-    "t8": 1.731494400536164
+    "t10": 1.9403251250906712,
+    "t3": 1.326820259645674,
+    "t5": 1.4704356026387133,
+    "t8": 1.731324178960826
    },
-   "required_density_skin_kg_per_l": 1.1519522596401635,
+   "required_density_skin_kg_per_l": 1.1518910628183083,
    "sheet_mass_kg": 4.355,
-   "skin_volume_l": 3.7805386148210482
+   "skin_volume_l": 3.7807394644982404
   },
   "pelvis": {
    "inner_volume_l": {
@@ -209,10 +209,10 @@
   },
   "thorax": {
    "inner_volume_l": {
-    "t10": 12.92136877928659,
-    "t3": 14.894858964187067,
-    "t5": 14.317553067880237,
-    "t8": 13.471268651398715
+    "t10": 12.979321543592174,
+    "t3": 14.974227070609732,
+    "t5": 14.39047113578558,
+    "t8": 13.535058786859878
    },
    "length_mm": 328.75909844800003,
    "min_inscribed_radius": {
@@ -226,7 +226,7 @@
      "station_mm": 0.0
     },
     "t3": {
-     "r_mm": 45.88,
+     "r_mm": 45.92,
      "station_mm": 0.0
     },
     "t5": {
@@ -240,14 +240,14 @@
    },
    "pinch_stations": [],
    "required_density_inner_kg_per_l": {
-    "t10": 1.3230022524706428,
-    "t3": 1.1477114379600983,
-    "t5": 1.1939889392378535,
-    "t8": 1.2689970367583037
+    "t10": 1.3170950378711985,
+    "t3": 1.1416282068777197,
+    "t5": 1.1879388686232042,
+    "t8": 1.263016309659193
    },
-   "required_density_skin_kg_per_l": 1.0852500137569896,
+   "required_density_skin_kg_per_l": 1.0790959978043417,
    "sheet_mass_kg": 17.095,
-   "skin_volume_l": 15.752130645748077
+   "skin_volume_l": 15.841964046557061
   }
  },
  "field_vs_raster_l": {
@@ -256,7 +256,7 @@
    "raster": 4.473393960809846
   },
   "head_neck": {
-   "field": 3.7805386148210482,
+   "field": 3.7807394644982404,
    "raster": 3.7840164648551493
   },
   "pelvis": {
@@ -264,13 +264,13 @@
    "raster": 5.548598226558505
   },
   "thorax": {
-   "field": 15.752130645748077,
-   "raster": 15.76492523061085
+   "field": 15.841964046557061,
+   "raster": 15.853807366352783
   }
  },
  "free_end_mm": 20.0,
  "generated_by": "fy envelope gates",
- "inputs": "mesh, snapshot, ANSUR II ratios, Dumas 2015 Table 1 (inputs sha256:11152b755a53)",
+ "inputs": "mesh, snapshot, ANSUR II ratios, Dumas 2015 Table 1 (inputs sha256:8d94e0078eeb)",
  "map": "slope1",
  "matched_areas": {
   "abdomen": {
@@ -335,61 +335,61 @@
   "head_neck": {
    "rows": [
     {
-     "field_mm2": 13542.508718219424,
+     "field_mm2": 13544.160183718393,
      "raster_mm2": 13547.18311635876,
-     "relative": -0.0003450457633285467,
+     "relative": -0.0002231410481722705,
      "u": 0.1
     },
     {
-     "field_mm2": 20381.20592062325,
+     "field_mm2": 20379.185971772808,
      "raster_mm2": 20371.093658380636,
-     "relative": 0.0004964025207579062,
+     "relative": 0.00039724491614824645,
      "u": 0.2
     },
     {
-     "field_mm2": 23022.596127385135,
+     "field_mm2": 23022.16484163719,
      "raster_mm2": 23040.699593394842,
-     "relative": -0.0007857168544871958,
+     "relative": -0.0008044352855919964,
      "u": 0.3
     },
     {
-     "field_mm2": 20554.40448552216,
+     "field_mm2": 20552.672075644077,
      "raster_mm2": 20598.114526041783,
-     "relative": -0.00212204085302873,
+     "relative": -0.002206146117900944,
      "u": 0.4
     },
     {
-     "field_mm2": 18806.551526919182,
+     "field_mm2": 18805.756871505553,
      "raster_mm2": 18834.46599017566,
-     "relative": -0.0014820947549582285,
+     "relative": -0.001524286310271944,
      "u": 0.5
     },
     {
-     "field_mm2": 9765.651643076464,
+     "field_mm2": 9769.231575700522,
      "raster_mm2": 9757.998049005779,
-     "relative": 0.0007843406026777353,
+     "relative": 0.0011512122300421587,
      "u": 0.6
     },
     {
-     "field_mm2": 9330.416250173974,
+     "field_mm2": 9336.815216623429,
      "raster_mm2": 9317.269728100964,
-     "relative": 0.001410984382405467,
+     "relative": 0.002097769957599819,
      "u": 0.7
     },
     {
-     "field_mm2": 7796.310606511274,
+     "field_mm2": 7794.4526675578145,
      "raster_mm2": 7795.969593750113,
-     "relative": 4.374218717256425e-05,
+     "relative": -0.00019457825919619217,
      "u": 0.8
     },
     {
-     "field_mm2": 8982.972812951357,
+     "field_mm2": 8997.128953860658,
      "raster_mm2": 8999.709023792391,
-     "relative": -0.0018596391057520943,
+     "relative": -0.0002866837055411919,
      "u": 0.9
     }
    ],
-   "worst": 0.00212204085302873
+   "worst": 0.002206146117900944
   },
   "pelvis": {
    "rows": [
@@ -453,61 +453,61 @@
   "thorax": {
    "rows": [
     {
-     "field_mm2": 41730.90168470684,
-     "raster_mm2": 41742.57091429159,
-     "relative": -0.00027955224915844406,
+     "field_mm2": 42155.40153233906,
+     "raster_mm2": 42160.905836459686,
+     "relative": -0.00013055469306028783,
      "u": 0.1
     },
     {
-     "field_mm2": 55255.589982388316,
-     "raster_mm2": 55272.39371177317,
-     "relative": -0.0003040166755302757,
+     "field_mm2": 56332.71012749752,
+     "raster_mm2": 56352.27077012907,
+     "relative": -0.0003471136542366002,
      "u": 0.2
     },
     {
-     "field_mm2": 62403.91043156383,
-     "raster_mm2": 62389.31488892092,
-     "relative": 0.00023394298637354513,
+     "field_mm2": 63515.01973520397,
+     "raster_mm2": 63483.390134068795,
+     "relative": 0.0004982342793662345,
      "u": 0.3
     },
     {
-     "field_mm2": 61005.04883254181,
-     "raster_mm2": 60726.0774873817,
-     "relative": 0.004593929934270502,
+     "field_mm2": 61179.00997082045,
+     "raster_mm2": 60782.01976387747,
+     "relative": 0.006531375700991607,
      "u": 0.4
     },
     {
-     "field_mm2": 60806.57495976337,
+     "field_mm2": 60788.42326104502,
      "raster_mm2": 60805.57726656438,
-     "relative": 1.6407922493917335e-05,
+     "relative": -0.0002821123701229035,
      "u": 0.5
     },
     {
-     "field_mm2": 55772.42747150744,
+     "field_mm2": 55793.12458276922,
      "raster_mm2": 55789.900856964436,
-     "relative": -0.00031319979402350684,
+     "relative": 5.7783321985956905e-05,
      "u": 0.6
     },
     {
-     "field_mm2": 44851.215626993595,
+     "field_mm2": 44851.15259451603,
      "raster_mm2": 44892.08039827063,
-     "relative": -0.0009102890958603645,
+     "relative": -0.0009116931848890695,
      "u": 0.7
     },
     {
-     "field_mm2": 39295.22285299434,
+     "field_mm2": 39293.92403286019,
      "raster_mm2": 39282.77081002845,
-     "relative": 0.0003169848437144598,
+     "relative": 0.00028392149030612867,
      "u": 0.8
     },
     {
-     "field_mm2": 33672.50039936851,
+     "field_mm2": 33685.46397198779,
      "raster_mm2": 33707.26015072793,
-     "relative": -0.0010312244663015764,
+     "relative": -0.0006466315755916743,
      "u": 0.9
     }
    ],
-   "worst": 0.004593929934270502
+   "worst": 0.006531375700991607
   }
  },
  "mesh_nodes_mm": {
@@ -547,7 +547,7 @@
   "thorax_box": {
    "feasible": {
     "feasible": true,
-    "margin_mm": 17.453703610668477,
+    "margin_mm": 17.496524492520358,
     "point_mm": [
      -50.0,
      90.0,
@@ -559,7 +559,7 @@
    },
    "infeasible": {
     "feasible": false,
-    "margin_mm": -34.379071212663334,
+    "margin_mm": -34.404722948822176,
     "point_mm": [
      -50.0,
      160.0,
@@ -613,7 +613,7 @@
   "vertex": 1690.342088948
  },
  "shoulder": {
-  "arm_labelled_cells_above_axilla_inside_the_planes_l": 0.016383383530459608,
+  "arm_labelled_cells_above_axilla_inside_the_planes_l": 0.025289264315614624,
   "axilla": {
    "arm_piece_min_mm2": 500.0,
    "left": {
@@ -630,35 +630,47 @@
    },
    "right_minus_left_mm": 2.0
   },
-  "centre_height_mm": 1336.3746251232844,
+  "centre_height_mm": 1347.0348060525,
   "leaked_arm_cells_reclassified_below_axilla_l": 0.0434,
   "plane": {
-   "below_cjc_mm": 88.22927881671565,
-   "lateral_mm": 186.9620432068498,
-   "scale": 1.050348557341853,
-   "x_mesh_mm": 17.207543453070684,
-   "x_note": "Table 1 gives no X: the thorax's mean x at that height"
+   "ahead_of_cjc_mm": 13.8136749663,
+   "below_cjc_mm": 77.56909788749999,
+   "cjc_x_mesh_mm": 1.7533759739504609,
+   "dumas2015_cross_check": {
+    "below_cjc_mm": 88.22927881671565,
+    "lateral_mm": 186.9620432068498,
+    "scale": 1.050348557341853
+   },
+   "lateral_mm": 192.328859146,
+   "sheet_minus_dumas_mm": {
+    "lateral": 5.3668159391502,
+    "z": 10.660180929215656
+   },
+   "source": "snapshot upper_arm_right_pos_x/y/z (the sheet's upper-arm body origin)",
+   "thorax_mean_x_at_sphere_height_mesh_mm": 14.294276888514469,
+   "x_mesh_mm": 15.56705094025046,
+   "x_note": "the sheet's x offset (ahead of the CJC) added to the mesh thorax's centre line at the CJC plane (cjc_x_mesh_mm)",
+   "x_sheet_minus_previous_rule_mm": 1.2727740517359916
   },
   "shoulder_girdle_assigned_to_the_arm_side_l": {
-   "left": 0.30675097766552323,
-   "right": 0.2962229256282649
+   "left": 0.26183610730367285,
+   "right": 0.2522556602552753
   },
   "sphere_radius_mm": 25.0,
   "spheres": {
    "L": {
-    "arms": 0.0006585051617517693,
-    "shoulder_L": 0.032612066608218644,
-    "thorax": 0.032146294664540574
+    "shoulder_L": 0.031985683649479145,
+    "thorax": 0.03342315223427873
    },
    "R": {
-    "arms": 0.0039430004197575355,
-    "shoulder_R": 0.030748978833506337,
-    "thorax": 0.030789131587271687
+    "arms": 0.0009154827858500184,
+    "shoulder_R": 0.030765039935012454,
+    "thorax": 0.033768465916660766
    }
   },
-  "thorax_in_spheres_l": 0.06293542625181225,
-  "thorax_with_zone_l": 15.76492523061085,
-  "thorax_without_zone_l": 15.701989804359037
+  "thorax_in_spheres_l": 0.06719161815093949,
+  "thorax_with_zone_l": 15.853807366352783,
+  "thorax_without_zone_l": 15.786615748201843
  },
  "zone_h_mm": 25.0,
  "zone_planes_raw_l": {
@@ -744,17 +756,17 @@
    "without_all_l": 11.33525448193738
   },
   "thorax": {
-   "shoulder_spheres_in_thorax_l": 0.06293542625181225,
+   "shoulder_spheres_in_thorax_l": 0.06719161815093949,
    "slab_l": {
     "cjc": 0.6445148229030002,
     "tjc": 0.7574109322861897
    },
-   "with_zones_l": 15.76492523061085,
-   "without_all_and_spheres_l": 14.300064049169848,
-   "without_all_l": 14.36299947542166,
+   "with_zones_l": 15.853807366352783,
+   "without_all_and_spheres_l": 14.384689993012653,
+   "without_all_l": 14.451881611163593,
    "without_each_l": {
-    "cjc": 15.12041040770785,
-    "tjc": 15.00751429832466
+    "cjc": 15.209292543449783,
+    "tjc": 15.096396434066593
    }
   },
   "zone_h_mm": 25.0

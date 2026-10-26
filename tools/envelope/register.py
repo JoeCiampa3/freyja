@@ -51,6 +51,7 @@ class SheetNodes:
     thorax_length_mm: float = float("nan")       # TJC to CJC
     head_neck_length_mm: float = float("nan")    # CJC to the vertex
     head_neck_mass_kg: float = float("nan")
+    sjc_mm: tuple = (float("nan"),) * 3          # the shoulder joint centre in the thorax frame (origin CJC; x anterior, y left, z up): the snapshot's upper_arm_<side>_pos_x/y/z in mm (volume-extractor brief 6, item 0b)
 
 
 SEGMENT_MASS_KEYS = ("abdomen", "head_neck", "pelvis", "thorax")                       # one body each
@@ -90,7 +91,8 @@ def sheet_nodes(snapshot_path, side="right") -> SheetNodes:
     return SheetNodes(ajc, kjc, hjc, Lt, Ls, snap[f"thigh_{side}_pos_y"] * mm, k, snap[f"thigh_{side}_mass"],
                       snap["target_stature"] * mm, snap[f"shank_{side}_mass"], snap[f"foot_{side}_mass"], total_mass(snap), snap["target_mass"],
                       snap["pelvis_pos_z"] * mm, snap["pelvis_mass"], checks, snap["abdomen_mass"], snap["thorax_mass"], snap["abdomen_length"] * mm,
-                      snap["thorax_length"] * mm, snap["head_neck_length"] * mm, snap["head_neck_mass"])
+                      snap["thorax_length"] * mm, snap["head_neck_length"] * mm, snap["head_neck_mass"],
+                      tuple(snap.get(f"upper_arm_{side}_pos_{ax}", float("nan")) * mm for ax in "xyz"))
 
 
 @dataclass(frozen=True)
