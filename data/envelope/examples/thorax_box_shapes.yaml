@@ -1,0 +1,5 @@
+# Worked example for the thorax (brief 5): a box 120 mm anterior-posterior x 180 mm wide x 100 mm tall.
+# Frame of the thorax body: origin at the CJC plane on the vertical line through the knee section's x and the midline, z up, x anterior, y left; stations are distances below the CJC plane.
+# The box centre sits at station 160 mm (tz = -160), the middle of the thorax, and x = +10 mm.
+shapes:
+  - {name: module, type: box, half: [60, 90, 50]}

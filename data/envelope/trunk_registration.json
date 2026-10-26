@@ -443,7 +443,7 @@
   }
  },
  "generated_by": "fy envelope trunk",
- "inputs": "mesh, snapshot, ANSUR II ratios, Dumas 2015 Table 1 (inputs sha256:b05a2d96dc99)",
+ "inputs": "mesh, snapshot, ANSUR II ratios, Dumas 2015 Table 1 (inputs sha256:ab0efedd478b)",
  "mesh": {
   "c7_above_cjc_mm": 29.40975960557188,
   "frame_note": "mesh heights are above the sole; the mesh-to-sheet map is slope 1 above the HJC node",
@@ -462,11 +462,8 @@
   "sd_convention": "the ANSUR II female SD of the landmark's height ratio times the mesh stature, centred on the candidate (the convention of the leg anchors, memo 29); the HJC takes the registration's SD; the vertex is the mesh's top and has none",
   "seed": 0
  },
- "primary_candidate": "nape_c7",
- "primary_exceeding_8_percent": [
-  "thorax",
-  "head_neck"
- ],
+ "primary_candidate": "ansur_cervicale",
+ "primary_exceeding_8_percent": [],
  "primary_mode": "slope1",
  "schema": "trunk-registration/1",
  "sheet": {
@@ -496,5 +493,5 @@
   "zero_pose_drop_mm": 97.68241583205531,
   "zero_pose_vertex_mm": 1690.342088948
  },
- "stop_and_ask": true
+ "stop_and_ask": false
 }

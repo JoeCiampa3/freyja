@@ -15,9 +15,13 @@ DIRECTIONS = (0, 45, 90, 135, 180, 225, 270, 315)   # degrees from +x (anterior)
 
 
 def direction_names(side: str):
-    """Names of the 8 directions for a segment-frame angle from +x towards +y. y is left, so for the right thigh +y is medial."""
-    medial_sign = +1 if side == "right" else -1
-    base = {0: "ant", 90: "med" if medial_sign > 0 else "lat", 180: "post", 270: "lat" if medial_sign > 0 else "med"}
+    """Names of the 8 directions for a segment-frame angle from +x towards +y. y is left, so for the right thigh +y is medial. A whole-width trunk body (`side`
+    "trunk") has no medial side: +y is left, -y right."""
+    if side == "trunk":
+        base = {0: "ant", 90: "left", 180: "post", 270: "right"}
+    else:
+        medial_sign = +1 if side == "right" else -1
+        base = {0: "ant", 90: "med" if medial_sign > 0 else "lat", 180: "post", 270: "lat" if medial_sign > 0 else "med"}
     names = {}
     for a in DIRECTIONS:
         if a in base:
@@ -38,8 +42,12 @@ def stations(length: float):
 def rows_for(seg: field.Segment, side: str, shells=SHELL_MM):
     names = direction_names(side)
     dirs = {"ant": 0, "post": 180}
-    dirs["med" if side == "right" else "lat"] = 90
-    dirs["lat" if side == "right" else "med"] = 270
+    if side == "trunk":
+        dirs.update({"left": 90, "right": 270})
+    else:
+        dirs["med" if side == "right" else "lat"] = 90
+        dirs["lat" if side == "right" else "med"] = 270
+    hw_names = ("ant", "post", "left", "right") if side == "trunk" else ("ant", "post", "med", "lat")
     out = []
     for s in stations(seg.length):
         sec = seg.section(s)
@@ -48,7 +56,7 @@ def rows_for(seg: field.Segment, side: str, shells=SHELL_MM):
         row = {"s_mm": round(s, 1), "area_mm2": round(area, 1), "perimeter_mm": round(sec.perimeter(0.0), 1),
                "perimeter_equiv_circle_mm": round(2 * float(np.sqrt(np.pi * area)), 1),
                "cheb_cx_mm": round(cx, 2), "cheb_cy_mm": round(cy, 2), "cheb_r_mm": round(r, 2)}
-        for nm in ("ant", "post", "med", "lat"):
+        for nm in hw_names:
             row[f"hw_{nm}_mm"] = round(sec.ray((0.0, 0.0), dirs[nm]), 2)
         for a in DIRECTIONS:
             row[f"r_{names[a]}_mm"] = round(sec.ray((cx, cy), a), 2) if np.isfinite(cx) else float("nan")

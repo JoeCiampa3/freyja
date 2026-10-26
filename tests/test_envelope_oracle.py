@@ -104,3 +104,43 @@ def test_cli_check_prints_margin_and_binding_station_for_a_feasible_and_an_infea
     ok, bad = run("ok.csv"), run("bad.csv")
     assert ok.returncode == 0 and "FEASIBLE" in ok.stdout and "margin" in ok.stdout and "station" in ok.stdout, ok.stdout + ok.stderr
     assert bad.returncode == 1 and "INFEASIBLE" in bad.stdout and "pose 1" in bad.stdout, bad.stdout + bad.stderr
+
+
+# ---- brief 5, item 3: containment in the union of adjacent bodies ------------------------------------------------------------------------
+
+@pytest.fixture(scope="module")
+def stacked():
+    """A cylinder of radius 45 cut into two adjacent bodies at z = -100: the upper body spans z in [0, -100], the lower [-100, -300] (each in its own frame, origin at its top)."""
+    v, f = frustum(R_ENV, R_ENV, 60, -H - 60)
+    upper = field.build_segment(v, f, length=100.0, voxel=2.0, z_top=0.0, margin=40.0)
+    lower_v = v + np.array([0.0, 0.0, 100.0])                       # the lower body's frame has its origin at z = -100 of the first
+    lower = field.build_segment(lower_v, f, length=200.0, voxel=2.0, z_top=0.0, margin=40.0)
+    return upper, lower
+
+
+def test_a_rod_across_the_interface_is_contained_in_the_union_though_it_overruns_each_body(stacked):
+    upper, lower = stacked
+    parts = [(upper, (0, 0, 0)), (lower, (0, 0, -100))]
+    shape = [rod(radius=20.0, length=150.0)]
+    p = [pose(tz=-100.0)]                                           # centred on the interface: z from -25 to -175... no: 150 long, so -25 to -175
+    assert oracle.clearance(upper, shape, p)["slab_overrun_mm"] > 0 and not oracle.clearance(upper, shape, p)["feasible"]
+    out = oracle.clearance_union(parts, shape, p)
+    assert out["slab_overrun_mm"] == 0.0 and out["feasible"]
+    assert abs(out["margin_mm"] - (R_ENV - 20.0)) < 1.0
+
+
+def test_the_union_overruns_beyond_its_outer_planes_and_binds_on_the_skin_like_one_body(stacked):
+    upper, lower = stacked
+    parts = [(upper, (0, 0, 0)), (lower, (0, 0, -100))]
+    out = oracle.clearance_union(parts, [rod()], [pose(tz=-250.0)])        # reaches z = -325, 25 mm past the lower plane at -300
+    assert out["slab_overrun_mm"] == pytest.approx(25.0, abs=1.0) and not out["feasible"]
+    out = oracle.clearance_union(parts, [rod()], [pose(tz=-100.0, ty=30.0)])
+    assert out["margin_mm"] == pytest.approx(R_ENV - 20.0 - 30.0, abs=1.0) and not out["feasible"]
+
+
+def test_a_gap_between_two_bodies_is_an_overrun():
+    v, f = frustum(R_ENV, R_ENV, 60, -H - 60)
+    a = field.build_segment(v, f, length=60.0, voxel=2.0, z_top=0.0, margin=40.0)
+    b = field.build_segment(v, f, length=60.0, voxel=2.0, z_top=-100.0, margin=40.0)
+    out = oracle.clearance_union([(a, (0, 0, 0)), (b, (0, 0, 0))], [rod(radius=10.0, length=120.0)], [pose(tz=-80.0)])      # spans -20 to -140: the gap -60 to -100 is in no slab
+    assert out["slab_overrun_mm"] == pytest.approx(20.0, abs=1.0)

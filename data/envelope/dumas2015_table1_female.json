@@ -22,8 +22,10 @@
       "landmarks": {
         "C7": [-61, 28, 0],
         "SUP": [49, -35, 0],
-        "TJC": [0, -313, 0]
-      }
+        "TJC": [0, -313, 0],
+        "SJC": [null, -84, 178]
+      },
+      "SJC_note": "added for volume-extractor brief 5 (Joe, memo 34 decision 3): the shoulder joint centre, 84 mm below the CJC and 178 mm to the right of the midline, unscaled; the X coordinate was not supplied"
     }
   },
   "reference_length_mm": {"thorax": 313, "abdomen": 121},

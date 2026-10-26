@@ -1,0 +1,5 @@
+# Worked example for the union query (brief 5, item 3): a rod of OD 40 mm, length 150 mm, along z, across the LJC plane. Poses are in the frame of the first body listed
+# (pelvis,abdomen): origin at the LJC plane, so the pelvis is z in [-97.7, 0] and the abdomen z in [0, 127.1]. The feasible pose centres the rod on the plane (z -75 to 75); the
+# infeasible one lowers it 60 mm, so its lower end is 37 mm below the HJC plane.
+shapes:
+  - {name: rod, type: cylinder, diameter: 40, length: 150}

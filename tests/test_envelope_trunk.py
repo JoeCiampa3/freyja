@@ -155,7 +155,9 @@ def test_the_committed_result_names_every_anchor_candidate_and_both_modes(res):
         for m in c["modes"].values():
             assert set(m["stretch"]) == {"pelvis", "abdomen", "thorax", "head_neck"}
             assert set(m["monte_carlo"]) >= {"thorax", "head_neck"}
-    assert res["primary_candidate"] == "nape_c7" and res["primary_mode"] == "slope1"
+    assert res["primary_candidate"] == "ansur_cervicale" and res["primary_mode"] == "slope1"      # Joe, memo 34 decisions 1 and 2
+    assert res["primary_exceeding_8_percent"] == [] and res["stop_and_ask"] is False
+    assert res["candidates"]["nape_c7"]["modes"]["slope1"]["exceeding_8_percent"] == ["thorax", "head_neck"]    # the brief's anchor, kept as a cross-check
     assert res["mesh"]["nape_vertex_id"] == 1491
 
 

@@ -127,15 +127,16 @@ def ansur_slabs(inp, scale_to_stature_mm):
     return out
 
 
-def build(inp, feats, reg, results, root, outdir, shapes_path=None, poses_path=None):
-    """Write conformed.obj, original.obj, envelope_t5.obj and inspect.json into outdir. results: segment name -> SegResult."""
+def build(inp, feats, reg, results, root, outdir, shapes_path=None, poses_path=None, trunk=None):
+    """Write conformed.obj, original.obj, envelope_t5.obj and inspect.json into outdir. results: segment name -> SegResult. trunk: the `bodies.TrunkBuild` (pelvis, abdomen, thorax, head and
+    neck as further groups of the envelope, their planes, the shoulder joint centres and the axilla as further levels); its conformed.obj is the legs' conform with the trunk map."""
     outdir = Path(outdir)
     outdir.mkdir(parents=True, exist_ok=True)
     from . import trial
     # original and conformed meshes keep the original quads
     src_v, src_polys = read_obj(_mesh_path(inp, root))
     write_obj(outdir / "original.obj", to_mh_dm(inp.V, inp), src_polys)
-    write_obj(outdir / "conformed.obj", to_mh_dm(reg.apply(inp.V), inp), src_polys)
+    write_obj(outdir / "conformed.obj", to_mh_dm((trunk.tm if trunk is not None else reg).apply(inp.V), inp), src_polys)
     # envelope: the three segments in one file, one group each
     verts, faces, groups = [], [], []
     for name in ("thigh", "shank", "foot"):
@@ -143,6 +144,12 @@ def build(inp, feats, reg, results, root, outdir, shapes_path=None, poses_path=N
         groups.append((name, len(faces), None))
         faces += [(f_ + len(verts)).tolist() for f_ in f]
         verts += v.tolist()
+    if trunk is not None:
+        for name in trunk.results:
+            v, f = envelope_mesh(trunk.results[name], inp)
+            groups.append((name, len(faces), None))
+            faces += [(f_ + len(verts)).tolist() for f_ in f]
+            verts += v.tolist()
     write_obj(outdir / "envelope_t5.obj", np.array(verts), faces, [(n, a) for n, a, _ in groups])
     sh = inp.sheet
     xs, ys = reg.target_xy
@@ -168,8 +175,31 @@ def build(inp, feats, reg, results, root, outdir, shapes_path=None, poses_path=N
         "oracle_shapes": _oracle(inp, reg, results, root, shapes_path, poses_path),
         "registration": reg.summary(),
     }
+    if trunk is not None:
+        _add_trunk(insp, trunk, inp, reg, plane, mh)
     (outdir / "inspect.json").write_text(json.dumps(insp, indent=1, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
     return outdir
+
+
+def _add_trunk(insp, tb, inp, reg, plane, mh):
+    """The trunk's levels and joint centres: LJC, TJC, CJC and the vertex planes (mesh and conformed), the axilla, the shoulder joint centres and the shoulder plane's lateral distance."""
+    sh, tm = tb.sheet, tb.tm
+    names = (("LJC plane", "ljc", 1), ("TJC plane", "tjc", 1), ("CJC plane", "cjc", 2), ("vertex", "vertex", 3))
+    mesh_z = {"ljc": tm.mesh[0] + (sh["ljc"] - sh["hjc"]), "tjc": tm.mesh[1], "cjc": tm.mesh[2], "vertex": tm.mesh[3]}
+    for label, key, _ in names:
+        insp["cut_planes"]["original"].append(plane(label, mesh_z[key], "original"))
+        insp["cut_planes"]["conformed"].append(plane(label, sh[key], "conformed"))
+    insp["feature_levels"]["original"].append(plane("axilla (arm merges with the core)", tb.axilla["level_mm"], "original"))
+    xs = reg.target_xy[0]
+    dx, dy = tm.shear_hjc
+    nodes_c = {key: [xs, dy, sh[key]] for key in ("ljc", "tjc", "cjc")}
+    sph = tb.acc["spheres"]
+    for side, sgn in (("r", -1.0), ("l", 1.0)):
+        nodes_c[f"sjc_{side}"] = [sph["centre_x_mesh_mm"] + dx, sgn * tb.sjc["lateral_mm"] + dy, sph["centre_height_mm"]]
+    insp["joint_centres"]["conformed"].update(mh(nodes_c))
+    insp["axes"]["conformed"]["trunk"] = [mh(nodes_c)[k] for k in ("ljc", "tjc", "cjc")]
+    insp["trunk"] = {"cjc_anchor": "ansur_cervicale", "axilla_mesh_mm": tb.axilla["level_mm"], "shoulder_plane_lateral_mm": tb.sjc["lateral_mm"], "sphere_radius_mm": sph["radius_mm"],
+                     "groups": list(tb.results)}
 
 
 def _mesh_path(inp, root):

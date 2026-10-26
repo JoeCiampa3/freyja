@@ -1,0 +1,5 @@
+# Worked example for the pelvis (brief 5): a box-shaped module 100 mm anterior-posterior x 160 mm wide x 50 mm tall.
+# Frame of the pelvis body: origin on the vertical line through the knee section's x and the midline, at the LJC plane, z up, x anterior, y left; stations are distances below the LJC plane.
+# The box centre sits at station 50 mm (tz = -50) and x = +10 mm, near the section's AP centre.
+shapes:
+  - {name: module, type: box, half: [50, 80, 25]}

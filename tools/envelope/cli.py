@@ -9,7 +9,8 @@
                     trunk registration (brief 5, item 1): the CJC anchor candidates and the stretch per sub-segment, written to data/envelope/trunk_registration.json
     ratios          write data/ansur2/ratios.json from the raw ANSUR II female CSV
     check  --segment thigh_R --shapes FILE --poses FILE [--required MM] [--cache-dir DIR]
-                    clearance of posed shapes inside a built segment; exit 0 feasible, 1 infeasible
+                    clearance of posed shapes inside a built segment; exit 0 feasible, 1 infeasible. --segment a,b,... (built trunk bodies, e.g. pelvis,abdomen) checks
+                    containment in their union; the poses are then in the frame of the first body
 
 Defaults: mesh data/makehuman/freyja-body-v2.obj (the baseline since volume-extractor brief 4; v1 is historical), sheet values from params/snapshot.csv, out data/envelope, cache data/envelope/cache (gitignored).
 """
@@ -73,10 +74,23 @@ def cmd_build(args, root):
             title = f"right {name}, conformed; knee anchor: {reg.knee_source}\nstretch thigh {st['thigh']:.4f}, shank {st['shank']:.4f}"
             for view in ("sagittal", "coronal"):
                 plots.silhouette_png(res.seg, out / f"{name}_R_{view}.png", view, ledger.SHELL_MM, f"{view}: {title}")
-        res.seg.meta = {"inputs_sha256_12": sha, "segment": f"{name}_R", "knee_source": reg.knee_source}
+        res.seg.meta = {"inputs_sha256_12": sha, "segment": f"{name}_R", "knee_source": reg.knee_source, "origin_xyz": [float(x) for x in res.origin_xyz]}
         res.seg.save(p["cache"] / f"{name}_R.npz")
         print(f"built {name}_R: L {res.seg.length:.1f} mm, skin volume {res.seg.volume() / 1e6:.3f} l, inputs {sha}")
-    bdir = bundle.build(inp, feats, reg, results, root, p["cache"] / "inspect")
+    from . import bodies, masses
+    tb = bodies.build(inp, feats, reg, masses.load_dumas_table1(root), args.voxel)
+    for name in bodies.BODIES:
+        res, rows = tb.results[name], tb.rows[name]
+        hdr = bodies.body_header(name, tb, rows, sha, _label(p["mesh"], root))
+        (out / f"{name}.yaml").write_text(ledger.to_yaml(hdr, sha), encoding="utf-8", newline="\n")
+        (out / f"{name}_sections.csv").write_text(ledger.to_csv(rows, sha), encoding="utf-8", newline="\n")
+        title = f"{name}, conformed; CJC anchor: {bodies.trunk.PRIMARY_CANDIDATE}; stretch {hdr['stretch']:.4f}"
+        for view in ("sagittal", "coronal"):
+            plots.silhouette_png(res.seg, out / f"{name}_{view}.png", view, ledger.SHELL_MM, f"{view}: {title}", side="trunk")
+        res.seg.meta = {**res.seg.meta, "inputs_sha256_12": sha}
+        res.seg.save(p["cache"] / f"{name}.npz")
+        print(f"built {name}: L {res.seg.length:.1f} mm, skin volume {res.seg.volume() / 1e6:.3f} l, inputs {sha}")
+    bdir = bundle.build(inp, feats, reg, results, root, p["cache"] / "inspect", trunk=tb)
     print(f"stretch thigh {st['thigh']:.4f} shank {st['shank']:.4f} foot {st['foot']:.4f}; knee source {reg.knee_source}")
     print(f"wrote ledgers and silhouettes to {_label(out, root)}, the inspect bundle to {_label(bdir, root)}")
     return 0
@@ -106,12 +120,29 @@ def cmd_check(args, root):
     from . import field, oracle
     cache = Path(args.cache_dir) if args.cache_dir else root / "data/envelope/cache"
     f = cache / f"{args.segment}.npz"
-    if not f.exists():
+    if "," not in args.segment and not f.exists():
         print(f"fy envelope check: no built segment at {_label(f, root)}; run `fy envelope build` first", file=sys.stderr)
         return 2
-    seg = field.Segment.load(f)
     shapes, poses = oracle.read_shapes(args.shapes), oracle.read_poses(args.poses)
-    out = oracle.clearance(seg, shapes, poses, args.required)
+    if "," in args.segment:
+        import numpy as np
+        names = args.segment.split(",")
+        segs = []
+        for n in names:
+            fn = cache / f"{n}.npz"
+            if not fn.exists():
+                print(f"fy envelope check: no built segment at {_label(fn, root)}; run `fy envelope build` first", file=sys.stderr)
+                return 2
+            segs.append(field.Segment.load(fn))
+        if any("origin_xyz" not in sg.meta for sg in segs):
+            print("fy envelope check: a union needs the bodies' origins; rebuild with `fy envelope build`", file=sys.stderr)
+            return 2
+        o0 = np.array(segs[0].meta["origin_xyz"])
+        out = oracle.clearance_union([(sg, np.array(sg.meta["origin_xyz"]) - o0) for sg in segs], shapes, poses, args.required)
+        seg = segs[0]
+    else:
+        seg = field.Segment.load(f)
+        out = oracle.clearance(seg, shapes, poses, args.required)
     print(f"segment {args.segment} (inputs {seg.meta.get('inputs_sha256_12', '?')}), {len(poses)} pose(s), {len(shapes)} shape(s)")
     for i, (m, o) in enumerate(zip(out["margins_mm"], out["slab_overruns_mm"])):
         print(f"  pose {i}: margin {m:8.2f} mm   slab overrun {o:6.2f} mm")

@@ -50,6 +50,7 @@ class SheetNodes:
     abdomen_length_mm: float = float("nan")      # the sheet abdomen body's length (LJC to TJC); scales the Dumas 2015 Table 1 landmarks
     thorax_length_mm: float = float("nan")       # TJC to CJC
     head_neck_length_mm: float = float("nan")    # CJC to the vertex
+    head_neck_mass_kg: float = float("nan")
 
 
 SEGMENT_MASS_KEYS = ("abdomen", "head_neck", "pelvis", "thorax")                       # one body each
@@ -64,7 +65,7 @@ def total_mass(snap) -> float:
 def sheet_nodes(snapshot_path, side="right") -> SheetNodes:
     snap = sheet.read_snapshot(snapshot_path)
     need = [f"thigh_{side}_length", f"shank_{side}_length", f"thigh_{side}_mass", f"shank_{side}_mass", f"foot_{side}_mass", "target_mass", f"thigh_{side}_pos_y", "pelvis_length", "pelvis_pos_z",
-            f"thigh_{side}_pos_z", "ansur_female_malleolusheight", "ansur_female_stature", "target_stature", "pelvis_mass", "abdomen_mass", "abdomen_length", "thorax_mass", "thorax_length", "head_neck_length"]
+            f"thigh_{side}_pos_z", "ansur_female_malleolusheight", "ansur_female_stature", "target_stature", "pelvis_mass", "abdomen_mass", "abdomen_length", "thorax_mass", "thorax_length", "head_neck_length", "head_neck_mass"]
     for k in need:
         if k not in snap:
             raise StopAndAsk(f"snapshot key {k} is missing")
@@ -89,7 +90,7 @@ def sheet_nodes(snapshot_path, side="right") -> SheetNodes:
     return SheetNodes(ajc, kjc, hjc, Lt, Ls, snap[f"thigh_{side}_pos_y"] * mm, k, snap[f"thigh_{side}_mass"],
                       snap["target_stature"] * mm, snap[f"shank_{side}_mass"], snap[f"foot_{side}_mass"], total_mass(snap), snap["target_mass"],
                       snap["pelvis_pos_z"] * mm, snap["pelvis_mass"], checks, snap["abdomen_mass"], snap["thorax_mass"], snap["abdomen_length"] * mm,
-                      snap["thorax_length"] * mm, snap["head_neck_length"] * mm)
+                      snap["thorax_length"] * mm, snap["head_neck_length"] * mm, snap["head_neck_mass"])
 
 
 @dataclass(frozen=True)

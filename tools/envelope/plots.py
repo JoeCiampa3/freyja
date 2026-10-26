@@ -25,7 +25,7 @@ def silhouette_png(seg: field.Segment, path, view: str, shells, title: str, side
         axis, hax, hlabel = 1, 0, "x, anterior (mm)"
     else:
         axis, hax = 0, 1
-        hlabel = "y, medial (mm)" if side == "right" else "y, lateral (mm)"
+        hlabel = {"right": "y, medial (mm)", "left": "y, lateral (mm)", "trunk": "y, left (mm)"}[side]
     H = seg.centres(hax)
     Z = seg.centres(2)
     fig, ax = plt.subplots(figsize=(5.2, 9.2), dpi=110)

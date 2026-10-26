@@ -118,3 +118,44 @@ def clearance(seg: field.Segment, shapes, poses, required_mm: float = 0.0) -> di
     best["required_mm"] = required_mm
     best["feasible"] = bool(best["margin_mm"] >= required_mm and best["slab_overrun_mm"] <= 1e-9)
     return best
+
+
+def clearance_union(parts, shapes, poses, required_mm: float = 0.0) -> dict:
+    """Containment of shapes in the union of adjacent bodies, neutral pose (volume-extractor brief 5, item 3). `parts` is a list of (segment, offset): `offset` is the position of the
+    segment's frame origin in the frame the poses are given in (the first part's, so its offset is zero). A sampled point is held when it lies inside the slab of some part; its margin
+    is that part's signed distance to the skin (every part measures the same skin, so a point inside two slabs gets the larger of the two, which agree). A point in no slab is a slab
+    overrun, by its distance to the nearest slab, and its margin is taken from the nearest part. Interference across the range of motion is not this function's business, it stays in
+    the simulation. Returns the keys of `clearance`, `slab_overrun_mm` being the largest distance of a point from every slab."""
+    poses = np.atleast_2d(np.asarray(poses, float))
+    if poses.shape[1] == 3:
+        poses = np.hstack([poses, np.zeros((len(poses), 3))])
+    samples = [(s.get("name", f"shape{i}"), sample_shape(s)) for i, s in enumerate(shapes)]
+    best = None
+    margins, overruns = [], []
+    for pi, pose in enumerate(poses):
+        pm, over = np.inf, 0.0
+        for name, pts in samples:
+            P = pose_points(pts, pose)
+            S, D = [], []
+            for seg, off in parts:
+                local = P - np.asarray(off, float)
+                z_top, z_bot = seg.z_top, seg.z_top - seg.length
+                D.append(np.maximum(np.maximum(local[:, 2] - z_top, z_bot - local[:, 2]), 0.0))      # distance of each point from this part's slab
+                S.append(seg.signed_distance(local))
+            S, D = np.array(S), np.array(D)
+            held = D <= 0.0
+            sd = np.where(held.any(axis=0), np.where(held, S, -np.inf).max(axis=0), S[D.argmin(axis=0), np.arange(len(P))])     # a point in no slab takes the nearest part's value
+            gap = D.min(axis=0)
+            j = int(np.argmin(sd))
+            over = max(over, float(gap.max()))
+            pm = min(pm, float(sd[j]))
+            if best is None or sd[j] < best["margin_mm"]:
+                best = {"margin_mm": float(sd[j]), "pose_index": pi, "shape": name, "station_mm": float(parts[0][0].z_top - P[j, 2]), "point_mm": [float(x) for x in P[j]]}
+        margins.append(pm)
+        overruns.append(over)
+    best["margins_mm"] = margins
+    best["slab_overrun_mm"] = max(overruns)
+    best["slab_overruns_mm"] = overruns
+    best["required_mm"] = required_mm
+    best["feasible"] = bool(best["margin_mm"] >= required_mm and best["slab_overrun_mm"] <= 1e-9)
+    return best

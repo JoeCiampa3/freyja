@@ -258,10 +258,12 @@
  },
  "diagnostics": {
   "ajc_minus_scaled_lateral_malleolus_mm": -0.05142900144001317,
+  "expected_trochanterion_above_hjc_mm": 8.402788458766356,
   "hjc_flag": false,
   "hjc_minus_scaled_trochanterion_mm": -11.41070501860952,
   "kjc_minus_scaled_lateral_epicondyle_mm": -13.413562651222662,
-  "scale_to_sheet_stature": 1.0439225415781839
+  "scale_to_sheet_stature": 1.0439225415781839,
+  "trochanterion_minus_expected_mm": 3.0079165598431246
  },
  "example": {
   "feasible": {
@@ -440,6 +442,91 @@
   {
    "detail": "computed 52.3315 l, Blender 52.3331 l (-0.0031%)",
    "gate": "6 mesh volume matches Joe's Blender volume within 0.5%",
+   "pass": true
+  },
+  {
+   "detail": "topology vs base.obj: identical; boundary edges near the body 0 (whole body 0); non-manifold 0; odd-parity columns 0",
+   "gate": "1 pelvis: topology matches base; surface watertight",
+   "pass": true
+  },
+  {
+   "detail": "topology vs base.obj: identical; boundary edges near the body 0 (whole body 0); non-manifold 0; odd-parity columns 0",
+   "gate": "1 abdomen: topology matches base; surface watertight",
+   "pass": true
+  },
+  {
+   "detail": "topology vs base.obj: identical; boundary edges near the body 0 (whole body 0); non-manifold 0; odd-parity columns 0",
+   "gate": "1 thorax: topology matches base; surface watertight",
+   "pass": true
+  },
+  {
+   "detail": "topology vs base.obj: identical; boundary edges near the body 0 (whole body 0); non-manifold 0; odd-parity columns 0",
+   "gate": "1 head_neck: topology matches base; surface watertight",
+   "pass": true
+  },
+  {
+   "detail": "pelvis 1.0000 (+0.00%); abdomen 1.0000 (-0.00%); thorax 1.0038 (+0.38%); head_neck 0.9754 (-2.46%)",
+   "gate": "2 trunk: |stretch-1| < 8% per sub-segment",
+   "pass": true
+  },
+  {
+   "detail": "worst 0.059% over u = 0.1..0.9",
+   "gate": "3 pelvis: matched-station areas within 1% of the raster layers",
+   "pass": true
+  },
+  {
+   "detail": "field 5.5325 l, raster 5.5486 l (-0.289%)",
+   "gate": "3b pelvis: field volume within 1% of the raster accounting",
+   "pass": true
+  },
+  {
+   "detail": "worst 0.140% over u = 0.1..0.9",
+   "gate": "3 abdomen: matched-station areas within 1% of the raster layers",
+   "pass": true
+  },
+  {
+   "detail": "field 4.4490 l, raster 4.4734 l (-0.546%)",
+   "gate": "3b abdomen: field volume within 1% of the raster accounting",
+   "pass": true
+  },
+  {
+   "detail": "worst 0.459% over u = 0.1..0.9",
+   "gate": "3 thorax: matched-station areas within 1% of the raster layers",
+   "pass": true
+  },
+  {
+   "detail": "field 15.7521 l, raster 15.7649 l (-0.081%)",
+   "gate": "3b thorax: field volume within 1% of the raster accounting",
+   "pass": true
+  },
+  {
+   "detail": "worst 0.212% over u = 0.1..0.9",
+   "gate": "3 head_neck: matched-station areas within 1% of the raster layers",
+   "pass": true
+  },
+  {
+   "detail": "field 3.7805 l, raster 3.7840 l (-0.092%)",
+   "gate": "3b head_neck: field volume within 1% of the raster accounting",
+   "pass": true
+  },
+  {
+   "detail": "sum 52.1264 l against mesh 52.3315 l (-0.392%); remainder 3.7003 l; conform effect -0.1430 l; raster minus mesh -0.0006 l",
+   "gate": "7 closure: conformed bodies + remainder = mesh volume within 0.5%",
+   "pass": true
+  },
+  {
+   "detail": "feasible: margin 37.13 mm at station 75.0 mm; infeasible: margin -11.59 mm at station 25.0 mm (pose 1)",
+   "gate": "5 oracle example pelvis_box: box in the pelvis, feasible and infeasible",
+   "pass": true
+  },
+  {
+   "detail": "feasible: margin 17.45 mm at station 210.0 mm; infeasible: margin -34.38 mm at station 210.0 mm (pose 1)",
+   "gate": "5 oracle example thorax_box: box in the thorax, feasible and infeasible",
+   "pass": true
+  },
+  {
+   "detail": "feasible in the union: margin 39.40 mm (the pelvis alone overruns its slab by 75.0 mm); infeasible: margin 36.21 mm, overrun 37.3 mm",
+   "gate": "5 oracle union query trunk_union: rod across the pelvis-abdomen plane, feasible and infeasible",
    "pass": true
   }
  ],

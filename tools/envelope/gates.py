@@ -12,7 +12,7 @@ import numpy as np
 import hashlib
 from pathlib import Path
 
-from . import cuts, masses, meshio, oracle, register, synthetic, trial
+from . import bodies, bodies_report, cuts, masses, meshio, oracle, register, synthetic, trial
 
 LENGTH_TOL_MM = 0.5       # gate 3 (the brief)
 AREA_TOL = 0.01           # gate 3: section areas at matched normalised stations (the brief)
@@ -177,6 +177,11 @@ def run(p, args, root, label) -> int:
         gates.append(_gate("6 mesh volume matches Joe's Blender volume within 0.5%", bool(mb["blender_within_tolerance"]),
                            f"computed {mb['mesh_volume_l']:.4f} l, Blender {mb['blender_volume_l']:.4f} l ({mb['blender_relative_difference'] * 100:+.4f}%)"))
 
+    # the trunk bodies (brief 5): built, accounted, designed and closed against the mesh volume
+    tb = bodies.build(inp, feats, reg, table1, args.voxel)
+    trunk_res, trunk_gates = bodies_report.report(tb, results, mb["mesh_volume_l"], topo, root, trial.inputs_hash(inp, {"knee": reg.knee_source, "voxel": args.voxel, "trunk": True}))
+    gates += trunk_gates
+
     # how the knee anchor moves volume between thigh and shank, and what that does to the implied densities (profile volumes, so no extra voxel builds)
     kv = {}
     total = inp.sheet.total_mass_kg
@@ -228,8 +233,10 @@ def run(p, args, root, label) -> int:
     out["gates"] = gates
     outdir = p["out"]
     outdir.mkdir(parents=True, exist_ok=True)
+    (outdir / "trunk_bodies.json").write_text(json.dumps(_jsonable(trunk_res), indent=1, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
     (outdir / "leg_R_trial.json").write_text(json.dumps(_jsonable(out), indent=1, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
     _print(out, gates, feats, inp, reg)
+    print(bodies_report.format_summary(trunk_res))
     return 0 if all(g["pass"] for g in gates) else 1
 
 
