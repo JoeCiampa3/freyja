@@ -4,6 +4,16 @@
   "source": "Winter, D. A., Biomechanics and Motor Control of Human Movement, Table 4.1 (after Dempster 1955)",
   "edition": "5",
   "page": "71",
+  "uniform_density_basis": {
+    "source": "Dumas et al. 2007, Journal of Biomechanics 40, 543-553 (data/literature/Dumas et al 2007 BSIP Data.pdf)",
+    "section": "2.1",
+    "statement": "McConville et al. (1980) and Young et al. (1983) computed the BSIPs assuming a uniform density of 1 g.cm-3; both studies used the same 17 segments, so the sheet's segment masses are volume shares of the reference subjects",
+    "density_g_per_cm3": 1,
+    "applies_to": "all 17 segments",
+    "consequence": "the raw ratio (sheet mass share / sculpt volume share) is the primary test for every segment, shank and foot included; the Dempster-normalised ratio is reported only for the lumped region as a cross-check"
+  },
+  "dumas2007_table2_female_mass_percent": {"torso": 30.4, "pelvis": 14.6, "thigh": 14.6, "leg": 4.5, "foot": 1.0},
+  "dumas2007_table2_source": "Dumas et al. 2007, Table 2, female column (Torso = thorax + abdomen)",
   "rows": {
     "thigh": {"proximal": "greater trochanter", "distal": "femoral condyles", "mass_fraction": 0.100, "density_kg_per_l": 1.05},
     "leg": {"proximal": "femoral condyles", "distal": "medial malleolus", "mass_fraction": 0.0465, "density_kg_per_l": 1.09},

@@ -110,15 +110,28 @@ def report(inp, results: dict, constants: dict, cuts: dict | None = None, densit
     mass = {"thigh": sh.thigh_mass_kg, "shank": sh.shank_mass_kg, "foot": sh.foot_mass_kg, "pelvis": sh.pelvis_mass_kg}
     rows = {}
 
+    def role_of(name):
+        """result: the rows Joe reads (lumped region, shank, foot); diagnostic: the abdomen slab; non_result: pelvis alone and thigh alone, which depend on the lower cut
+        (memo 32 decision 3); sensitivity: every other variant of a cut."""
+        if name in ("shank", "foot", "lumped_msr10"):
+            return "result"
+        if name.startswith("abdomen"):
+            return "diagnostic"
+        if name.startswith("pelvis") or name.startswith("thigh_") and not name.startswith("thigh_pelvis") or name == "thigh":
+            return "non_result"
+        return "sensitivity"
+
     def add(name, volume_l, mass_kg, ref, mass_label=None):
         share_m = mass_kg / total
         share_v = volume_l / V_mesh
-        row = {"volume_l": volume_l, "mass_kg_sheet": mass_kg, "sheet_mass_per_skin_volume_kg_per_l": mass_kg / volume_l, "mass_share": share_m, "volume_share": share_v, "ratio": share_m / share_v, "reference_density_kg_per_l": ref, "cases": {}}
+        row = {"volume_l": volume_l, "mass_kg_sheet": mass_kg, "sheet_mass_per_skin_volume_kg_per_l": mass_kg / volume_l, "mass_share": share_m, "volume_share": share_v, "ratio": share_m / share_v, "reference_density_kg_per_l": ref, "role": role_of(name), "cases": {}}
         for label in cases:
             c = out["cases"][label]
             expected = ref / c["mean_mesh_density_kg_per_l"]
             M = share_m * c["mesh_mass_kg"]
-            row["cases"][label] = {"expected_tissue_ratio": expected, "normalised_ratio": row["ratio"] / expected, "expected_mass_kg": M, "implied_density_kg_per_l": M / volume_l}
+            row["cases"][label] = {"expected_mass_kg": M, "implied_density_kg_per_l": M / volume_l}
+            if name not in ("shank", "foot"):       # limb masses are volume shares too (Dumas 2007, section 2.1): raw ratio only
+                row["cases"][label].update({"expected_tissue_ratio": expected, "normalised_ratio": row["ratio"] / expected})
         rows[name] = row
 
     for name, r in results.items():
@@ -157,6 +170,7 @@ def report(inp, results: dict, constants: dict, cuts: dict | None = None, densit
         out["cut_stations"] = {"crotch_below_hip_centre_mm": cuts["s_crotch_mm"], "hip_zone_mm": 40.0, "ljc_mesh_mm": cuts["ljc_mesh_mm"]}
         out["dempster_lumped_check"] = dempster_lumped_check(sh, mass, densities)
     out["rows"] = rows
+    out["table2_check"] = table2_check(sh, json.loads((Path(__file__).resolve().parents[2] / DENSITIES_PATH).read_text(encoding="utf-8"))["dumas2007_table2_female_mass_percent"]) if hasattr(sh, "thorax_mass_kg") else None
     out["stature_mesh_m"] = stature_m
     return out
 
@@ -169,3 +183,11 @@ def dempster_lumped_check(sh, mass: dict, densities: dict | None = None) -> dict
     m = sh.abdomen_mass_kg + mass["pelvis"] + 2 * mass["thigh"]
     return {"dempster_share": d, "sheet_share": m / sh.total_mass_kg, "sheet_minus_dempster": m / sh.total_mass_kg - d, "sheet_mass_kg": m,
             "source": "Winter Table 4.1 (after Dempster 1955): abdomen and pelvis 0.281 + 2 x thigh 0.100"}
+
+
+def table2_check(sh, ref: dict) -> dict:
+    """The sheet's mass shares (percent of the sum of the sheet's segment masses) against Dumas et al. 2007 Table 2, female column. ref: torso, pelvis, thigh, leg, foot."""
+    T = sh.total_mass_kg
+    rows = {"thorax_plus_abdomen": (sh.thorax_mass_kg + sh.abdomen_mass_kg, ref["torso"]), "pelvis": (sh.pelvis_mass_kg, ref["pelvis"]), "thigh": (sh.thigh_mass_kg, ref["thigh"]),
+            "shank": (sh.shank_mass_kg, ref["leg"]), "foot": (sh.foot_mass_kg, ref["foot"])}
+    return {k: {"sheet_kg": m, "sheet_percent": m / T * 100.0, "reference_percent": r, "difference_points": m / T * 100.0 - r} for k, (m, r) in rows.items()}

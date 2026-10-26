@@ -252,8 +252,12 @@ def _print(out, gates, feats, inp, reg):
         print("Dumas 2015 Table 1 cuts (mesh mm above the sole): " + "; ".join(f"{k} {dh[k]:.1f}" for k in ("LJC", "RI", "RR10", "MSR10", "TJC")) + f" (scale {dh['scale']:.4f})")
     for n, r in mb["rows"].items():
         c = r["cases"][nom]
-        print(f"  {n}: {r['volume_l']:.3f} l, volume share {r['volume_share'] * 100:.2f}%, mass share {r['mass_share'] * 100:.2f}%, raw ratio {r['ratio']:.3f}, "
-              f"normalised {c['normalised_ratio']:.3f} (expected {c['expected_tissue_ratio']:.3f}), sheet mass/skin volume {r['sheet_mass_per_skin_volume_kg_per_l']:.3f}, implied density {c['implied_density_kg_per_l']:.3f} (ref {r['reference_density_kg_per_l']:.3f}) [{nom}]")
+        norm = f"normalised {c['normalised_ratio']:.3f} (expected {c['expected_tissue_ratio']:.3f})" if "normalised_ratio" in c else "no normalised column (uniform density)"
+        print(f"  [{r['role']}] {n}: {r['volume_l']:.3f} l, volume share {r['volume_share'] * 100:.2f}%, mass share {r['mass_share'] * 100:.2f}%, raw ratio {r['ratio']:.3f}, {norm}, "
+              f"sheet mass/skin volume {r['sheet_mass_per_skin_volume_kg_per_l']:.3f}, implied density {c['implied_density_kg_per_l']:.3f} (ref {r['reference_density_kg_per_l']:.3f}) [{nom}]")
+    t2 = mb.get("table2_check")
+    if t2:
+        print("  Dumas 2007 Table 2 (female) check, sheet vs reference percent: " + "; ".join(f"{k} {v['sheet_percent']:.2f} vs {v['reference_percent']:.1f}" for k, v in t2.items()))
     if "dempster_lumped_check" in mb:
         d = mb["dempster_lumped_check"]
         print(f"  Dempster lumped share {d['dempster_share'] * 100:.2f}% against the sheet's {d['sheet_share'] * 100:.2f}% (abdomen + pelvis + 2 thighs)")

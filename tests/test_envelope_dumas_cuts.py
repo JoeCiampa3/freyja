@@ -19,10 +19,10 @@ ENV = REPO / "data" / "envelope"
 
 # ---- the two authored data files ---------------------------------------------------------------------------------------------------
 
-def test_reference_densities_are_the_winter_rows_with_edition_and_page_left_blank():
+def test_reference_densities_are_the_winter_rows_with_edition_and_page_cited():
     d = json.loads((ENV / "reference_densities.json").read_text())
     assert "Winter" in d["source"] and "Table 4.1" in d["source"]
-    assert d["edition"] == "" and d["page"] == ""
+    assert d["edition"] and d["page"]                                     # Joe filled them in after memo 32
     r = d["rows"]
     assert (r["thigh"]["mass_fraction"], r["thigh"]["density_kg_per_l"]) == (0.100, 1.05)
     assert (r["leg"]["mass_fraction"], r["leg"]["density_kg_per_l"]) == (0.0465, 1.09)
@@ -249,3 +249,47 @@ def test_neck_plane_is_the_narrowest_core_section_in_the_search_window():
     prof = decompose.profile(r)
     z = decompose.neck_height(prof, 1800.0)
     assert 1600.0 <= z <= 1650.0
+
+
+# ---- memo 32 decisions: roles of the rows, the uniform-density basis of the limbs, the Dumas 2007 Table 2 check -------------------------------------
+
+DENS = {"thigh": 1.05, "shank": 1.09, "foot": 1.10, "abdomen": 1.01, "pelvis": 1.01, "abdomen_and_pelvis": 1.01}
+
+
+def _report():
+    return masses.report(_inp(), {"thigh": _fake(0.2), "shank": _fake(0.1), "foot": _fake(0.02)}, {"body_fat_fraction": 0.2, "v_lung_l": 0.1},
+                         {"volumes_mm3": _dumas_volumes(), "s_crotch_mm": 70.0, "ljc_mesh_mm": 900.0}, DENS)
+
+
+def test_rows_carry_a_role_and_only_the_lumped_shank_and_foot_rows_are_results():
+    r = _report()["rows"]
+    assert r["lumped_msr10"]["role"] == "result" and r["shank"]["role"] == "result" and r["foot"]["role"] == "result"
+    assert r["abdomen"]["role"] == "diagnostic" and r["abdomen_rr10"]["role"] == "diagnostic"
+    for k in ("pelvis_hjc_ri", "pelvis_crotch_ri", "thigh_in", "thigh_out", "thigh_crotch", "pelvis_hjc"):
+        assert r[k]["role"] == "non_result", k
+    assert r["lumped_msr10_p10"]["role"] == "sensitivity" and r["thigh_pelvis_hjc_ri"]["role"] == "sensitivity"
+
+
+def test_shank_and_foot_report_the_raw_ratio_only_the_uniform_density_basis_of_dumas_2007():
+    r = _report()["rows"]
+    for k in ("shank", "foot"):
+        assert r[k]["ratio"] > 0 and "normalised_ratio" not in r[k]["cases"]["nominal"] and "expected_tissue_ratio" not in r[k]["cases"]["nominal"]
+    assert "normalised_ratio" in r["lumped_msr10"]["cases"]["nominal"]          # the lumped region keeps the Dempster column as a cross-check
+
+
+def test_densities_file_cites_dumas_2007_section_2_1_for_the_limb_basis():
+    d = json.loads((ENV / "reference_densities.json").read_text())
+    b = d["uniform_density_basis"]
+    assert "Dumas" in b["source"] and "2007" in b["source"] and b["section"] == "2.1"
+    assert b["density_g_per_cm3"] == 1 and b["applies_to"] == "all 17 segments"
+    assert d["dumas2007_table2_female_mass_percent"] == {"torso": 30.4, "pelvis": 14.6, "thigh": 14.6, "leg": 4.5, "foot": 1.0}
+
+
+def test_table2_check_compares_the_sheet_s_shares_with_dumas_2007():
+    sh = SimpleNamespace(total_mass_kg=100.0, thigh_mass_kg=14.6, shank_mass_kg=4.5, foot_mass_kg=1.0, pelvis_mass_kg=14.6, abdomen_mass_kg=4.0, thorax_mass_kg=26.0)
+    ref = {"torso": 30.4, "pelvis": 14.6, "thigh": 14.6, "leg": 4.5, "foot": 1.0}
+    c = masses.table2_check(sh, ref)
+    assert c["thorax_plus_abdomen"]["sheet_percent"] == pytest.approx(30.0) and c["thorax_plus_abdomen"]["difference_points"] == pytest.approx(-0.4)
+    assert c["pelvis"]["difference_points"] == pytest.approx(0.0) and c["shank"]["reference_percent"] == 4.5 and c["foot"]["sheet_percent"] == pytest.approx(1.0)
+    snap = masses.table2_check(__import__("envelope.register", fromlist=["x"]).sheet_nodes(REPO / "params" / "snapshot.csv"), ref)
+    assert abs(snap["thorax_plus_abdomen"]["difference_points"]) < 0.1
