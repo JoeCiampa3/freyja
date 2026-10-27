@@ -1,4 +1,4 @@
-STATE: (see docs/STATE.md; `fy state` was still running when this memo was written)
+STATE: base 651bda1d96b2 | brief architecture sha256:e93e6b785bae, ariadne sha256:155afbaa35f6 | snapshot sha256:492fe816e6d8 | tests 1742/1746 | dirty yes
 
 # Memo 38: brief 8 stopped at Phase A item 1, arm stretch over 8%
 
