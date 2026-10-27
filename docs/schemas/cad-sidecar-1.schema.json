@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cad-sidecar/1",
+  "title": "cad-sidecar/1",
+  "description": "The generated record of one CAD part: cad/sidecars/<part id>.json, written by `fy cad pull` (CONVENTIONS sections 4 and 8; docs/briefs/ariadne/stage3b-brief.md). The one home of CAD-derived quantities. Carries the section 4 banner keys and no timestamps. Lengths in mm, angles in degrees, mass in kg, inertia in kg mm^2 about the centre of mass, all in the model body frame of the owner segment. The schema checks shape; whether the hashes are current is `fy cad drift` and the thread's stamp.",
+  "type": "object",
+  "required": ["schema", "generated_by", "inputs", "identity", "document", "parameters", "drift", "timeline", "mass_properties", "exports", "component", "consumes"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "cad-sidecar/1"},
+    "generated_by": {"type": "string", "minLength": 1},
+    "inputs": {"type": "string", "minLength": 1},
+    "identity": {
+      "type": "object",
+      "required": ["part", "revision", "side", "binding_sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "part": {"$ref": "#/$defs/part_id"},
+        "revision": {"type": "string", "minLength": 1},
+        "side": {"const": "right"},
+        "binding_sha256": {"$ref": "#/$defs/hash12"}
+      }
+    },
+    "document": {
+      "type": "object",
+      "required": ["name", "id", "version"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "id": {"type": "string", "minLength": 1},
+        "version": {"type": "integer", "minimum": 0, "description": "Fusion's version number of the document at pull."}
+      }
+    },
+    "parameters": {"type": "array", "items": {"$ref": "#/$defs/parameter"}},
+    "drift": {
+      "type": "array",
+      "description": "Inherited parameters whose Fusion value differs from their address's current value. Empty means clean.",
+      "items": {
+        "type": "object",
+        "required": ["name", "address", "fusion_value", "address_value"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {"type": "string"},
+          "address": {"type": "string"},
+          "fusion_value": {"type": "number"},
+          "address_value": {"type": "number"}
+        }
+      }
+    },
+    "timeline": {
+      "type": "object",
+      "required": ["healthy", "failed_features"],
+      "additionalProperties": false,
+      "properties": {
+        "healthy": {"type": "boolean"},
+        "failed_features": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "mass_properties": {
+      "type": "object",
+      "required": ["material", "mass_kg", "com_mm", "inertia_kgmm2", "accuracy"],
+      "additionalProperties": false,
+      "properties": {
+        "material": {
+          "type": "object",
+          "required": ["name", "density_kg_m3"],
+          "additionalProperties": false,
+          "properties": {"name": {"type": "string", "minLength": 1}, "density_kg_m3": {"type": "number", "exclusiveMinimum": 0}}
+        },
+        "mass_kg": {"type": "number", "minimum": 0},
+        "com_mm": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "number"}},
+        "inertia_kgmm2": {
+          "type": "object",
+          "required": ["ixx", "iyy", "izz", "ixy", "ixz", "iyz"],
+          "additionalProperties": false,
+          "properties": {
+            "ixx": {"type": "number"}, "iyy": {"type": "number"}, "izz": {"type": "number"},
+            "ixy": {"type": "number"}, "ixz": {"type": "number"}, "iyz": {"type": "number"}
+          }
+        },
+        "accuracy": {"type": "string", "minLength": 1, "description": "The calculation accuracy Fusion was asked for."}
+      }
+    },
+    "exports": {
+      "type": "object",
+      "required": ["stl", "step"],
+      "additionalProperties": false,
+      "properties": {
+        "stl": {
+          "type": "object",
+          "required": ["path", "sha256", "chord_tolerance_mm", "triangles"],
+          "additionalProperties": false,
+          "properties": {
+            "path": {"$ref": "#/$defs/relpath"},
+            "sha256": {"$ref": "#/$defs/hash64", "description": "The canonical mesh hash: vertices rounded to 1e-4 mm, faces sorted."},
+            "chord_tolerance_mm": {"type": "number", "exclusiveMinimum": 0},
+            "triangles": {"type": "integer", "minimum": 1}
+          }
+        },
+        "step": {
+          "type": "object",
+          "required": ["path", "sha256"],
+          "additionalProperties": false,
+          "properties": {
+            "path": {"$ref": "#/$defs/relpath"},
+            "sha256": {"$ref": "#/$defs/hash64", "description": "Of the file with its FILE_NAME header timestamp blanked."}
+          }
+        }
+      }
+    },
+    "component": {
+      "type": "object",
+      "description": "The envelope registry entry for this part (components/1, docs/envelope-component-contract.md).",
+      "required": ["id", "revision", "name", "status", "clearance_mm", "mass_kg", "sha256", "parameter_inputs", "primitive"],
+      "properties": {
+        "id": {"$ref": "#/$defs/part_id"},
+        "revision": {"type": "string", "minLength": 1},
+        "name": {"type": "string", "minLength": 1},
+        "status": {"enum": ["designed", "reserved", "candidate", "foreign"]},
+        "clearance_mm": {"type": "number", "minimum": 0},
+        "mass_kg": {"type": "number", "minimum": 0},
+        "sha256": {"$ref": "#/$defs/hash64"},
+        "parameter_inputs": {"$ref": "#/$defs/hash12"},
+        "primitive": {"type": "object", "minProperties": 1},
+        "mesh": {"$ref": "#/$defs/relpath"}
+      }
+    },
+    "consumes": {
+      "type": "array",
+      "description": "The addresses the CAD state consumed, with their hashes at push. This is what the work item's stamp records.",
+      "items": {
+        "type": "object",
+        "required": ["address", "hash"],
+        "additionalProperties": false,
+        "properties": {"address": {"type": "string", "minLength": 1}, "hash": {"$ref": "#/$defs/hash12"}}
+      }
+    }
+  },
+  "$defs": {
+    "part_id": {"type": "string", "pattern": "^part[.][a-z0-9_-]+([.][a-z0-9_-]+)*$"},
+    "hash12": {"type": "string", "pattern": "^[0-9a-f]{12}$"},
+    "hash64": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "relpath": {"type": "string", "pattern": "^(?![A-Za-z]:)(?!/)[^\\\\]+$", "description": "Repo-relative, forward slashes."},
+    "parameter": {
+      "type": "object",
+      "required": ["name", "class", "expression", "value", "unit"],
+      "properties": {
+        "name": {"type": "string", "pattern": "^(in|dv|dr)_[A-Za-z0-9_]+$"},
+        "class": {"enum": ["in", "dv", "dr"]},
+        "expression": {"type": "string", "minLength": 1},
+        "value": {"type": "number", "description": "Evaluated, in `unit`."},
+        "unit": {"enum": ["mm", "deg", "unitless"]},
+        "address": {"type": "string"},
+        "address_hash": {"$ref": "#/$defs/hash12", "description": "The address's hash at push."}
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {"properties": {"class": {"const": "in"}}},
+          "then": {"required": ["address", "address_hash"], "properties": {"name": {"pattern": "^in_"}}},
+          "else": {"not": {"anyOf": [{"required": ["address"]}, {"required": ["address_hash"]}]}}
+        },
+        {"if": {"properties": {"class": {"const": "dv"}}}, "then": {"properties": {"name": {"pattern": "^dv_"}}}},
+        {"if": {"properties": {"class": {"const": "dr"}}}, "then": {"properties": {"name": {"pattern": "^dr_"}}}}
+      ]
+    }
+  }
+}

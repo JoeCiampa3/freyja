@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cad-binding/1",
+  "title": "cad-binding/1",
+  "description": "The authored binding of one Fusion design to a part: cad/bindings/<part id>.yaml (CONVENTIONS sections 3 and 8; docs/briefs/ariadne/stage3b-brief.md). A Fusion document with no binding is invisible to the bridge. Every user parameter of the document is in exactly one class, named by its prefix: inherited `in_` (pushed from `address`, never edited in Fusion), design `dv_` (authored in Fusion) and derived `dr_` (an expression of other parameters). The schema checks the shape of one binding. That two parameters have one name, that an inherited name follows from its address by the name rule, that the address resolves, and that the document's parameters match the list are checked by tools/cad. `unit` is the Fusion-side unit of the expression; `address_unit` is the unit of the value at the address (the snapshot holds metres and radians).",
+  "type": "object",
+  "required": ["schema", "part", "revision", "document", "side", "parameters"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {"const": "cad-binding/1"},
+    "part": {
+      "type": "string",
+      "pattern": "^part[.][a-z0-9_-]+([.][a-z0-9_-]+)*$",
+      "description": "The part id (CONVENTIONS section 3). The filename stem equals it."
+    },
+    "revision": {"type": "string", "minLength": 1, "description": "A string Joe sets; not part of the id."},
+    "document": {
+      "type": "object",
+      "required": ["name", "id"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "id": {"type": "string", "minLength": 1, "description": "Fusion's stable document id (the data file id)."}
+      }
+    },
+    "side": {
+      "const": "right",
+      "description": "CAD is modelled on the right side only. A bilateral part carries sides [left, right] in its thread record. The bridge refuses `left`."
+    },
+    "chord_tolerance_mm": {"type": "number", "exclusiveMinimum": 0, "default": 0.05, "description": "Mesh export chord tolerance."},
+    "clearance_mm": {"type": "number", "minimum": 0, "default": 0, "description": "The component's margin for the envelope."},
+    "parameters": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/parameter"}
+    }
+  },
+  "$defs": {
+    "unit": {"enum": ["mm", "deg", "unitless"]},
+    "parameter": {
+      "type": "object",
+      "required": ["name", "class", "unit"],
+      "properties": {
+        "name": {"type": "string", "pattern": "^(in|dv|dr)_[A-Za-z0-9_]+$"},
+        "class": {"enum": ["in", "dv", "dr"]},
+        "unit": {"$ref": "#/$defs/unit"},
+        "address": {"type": "string", "pattern": "^[^#\\s]+#(/.*)?$", "description": "Inherited only: a thread address."},
+        "address_unit": {"enum": ["m", "mm", "rad", "deg", "unitless"], "description": "Inherited only: the unit of the value at the address."}
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {"properties": {"class": {"const": "in"}}},
+          "then": {
+            "required": ["address", "address_unit"],
+            "properties": {"name": {"pattern": "^in_"}}
+          },
+          "else": {
+            "not": {"anyOf": [{"required": ["address"]}, {"required": ["address_unit"]}]}
+          }
+        },
+        {"if": {"properties": {"class": {"const": "dv"}}}, "then": {"properties": {"name": {"pattern": "^dv_"}}}},
+        {"if": {"properties": {"class": {"const": "dr"}}}, "then": {"properties": {"name": {"pattern": "^dr_"}}}}
+      ]
+    }
+  }
+}

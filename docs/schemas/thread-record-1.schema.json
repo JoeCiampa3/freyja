@@ -196,28 +196,51 @@
             "description": "Harness runs."
           },
           "mass": {
-            "type": "object",
-            "required": [
-              "kg",
-              "source",
-              "reserved"
-            ],
-            "additionalProperties": false,
-            "properties": {
-              "kg": {
-                "type": "number",
-                "minimum": 0,
-                "description": "The mass of one unit. `sides` gives one unit per side."
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "kg",
+                  "source",
+                  "reserved"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "kg": {
+                    "type": "number",
+                    "minimum": 0,
+                    "description": "The mass of one unit. `sides` gives one unit per side."
+                  },
+                  "source": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "reserved": {
+                    "type": "boolean",
+                    "description": "True: a claim with no hardware yet."
+                  }
+                }
               },
-              "source": {
-                "type": "string",
-                "minLength": 1
-              },
-              "reserved": {
-                "type": "boolean",
-                "description": "True: a claim with no hardware yet."
+              {
+                "type": "object",
+                "required": [
+                  "address",
+                  "source"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "address": {
+                    "type": "string",
+                    "pattern": "^[^#\\s]+#/.+$",
+                    "description": "A thread address resolving at build to the mass of one unit in kg, normally a CAD sidecar's mass_kg (Stage 3b). The budget never holds a typed copy."
+                  },
+                  "source": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
               }
-            }
+            ]
           },
           "category": {
             "type": "string",
