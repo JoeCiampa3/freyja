@@ -12,7 +12,7 @@ import numpy as np
 import hashlib
 from pathlib import Path
 
-from . import bodies, bodies_report, cuts, masses, meshio, oracle, register, synthetic, trial
+from . import arms, arms_report, bodies, bodies_report, cuts, ruler, masses, meshio, oracle, register, synthetic, trial
 
 LENGTH_TOL_MM = 0.5       # gate 3 (the brief)
 AREA_TOL = 0.01           # gate 3: section areas at matched normalised stations (the brief)
@@ -179,8 +179,23 @@ def run(p, args, root, label) -> int:
 
     # the trunk bodies (brief 5): built, accounted, designed and closed against the mesh volume
     tb = bodies.build(inp, feats, reg, table1, args.voxel)
-    trunk_res, trunk_gates = bodies_report.report(tb, results, mb["mesh_volume_l"], topo, root, trial.inputs_hash(inp, {"knee": reg.knee_source, "voxel": args.voxel, "trunk": True, "sjc_mm": [round(v, 6) for v in inp.sheet.sjc_mm]}))
+    trunk_sha = trial.inputs_hash(inp, {"knee": reg.knee_source, "voxel": args.voxel, "trunk": True, "sjc_mm": [round(v, 6) for v in inp.sheet.sjc_mm]})
+    ruler_m, arm_sheet = ruler.load(root), arms.sheet_arm(root / "params/snapshot.csv")
+    arm_R = arms.build_side(inp, tb, ruler_m, arm_sheet, "R", args.voxel)              # brief 8: the right arm is the product, the left is built for the comparison
+    arm_L = arms.build_side(inp, tb, ruler_m, arm_sheet, "L", args.voxel)
+    trunk_res, trunk_gates = bodies_report.report(tb, results, mb["mesh_volume_l"], topo, root, trunk_sha, arm_R)
     gates += trunk_gates
+    clo = trunk_res["closure"]
+    arm_gates = arms_report.gate_rows(arm_R, clo, topo)
+    eg, arm_examples = arms_report.example_gates(arm_R, root)
+    gates += arm_gates + eg
+    sh_ = inp.sheet
+    masses_kg = {"head_neck": sh_.head_neck_mass_kg, "thorax": sh_.thorax_mass_kg, "abdomen": sh_.abdomen_mass_kg, "pelvis": sh_.pelvis_mass_kg,
+                 "thighs": 2 * sh_.thigh_mass_kg, "shanks": 2 * sh_.shank_mass_kg, "feet": 2 * sh_.foot_mass_kg,
+                 "upper_arms": 2 * arm_sheet["upper_arm"]["mass_kg"], "forearms": 2 * arm_sheet["forearm"]["mass_kg"], "hands": 2 * arm_sheet["hand"]["mass_kg"]}
+    shares = arms_report.share_table(clo, masses_kg, sh_.total_mass_kg)
+    arm_res = arms_report.result(arm_R, arm_L, clo, shares, arms_report.left_right(arm_R, arm_L, tb.acc), arms.ansur_check(inp, arm_R["reg"]), arm_gates + eg, arm_examples, trunk_sha)
+    trunk_res["share_table"] = shares
 
     # how the knee anchor moves volume between thigh and shank, and what that does to the implied densities (profile volumes, so no extra voxel builds)
     kv = {}
@@ -234,6 +249,7 @@ def run(p, args, root, label) -> int:
     outdir = p["out"]
     outdir.mkdir(parents=True, exist_ok=True)
     (outdir / "trunk_bodies.json").write_text(json.dumps(_jsonable(trunk_res), indent=1, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
+    (outdir / "arm_bodies.json").write_text(json.dumps(_jsonable(arm_res), indent=1, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
     (outdir / "leg_R_trial.json").write_text(json.dumps(_jsonable(out), indent=1, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
     _print(out, gates, feats, inp, reg)
     print(bodies_report.format_summary(trunk_res))

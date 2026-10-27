@@ -78,7 +78,7 @@ def test_closure_is_within_half_a_percent_and_the_shares_sum_to_one(res):
     assert c["within_tolerance"] and abs(c["relative_difference"]) <= 0.005
     assert c["sum_l"] == pytest.approx(sum(c["built_l"].values()) + sum(c["remainder_l"].values()))
     assert sum(c["shares"].values()) == pytest.approx(1.0, abs=1e-12) and c["share_denominator_l"] == c["sum_l"]
-    assert set(c["remainder_l"]) == {"arms", "shoulder_R", "shoulder_L"}
+    assert c["remainder_l"] == {} and {"upper_arms", "forearms", "hands"} <= set(c["built_l"])      # brief 8: the arms and the shoulder girdle are built, nothing is left over
     assert abs(c["raster_minus_mesh_l"]) < 0.005                   # the cell accounting itself closes to 0.01%: the rest of the difference is the conform
 
 

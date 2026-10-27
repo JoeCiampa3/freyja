@@ -273,12 +273,14 @@ class Section:
         return float(r[k - 1] + step * sd[0] / (sd[0] - sd[1]))
 
 
-def build_segment(v, f, length, voxel, z_top=0.0, margin=40.0, xy=None, region_fn=None, seed_point=None):
+def build_segment(v, f, length, voxel, z_top=0.0, margin=40.0, xy=None, region_fn=None, seed_point=None, full_ray=False):
     """Voxelise the extended solid (v, f) in the segment frame and return a Segment.
 
     xy: optional (xmin, xmax, ymin, ymax) of the grid; default the mesh extent. The grid spans z_top + margin down to z_top - length - margin
     (cell edges aligned to z_top). region_fn(X, Y, Z) gives a bool mask of the cell centres for the side clip; the slab is applied here.
     seed_point: a point inside the segment; when given, only the connected inside component of the region that holds it is kept.
+    full_ray: count the parity along +x over every triangle whose y and z overlap the grid (not only those near the box in x too): for a grid that does not span the body along x, as an arm
+    rotated into its frame does not, a ray that began inside the body beyond the box would otherwise flip its parity (volume-extractor brief 8).
     """
     v = np.asarray(v, float)
     f = np.asarray(f)
@@ -291,7 +293,11 @@ def build_segment(v, f, length, voxel, z_top=0.0, margin=40.0, xy=None, region_f
     box_lo, box_hi = o - 2 * BAND_MM, o + np.array(shape) * h + 2 * BAND_MM
     tri_lo, tri_hi = v[f].min(axis=1), v[f].max(axis=1)
     ff = f[np.all(tri_hi >= box_lo, axis=1) & np.all(tri_lo <= box_hi, axis=1)]
-    inside, odd = parity_inside(v, ff, o, h, shape)
+    if full_ray:
+        fp = f[np.all(tri_hi[:, 1:] >= box_lo[1:], axis=1) & np.all(tri_lo[:, 1:] <= box_hi[1:], axis=1)]
+        inside, odd = parity_inside(v, fp, o, h, shape)
+    else:
+        inside, odd = parity_inside(v, ff, o, h, shape)
     C = [o[i] + h * (np.arange(shape[i]) + 0.5) for i in range(3)]
     X, Y, Z = np.meshgrid(*C, indexing="ij")
     sd = signed_distance_grid(inside, ff, v, np.column_stack([X.ravel(), Y.ravel(), Z.ravel()]), h).reshape(shape)

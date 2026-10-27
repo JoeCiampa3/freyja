@@ -178,13 +178,15 @@ def component_margins(shapes, poses, reg: registry.Registry, z_top: float = 0.0)
     return out
 
 
-def component_skin_margins(skin_sd, reg: registry.Registry) -> dict:
+def component_skin_margins(skin_sd, reg: registry.Registry, offset=(0.0, 0.0, 0.0)) -> dict:
     """For every placed component, the least signed distance (mm, positive inside) from its surface samples to the skin over all its poses: a negative value is a component sticking
-    out of the skin, a registry fault worth a warning, not a property of any candidate. `skin_sd` maps points (n, 3) to the skin's signed distance."""
+    out of the skin, a registry fault worth a warning, not a property of any candidate. `skin_sd` maps points (n, 3) to the skin's signed distance, in the frame it is given in; `offset` is the position of the registry's segment frame origin
+    in that frame (zero for the first body of a union and for a single segment; the second body's origin offset in `check --segment a,b`, brief 8 item 9)."""
     out = {}
+    off = np.asarray(offset, float)
     for comp in reg.placed():
         body = Body(comp, reg)
-        out[comp.name] = float(min(skin_sd(body.placed(p)[0]).min() for p in reg.poses(comp)))
+        out[comp.name] = float(min(skin_sd(body.placed(p)[0] + off).min() for p in reg.poses(comp)))
     return out
 
 

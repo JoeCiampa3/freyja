@@ -1,0 +1,64 @@
+{
+ "alternative_shear_target": {
+  "pelvis_origin_y_mm": 0.0,
+  "pelvis_volume_l": 5.532549244952524,
+  "sheet_lateral_y_mm": -92.4306730461,
+  "target_lateral_y_mm": -75.60113600833762,
+  "thigh_origin_y_mm": -75.60113600833762,
+  "thigh_volume_l": 6.419771021542359
+ },
+ "flag": {
+  "frames_differ_by_more_than_limit": true,
+  "lateral_distance": true,
+  "limit_mm": 5.0,
+  "signed_distance": true,
+  "step": true
+ },
+ "generated_by": "fy envelope hip (report only: nothing is fixed); do not edit, rerun",
+ "hip_spacing_difference_mm": 16.82953703776238,
+ "lateral_extent_right_half_pelvis_frame_mm": {
+  "pelvis_section": -163.55125291133476,
+  "step_conformed_mesh": -0.5,
+  "step_model_frames": -17.32953703776238,
+  "thigh_section_placed_by_the_mesh": -164.05125291133476,
+  "thigh_section_placed_by_the_model": -180.88078994909714
+ },
+ "lateral_skin_distance_at_hjc_plane_mm": {
+  "difference": -17.072569498348315,
+  "pelvis_frame": 71.20051469700864,
+  "thigh_frame": 88.27308419535696
+ },
+ "mesh_hjc_separation_from_midline_mm": 75.60113600833762,
+ "model_hjc": {
+  "pelvis_frame_mm": [
+   0.0,
+   -92.4306730461,
+   -97.68241583205531
+  ],
+  "thigh_frame_mm": [
+   0.0,
+   0.0,
+   0.0
+  ]
+ },
+ "origins_conformed_mm": {
+  "pelvis": [
+   49.99397934087554,
+   -16.82953703776238,
+   968.7526300540001
+  ],
+  "thigh": [
+   49.99397934087554,
+   -92.4306730461,
+   871.0702142219448
+  ],
+  "thigh_minus_pelvis_y": -75.60113600833762
+ },
+ "section_station_in_mm": 1.0,
+ "sheet_lateral_offset_mm": -92.4306730461,
+ "signed_skin_distance_at_hjc_mm": {
+  "difference": -16.215264704920926,
+  "pelvis_frame": 70.26217796228904,
+  "thigh_frame": 86.47744266720997
+ }
+}

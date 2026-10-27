@@ -1,0 +1,6 @@
+# Worked example for the upper arm (brief 8): a cylindrical module 50 mm in diameter and 100 mm long, axis along the segment's z.
+# Frame of the upper arm: origin at the mesh's own SJC, z up (the elbow plane at z = -255.23 mm, the sheet's upper-arm length), x anterior, y left; the field reaches 36 mm above the SJC (the shoulder
+# girdle), stations are distances below that top. The arm's axis is the node-to-node line, which runs near the lateral skin: the section's centre is about +20 mm medially (y > 0 is medial on the right).
+# The module sits at x = +3 mm, y = +24 mm, centred at z = -130 mm (station 166).
+shapes:
+  - {name: module, type: cylinder, diameter: 50, length: 100}

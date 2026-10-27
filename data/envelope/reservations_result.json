@@ -1,0 +1,205 @@
+{
+ "bodies": {
+  "abdomen": {
+   "frame_offset_mm": [
+    -56.7188220965,
+    0.0,
+    0.0
+   ],
+   "search": {
+    "none": true,
+    "reason": "no three modules fit even with a skin margin of 0"
+   },
+   "without_modules": {
+    "density_remaining_inside_budget_kg_per_l": 0.6645667484262587,
+    "density_remaining_modules_additional_kg_per_l": 0.6645667484262587,
+    "density_without_modules_kg_per_l": 0.6645667484262587,
+    "free_volume_l": 4.010131422179803,
+    "inner_volume_l": 4.010131422179803,
+    "largest_free_sphere_centre_mm": [
+     21.85213652944242,
+     -0.7600000000000193,
+     -125.0
+    ],
+    "largest_free_sphere_mm": 180.8306954191078,
+    "module_mass_fraction_of_sheet_mass": 0.0,
+    "module_mass_kg": 0.0,
+    "occupied_volume_l": 0.0,
+    "remaining_mass_if_inside_budget_kg": 2.665,
+    "required_skin_margin_mm": 5.0,
+    "sheet_mass_kg": 2.665
+   }
+  },
+  "pelvis": {
+   "frame_offset_mm": [
+    -56.7188220965,
+    0.0,
+    0.0
+   ],
+   "registry": "data/envelope/reserved/pelvis.yaml",
+   "search": {
+    "centres_mm": [
+     [
+      -18.89786347055758,
+      0.6987470886652432,
+      -57.0
+     ],
+     [
+      29.10213652944242,
+      -83.30125291133476,
+      -57.0
+     ],
+     [
+      29.10213652944242,
+      84.69874708866524,
+      -57.0
+     ]
+    ],
+    "centroid_offset_from_trunk_axis_mm": 69.82445496342582,
+    "heights_tried": 1,
+    "margin_step_mm": 0.5,
+    "max_skin_margin_mm": 17.0,
+    "module_centre_height_mm": -57.0,
+    "none": false,
+    "station_of_centre_mm": 57.0
+   },
+   "with_modules": {
+    "at_required_margin": {
+     "density_remaining_inside_budget_kg_per_l": 1.7170918728842985,
+     "density_remaining_modules_additional_kg_per_l": 3.080378426024951,
+     "density_without_modules_kg_per_l": 1.8623588366451465,
+     "free_volume_l": 3.0807903080422143,
+     "inner_volume_l": 5.095688227890221,
+     "largest_free_sphere_centre_mm": [
+      71.10213652944242,
+      0.6987470886652432,
+      -1.0
+     ],
+     "largest_free_sphere_mm": 82.2580610404714,
+     "module_mass_fraction_of_sheet_mass": 0.4425711275026343,
+     "module_mass_kg": 4.199999999999999,
+     "occupied_volume_l": 2.014897919848007,
+     "remaining_mass_if_inside_budget_kg": 5.290000000000001,
+     "required_skin_margin_mm": 5.0,
+     "sheet_mass_kg": 9.49
+    },
+    "feasible_at_required_margin": true
+   },
+   "without_modules": {
+    "density_remaining_inside_budget_kg_per_l": 1.8623588366451465,
+    "density_remaining_modules_additional_kg_per_l": 1.8623588366451465,
+    "density_without_modules_kg_per_l": 1.8623588366451465,
+    "free_volume_l": 5.095688227890221,
+    "inner_volume_l": 5.095688227890221,
+    "largest_free_sphere_centre_mm": [
+     1.1021365294424186,
+     48.69874708866524,
+     -55.0
+    ],
+    "largest_free_sphere_mm": 192.48794183133077,
+    "module_mass_fraction_of_sheet_mass": 0.0,
+    "module_mass_kg": 0.0,
+    "occupied_volume_l": 0.0,
+    "remaining_mass_if_inside_budget_kg": 9.49,
+    "required_skin_margin_mm": 5.0,
+    "sheet_mass_kg": 9.49
+   }
+  },
+  "thorax": {
+   "frame_offset_mm": [
+    -56.7188220965,
+    0.0,
+    0.0
+   ],
+   "registry": "data/envelope/reserved/thorax.yaml",
+   "search": {
+    "centres_mm": [
+     [
+      -24.047863470557587,
+      -2.3288591460000134,
+      -119.0
+     ],
+     [
+      11.952136529442413,
+      -92.32885914600001,
+      -119.0
+     ],
+     [
+      11.952136529442413,
+      87.67114085399999,
+      -119.0
+     ]
+    ],
+    "centroid_offset_from_trunk_axis_mm": 56.718789977442086,
+    "heights_tried": 3,
+    "margin_step_mm": 0.5,
+    "max_skin_margin_mm": 13.5,
+    "module_centre_height_mm": -119.0,
+    "none": false,
+    "station_of_centre_mm": 119.0
+   },
+   "with_modules": {
+    "at_required_margin": {
+     "density_remaining_inside_budget_kg_per_l": 1.0522807938034044,
+     "density_remaining_modules_additional_kg_per_l": 1.3950166863178906,
+     "density_without_modules_kg_per_l": 1.1879388686232042,
+     "free_volume_l": 12.25433370630268,
+     "inner_volume_l": 14.39047113578558,
+     "largest_free_sphere_centre_mm": [
+      31.952136529442413,
+      -26.328859146000013,
+      -251.0
+     ],
+     "largest_free_sphere_mm": 175.23435567457517,
+     "module_mass_fraction_of_sheet_mass": 0.2456858730622989,
+     "module_mass_kg": 4.199999999999999,
+     "occupied_volume_l": 2.1361374294829005,
+     "remaining_mass_if_inside_budget_kg": 12.895,
+     "required_skin_margin_mm": 5.0,
+     "sheet_mass_kg": 17.095
+    },
+    "feasible_at_required_margin": true
+   },
+   "without_modules": {
+    "density_remaining_inside_budget_kg_per_l": 1.1879388686232042,
+    "density_remaining_modules_additional_kg_per_l": 1.1879388686232042,
+    "density_without_modules_kg_per_l": 1.1879388686232042,
+    "free_volume_l": 14.39047113578558,
+    "inner_volume_l": 14.39047113578558,
+    "largest_free_sphere_centre_mm": [
+     15.952136529442413,
+     41.67114085399999,
+     -163.0
+    ],
+    "largest_free_sphere_mm": 195.16461546042774,
+    "module_mass_fraction_of_sheet_mass": 0.0,
+    "module_mass_kg": 0.0,
+    "occupied_volume_l": 0.0,
+    "remaining_mass_if_inside_budget_kg": 17.095,
+    "required_skin_margin_mm": 5.0,
+    "sheet_mass_kg": 17.095
+   }
+  }
+ },
+ "generated_by": "fy envelope reserve; do not edit, rerun",
+ "module_check": {
+  "candidates": [
+   "abdomen",
+   "pelvis",
+   "thorax"
+  ],
+  "clearance_mm": 5,
+  "count": 3,
+  "diameter_mm": 90,
+  "length_mm": 81.5,
+  "mass_kg": 1.4,
+  "reference_mm3": 1550000.0,
+  "relative_difference": 0.0035108340003074056,
+  "v1_ballast": false,
+  "volume_mm3": 1555441.7927004765,
+  "within_2_percent": true
+ },
+ "orientation_assumed": "vertical (axis parallel to the trunk axis)",
+ "required_skin_margin_mm": 5.0,
+ "reservations_file": "data/envelope/reservations.yaml"
+}

@@ -54,12 +54,16 @@ def whole_body_density(total_mass_kg: float, mesh_volume_l: float, v_lung_l: flo
             "comparator": "robot_kg_per_l (sheet total mass over the mesh volume) is the comparator for a packaging density; tissue_kg_per_l is the same mass over the volume less the lung gas"}
 
 
-def report(tb: bodies.TrunkBuild, leg_results: dict, mesh_volume_l: float, topo, root, inputs_sha: str) -> tuple:
+def report(tb: bodies.TrunkBuild, leg_results: dict, mesh_volume_l: float, topo, root, inputs_sha: str, arm_side: dict | None = None) -> tuple:
     """(result dict, gates) of the trunk bodies: design numbers, the pair, zones, shoulders, closure, shares, the arm rule's cross-check and the gates."""
     built = {n: tb.design[n]["skin_volume_l"] for n in BODIES}
     for n in ("thigh", "shank", "foot"):
         built[f"{n}s"] = 2.0 * leg_results[n].seg.volume(0.0) / 1e6         # the right segment, twice (the left is its mirror in the mesh to under 0.5% in area)
-    clo = bodies.closure(built, tb.acc, mesh_volume_l)
+    if arm_side is None:
+        clo = bodies.closure(built, tb.acc, mesh_volume_l)
+    else:             # brief 8: the arms are built, nothing is left over
+        from . import arms_report
+        clo = arms_report.closure(built, {n: {"conformed_l": d["skin_volume_l"], "unconformed_l": d["unconformed_skin_volume_l"]} for n, d in arm_side["design"].items()}, tb.acc, mesh_volume_l)
     gates = bodies.gate_rows(tb, topo, mesh_volume_l, clo)
     eg, ex = example_gates(tb, root)
     gates += eg

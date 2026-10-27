@@ -23,6 +23,20 @@
                     the free field of a segment (skin margin at least --required, every placed component dilated by its clearance and swept over its poses removed): free and occupied
                     volume, the largest free sphere, the free-space ledger at 10 mm stations in <out>/free/<segment>.yaml and the inspect-bundle layer
 
+    reserve [--required MM] [--cache-dir DIR] [--out DIR]
+                    brief 8, item 5: the spine modules of data/envelope/reservations.yaml as reserved components of each candidate trunk body: the best arrangement of three modules (the largest skin
+                    margin at which they fit), the free volume left, the largest free sphere, the mass impact; writes <out>/reserved/<body>.yaml (a components/1 registry per body that holds them)
+                    and <out>/reservations_result.json. Needs `build`
+
+    corridor [--required MM] [--cache-dir DIR] [--out DIR]
+                    brief 8, item 6: the corridor sweep (the largest vertical column at each x offset d from the hip line, LSJ to CJC, at skin margin t), the sim's stack axis in the same x for the zero pose,
+                    the design stance and the stance with the ankle lean, the corridor cylinder (the file's diameter, or 0.8 x the sweep's minimum when null) at the best d as a reserved component of
+                    the abdomen and the thorax, and their free-space ledgers; writes <out>/corridor_result.json and <out>/corridor/ (registries and free/). Needs `build` and `offsets`
+
+    hip [--no-alternative]
+                    brief 8, item 6b (report only): the model's HJC in the thigh and the pelvis frames (signed skin distance, lateral skin distance, the lateral step of the pelvis and thigh sections at the
+                    hip plane) and the volumes under the other shear target; writes <out>/hip_registration.json. Needs `build`
+
 Defaults: mesh data/makehuman/freyja-body-v2.obj (the baseline since volume-extractor brief 4; v1 is historical), sheet values from params/snapshot.csv, out data/envelope, cache data/envelope/cache (gitignored).
 """
 from __future__ import annotations
@@ -102,7 +116,14 @@ def cmd_build(args, root):
         res.seg.meta = {**res.seg.meta, "inputs_sha256_12": sha}
         res.seg.save(p["cache"] / f"{name}.npz")
         print(f"built {name}: L {res.seg.length:.1f} mm, skin volume {res.seg.volume() / 1e6:.3f} l, inputs {sha}")
+    from . import arms, arms_report, ruler
+    arm_S = arms.build_side(inp, tb, ruler.load(root), arms.sheet_arm(root / "params/snapshot.csv"), "R", args.voxel)
+    arm_sha = trial.inputs_hash(inp, {"knee": reg.knee_source, "voxel": args.voxel, "sjc_mm": [round(v, 6) for v in inp.sheet.sjc_mm], "arms": True, "sigma_mm": arms.SIGMA_MM})
+    for n in arms_report.write_products(arm_S, out, p["cache"], arm_sha, _label(p["mesh"], root)):
+        r = arm_S["results"][n.replace("_R", "")]
+        print(f"built {n}: L {r.seg.length:.1f} mm, skin volume {r.seg.volume() / 1e6:.3f} l, stretch {arm_S['frames'][n.replace('_R', '')].k:.4f}, inputs {arm_sha}")
     bdir = bundle.build(inp, feats, reg, results, root, p["cache"] / "inspect", trunk=tb)
+    arms_report.inspect_layer(arm_S, inp, bdir)
     print(f"stretch thigh {st['thigh']:.4f} shank {st['shank']:.4f} foot {st['foot']:.4f}; knee source {reg.knee_source}")
     print(f"wrote ledgers and silhouettes to {_label(out, root)}, the inspect bundle to {_label(bdir, root)}")
     return 0
@@ -133,6 +154,147 @@ def cmd_offsets(args, root):
     doc = {"generated_by": "fy envelope offsets from the built trunk bodies, the model and the snapshot; do not edit, rerun", **rep}
     out.write_text(json.dumps(doc, indent=1, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
     print("wrote", _label(out, root))
+    return 0
+
+
+def cmd_reserve(args, root):
+    import json
+    import yaml
+    from . import field, frames, registry, reserve
+    cache = Path(args.cache_dir) if args.cache_dir else root / "data/envelope/cache"
+    out = Path(args.out) if args.out else root / "data/envelope"
+    doc = reserve.load(root)
+    chk = reserve.module_check(doc)
+    print(f"modules: {chk['count']} x D {chk['diameter_mm']} x L {chk['length_mm']} mm = {chk['volume_mm3']:.0f} mm3 against {chk['reference_mm3']:.3g} ({chk['relative_difference'] * 100:+.2f}%, within 2%: {chk['within_2_percent']})")
+    mod, cl = doc["spine_v2"]["module"], float(doc["spine_v2"]["clearance_mm"])
+    sheet_mass = {}
+    from . import trial
+    sh = trial.register.sheet_nodes(root / "params/snapshot.csv")
+    sheet_mass = {"abdomen": sh.abdomen_mass_kg, "pelvis": sh.pelvis_mass_kg, "thorax": sh.thorax_mass_kg}
+    (out / "reserved").mkdir(parents=True, exist_ok=True)
+    res = {"generated_by": "fy envelope reserve; do not edit, rerun", "reservations_file": reserve.PATH, "module_check": chk, "orientation_assumed": "vertical (axis parallel to the trunk axis)",
+           "required_skin_margin_mm": args.required, "bodies": {}}
+    for b in chk["candidates"]:
+        fn = cache / f"{b}.npz"
+        if not fn.exists():
+            print(f"fy envelope reserve: no built segment at {_label(fn, root)}; run `fy envelope build` first", file=sys.stderr)
+            return 2
+        seg = field.Segment.load(fn)
+        off = frames.segment_offset_mm(b, seg.meta)
+        r = reserve.search(seg, mod, cl, (off[0], 0.0))
+        entry = {"search": r, "frame_offset_mm": list(off)}
+        rdoc = reserve.registry_doc(b, r, mod, cl, off)
+        base = reserve.free_numbers(seg, [], args.required, sheet_mass[b], 0.0)
+        entry["without_modules"] = base
+        if rdoc is not None:
+            path = out / "reserved" / f"{b}.yaml"
+            path.write_text("# GENERATED by fy envelope reserve (components/1, reserved spine modules in the model body frame). Do not edit; rerun.\n" + yaml.safe_dump(rdoc, sort_keys=False, default_flow_style=None), encoding="utf-8", newline="\n")
+            reg = registry.load(path)
+            reg.frame_offset_mm = off
+            entry["registry"] = _label(path, root)
+            entry["with_modules"] = {"at_required_margin": reserve.free_numbers(seg, [(reg, np.zeros(3))], args.required, sheet_mass[b], chk["count"] * mod["mass_kg"]),
+                                     "feasible_at_required_margin": bool(r["max_skin_margin_mm"] >= args.required)}
+            if r["max_skin_margin_mm"] < args.required:
+                entry["with_modules"]["at_skin"] = reserve.free_numbers(seg, [(reg, np.zeros(3))], 0.0, sheet_mass[b], chk["count"] * mod["mass_kg"])
+        else:
+            (out / "reserved" / f"{b}.yaml").unlink(missing_ok=True)
+        res["bodies"][b] = entry
+        if r.get("none"):
+            print(f"{b}: no arrangement of three modules fits ({r['reason']}); body inner volume at t = {args.required:g} mm {base['inner_volume_l']:.3f} l, sheet mass {base['sheet_mass_kg']:.3f} kg, modules {chk['count'] * mod['mass_kg']:.1f} kg")
+        else:
+            w = entry["with_modules"]["at_required_margin"]
+            print(f"{b}: best arrangement at skin margin {r['max_skin_margin_mm']:.1f} mm (station {r['station_of_centre_mm']:.0f} mm, centroid {r['centroid_offset_from_trunk_axis_mm']:.1f} mm from the trunk axis); "
+                  f"at t = {args.required:g} mm free {w['free_volume_l']:.3f} of {w['inner_volume_l']:.3f} l, largest free sphere {w['largest_free_sphere_mm']:.1f} mm; modules {w['module_mass_kg']:.1f} kg "
+                  f"= {w['module_mass_fraction_of_sheet_mass'] * 100:.0f}% of the sheet's {w['sheet_mass_kg']:.3f} kg")
+    (out / "reservations_result.json").write_text(json.dumps(res, indent=1, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
+    print("wrote", _label(out / "reservations_result.json", root))
+    return 0
+
+
+def cmd_corridor(args, root):
+    import argparse
+    import json
+    import yaml
+    from . import corridor, field, frames, registry, reserve
+    cache = Path(args.cache_dir) if args.cache_dir else root / "data/envelope/cache"
+    out = Path(args.out) if args.out else root / "data/envelope"
+    offs_path = out / "trunk_offsets.json"
+    if not offs_path.exists():
+        print("fy envelope corridor: data/envelope/trunk_offsets.json is missing; run `fy envelope offsets` first", file=sys.stderr)
+        return 2
+    segs = {}
+    for n in corridor.BODIES:
+        fn = cache / f"{n}.npz"
+        if not fn.exists():
+            print(f"fy envelope corridor: no built segment at {_label(fn, root)}; run `fy envelope build` first", file=sys.stderr)
+            return 2
+        segs[n] = field.Segment.load(fn)
+    prof = corridor.profile(segs, args.required)
+    b = corridor.best(prof)
+    axes = corridor.sim_axes(json.loads(offs_path.read_text(encoding="utf-8")))
+    shift = corridor.forward_shift(b["best_d_mm"], axes)
+    doc = reserve.load(root)
+    given = doc["spine_v2"]["corridor"].get("diameter_mm")
+    diameter = float(given) if given is not None else 0.8 * b["best_min_diameter_mm"]
+    res = {"generated_by": "fy envelope corridor; do not edit, rerun", "required_skin_margin_mm": args.required, "d_range_mm": list(corridor.D_RANGE_MM), "d_step_mm": corridor.D_STEP_MM,
+           "stations": "every 2 mm layer of the abdomen (LJC to TJC) and the thorax (TJC to CJC); the profile is reported every 10 mm", "sweep": b["table"], "best_d_mm": b["best_d_mm"],
+           "best_min_diameter_mm": b["best_min_diameter_mm"], "best_station": b["best_station"], "profile_at_best_d": corridor.profile_at(prof, b["best_d_mm"]),
+           "sim_stack_axis_x_mm": axes, "forward_shift_of_best_d_mm": shift, "corridor_diameter_mm": diameter,
+           "corridor_diameter_source": "reservations.yaml spine_v2.corridor.diameter_mm" if given is not None else "0.8 x the sweep's minimum diameter (the file's value is null)", "bodies": {}}
+    print(f"corridor sweep, skin margin {args.required:g} mm: best d {b['best_d_mm']:+.0f} mm, least diameter {b['best_min_diameter_mm']:.1f} mm at {b['best_station']['body']} station {b['best_station']['station_mm']:.0f} mm "
+          f"({b['best_station']['height_above_lsj_mm']:.0f} mm above the LSJ); corridor cylinder {diameter:.1f} mm")
+    for pose, planes in axes.items():
+        print(f"  sim axis, {pose}: " + ", ".join(f"{p} {x:+.1f}" for p, x in planes.items()) + "; forward shift of the best d: " + ", ".join(f"{p} {shift[pose][p]:+.1f}" for p in planes))
+    cdir = out / "corridor"
+    cdir.mkdir(parents=True, exist_ok=True)
+    (cdir / "free").mkdir(exist_ok=True)
+    for n, seg in segs.items():
+        off = frames.segment_offset_mm(n, seg.meta)
+        comp = {"id": "part.spine.corridor", "name": "corridor_column", "status": "reserved", "owner": n, "primitive": {"type": "cylinder", "diameter": round(diameter, 3), "length": round(seg.length, 3)},
+                "pose": {"tx": round(b["best_d_mm"] - off[0], 3), "ty": 0 - off[1], "tz": round(-seg.length / 2 - off[2], 3), "rx": 0, "ry": 0, "rz": 0}, "clearance_mm": 0.0,
+                "source": "fy envelope corridor: best d of the sweep"}
+        rdoc = {"schema": registry.SCHEMA, "segment": n, "components": [comp]}
+        (cdir / f"{n}.yaml").write_text("# GENERATED by fy envelope corridor (components/1, the corridor column as a reserved component, model body frame). Do not edit; rerun.\n" + yaml.safe_dump(rdoc, sort_keys=False, default_flow_style=None), encoding="utf-8", newline="\n")
+        base = reserve.free_numbers(seg, [], args.required, 1.0, 0.0)
+        ns = argparse.Namespace(segment=n, required=args.required, union=None, cache_dir=str(cache), components_dir=str(cdir), out=str(cdir), mesh=None)
+        rc = cmd_free(ns, root)
+        led = yaml.safe_load((cdir / "free" / f"{n}.yaml").read_text(encoding="utf-8").split("\n", 1)[1])
+        res["bodies"][n] = {"inner_volume_l": led["skin_volume_l"], "free_volume_l": led["free_volume_l"], "occupied_volume_l": led["occupied_volume_l"], "largest_free_sphere_mm": led["largest_free_sphere"]["diameter_mm"],
+                            "without_corridor": {"free_volume_l": base["free_volume_l"], "largest_free_sphere_mm": base["largest_free_sphere_mm"]}, "registry": _label(cdir / f"{n}.yaml", root),
+                            "ledger": _label(cdir / "free" / f"{n}.yaml", root)}
+        if rc:
+            return rc
+    (out / "corridor_result.json").write_text(json.dumps(res, indent=1, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
+    print("wrote", _label(out / "corridor_result.json", root))
+    return 0
+
+
+def cmd_hip(args, root):
+    import json
+    from . import field, hipcheck, trial
+    cache = Path(args.cache_dir) if args.cache_dir else root / "data/envelope/cache"
+    out = Path(args.out) if args.out else root / "data/envelope"
+    for n in ("thigh_R", "pelvis"):
+        if not (cache / f"{n}.npz").exists():
+            print(f"fy envelope hip: no built segment at {_label(cache / (n + '.npz'), root)}; run `fy envelope build` first", file=sys.stderr)
+            return 2
+    sh = trial.register.sheet_nodes(root / "params/snapshot.csv")
+    res = hipcheck.frame_numbers(field.Segment.load(cache / "thigh_R.npz"), field.Segment.load(cache / "pelvis.npz"), sh.lateral_y, sh.hjc_x_mm)
+    if not args.no_alternative:
+        mesh = Path(args.mesh) if args.mesh else root / "data/makehuman/freyja-body-v2.obj"
+        res["alternative_shear_target"] = hipcheck.alternative_target(root, mesh)
+    res = {"generated_by": "fy envelope hip (report only: nothing is fixed); do not edit, rerun", **res}
+    s, lat, st, f = res["signed_skin_distance_at_hjc_mm"], res["lateral_skin_distance_at_hjc_plane_mm"], res["lateral_extent_right_half_pelvis_frame_mm"], res["flag"]
+    print(f"model HJC: signed skin distance {s['thigh_frame']:.1f} mm in the thigh frame, {s['pelvis_frame']:.1f} mm in the pelvis frame (difference {s['difference']:+.1f})")
+    print(f"lateral skin distance at the HJC plane: {lat['thigh_frame']:.1f} mm thigh frame, {lat['pelvis_frame']:.1f} mm pelvis frame (difference {lat['difference']:+.1f})")
+    print(f"lateral extent of the right half at the plane: pelvis {st['pelvis_section']:.1f} mm, thigh placed by the model {st['thigh_section_placed_by_the_model']:.1f} (step {st['step_model_frames']:+.1f}), "
+          f"placed by the mesh {st['thigh_section_placed_by_the_mesh']:.1f} (step {st['step_conformed_mesh']:+.1f})")
+    print(f"hip spacing: sheet {abs(res['sheet_lateral_offset_mm']):.2f} mm, mesh {res['mesh_hjc_separation_from_midline_mm']:.2f} mm (difference {res['hip_spacing_difference_mm']:.2f}); FLAG (limit {f['limit_mm']:g} mm): {f['frames_differ_by_more_than_limit']}")
+    if "alternative_shear_target" in res:
+        a = res["alternative_shear_target"]
+        print(f"other shear target (the mesh's own HJC centroid y {a['target_lateral_y_mm']:.2f} mm): thigh {a['thigh_volume_l']:.4f} l, pelvis {a['pelvis_volume_l']:.4f} l")
+    (out / "hip_registration.json").write_text(json.dumps(res, indent=1, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
+    print("wrote", _label(out / "hip_registration.json", root))
     return 0
 
 
@@ -226,7 +388,7 @@ def _report_components(root, seg, skin, shapes, poses, regs, occupancy, skin_sd,
             e["point_mm"] = [float(p - o) for p, o in zip(e["point_mm"], frame_offset)]
             e["registry"] = _label(path, root)
             rows.append(e)
-        inside = occupancy.component_skin_margins(skin_sd, reg)
+        inside = occupancy.component_skin_margins(skin_sd, reg, off)
         for e in rows:
             if e["name"] in inside and "inside_skin_mm" not in e:
                 e["inside_skin_mm"] = inside[e["name"]]
@@ -353,6 +515,15 @@ def main(argv=None, default_root=None) -> int:
     o = sub.add_parser("offsets")
     o.add_argument("--cache-dir"), o.add_argument("--out")
     o.add_argument("--tilt", type=float, help="design pelvis tilt in degrees (default the snapshot's stand_pelvis_tilt_deg)")
+    rs = sub.add_parser("reserve")
+    rs.add_argument("--cache-dir"), rs.add_argument("--out")
+    rs.add_argument("--required", type=float, default=5.0, help="skin margin t in mm that the modules and the free field keep (default 5, the design shell)")
+    co = sub.add_parser("corridor")
+    co.add_argument("--cache-dir"), co.add_argument("--out")
+    co.add_argument("--required", type=float, default=5.0, help="skin margin t in mm (default 5, the design shell)")
+    hp = sub.add_parser("hip")
+    hp.add_argument("--cache-dir"), hp.add_argument("--out"), hp.add_argument("--mesh")
+    hp.add_argument("--no-alternative", action="store_true", help="skip the rebuild under the other shear target")
     t = sub.add_parser("trunk")
     t.add_argument("--mesh"), t.add_argument("--out"), t.add_argument("--cache-dir")
     t.add_argument("--n", type=int, default=200, help="Monte Carlo samples")
@@ -374,7 +545,7 @@ def main(argv=None, default_root=None) -> int:
     args = ap.parse_args(argv)
     from . import sheet
     try:
-        return {"build": cmd_build, "gates": cmd_gates, "check": cmd_check, "free": cmd_free, "foreign": cmd_foreign, "ratios": cmd_ratios, "trunk": cmd_trunk, "offsets": cmd_offsets}[args.cmd](args, root)
+        return {"build": cmd_build, "gates": cmd_gates, "check": cmd_check, "free": cmd_free, "foreign": cmd_foreign, "ratios": cmd_ratios, "trunk": cmd_trunk, "offsets": cmd_offsets, "reserve": cmd_reserve, "corridor": cmd_corridor, "hip": cmd_hip}[args.cmd](args, root)
     except sheet.StopAndAsk as e:
         print(f"fy envelope: STOP, ask Joe: {e}", file=sys.stderr)
         return 3

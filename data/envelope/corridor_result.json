@@ -1,0 +1,584 @@
+{
+ "best_d_mm": -5.0,
+ "best_min_diameter_mm": 70.0,
+ "best_station": {
+  "body": "abdomen",
+  "height_above_lsj_mm": 96.09217543799991,
+  "station_mm": 31.0
+ },
+ "bodies": {
+  "abdomen": {
+   "free_volume_l": 3.6987,
+   "inner_volume_l": 4.0101,
+   "largest_free_sphere_mm": 114.21,
+   "ledger": "data/envelope/corridor/free/abdomen.yaml",
+   "occupied_volume_l": 0.3114,
+   "registry": "data/envelope/corridor/abdomen.yaml",
+   "without_corridor": {
+    "free_volume_l": 4.010131422179803,
+    "largest_free_sphere_mm": 180.8306954191078
+   }
+  },
+  "thorax": {
+   "free_volume_l": 13.5822,
+   "inner_volume_l": 14.3905,
+   "largest_free_sphere_mm": 136.17,
+   "ledger": "data/envelope/corridor/free/thorax.yaml",
+   "occupied_volume_l": 0.8083,
+   "registry": "data/envelope/corridor/thorax.yaml",
+   "without_corridor": {
+    "free_volume_l": 14.39047113578558,
+    "largest_free_sphere_mm": 195.16461546042774
+   }
+  }
+ },
+ "corridor_diameter_mm": 56.0,
+ "corridor_diameter_source": "0.8 x the sweep's minimum diameter (the file's value is null)",
+ "d_range_mm": [
+  -60.0,
+  60.0
+ ],
+ "d_step_mm": 5.0,
+ "forward_shift_of_best_d_mm": {
+  "stance": {
+   "CJC": 30.17,
+   "LJC": 30.17,
+   "TJC": 30.17
+  },
+  "stance_lean": {
+   "CJC": 12.369,
+   "LJC": 26.763,
+   "TJC": 22.75
+  },
+  "zero": {
+   "CJC": 51.719,
+   "LJC": 51.719,
+   "TJC": 51.719
+  }
+ },
+ "generated_by": "fy envelope corridor; do not edit, rerun",
+ "profile_at_best_d": [
+  {
+   "body": "abdomen",
+   "diameter_mm": 146.0,
+   "height_above_lsj_mm": 0.1,
+   "station_mm": 127.0
+  },
+  {
+   "body": "abdomen",
+   "diameter_mm": 138.0,
+   "height_above_lsj_mm": 10.1,
+   "station_mm": 117.0
+  },
+  {
+   "body": "abdomen",
+   "diameter_mm": 130.0,
+   "height_above_lsj_mm": 20.1,
+   "station_mm": 107.0
+  },
+  {
+   "body": "abdomen",
+   "diameter_mm": 122.0,
+   "height_above_lsj_mm": 30.1,
+   "station_mm": 97.0
+  },
+  {
+   "body": "abdomen",
+   "diameter_mm": 114.0,
+   "height_above_lsj_mm": 40.1,
+   "station_mm": 87.0
+  },
+  {
+   "body": "abdomen",
+   "diameter_mm": 102.0,
+   "height_above_lsj_mm": 50.1,
+   "station_mm": 77.0
+  },
+  {
+   "body": "abdomen",
+   "diameter_mm": 94.0,
+   "height_above_lsj_mm": 60.1,
+   "station_mm": 67.0
+  },
+  {
+   "body": "abdomen",
+   "diameter_mm": 86.0,
+   "height_above_lsj_mm": 70.1,
+   "station_mm": 57.0
+  },
+  {
+   "body": "abdomen",
+   "diameter_mm": 82.0,
+   "height_above_lsj_mm": 80.1,
+   "station_mm": 47.0
+  },
+  {
+   "body": "abdomen",
+   "diameter_mm": 74.0,
+   "height_above_lsj_mm": 90.1,
+   "station_mm": 37.0
+  },
+  {
+   "body": "abdomen",
+   "diameter_mm": 70.0,
+   "height_above_lsj_mm": 100.1,
+   "station_mm": 27.0
+  },
+  {
+   "body": "abdomen",
+   "diameter_mm": 70.0,
+   "height_above_lsj_mm": 110.1,
+   "station_mm": 17.0
+  },
+  {
+   "body": "abdomen",
+   "diameter_mm": 70.0,
+   "height_above_lsj_mm": 120.1,
+   "station_mm": 7.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 70.0,
+   "height_above_lsj_mm": 130.9,
+   "station_mm": 325.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 74.0,
+   "height_above_lsj_mm": 140.9,
+   "station_mm": 315.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 78.0,
+   "height_above_lsj_mm": 150.9,
+   "station_mm": 305.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 82.0,
+   "height_above_lsj_mm": 160.9,
+   "station_mm": 295.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 86.0,
+   "height_above_lsj_mm": 170.9,
+   "station_mm": 285.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 94.0,
+   "height_above_lsj_mm": 180.9,
+   "station_mm": 275.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 98.0,
+   "height_above_lsj_mm": 190.9,
+   "station_mm": 265.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 102.0,
+   "height_above_lsj_mm": 200.9,
+   "station_mm": 255.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 106.0,
+   "height_above_lsj_mm": 210.9,
+   "station_mm": 245.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 110.07,
+   "height_above_lsj_mm": 220.9,
+   "station_mm": 235.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 118.0,
+   "height_above_lsj_mm": 230.9,
+   "station_mm": 225.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 122.0,
+   "height_above_lsj_mm": 240.9,
+   "station_mm": 215.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 130.0,
+   "height_above_lsj_mm": 250.9,
+   "station_mm": 205.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 134.0,
+   "height_above_lsj_mm": 260.9,
+   "station_mm": 195.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 142.0,
+   "height_above_lsj_mm": 270.9,
+   "station_mm": 185.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 146.0,
+   "height_above_lsj_mm": 280.9,
+   "station_mm": 175.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 154.0,
+   "height_above_lsj_mm": 290.9,
+   "station_mm": 165.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 158.0,
+   "height_above_lsj_mm": 300.9,
+   "station_mm": 155.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 158.0,
+   "height_above_lsj_mm": 310.9,
+   "station_mm": 145.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 162.0,
+   "height_above_lsj_mm": 320.9,
+   "station_mm": 135.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 162.0,
+   "height_above_lsj_mm": 330.9,
+   "station_mm": 125.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 158.0,
+   "height_above_lsj_mm": 340.9,
+   "station_mm": 115.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 162.0,
+   "height_above_lsj_mm": 350.9,
+   "station_mm": 105.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 158.0,
+   "height_above_lsj_mm": 360.9,
+   "station_mm": 95.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 158.0,
+   "height_above_lsj_mm": 370.9,
+   "station_mm": 85.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 158.0,
+   "height_above_lsj_mm": 380.9,
+   "station_mm": 75.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 154.0,
+   "height_above_lsj_mm": 390.9,
+   "station_mm": 65.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 138.0,
+   "height_above_lsj_mm": 400.9,
+   "station_mm": 55.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 122.0,
+   "height_above_lsj_mm": 410.9,
+   "station_mm": 45.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 102.0,
+   "height_above_lsj_mm": 420.9,
+   "station_mm": 35.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 90.0,
+   "height_above_lsj_mm": 430.9,
+   "station_mm": 25.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 82.0,
+   "height_above_lsj_mm": 440.9,
+   "station_mm": 15.0
+  },
+  {
+   "body": "thorax",
+   "diameter_mm": 78.0,
+   "height_above_lsj_mm": 450.9,
+   "station_mm": 5.0
+  }
+ ],
+ "required_skin_margin_mm": 5.0,
+ "sim_stack_axis_x_mm": {
+  "stance": {
+   "CJC": -35.17,
+   "LJC": -35.17,
+   "TJC": -35.17
+  },
+  "stance_lean": {
+   "CJC": -17.369,
+   "LJC": -31.763,
+   "TJC": -27.75
+  },
+  "zero": {
+   "CJC": -56.719,
+   "LJC": -56.719,
+   "TJC": -56.719
+  }
+ },
+ "stations": "every 2 mm layer of the abdomen (LJC to TJC) and the thorax (TJC to CJC); the profile is reported every 10 mm",
+ "sweep": [
+  {
+   "d_mm": -60.0,
+   "min_diameter_mm": 0.0,
+   "station": {
+    "body": "abdomen",
+    "height_above_lsj_mm": 42.09217543799991,
+    "station_mm": 85.0
+   }
+  },
+  {
+   "d_mm": -55.0,
+   "min_diameter_mm": 0.0,
+   "station": {
+    "body": "abdomen",
+    "height_above_lsj_mm": 54.09217543799991,
+    "station_mm": 73.0
+   }
+  },
+  {
+   "d_mm": -50.0,
+   "min_diameter_mm": 0.0,
+   "station": {
+    "body": "abdomen",
+    "height_above_lsj_mm": 62.09217543799991,
+    "station_mm": 65.0
+   }
+  },
+  {
+   "d_mm": -45.0,
+   "min_diameter_mm": 0.0,
+   "station": {
+    "body": "abdomen",
+    "height_above_lsj_mm": 82.09217543799991,
+    "station_mm": 45.0
+   }
+  },
+  {
+   "d_mm": -40.0,
+   "min_diameter_mm": 0.0,
+   "station": {
+    "body": "abdomen",
+    "height_above_lsj_mm": 96.09217543799991,
+    "station_mm": 31.0
+   }
+  },
+  {
+   "d_mm": -35.0,
+   "min_diameter_mm": 10.0,
+   "station": {
+    "body": "abdomen",
+    "height_above_lsj_mm": 96.09217543799991,
+    "station_mm": 31.0
+   }
+  },
+  {
+   "d_mm": -30.0,
+   "min_diameter_mm": 18.0,
+   "station": {
+    "body": "abdomen",
+    "height_above_lsj_mm": 96.09217543799991,
+    "station_mm": 31.0
+   }
+  },
+  {
+   "d_mm": -25.0,
+   "min_diameter_mm": 30.0,
+   "station": {
+    "body": "abdomen",
+    "height_above_lsj_mm": 96.09217543799991,
+    "station_mm": 31.0
+   }
+  },
+  {
+   "d_mm": -20.0,
+   "min_diameter_mm": 38.0,
+   "station": {
+    "body": "abdomen",
+    "height_above_lsj_mm": 96.09217543799991,
+    "station_mm": 31.0
+   }
+  },
+  {
+   "d_mm": -15.0,
+   "min_diameter_mm": 50.0,
+   "station": {
+    "body": "abdomen",
+    "height_above_lsj_mm": 96.09217543799991,
+    "station_mm": 31.0
+   }
+  },
+  {
+   "d_mm": -10.0,
+   "min_diameter_mm": 58.0,
+   "station": {
+    "body": "abdomen",
+    "height_above_lsj_mm": 96.09217543799991,
+    "station_mm": 31.0
+   }
+  },
+  {
+   "d_mm": -5.0,
+   "min_diameter_mm": 70.0,
+   "station": {
+    "body": "abdomen",
+    "height_above_lsj_mm": 96.09217543799991,
+    "station_mm": 31.0
+   }
+  },
+  {
+   "d_mm": 0.0,
+   "min_diameter_mm": 70.0,
+   "station": {
+    "body": "thorax",
+    "height_above_lsj_mm": 444.85127388599994,
+    "station_mm": 11.0
+   }
+  },
+  {
+   "d_mm": 5.0,
+   "min_diameter_mm": 58.0,
+   "station": {
+    "body": "thorax",
+    "height_above_lsj_mm": 444.85127388599994,
+    "station_mm": 11.0
+   }
+  },
+  {
+   "d_mm": 10.0,
+   "min_diameter_mm": 50.0,
+   "station": {
+    "body": "thorax",
+    "height_above_lsj_mm": 444.85127388599994,
+    "station_mm": 11.0
+   }
+  },
+  {
+   "d_mm": 15.0,
+   "min_diameter_mm": 38.0,
+   "station": {
+    "body": "thorax",
+    "height_above_lsj_mm": 444.85127388599994,
+    "station_mm": 11.0
+   }
+  },
+  {
+   "d_mm": 20.0,
+   "min_diameter_mm": 30.0,
+   "station": {
+    "body": "thorax",
+    "height_above_lsj_mm": 444.85127388599994,
+    "station_mm": 11.0
+   }
+  },
+  {
+   "d_mm": 25.0,
+   "min_diameter_mm": 18.0,
+   "station": {
+    "body": "thorax",
+    "height_above_lsj_mm": 444.85127388599994,
+    "station_mm": 11.0
+   }
+  },
+  {
+   "d_mm": 30.0,
+   "min_diameter_mm": 10.0,
+   "station": {
+    "body": "thorax",
+    "height_above_lsj_mm": 444.85127388599994,
+    "station_mm": 11.0
+   }
+  },
+  {
+   "d_mm": 35.0,
+   "min_diameter_mm": 0.0,
+   "station": {
+    "body": "thorax",
+    "height_above_lsj_mm": 444.85127388599994,
+    "station_mm": 11.0
+   }
+  },
+  {
+   "d_mm": 40.0,
+   "min_diameter_mm": 0.0,
+   "station": {
+    "body": "thorax",
+    "height_above_lsj_mm": 432.85127388599994,
+    "station_mm": 23.0
+   }
+  },
+  {
+   "d_mm": 45.0,
+   "min_diameter_mm": 0.0,
+   "station": {
+    "body": "thorax",
+    "height_above_lsj_mm": 424.85127388599994,
+    "station_mm": 31.0
+   }
+  },
+  {
+   "d_mm": 50.0,
+   "min_diameter_mm": 0.0,
+   "station": {
+    "body": "thorax",
+    "height_above_lsj_mm": 418.85127388599994,
+    "station_mm": 37.0
+   }
+  },
+  {
+   "d_mm": 55.0,
+   "min_diameter_mm": 0.0,
+   "station": {
+    "body": "thorax",
+    "height_above_lsj_mm": 412.85127388599994,
+    "station_mm": 43.0
+   }
+  },
+  {
+   "d_mm": 60.0,
+   "min_diameter_mm": 0.0,
+   "station": {
+    "body": "thorax",
+    "height_above_lsj_mm": 406.85127388599994,
+    "station_mm": 49.0
+   }
+  }
+ ]
+}

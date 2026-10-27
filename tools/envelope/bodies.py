@@ -157,6 +157,7 @@ def classify(raster, V, arm_mask, tm: TrunkMap, sheet: dict, apex_mm: float, axi
     grid = np.zeros(inside.shape, bool)
     grid[ii, jj, kk] = is_arm
     leaked = 0
+    base_arm = grid.copy()
     for k in range(max(int(np.ceil((apex_mm - o[2]) / h)), 0), min(int((axilla_mm - o[2]) / h), inside.shape[2])):
         m = inside[:, :, k] & ~grid[:, :, k]
         lab, n = ndimage.label(m)
@@ -165,6 +166,7 @@ def classify(raster, V, arm_mask, tm: TrunkMap, sheet: dict, apex_mm: float, axi
             extra = m & (lab != 1 + int(np.argmax(areas)))
             leaked += int(extra.sum())
             grid[:, :, k] |= extra
+    leak_grid = grid & ~base_arm                    # the cells that clean-up moved to the arm (brief 8 builds the arms from the same rule)
     is_arm = grid[ii, jj, kk]
     zc, y = P[:, 2], P[:, 1]
     zlo, zhi = tm.forward(zc - h / 2), tm.forward(zc + h / 2)         # the cell's conformed span; a plane that falls inside a cell splits it by overlap
@@ -229,7 +231,7 @@ def classify(raster, V, arm_mask, tm: TrunkMap, sheet: dict, apex_mm: float, axi
         spheres["sides"][side] = {CLASSES[c]: float((slope[m & (cls == c)] * cell).sum() / 1e6) for c in range(len(CLASSES)) if (m & (cls == c)).any()}
     return {"volume_l": {CLASSES[i]: float(vol_c[i]) for i in range(len(CLASSES))}, "volume_unconformed_l": {CLASSES[i]: float(vol_u[i]) for i in range(len(CLASSES))},
             "raster_total_l": float(len(P) * cell / 1e6), "layer_area_mm2": layer, "layer_z0": o[2] + h * np.arange(nz), "layer_h": h, "zones": zones, "spheres": spheres,
-            "arm_cells_nearest_vertex": int(is_arm.sum()), "cells": int(len(P)), "leaked_arm_cells_reclassified_l": leaked * h ** 3 / 1e6,
+            "leak_grid": leak_grid, "raster_origin_mm": [float(v) for v in o], "arm_cells_nearest_vertex": int(is_arm.sum()), "cells": int(len(P)), "leaked_arm_cells_reclassified_l": leaked * h ** 3 / 1e6,
             "arm_labelled_above_axilla_inside_shoulder_planes_l": float((slope[arm_above] * cell).sum() / 1e6)}
 
 

@@ -510,7 +510,7 @@
    "pass": true
   },
   {
-   "detail": "sum 52.1278 l against mesh 52.3315 l (-0.389%); remainder 3.6118 l; conform effect -0.1427 l; raster minus mesh -0.0006 l",
+   "detail": "sum 52.5056 l against mesh 52.3315 l (+0.333%); remainder 0.0000 l; conform effect +0.2375 l; raster minus mesh -0.0006 l",
    "gate": "7 closure: conformed bodies + remainder = mesh volume within 0.5%",
    "pass": true
   },
@@ -527,6 +527,46 @@
   {
    "detail": "feasible in the union: margin 39.40 mm (the pelvis alone overruns its slab by 75.0 mm); infeasible: margin 36.21 mm, overrun 37.3 mm; frame: model body frame of pelvis (origin at the lumbosacral joint); oracle = model + (-56.719, 0.000, 0.000) mm [model HJC x 56.719 mm; mesh hip line x 49.994 mm; mesh-to-model trunk shift -6.725 mm]",
    "gate": "5 oracle union query trunk_union: rod across the pelvis-abdomen plane, feasible and infeasible",
+   "pass": true
+  },
+  {
+   "detail": "topology vs base.obj: identical; boundary edges near the body 0 (whole body 0); non-manifold 0; odd-parity columns 0",
+   "gate": "1 upper_arm_R: topology matches base; surface watertight",
+   "pass": true
+  },
+  {
+   "detail": "topology vs base.obj: identical; boundary edges near the body 0 (whole body 0); non-manifold 0; odd-parity columns 0",
+   "gate": "1 forearm_R: topology matches base; surface watertight",
+   "pass": true
+  },
+  {
+   "detail": "topology vs base.obj: identical; boundary edges near the body 0 (whole body 0); non-manifold 0; odd-parity columns 0",
+   "gate": "1 hand_R: topology matches base; surface watertight",
+   "pass": true
+  },
+  {
+   "detail": "upper_arm 1.1244 (+12.44%, gate +-13.56%); forearm 1.1198 (+11.98%, gate +-13.34%); hand 1.0000 (no stretch)",
+   "gate": "2 arms: |stretch-1| within 2 x 17.3 mm / sheet length per segment",
+   "pass": true
+  },
+  {
+   "detail": "field 3.6094 l, raster 3.6118 l (-0.067%)",
+   "gate": "3b arms: field volume (unconformed, both sides) within 1% of the raster accounting of arms and girdles",
+   "pass": true
+  },
+  {
+   "detail": "feasible: margin 4.59 mm at station 171.0 mm; infeasible: margin -10.44 mm at station 116.0 mm (pose 0)",
+   "gate": "5 oracle example upper_arm_cylinder: in the upper_arm_R, feasible and infeasible",
+   "pass": true
+  },
+  {
+   "detail": "feasible: margin 3.05 mm at station 140.0 mm; infeasible: margin -12.47 mm at station 140.0 mm (pose 0)",
+   "gate": "5 oracle example forearm_box: in the forearm_R, feasible and infeasible",
+   "pass": true
+  },
+  {
+   "detail": "feasible in the union: margin 3.39 mm (the upper arm alone overruns its slab by 80.0 mm); infeasible: margin -13.87 mm, overrun 0.0 mm",
+   "gate": "5 oracle union query arm_union: rod across the elbow plane, feasible and infeasible",
    "pass": true
   }
  ],

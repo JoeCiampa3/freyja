@@ -40,37 +40,42 @@
  },
  "cjc_anchor": "ansur_cervicale",
  "closure": {
+  "arms_and_girdles_raster_l": 3.6117600000001313,
+  "arms_built_minus_raster_l": -0.0024046497788225984,
+  "arms_built_unconformed_l": 3.6093553502213087,
   "built_l": {
    "abdomen": 4.448969976829189,
    "foots": 1.1315234244094012,
+   "forearms": 1.267618251365778,
+   "hands": 0.5113946908884113,
    "head_neck": 3.7807394644982404,
    "pelvis": 5.532549244952524,
    "shanks": 4.940793660237804,
    "thighs": 12.839542043084718,
-   "thorax": 15.841964046557061
+   "thorax": 15.841964046557061,
+   "upper_arms": 2.210500586535171
   },
-  "conform_effect_l": -0.14270078710285172,
+  "conform_effect_arms_l": 0.38015817856805145,
+  "conform_effect_l": 0.23745739146519973,
   "mesh_volume_l": 52.33146287470325,
   "raster_minus_mesh_l": -0.0005908747032492556,
   "raster_total_l": 52.330872,
-  "relative_difference": -0.0038909864725491486,
-  "remainder_l": {
-   "arms": 3.0996240000001314,
-   "shoulder_L": 0.26084,
-   "shoulder_R": 0.251296
-  },
-  "share_denominator_l": 52.12784186056907,
+  "relative_difference": 0.0033274918202070183,
+  "remainder_l": {},
+  "share_denominator_l": 52.50559538935829,
   "shares": {
-   "abdomen": 0.0853472888582121,
-   "foots": 0.02170669999030435,
-   "head_neck": 0.07252821773460173,
-   "pelvis": 0.10613424702582012,
-   "remainder": 0.06928658220036854,
-   "shanks": 0.09478224081199026,
-   "thighs": 0.2463087207298505,
-   "thorax": 0.30390600264885237
+   "abdomen": 0.08473325450054597,
+   "foots": 0.021550530300980756,
+   "forearms": 0.024142536466174345,
+   "hands": 0.009739813196977089,
+   "head_neck": 0.07200641067798484,
+   "pelvis": 0.10537066009680653,
+   "shanks": 0.09410032632901431,
+   "thighs": 0.2445366431495986,
+   "thorax": 0.3017195392049182,
+   "upper_arms": 0.04210028607699951
   },
-  "sum_l": 52.12784186056907,
+  "sum_l": 52.50559538935829,
   "tolerance": 0.005,
   "within_tolerance": true
  },
@@ -633,6 +638,122 @@
  },
  "pinch_prominence_mm": 3.0,
  "schema": "trunk-bodies/1",
+ "share_table": {
+  "denominator": "sum of the conformed segment volumes (closure.sum_l)",
+  "denominator_l": 52.50559538935829,
+  "note": "raw ratio = sheet mass share / sculpt volume share; the lumped row is the frame bodies abdomen + pelvis + both thighs (planes LJC, TJC and the KJC), not memo 33's MSR10 region",
+  "rows": {
+   "abdomen": {
+    "mass_share": 0.04104104104104104,
+    "raw_ratio": 0.48435577369185784,
+    "required_density_kg_per_l": 0.5990150560421097,
+    "role": "diagnostic",
+    "sheet_mass_kg": 2.665,
+    "volume_l": 4.448969976829189,
+    "volume_share": 0.08473325450054597
+   },
+   "feet": {
+    "mass_share": 0.02002002002002002,
+    "raw_ratio": 0.928980388900635,
+    "required_density_kg_per_l": 1.1488935818350692,
+    "role": "result",
+    "sheet_mass_kg": 1.3,
+    "volume_l": 1.1315234244094012,
+    "volume_share": 0.021550530300980756
+   },
+   "forearms": {
+    "mass_share": 0.026026026026026026,
+    "raw_ratio": 1.0780153967040953,
+    "required_density_kg_per_l": 1.3332089516533328,
+    "role": "result",
+    "sheet_mass_kg": 1.69,
+    "volume_l": 1.267618251365778,
+    "volume_share": 0.024142536466174345
+   },
+   "hands": {
+    "mass_share": 0.01001001001001001,
+    "raw_ratio": 1.0277414779491645,
+    "required_density_kg_per_l": 1.2710339226846472,
+    "role": "result",
+    "sheet_mass_kg": 0.65,
+    "volume_l": 0.5113946908884113,
+    "volume_share": 0.009739813196977089
+   },
+   "head_neck": {
+    "mass_share": 0.06706706706706707,
+    "raw_ratio": 0.9314041129892352,
+    "required_density_kg_per_l": 1.1518910628183083,
+    "role": "result",
+    "sheet_mass_kg": 4.355,
+    "volume_l": 3.7807394644982404,
+    "volume_share": 0.07200641067798484
+   },
+   "lumped_abdomen_to_thigh": {
+    "mass_share": 0.4794794794794795,
+    "raw_ratio": 1.1031632251830346,
+    "required_density_kg_per_l": 1.3643099082308272,
+    "role": "result",
+    "sheet_mass_kg": 31.135,
+    "volume_l": 22.82106126486643,
+    "volume_share": 0.43464055774695104
+   },
+   "pelvis": {
+    "mass_share": 0.14614614614614616,
+    "raw_ratio": 1.3869719143059198,
+    "required_density_kg_per_l": 1.7153033041066832,
+    "role": "diagnostic",
+    "sheet_mass_kg": 9.49,
+    "volume_l": 5.532549244952524,
+    "volume_share": 0.10537066009680653
+   },
+   "shanks": {
+    "mass_share": 0.09009009009009009,
+    "raw_ratio": 0.9573833971106247,
+    "required_density_kg_per_l": 1.1840203016530009,
+    "role": "result",
+    "sheet_mass_kg": 5.85,
+    "volume_l": 4.940793660237804,
+    "volume_share": 0.09410032632901431
+   },
+   "thighs": {
+    "mass_share": 0.2922922922922923,
+    "raw_ratio": 1.1952903602814182,
+    "required_density_kg_per_l": 1.47824587016501,
+    "role": "diagnostic",
+    "sheet_mass_kg": 18.98,
+    "volume_l": 12.839542043084718,
+    "volume_share": 0.2445366431495986
+   },
+   "thorax": {
+    "mass_share": 0.2632632632632632,
+    "raw_ratio": 0.8725429713866271,
+    "required_density_kg_per_l": 1.0790959978043417,
+    "role": "result",
+    "sheet_mass_kg": 17.095,
+    "volume_l": 15.841964046557061,
+    "volume_share": 0.3017195392049182
+   },
+   "upper_arms": {
+    "mass_share": 0.044044044044044044,
+    "raw_ratio": 1.04616970923878,
+    "required_density_kg_per_l": 1.2938245831831607,
+    "role": "diagnostic",
+    "sheet_mass_kg": 2.86,
+    "volume_l": 2.210500586535171,
+    "volume_share": 0.04210028607699951
+   },
+   "whole_arms": {
+    "mass_share": 0.08008008008008008,
+    "raw_ratio": 1.0539260621853364,
+    "required_density_kg_per_l": 1.3034170613723846,
+    "role": "result",
+    "sheet_mass_kg": 5.2,
+    "volume_l": 3.9895135287893604,
+    "volume_share": 0.07598263574015095
+   }
+  },
+  "sheet_total_mass_kg": 64.935
+ },
  "sheet_nodes_mm": {
   "ajc": 65.45287073994474,
   "cjc": 1424.60390394,

@@ -1,0 +1,582 @@
+{
+ "ansur_cross_check": {
+  "forearm_hand": {
+   "ansur_scaled_mm": 458.8867921885658,
+   "compared_with": "elbow to wrist plus the hand's extent along the forearm axis",
+   "mesh_node_to_node_mm": 407.28069820838584,
+   "sd_mm": 15.993205350956694
+  },
+  "hand_length": {
+   "ansur_scaled_mm": 188.9467895127978,
+   "compared_with": "wrist to fingertip",
+   "mesh_node_to_node_mm": 182.93312575911455,
+   "sd_mm": 8.022908312104828
+  },
+  "radiale_stylion": {
+   "ansur_scaled_mm": 251.7343068174696,
+   "compared_with": "elbow to wrist",
+   "mesh_node_to_node_mm": 231.67467330288824,
+   "mesh_over_ansur": 0.9203142640024571,
+   "sd_mm": 11.5636423073561
+  },
+  "shoulder_elbow": {
+   "ansur_scaled_mm": 348.7240450359619,
+   "compared_with": "SJC to elbow (the ANSUR length runs acromion to olecranon: expect it longer)",
+   "mesh_node_to_node_mm": 227.00192332205808,
+   "sd_mm": 10.348447801933938
+  }
+ },
+ "closure": {
+  "arms_and_girdles_raster_l": 3.6117600000001313,
+  "arms_built_minus_raster_l": -0.0024046497788225984,
+  "arms_built_unconformed_l": 3.6093553502213087,
+  "built_l": {
+   "abdomen": 4.448969976829189,
+   "foots": 1.1315234244094012,
+   "forearms": 1.267618251365778,
+   "hands": 0.5113946908884113,
+   "head_neck": 3.7807394644982404,
+   "pelvis": 5.532549244952524,
+   "shanks": 4.940793660237804,
+   "thighs": 12.839542043084718,
+   "thorax": 15.841964046557061,
+   "upper_arms": 2.210500586535171
+  },
+  "conform_effect_arms_l": 0.38015817856805145,
+  "conform_effect_l": 0.23745739146519973,
+  "mesh_volume_l": 52.33146287470325,
+  "raster_minus_mesh_l": -0.0005908747032492556,
+  "raster_total_l": 52.330872,
+  "relative_difference": 0.0033274918202070183,
+  "remainder_l": {},
+  "share_denominator_l": 52.50559538935829,
+  "shares": {
+   "abdomen": 0.08473325450054597,
+   "foots": 0.021550530300980756,
+   "forearms": 0.024142536466174345,
+   "hands": 0.009739813196977089,
+   "head_neck": 0.07200641067798484,
+   "pelvis": 0.10537066009680653,
+   "shanks": 0.09410032632901431,
+   "thighs": 0.2445366431495986,
+   "thorax": 0.3017195392049182,
+   "upper_arms": 0.04210028607699951
+  },
+  "sum_l": 52.50559538935829,
+  "tolerance": 0.005,
+  "within_tolerance": true
+ },
+ "design": {
+  "forearm": {
+   "axial_stretch": 1.1198293277609024,
+   "conform_volume_change_l": 0.06782187211614266,
+   "inner_volume_l": {
+    "t10": 0.26847468783532547,
+    "t3": 0.5090335805215733,
+    "t5": 0.4318310219660802,
+    "t8": 0.32884584014448986
+   },
+   "length_mm": 259.436093664,
+   "min_inscribed_radius": {
+    "from_station_mm": 15.0,
+    "r_mm": 16.03,
+    "station_mm": 259.4,
+    "to_station_mm": 259.436093664
+   },
+   "min_inscribed_radius_inner": {
+    "t10": {
+     "r_mm": 6.25,
+     "station_mm": 259.4
+    },
+    "t3": {
+     "r_mm": 13.21,
+     "station_mm": 259.4
+    },
+    "t5": {
+     "r_mm": 11.15,
+     "station_mm": 259.4
+    },
+    "t8": {
+     "r_mm": 8.13,
+     "station_mm": 259.4
+    }
+   },
+   "pinch_stations": [],
+   "required_density_inner_kg_per_l": {
+    "t10": 3.147410308260786,
+    "t3": 1.660008361598038,
+    "t5": 1.9567839201380341,
+    "t8": 2.5695930945293997
+   },
+   "required_density_skin_kg_per_l": 1.3332089516533328,
+   "sheet_mass_kg": 0.845,
+   "skin_volume_l": 0.633809125682889,
+   "unconformed_skin_volume_l": 0.5659872535667464
+  },
+  "hand": {
+   "axial_stretch": 1.0,
+   "conform_volume_change_l": 0.0,
+   "inner_volume_l": {
+    "t10": 0.04355031590468514,
+    "t3": 0.16633654830742717,
+    "t5": 0.11893237700747286,
+    "t8": 0.06813619400592082
+   },
+   "length_mm": 176.0,
+   "min_inscribed_radius": {
+    "from_station_mm": 0.0,
+    "r_mm": 6.75,
+    "station_mm": 150.0,
+    "to_station_mm": 156.0
+   },
+   "min_inscribed_radius_inner": {
+    "t10": {
+     "r_mm": 0.0,
+     "station_mm": 100.0
+    },
+    "t3": {
+     "r_mm": 3.75,
+     "station_mm": 150.0
+    },
+    "t5": {
+     "r_mm": 1.33,
+     "station_mm": 150.0
+    },
+    "t8": {
+     "r_mm": 0.0,
+     "station_mm": 110.0
+    }
+   },
+   "pinch_stations": [],
+   "required_density_inner_kg_per_l": {
+    "t10": 7.462632434430551,
+    "t3": 1.9538700502509363,
+    "t5": 2.732645291194166,
+    "t8": 4.7698584392864465
+   },
+   "required_density_skin_kg_per_l": 1.2710339226846472,
+   "sheet_mass_kg": 0.325,
+   "skin_volume_l": 0.25569734544420564,
+   "unconformed_skin_volume_l": 0.25569734544420564
+  },
+  "upper_arm": {
+   "axial_stretch": 1.1243724092675937,
+   "conform_volume_change_l": 0.12225721716788307,
+   "inner_volume_l": {
+    "t10": 0.5935318391741607,
+    "t3": 0.9368088881353769,
+    "t5": 0.8300010879722941,
+    "t8": 0.6830654052893728
+   },
+   "length_mm": 291.23469943400005,
+   "min_inscribed_radius": {
+    "from_station_mm": 36.0,
+    "r_mm": 18.25,
+    "station_mm": 40.0,
+    "to_station_mm": 276.23469943400005
+   },
+   "min_inscribed_radius_inner": {
+    "t10": {
+     "r_mm": 13.25,
+     "station_mm": 40.0
+    },
+    "t3": {
+     "r_mm": 16.76,
+     "station_mm": 40.0
+    },
+    "t5": {
+     "r_mm": 15.75,
+     "station_mm": 40.0
+    },
+    "t8": {
+     "r_mm": 14.25,
+     "station_mm": 40.0
+    }
+   },
+   "pinch_stations": [],
+   "required_density_inner_kg_per_l": {
+    "t10": 2.4093063010565694,
+    "t3": 1.5264586172386452,
+    "t5": 1.7228893078845386,
+    "t8": 2.093503768345869
+   },
+   "required_density_skin_kg_per_l": 1.2938245831831607,
+   "sheet_mass_kg": 1.43,
+   "skin_volume_l": 1.1052502932675854,
+   "unconformed_skin_volume_l": 0.9829930760997023
+  }
+ },
+ "generated_by": "fy envelope gates",
+ "hand": {
+  "bounding_box_mm": {
+   "x_anterior": 110.0,
+   "y_lateral": 94.0,
+   "z_axial": 174.0
+  },
+  "volume_l": 0.25569734544420564,
+  "wrist_section": {
+   "area_mm2": 1221.2483985883846,
+   "cheb_r_mm": 16.1283393541592,
+   "perimeter_mm": 105.92501482322673,
+   "width_x_mm": 46.0,
+   "width_y_mm": 34.0
+  }
+ },
+ "inputs": "mesh, snapshot, ANSUR II ratios (inputs sha256:8d94e0078eeb)",
+ "interface_sections": {
+  "elbow": {
+   "lower_side_area_mm2": 1133.178545631894,
+   "relative": -0.007353284858335402,
+   "upper_side_area_mm2": 1141.5728560288173
+  },
+  "wrist": {
+   "lower_side_area_mm2": 1221.2483985883846,
+   "relative": -0.009584809932923589,
+   "upper_side_area_mm2": 1233.0671124961996
+  }
+ },
+ "joint_zone_volumes_l": {
+  "forearm": {
+   "slab_l": {
+    "elbow": 0.07021419336237532,
+    "wrist": 0.031292310236693203
+   },
+   "with_zones_l": 0.633809125682889,
+   "without_all_l": 0.5323026220838205,
+   "zone_h_mm": 25.0
+  },
+  "hand": {
+   "slab_l": {
+    "wrist": 0.03973230310938976
+   },
+   "with_zones_l": 0.25569734544420564,
+   "without_all_l": 0.2159650423348159,
+   "zone_h_mm": 25.0
+  },
+  "upper_arm": {
+   "girdle_l": 0.2904387636242264,
+   "slab_l": {
+    "elbow": 0.07108893226940478,
+    "sjc_sphere": 0.03356
+   },
+   "with_zones_l": 1.1052502932675854,
+   "without_all_l": 1.0006013609981805,
+   "without_girdle_and_zones_l": 0.7101625973739542,
+   "without_girdle_l": 0.814811529643359,
+   "zone_h_mm": 25.0
+  }
+ },
+ "left_right": {
+  "bodies": {
+   "forearm": {
+    "left_l": 0.6337742269851941,
+    "left_minus_right_percent": -0.0055061841618809365,
+    "right_l": 0.633809125682889
+   },
+   "hand": {
+    "left_l": 0.2558201576195826,
+    "left_minus_right_percent": 0.04803028954548184,
+    "right_l": 0.25569734544420564
+   },
+   "upper_arm": {
+    "left_l": 1.095707034629921,
+    "left_minus_right_percent": -0.8634477362996742,
+    "right_l": 1.1052502932675854
+   }
+  },
+  "left_stretch": {
+   "forearm": 1.1198293277609024,
+   "upper_arm": 1.1243724092675937
+  },
+  "raster_girdle_l": {
+   "left": 0.26084,
+   "left_minus_right_percent": 3.7979116261301398,
+   "right": 0.251296
+  },
+  "whole_arm": {
+   "left_l": 1.9853014192346978,
+   "left_minus_right_percent": -0.4740099308725313,
+   "right_l": 1.9947567643946802
+  }
+ },
+ "oracle_examples": {
+  "arm_union": {
+   "feasible": {
+    "feasible": true,
+    "margin_mm": 3.3913795921125502,
+    "slab_overrun_mm": 0.0
+   },
+   "infeasible": {
+    "feasible": false,
+    "margin_mm": -13.867594912230217,
+    "slab_overrun_mm": 0.0
+   },
+   "single_body_overrun_mm": 80.00000056599993
+  },
+  "forearm_box": {
+   "feasible": {
+    "feasible": true,
+    "margin_mm": 3.050149925279406,
+    "point_mm": [
+     10.0,
+     36.0,
+     -140.0
+    ],
+    "pose_index": 0,
+    "slab_overrun_mm": 0.0,
+    "station_mm": 140.0
+   },
+   "infeasible": {
+    "feasible": false,
+    "margin_mm": -12.465034652267496,
+    "point_mm": [
+     10.0,
+     55.0,
+     -140.0
+    ],
+    "pose_index": 0,
+    "slab_overrun_mm": 0.0,
+    "station_mm": 140.0
+   }
+  },
+  "upper_arm_cylinder": {
+   "feasible": {
+    "feasible": true,
+    "margin_mm": 4.590748091062039,
+    "point_mm": [
+     12.221598113100196,
+     47.23708519243468,
+     -135.0
+    ],
+    "pose_index": 0,
+    "slab_overrun_mm": 0.0,
+    "station_mm": 171.0
+   },
+   "infeasible": {
+    "feasible": false,
+    "margin_mm": -10.444372626210264,
+    "point_mm": [
+     4.490378129245498,
+     64.95553591954832,
+     -80.0
+    ],
+    "pose_index": 0,
+    "slab_overrun_mm": 0.0,
+    "station_mm": 116.0
+   }
+  }
+ },
+ "registration": {
+  "angle_from_vertical_deg": {
+   "forearm": 56.229638556700706,
+   "hand": 44.301752910713624,
+   "upper_arm": 43.17394657097917
+  },
+  "elbow_bend_deg": 42.35200958668061,
+  "gate": {
+   "forearm": 0.133366177047096,
+   "upper_arm": 0.13556150506466327
+  },
+  "gate_rule": "2 x sigma / sheet length, sigma 17.3 mm (memo 38 decision 1)",
+  "hand": {
+   "extent_along_forearm_axis_mm": 175.60602490549758,
+   "fingertip_distance_from_wrist_mm": 182.93312575911455,
+   "sheet_scs_length_mm": 74.57474757130001,
+   "stretch": 1.0,
+   "vertices": 1606
+  },
+  "lengths_mesh_mm": {
+   "forearm": 231.67467330288824,
+   "upper_arm": 227.00192332205808
+  },
+  "lengths_sheet_mm": {
+   "forearm": 259.436093664,
+   "hand": 74.57474757130001,
+   "upper_arm": 255.23469943400002
+  },
+  "mirror_gap_mm": 0.0,
+  "node_skin_distance": {
+   "forearm": {
+    "distal_node_skin_distance_mm": 0.06599276334374965,
+    "proximal_node_skin_distance_mm": 4.030681554168045,
+    "section_inscribed_centre_at_proximal_node_mm": {
+     "offset_from_axis_mm": 27.09946301060278,
+     "r": 12.788404810405298,
+     "x": -20.005756260079707,
+     "y": 18.279786977022184
+    }
+   },
+   "hand": {
+    "proximal_node_skin_distance_mm": -0.056057070144925975,
+    "section_inscribed_centre_at_proximal_node_mm": {
+     "offset_from_axis_mm": 16.667123203036766,
+     "r": 16.1283393541592,
+     "x": -8.132610754680428,
+     "y": 14.548320802692757
+    }
+   },
+   "upper_arm": {
+    "distal_node_skin_distance_mm": 4.025896827809639,
+    "proximal_node_skin_distance_mm": 34.522706909731966,
+    "section_inscribed_centre_at_proximal_node_mm": {
+     "offset_from_axis_mm": 17.526185318167766,
+     "r": 17.617568385205637,
+     "x": -4.591734452717397,
+     "y": -16.913992625116265
+    }
+   }
+  },
+  "nodes_mesh_mm": {
+   "elbow": [
+    18.725,
+    -347.615,
+    1183.69
+   ],
+   "fingertip": [
+    296.82,
+    -501.64,
+    923.99
+   ],
+   "sjc": [
+    15.56705094025046,
+    -192.328859146,
+    1349.2379236001505
+   ],
+   "wrist": [
+    176.96,
+    -457.39,
+    1054.91
+   ]
+  },
+  "sigma_mm": 17.3,
+  "stretch": {
+   "forearm": 1.1198293277609024,
+   "upper_arm": 1.1243724092675937
+  },
+  "vertex_ids": {
+   "forearm_chord_end": 3883,
+   "forearm_chord_start": 3372,
+   "upper_arm_chord_end": 3369,
+   "upper_arm_chord_start": 1602
+  },
+  "wrist_bend_deg": 16.271136304154886
+ },
+ "schema": "arm-bodies/1",
+ "share_table": {
+  "denominator": "sum of the conformed segment volumes (closure.sum_l)",
+  "denominator_l": 52.50559538935829,
+  "note": "raw ratio = sheet mass share / sculpt volume share; the lumped row is the frame bodies abdomen + pelvis + both thighs (planes LJC, TJC and the KJC), not memo 33's MSR10 region",
+  "rows": {
+   "abdomen": {
+    "mass_share": 0.04104104104104104,
+    "raw_ratio": 0.48435577369185784,
+    "required_density_kg_per_l": 0.5990150560421097,
+    "role": "diagnostic",
+    "sheet_mass_kg": 2.665,
+    "volume_l": 4.448969976829189,
+    "volume_share": 0.08473325450054597
+   },
+   "feet": {
+    "mass_share": 0.02002002002002002,
+    "raw_ratio": 0.928980388900635,
+    "required_density_kg_per_l": 1.1488935818350692,
+    "role": "result",
+    "sheet_mass_kg": 1.3,
+    "volume_l": 1.1315234244094012,
+    "volume_share": 0.021550530300980756
+   },
+   "forearms": {
+    "mass_share": 0.026026026026026026,
+    "raw_ratio": 1.0780153967040953,
+    "required_density_kg_per_l": 1.3332089516533328,
+    "role": "result",
+    "sheet_mass_kg": 1.69,
+    "volume_l": 1.267618251365778,
+    "volume_share": 0.024142536466174345
+   },
+   "hands": {
+    "mass_share": 0.01001001001001001,
+    "raw_ratio": 1.0277414779491645,
+    "required_density_kg_per_l": 1.2710339226846472,
+    "role": "result",
+    "sheet_mass_kg": 0.65,
+    "volume_l": 0.5113946908884113,
+    "volume_share": 0.009739813196977089
+   },
+   "head_neck": {
+    "mass_share": 0.06706706706706707,
+    "raw_ratio": 0.9314041129892352,
+    "required_density_kg_per_l": 1.1518910628183083,
+    "role": "result",
+    "sheet_mass_kg": 4.355,
+    "volume_l": 3.7807394644982404,
+    "volume_share": 0.07200641067798484
+   },
+   "lumped_abdomen_to_thigh": {
+    "mass_share": 0.4794794794794795,
+    "raw_ratio": 1.1031632251830346,
+    "required_density_kg_per_l": 1.3643099082308272,
+    "role": "result",
+    "sheet_mass_kg": 31.135,
+    "volume_l": 22.82106126486643,
+    "volume_share": 0.43464055774695104
+   },
+   "pelvis": {
+    "mass_share": 0.14614614614614616,
+    "raw_ratio": 1.3869719143059198,
+    "required_density_kg_per_l": 1.7153033041066832,
+    "role": "diagnostic",
+    "sheet_mass_kg": 9.49,
+    "volume_l": 5.532549244952524,
+    "volume_share": 0.10537066009680653
+   },
+   "shanks": {
+    "mass_share": 0.09009009009009009,
+    "raw_ratio": 0.9573833971106247,
+    "required_density_kg_per_l": 1.1840203016530009,
+    "role": "result",
+    "sheet_mass_kg": 5.85,
+    "volume_l": 4.940793660237804,
+    "volume_share": 0.09410032632901431
+   },
+   "thighs": {
+    "mass_share": 0.2922922922922923,
+    "raw_ratio": 1.1952903602814182,
+    "required_density_kg_per_l": 1.47824587016501,
+    "role": "diagnostic",
+    "sheet_mass_kg": 18.98,
+    "volume_l": 12.839542043084718,
+    "volume_share": 0.2445366431495986
+   },
+   "thorax": {
+    "mass_share": 0.2632632632632632,
+    "raw_ratio": 0.8725429713866271,
+    "required_density_kg_per_l": 1.0790959978043417,
+    "role": "result",
+    "sheet_mass_kg": 17.095,
+    "volume_l": 15.841964046557061,
+    "volume_share": 0.3017195392049182
+   },
+   "upper_arms": {
+    "mass_share": 0.044044044044044044,
+    "raw_ratio": 1.04616970923878,
+    "required_density_kg_per_l": 1.2938245831831607,
+    "role": "diagnostic",
+    "sheet_mass_kg": 2.86,
+    "volume_l": 2.210500586535171,
+    "volume_share": 0.04210028607699951
+   },
+   "whole_arms": {
+    "mass_share": 0.08008008008008008,
+    "raw_ratio": 1.0539260621853364,
+    "required_density_kg_per_l": 1.3034170613723846,
+    "role": "result",
+    "sheet_mass_kg": 5.2,
+    "volume_l": 3.9895135287893604,
+    "volume_share": 0.07598263574015095
+   }
+  },
+  "sheet_total_mass_kg": 64.935
+ },
+ "side": "right (the left is built for the comparison only)"
+}

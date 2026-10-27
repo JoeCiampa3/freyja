@@ -24,6 +24,13 @@ COLUMNS = {
     "cervicale": "cervicaleheight",             # brief 5: the C7 cross-check of the trunk registration
     "suprasternale": "suprasternaleheight",     # the sternal notch; Dumas's SUP, an extra CJC cross-check
 }
+# pose-invariant arm lengths (mm, surface landmarks, not joint centres): volume-extractor brief 8, item 3; context cross-checks of the arm registration only
+ARM_COLUMNS = {
+    "shoulder_elbow": "shoulderelbowlength",
+    "radiale_stylion": "radialestylionlength",
+    "forearm_hand": "forearmhandlength",
+    "hand_length": "handlength",
+}
 RAW = "data/ansur2/raw/ANSUR_II_FEMALE_Public.csv"
 SUMMARY = "data/ansur2/ratios.json"
 
@@ -51,6 +58,13 @@ def summarise(csv_path) -> dict:
                       ("calf_maximum", "calfcircumference"), ("ankle_minimum", "anklecircumference")):
         c = np.array([float(r[col]) for r in rows])
         out["circumferences_mm"][name] = {"column": col, "mean": float(c.mean()), "sd": float(c.std(ddof=1))}
+    out["arm_lengths"] = {}
+    for name, col in ARM_COLUMNS.items():
+        if col not in rows[0]:               # a reduced CSV without the arm columns (the real ANSUR II file has them): the arm cross-check then stops with a message in `arms.ansur_check`
+            continue
+        a = np.array([float(r[col]) for r in rows])
+        q = a / stature
+        out["arm_lengths"][name] = {"column": col, "length_mm": {"mean": float(a.mean()), "sd": float(a.std(ddof=1))}, "ratio": {"mean": float(q.mean()), "sd": float(q.std(ddof=1))}}
     out["source_sha256_12"] = hashlib.sha256(Path(csv_path).read_bytes()).hexdigest()[:12]
     return out
 

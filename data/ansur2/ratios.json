@@ -1,4 +1,50 @@
 {
+ "arm_lengths": {
+  "forearm_hand": {
+   "column": "forearmhandlength",
+   "length_mm": {
+    "mean": 439.86203423967777,
+    "sd": 23.375763001668247
+   },
+   "ratio": {
+    "mean": 0.27010023378472925,
+    "sd": 0.009413582124816324
+   }
+  },
+  "hand_length": {
+   "column": "handlength",
+   "length_mm": {
+    "mean": 181.08308157099697,
+    "sd": 10.05644752367184
+   },
+   "ratio": {
+    "mean": 0.11121386121592619,
+    "sd": 0.004722274529624078
+   }
+  },
+  "radiale_stylion": {
+   "column": "radialestylionlength",
+   "length_mm": {
+    "mean": 241.3303121852971,
+    "sd": 15.242710033718172
+   },
+   "ratio": {
+    "mean": 0.14817052109683604,
+    "sd": 0.006806346453607287
+   }
+  },
+  "shoulder_elbow": {
+   "column": "shoulderelbowlength",
+   "length_mm": {
+    "mean": 334.297583081571,
+    "sd": 17.251015790174275
+   },
+   "ratio": {
+    "mean": 0.20525856854878716,
+    "sd": 0.0060910843767820935
+   }
+  }
+ },
  "circumferences_mm": {
   "ankle_minimum": {
    "column": "anklecircumference",
