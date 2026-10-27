@@ -35,15 +35,22 @@ below is copied from the memo or file named beside it.
   (section 4) reports the comparison as context and draws no inference; D7 below does.
 - The oracle (memos 35, 36): bodies and joint zones with h = 25 mm; the shoulder plane and spheres from the sheet's SJC (192.33 mm lateral, 77.57 mm below the CJC); a component registry, `check`, `free` and
   `foreign` on the MuJoCo model; the thigh's three-component worked example (skin 6.4198 l, free 5.6516 l, occupied 0.7682 l).
-- A gap: no Stage 4 document or ADR exists to align the registry's `id` and pose fields with (memo 36, finding 3), and no memo from 27 to 36 registers the arms (they are the unbuilt remainder, memo 35).
+- A gap: no Stage 4 document or ADR exists to align the registry's `id` and pose fields with (memo 36, finding 3).
+- The arms and reservations (memo 39, brief 8): each arm segment is registered by a rigid rotation about its proximal joint centre and an axial stretch; the arms are built (the upper arm with the shoulder
+  girdle) and the closure has no remainder, +0.333% against the 0.5% gate. The spine modules of `data/envelope/reservations.yaml` fit the pelvis and the thorax and not the abdomen.
 
 ## Decision
 
 D1. **Authority.** The sheet (Dumas via the sheet) sets every dimension and mass. The v2 sculpt (`data/makehuman/freyja-body-v2.obj`, unposed, 13,380 body vertices, topology identical to `base.obj`'s body)
 supplies shape only. ANSUR II (already in `data/`) only places mesh features and cross-checks. No other source.
 
-D2. **Registration.** Piecewise axial stretch onto the sheet's joint-centre nodes, never a uniform scale; cross-sections unchanged. Legs get a horizontal shear, arms a rigid rotation per segment. An 8% stretch
-gate per sub-segment. Anchors: knee chords; hip crotch apex + ANSUR (Dumas GT +8 mm check); CJC ANSUR cervicale less the Dumas C7 offset; ankle on the ANSUR malleolus ratio (unmeasured); trunk map slope 1; head
+D2. **Registration.** Piecewise axial stretch onto the sheet's joint-centre nodes, never a uniform scale; cross-sections unchanged. Legs get a horizontal shear, arms a rigid rotation per segment about its
+proximal joint centre onto the model's zero-pose axis (the mesh is in an A-pose: the upper arm 43.2 deg and the forearm 56.2 deg from vertical; a shear would inflate sections by 1/cos of the angle), then an
+axial stretch; the hand takes the forearm's rotation and no stretch, and is the whole hand (the sheet's 74.6 mm is the SCS length). An 8% stretch gate per leg and trunk sub-segment; **the arm gate is
+2 x sigma / sheet length with sigma = 17.3 mm (the knee anchor SD, a stated assumption set before the result: 13.6% for the upper arm, 13.3% for the forearm).** The arm result: upper arm 1.1244, forearm 1.1198, so
+the sculpt's arms are about 11% shorter than the sheet's (the forearm 8% shorter than the ANSUR II radiale-stylion length scaled to stature); the nodes are the Ruler chord vertices (the SJC the sheet's, through
+the trunk registration), on or near the skin, so an arm segment's axis runs near its lateral surface. The elbow is cut on the bisector plane of the two axes (a cell goes to one body); an optional later
+re-sculpt of the arm-length sliders would remove the stretch (memo 39). Anchors: knee chords; hip crotch apex + ANSUR (Dumas GT +8 mm check); CJC ANSUR cervicale less the Dumas C7 offset; ankle on the ANSUR malleolus ratio (unmeasured); trunk map slope 1; head
 and neck keeps the sheet length.
 
 D3. **Uncertainty.** Anchor SDs from ANSUR; Monte Carlo N = 200; results reported nominal and robust; volume range gate 10%. The thorax and head stretches are known to about +-4%.
@@ -57,8 +64,9 @@ union of adjacent bodies; ROM interference belongs to the sim. Joint zones (hip,
 D6. **Mass cuts.** Realism checks use the source's tissue boundaries (Dumas 2015 Table 1: MSR10, iliocristale) and the uniform-density reading (Dumas 2007 section 2.1: sheet masses are volume shares). The
 results are the lumped abdomen-to-thigh region, the shank and the foot (later segments with two known cuts); the pelvis, abdomen and thigh alone are not results. Abdomen + pelvis share one budget (12.155 kg).
 
-D7. **Realism finding.** Against the reference women (63.9 kg, 1.61 m, BMI 24.7) the sculpt (BMI 18) carries about 9% less volume share in the abdomen-to-thigh region. No re-sculpt; revisit when all segments are
-in.
+D7. **Observation.** Against the reference women (63.9 kg, 1.61 m, BMI 24.7) the sculpt (BMI 18) carries about 9% less volume share than the sheet's mass share in the lumped abdomen-to-thigh region (raw ratio
+1.103 on the frame bodies, 1.099 on memo 33's MSR10 region); with all segments in, the thorax is the other way (0.873), the whole arm 1.054, the shank 0.957 and the foot 0.929. One hypothesis, not tested: the
+sculpt is lean against a BMI 24.7 reference, so its soft tissue is thinner where the reference's is thickest. No re-sculpt; revisit with all segments (they are in, memo 39).
 
 D8. **Mass base.** Siri 1956 density, fat fraction 0.207 (Deurenberg), lung gas removed (Hall). Comparators: 1.24 kg/l (robot, skin volume) and 1.31 kg/l (tissue basis).
 
@@ -67,7 +75,9 @@ parts from MuJoCo forward kinematics. Fine fits belong to CAD.
 
 D10. **Gates.** Topology and watertight; stretch within 8%; area change within 1%; synthetic solids within 2 mm; the oracle examples; volume against Blender and closure within 0.5%.
 
-D11. **Open.** Arms, reservations, left side, discrete hip sweeps, single sculpt, no structural check.
+D11. **Open.** The left side, discrete hip sweeps, single sculpt, no structural check; **the trunk's x offset** (the model's zero-pose stack is 56.7 mm behind the hip line, 38.6 mm behind the mesh thorax's centre
+line at the CJC, and 52 mm behind the column that fits best, the corridor sweep's d = -5 mm; the design stance brings it to 30 mm; memos 37 and 39), **the hip registration** (the mesh's hip joint centres are 75.6 mm from its midline, the sheet's 92.43 mm: in the
+model frames the two bodies are 17 mm apart at the hip plane; memo 39), and the arm anchors on the skin (the elbow and wrist nodes). The arms are built and the reservations are reported (memo 39); they are no longer open.
 
 ## Consequences
 
@@ -77,7 +87,7 @@ D11. **Open.** Arms, reservations, left side, discrete hip sweeps, single sculpt
   until all segments are in and the question is revisited.
 - Stage 4 components are placed in the model body frames (D9); `docs/envelope-component-contract.md` is the draft of what the connector would emit. The trunk's mesh-to-model shift is computed at build time and
   printed in every trunk result, not typed.
-- The open list (D11) is the work not done: the arms, the reservations, the left side, continuous hip sweeps in place of discrete ones, a second sculpt, and any structural check.
+- The open list (D11) is the work not done: the left side, continuous hip sweeps in place of discrete ones, a second sculpt, any structural check, the trunk's x offset and the hip registration.
 - `rm.v1-volume-extracted` stays pending until this record is accepted.
 
 ## Rejected options, and why each one died
