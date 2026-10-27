@@ -1,0 +1,9 @@
+schema: reservations/1
+spine_v2:
+  module: {name: AKH70, count: 3, diameter_mm: 90, length_mm: 81.5, mass_kg: 1.4}
+  clearance_mm: 5
+  candidate_bodies: [abdomen, pelvis, thorax]
+  corridor: {from: LSJ, to: CJC, diameter_mm: null}   # set after the column sweep
+  v1_ballast: false   # true: v1 fills the bay with equal mass at the same place
+hands: {reserve: none, note: "v1 placeholder, modular swap in v2; interface at the wrist only"}
+face:  {reserve: none, note: "v1 placeholder head, v2 rebuild; interface at the neck"}
