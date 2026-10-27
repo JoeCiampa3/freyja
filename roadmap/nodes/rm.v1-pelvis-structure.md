@@ -4,7 +4,7 @@ id: rm.v1-pelvis-structure
 title: "Pelvis structure designed, fabricated and verified against its load envelope"
 short: Pelvis structure
 parent: rm.v1-skeletal
-blocked_by: [rm.v1-upper-arm-validated, rm.v1-hip-architecture-adr, rm.v1-lsj-concept, rm.v1-ariadne-task-loads, rm.v1-volume-extracted]
+blocked_by: [rm.v1-upper-arm-validated, rm.v1-hip-architecture-adr, rm.v1-lsj-concept, rm.v1-ariadne-task-loads, rm.v1-envelope-built, rm.v1-hip-registration-decided, rm.v1-spine-reservation-decided]
 stub: true
 tags: ["region:pelvis"]
 ---

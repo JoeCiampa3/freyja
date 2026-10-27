@@ -4,7 +4,7 @@ id: rm.v1-forearm-structure
 title: "Forearm structure and hand mass dummy designed, fabricated and verified, with the dummy on its final wrist interface"
 short: Forearm and hand
 parent: rm.v1-skeletal
-blocked_by: [rm.v1-upper-arm-validated, rm.v1-volume-extracted]
+blocked_by: [rm.v1-upper-arm-validated, rm.v1-envelope-built]
 stub: true
 tags: ["region:arm"]
 ---
