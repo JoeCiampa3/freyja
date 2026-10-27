@@ -1,0 +1,298 @@
+{
+ "definition": "offset = sim - mesh, mm, relative to the hip line (x anterior) and the midline (y left); sim = MuJoCo forward kinematics of the lumbosacral joint, TJC, CJC and the SJC (the thorax stack axis at the SJC's height; sjc.point_x is the joint itself); mesh = area centroid of the built body's section at that height",
+ "generated_by": "fy envelope offsets from the built trunk bodies, the model and the snapshot; do not edit, rerun",
+ "mesh_hip_line_x_mm": 49.994,
+ "model_hjc_x_mm": 56.719,
+ "poses": {
+  "stance": {
+   "planes": {
+    "cjc": {
+     "height_above_hjc_mm": 563.192,
+     "mesh": [
+      {
+       "area_mm2": 12148.25,
+       "body": "head_neck",
+       "centroid_x_mm": -11.898,
+       "centroid_y_mm": 0.006,
+       "offset_x_mm": -23.272,
+       "offset_y_mm": -0.006,
+       "skin_margin_at_stack_mm": 16.743,
+       "station_mm": 256.08
+      }
+     ],
+     "sim": {
+      "x": -35.17,
+      "y": 0.0,
+      "z": 563.192
+     }
+    },
+    "ljc": {
+     "height_above_hjc_mm": 107.34,
+     "mesh": [
+      {
+       "area_mm2": 47045.75,
+       "body": "abdomen",
+       "centroid_x_mm": 15.792,
+       "centroid_y_mm": 0.017,
+       "offset_x_mm": -50.962,
+       "offset_y_mm": -0.017,
+       "skin_margin_at_stack_mm": 41.053,
+       "station_mm": 117.434
+      }
+     ],
+     "sim": {
+      "x": -35.17,
+      "y": 0.0,
+      "z": 107.34
+     }
+    },
+    "sjc": {
+     "height_above_hjc_mm": 485.623,
+     "mesh": [
+      {
+       "area_mm2": 57040.5,
+       "body": "thorax",
+       "centroid_x_mm": -9.072,
+       "centroid_y_mm": -0.182,
+       "offset_x_mm": -26.098,
+       "offset_y_mm": 0.182,
+       "skin_margin_at_stack_mm": 50.319,
+       "station_mm": 67.911
+      }
+     ],
+     "sim": {
+      "point_x": -21.356,
+      "x": -35.17,
+      "y": 0.0,
+      "z": 485.623
+     }
+    },
+    "tjc": {
+     "height_above_hjc_mm": 234.433,
+     "mesh": [
+      {
+       "area_mm2": 29806.5,
+       "body": "thorax",
+       "centroid_x_mm": 35.412,
+       "centroid_y_mm": -0.008,
+       "offset_x_mm": -70.582,
+       "offset_y_mm": 0.008,
+       "skin_margin_at_stack_mm": 10.336,
+       "station_mm": 319.101
+      }
+     ],
+     "sim": {
+      "x": -35.17,
+      "y": 0.0,
+      "z": 234.433
+     }
+    }
+   },
+   "rise_mm": 9.658,
+   "tilt_deg": 12.0
+  },
+  "stance_lean": {
+   "planes": {
+    "cjc": {
+     "height_above_hjc_mm": 564.021,
+     "mesh": [
+      {
+       "area_mm2": 11904.0,
+       "body": "head_neck",
+       "centroid_x_mm": -11.378,
+       "centroid_y_mm": 0.044,
+       "offset_x_mm": -5.991,
+       "offset_y_mm": -0.044,
+       "skin_margin_at_stack_mm": 32.936,
+       "station_mm": 255.251
+      }
+     ],
+     "sim": {
+      "x": -17.369,
+      "y": 0.0,
+      "z": 564.021
+     }
+    },
+    "ljc": {
+     "height_above_hjc_mm": 108.397,
+     "mesh": [
+      {
+       "area_mm2": 46824.0,
+       "body": "abdomen",
+       "centroid_x_mm": 15.995,
+       "centroid_y_mm": 0.015,
+       "offset_x_mm": -47.758,
+       "offset_y_mm": -0.015,
+       "skin_margin_at_stack_mm": 43.607,
+       "station_mm": 116.377
+      }
+     ],
+     "sim": {
+      "x": -31.763,
+      "y": 0.0,
+      "z": 108.397
+     }
+    },
+    "sjc": {
+     "height_above_hjc_mm": 486.055,
+     "mesh": [
+      {
+       "area_mm2": 56881.75,
+       "body": "thorax",
+       "centroid_x_mm": -9.188,
+       "centroid_y_mm": -0.183,
+       "offset_x_mm": -10.644,
+       "offset_y_mm": 0.183,
+       "skin_margin_at_stack_mm": 64.874,
+       "station_mm": 67.479
+      }
+     ],
+     "sim": {
+      "point_x": -6.011,
+      "x": -19.832,
+      "y": 0.0,
+      "z": 486.055
+     }
+    },
+    "tjc": {
+     "height_above_hjc_mm": 235.426,
+     "mesh": [
+      {
+       "area_mm2": 29960.75,
+       "body": "thorax",
+       "centroid_x_mm": 35.38,
+       "centroid_y_mm": -0.001,
+       "offset_x_mm": -63.13,
+       "offset_y_mm": 0.001,
+       "skin_margin_at_stack_mm": 17.846,
+       "station_mm": 318.108
+      }
+     ],
+     "sim": {
+      "x": -27.75,
+      "y": 0.0,
+      "z": 235.426
+     }
+    }
+   },
+   "rise_mm": 10.715,
+   "tilt_deg": 12.0
+  },
+  "zero": {
+   "planes": {
+    "cjc": {
+     "height_above_hjc_mm": 553.534,
+     "mesh": [
+      {
+       "area_mm2": 16241.5,
+       "body": "thorax",
+       "centroid_x_mm": -18.12,
+       "centroid_y_mm": 0.022,
+       "offset_x_mm": -38.599,
+       "offset_y_mm": -0.022,
+       "skin_margin_at_stack_mm": 2.087,
+       "station_mm": 1.0
+      },
+      {
+       "area_mm2": 15250.5,
+       "body": "head_neck",
+       "centroid_x_mm": -17.016,
+       "centroid_y_mm": -0.064,
+       "offset_x_mm": -39.703,
+       "offset_y_mm": 0.064,
+       "skin_margin_at_stack_mm": 1.117,
+       "station_mm": 264.738
+      }
+     ],
+     "sim": {
+      "x": -56.719,
+      "y": 0.0,
+      "z": 553.534
+     }
+    },
+    "ljc": {
+     "height_above_hjc_mm": 97.682,
+     "mesh": [
+      {
+       "area_mm2": 49334.5,
+       "body": "pelvis",
+       "centroid_x_mm": 13.148,
+       "centroid_y_mm": -0.004,
+       "offset_x_mm": -69.867,
+       "offset_y_mm": 0.004,
+       "skin_margin_at_stack_mm": 24.967,
+       "station_mm": 1.0
+      },
+      {
+       "area_mm2": 48890.25,
+       "body": "abdomen",
+       "centroid_x_mm": 13.656,
+       "centroid_y_mm": 0.004,
+       "offset_x_mm": -70.375,
+       "offset_y_mm": -0.004,
+       "skin_margin_at_stack_mm": 24.265,
+       "station_mm": 126.092
+      }
+     ],
+     "sim": {
+      "x": -56.719,
+      "y": 0.0,
+      "z": 97.682
+     }
+    },
+    "sjc": {
+     "height_above_hjc_mm": 475.965,
+     "mesh": [
+      {
+       "area_mm2": 59786.0,
+       "body": "thorax",
+       "centroid_x_mm": -6.408,
+       "centroid_y_mm": -0.202,
+       "offset_x_mm": -50.311,
+       "offset_y_mm": 0.202,
+       "skin_margin_at_stack_mm": 30.596,
+       "station_mm": 77.569
+      }
+     ],
+     "sim": {
+      "point_x": -42.905,
+      "x": -56.719,
+      "y": 0.0,
+      "z": 475.965
+     }
+    },
+    "tjc": {
+     "height_above_hjc_mm": 224.775,
+     "mesh": [
+      {
+       "area_mm2": 28532.25,
+       "body": "abdomen",
+       "centroid_x_mm": 35.364,
+       "centroid_y_mm": 0.001,
+       "offset_x_mm": -92.083,
+       "offset_y_mm": -0.001,
+       "skin_margin_at_stack_mm": -12.335,
+       "station_mm": 1.0
+      },
+      {
+       "area_mm2": 28727.25,
+       "body": "thorax",
+       "centroid_x_mm": 35.424,
+       "centroid_y_mm": 0.005,
+       "offset_x_mm": -92.143,
+       "offset_y_mm": -0.005,
+       "skin_margin_at_stack_mm": -12.192,
+       "station_mm": 327.759
+      }
+     ],
+     "sim": {
+      "x": -56.719,
+      "y": 0.0,
+      "z": 224.775
+     }
+    }
+   }
+  }
+ },
+ "schema": "trunk-offsets/1"
+}

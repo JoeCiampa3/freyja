@@ -8,6 +8,13 @@ Authored reference for `fy envelope check` and `fy envelope free` (volume-extrac
 The segment frame of a built segment: x anterior, y left, z up, origin at the proximal joint centre on the vertical axis (a trunk body: at its upper plane, on the midline). A station is
 the distance below the origin plane. Units: millimetres and degrees. Every shape, pose and component below is in this frame.
 
+**Model body frames (brief 7).** The oracle and the registry take every pose and component in the frame of the MuJoCo model's body of that name: the pelvis origin is the lumbosacral joint, the
+abdomen's the TJC, the thorax's and the head and neck's the CJC; the legs as above. The built trunk bodies keep their own frame; `frames.py` converts: oracle = model + (-hjc_x, 0, 0) (the
+head and neck also (0, 0, -length), its oracle origin being the vertex), hjc_x being the model's HJC x relative to its pelvis origin (`thigh_right_pos_x`). The mesh-to-model trunk shift (the
+mesh hip line x less hjc_x) is computed at build time, stored in the cache, applied inside `oracle.clearance` / `clearance_union` (`frame_offset_mm`) and printed as a `frame:` line in every trunk
+`check` and `free`. A trunk cache without it (built before brief 7) stops with an instruction to rebuild; a leg prints no such line (its frame is unchanged). A point the oracle reports back is in the
+frame the poses were given in.
+
 An ISB/CAD segment frame has x anterior, y up, z right. `registry.isb_to_segment` is the fixed rotation, right side: (a, b, c) -> (a, -c, b), a proper rotation (determinant +1). The hip
 joint centre stays at the origin and the knee joint centre at (0, 0, -L). The left side is not defined (the function raises).
 
@@ -90,7 +97,7 @@ host segment's frame. `foreign.foreign_poses` (`tools/envelope/foreign.py`) buil
 * Stops (StopAndAsk, exit 3): the hip is not three serial hinges, their anchors are not at the body origin, or the host body is rotated against its parent at q = 0.
 * Frames. The host thigh's model body frame is the oracle's thigh frame (origin at the HJC, axes parallel to the world at q = 0). The owner's is **not** always the oracle's: the model's
   pelvis origin is the lumbosacral joint, `thigh_<side>_pos_x` (56.7 mm) behind the hip, whereas the oracle's pelvis body has its origin on the knee's vertical line. The helper takes
-  placements in the model's pelvis frame; convert a placement given in the oracle's pelvis frame by that offset first.
+  placements in the model's pelvis frame, which since brief 7 is also the frame a pelvis registry is authored in (no conversion is needed; the oracle applies the shift itself).
 * Right side only. The left side's convention is an open item (the helper raises; the default sampling exists for both).
 * Trajectories from the sim replace the default sampling by passing a samples CSV. **A part driven by a linkage rather than by joint angles enters only as a poses CSV from the user's
   linkage solver** (the oracle's pose schema, in the host segment's frame, named as the entry's `poses_file`); linkages are not modelled here.

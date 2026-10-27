@@ -88,13 +88,23 @@ def pose_points(pts, pose) -> np.ndarray:
     return pts @ R.T + pose[:3]
 
 
-def clearance(seg: field.Segment, shapes, poses, required_mm: float = 0.0) -> dict:
-    """Margin of the shapes at every pose. Returns margin_mm (the minimum over poses and shapes), pose_index, shape, station_mm and
-    point_mm (segment frame) where it binds, margins_mm per pose, slab_overrun_mm (the largest protrusion beyond the slab planes over all
-    poses) and feasible (margin >= required_mm and no slab overrun)."""
+def to_segment_frame(poses, frame_offset_mm=None) -> np.ndarray:
+    """(n, 6) poses given in a model body frame -> the segment's own frame: the translation moves by `frame_offset_mm` (model-to-segment, see `frames`), the rotations stay (the frames are parallel)."""
     poses = np.atleast_2d(np.asarray(poses, float))
     if poses.shape[1] == 3:
         poses = np.hstack([poses, np.zeros((len(poses), 3))])
+    if frame_offset_mm is None:
+        return poses
+    return poses + np.r_[np.asarray(frame_offset_mm, float), 0.0, 0.0, 0.0]
+
+
+def clearance(seg: field.Segment, shapes, poses, required_mm: float = 0.0, frame_offset_mm=None) -> dict:
+    """Margin of the shapes at every pose. Returns margin_mm (the minimum over poses and shapes), pose_index, shape, station_mm and
+    point_mm where it binds, margins_mm per pose, slab_overrun_mm (the largest protrusion beyond the slab planes over all
+    poses) and feasible (margin >= required_mm and no slab overrun). The poses are in the frame they are given in; `frame_offset_mm` (volume-extractor brief 7) is the translation from
+    that frame, the model body frame, to the segment's own, applied here; `point_mm` is reported back in the given frame, `frame_offset_mm` is in the result."""
+    off = np.zeros(3) if frame_offset_mm is None else np.asarray(frame_offset_mm, float)
+    poses = to_segment_frame(poses, off)
     samples = [(s.get("name", f"shape{i}"), sample_shape(s)) for i, s in enumerate(shapes)]
     best = None
     margins, overruns = [], []
@@ -109,9 +119,10 @@ def clearance(seg: field.Segment, shapes, poses, required_mm: float = 0.0) -> di
             over = max(over, float(P[:, 2].max() - z_top), float(z_bot - P[:, 2].min()))
             pm = min(pm, float(sd[j]))
             if best is None or sd[j] < best["margin_mm"]:
-                best = {"margin_mm": float(sd[j]), "pose_index": pi, "shape": name, "station_mm": float(z_top - P[j, 2]), "point_mm": [float(x) for x in P[j]]}
+                best = {"margin_mm": float(sd[j]), "pose_index": pi, "shape": name, "station_mm": float(z_top - P[j, 2]), "point_mm": [float(x) for x in P[j] - off]}
         margins.append(pm)
         overruns.append(max(over, 0.0))
+    best["frame_offset_mm"] = [float(x) for x in off]
     best["margins_mm"] = margins
     best["slab_overrun_mm"] = max(overruns)
     best["slab_overruns_mm"] = overruns
@@ -120,15 +131,15 @@ def clearance(seg: field.Segment, shapes, poses, required_mm: float = 0.0) -> di
     return best
 
 
-def clearance_union(parts, shapes, poses, required_mm: float = 0.0) -> dict:
+def clearance_union(parts, shapes, poses, required_mm: float = 0.0, frame_offset_mm=None) -> dict:
     """Containment of shapes in the union of adjacent bodies, neutral pose (volume-extractor brief 5, item 3). `parts` is a list of (segment, offset): `offset` is the position of the
     segment's frame origin in the frame the poses are given in (the first part's, so its offset is zero). A sampled point is held when it lies inside the slab of some part; its margin
     is that part's signed distance to the skin (every part measures the same skin, so a point inside two slabs gets the larger of the two, which agree). A point in no slab is a slab
     overrun, by its distance to the nearest slab, and its margin is taken from the nearest part. Interference across the range of motion is not this function's business, it stays in
-    the simulation. Returns the keys of `clearance`, `slab_overrun_mm` being the largest distance of a point from every slab."""
-    poses = np.atleast_2d(np.asarray(poses, float))
-    if poses.shape[1] == 3:
-        poses = np.hstack([poses, np.zeros((len(poses), 3))])
+    the simulation. Returns the keys of `clearance`, `slab_overrun_mm` being the largest distance of a point from every slab. `frame_offset_mm` is the first part's model-to-segment
+    translation (see `clearance`)."""
+    frame = np.zeros(3) if frame_offset_mm is None else np.asarray(frame_offset_mm, float)
+    poses = to_segment_frame(poses, frame)
     samples = [(s.get("name", f"shape{i}"), sample_shape(s)) for i, s in enumerate(shapes)]
     best = None
     margins, overruns = [], []
@@ -150,9 +161,10 @@ def clearance_union(parts, shapes, poses, required_mm: float = 0.0) -> dict:
             over = max(over, float(gap.max()))
             pm = min(pm, float(sd[j]))
             if best is None or sd[j] < best["margin_mm"]:
-                best = {"margin_mm": float(sd[j]), "pose_index": pi, "shape": name, "station_mm": float(parts[0][0].z_top - P[j, 2]), "point_mm": [float(x) for x in P[j]]}
+                best = {"margin_mm": float(sd[j]), "pose_index": pi, "shape": name, "station_mm": float(parts[0][0].z_top - P[j, 2]), "point_mm": [float(x) for x in P[j] - frame]}
         margins.append(pm)
         overruns.append(over)
+    best["frame_offset_mm"] = [float(x) for x in frame]
     best["margins_mm"] = margins
     best["slab_overrun_mm"] = max(overruns)
     best["slab_overruns_mm"] = overruns

@@ -89,6 +89,7 @@ class Registry:
     segment: str
     components: list = dc_field(default_factory=list)
     base: Path = Path(".")           # the directory the relative mesh and pose paths resolve against
+    frame_offset_mm: tuple = (0.0, 0.0, 0.0)    # model body frame -> the built segment's own frame (frames.py; zero for a leg): the registry is authored in the model frame
 
     def by_name(self, name):
         return next(c for c in self.components if c.name == name)
@@ -100,8 +101,8 @@ class Registry:
     def poses(self, c: Component) -> np.ndarray:
         """(n, 6) poses of a component: its sweep file when it has one, else its static pose."""
         if c.poses_file:
-            return oracle.read_poses(self.base / c.poses_file)
-        return np.array([c.pose], float)
+            return oracle.to_segment_frame(oracle.read_poses(self.base / c.poses_file), self.frame_offset_mm)
+        return oracle.to_segment_frame(np.array([c.pose], float), self.frame_offset_mm)
 
     def to_dict(self) -> dict:
         return {"schema": SCHEMA, "segment": self.segment, "components": [c.to_dict() for c in self.components]}

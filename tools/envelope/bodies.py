@@ -20,7 +20,7 @@ from scipy import ndimage
 from scipy.signal import find_peaks
 from scipy.spatial import cKDTree
 
-from . import decompose, features, field, ledger, register, trial, trunk
+from . import decompose, features, field, frames, ledger, register, trial, trunk
 from .sheet import StopAndAsk
 
 BODIES = ("pelvis", "abdomen", "thorax", "head_neck")
@@ -305,7 +305,7 @@ def build_body(inp, raster, tm: TrunkMap, name, arm_mask, sheet, axilla_mm, late
     checks = {"boundary_edges_near_segment": wt["boundary_edges"], "nonmanifold_edges_near_segment": wt["nonmanifold_edges"],
               "boundary_edges_whole_body": field.watertight(inp.F)["boundary_edges"], "odd_parity_columns": seg.odd_columns, "seed_inside_region": bool(seg.in_region(seed[None])[0])}
     mass = {"pelvis": inp.sheet.pelvis_mass_kg, "abdomen": inp.sheet.abdomen_mass_kg, "thorax": inp.sheet.thorax_mass_kg, "head_neck": inp.sheet.head_neck_mass_kg}[name]
-    seg.meta = {"segment": name, "origin_xyz": [float(x) for x in origin], "z_top_sheet_mm": z_top, "z_bottom_sheet_mm": z_bot}
+    seg.meta = {"segment": name, "origin_xyz": [float(x) for x in origin], "z_top_sheet_mm": z_top, "z_bottom_sheet_mm": z_bot, **frames.meta(name, xs, inp.sheet.hjc_x_mm, L)}
     return trial.SegResult(name, seg, reg, checks, tuple(float(x) for x in origin), mass)
 
 

@@ -1,3 +1,4 @@
+# model body frame of the thorax (brief 7): the earlier oracle-frame tx plus the model's HJC x relative to the pelvis origin, 56.7188220965 mm (frames.py)
 tx,ty,tz
-10,0,-160
-10,70,-160
+66.7188220965,0,-160
+66.7188220965,70,-160

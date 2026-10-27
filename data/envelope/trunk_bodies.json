@@ -521,9 +521,14 @@
   "pelvis_box": {
    "feasible": {
     "feasible": true,
+    "frame_offset_mm": [
+     -56.7188220965,
+     0.0,
+     0.0
+    ],
     "margin_mm": 37.12791111802107,
     "point_mm": [
-     60.0,
+     116.7188220965,
      79.0,
      -75.0
     ],
@@ -533,9 +538,14 @@
    },
    "infeasible": {
     "feasible": false,
+    "frame_offset_mm": [
+     -56.7188220965,
+     0.0,
+     0.0
+    ],
     "margin_mm": -11.58778495860986,
     "point_mm": [
-     -40.0,
+     16.718822096500006,
      150.0,
      -25.0
     ],
@@ -547,9 +557,14 @@
   "thorax_box": {
    "feasible": {
     "feasible": true,
+    "frame_offset_mm": [
+     -56.7188220965,
+     0.0,
+     0.0
+    ],
     "margin_mm": 17.496524492520358,
     "point_mm": [
-     -50.0,
+     6.718822096500006,
      90.0,
      -210.0
     ],
@@ -559,9 +574,14 @@
    },
    "infeasible": {
     "feasible": false,
+    "frame_offset_mm": [
+     -56.7188220965,
+     0.0,
+     0.0
+    ],
     "margin_mm": -34.404722948822176,
     "point_mm": [
-     -50.0,
+     6.718822096500006,
      160.0,
      -210.0
     ],
@@ -573,11 +593,21 @@
   "trunk_union": {
    "feasible": {
     "feasible": true,
+    "frame_offset_mm": [
+     -56.7188220965,
+     0.0,
+     0.0
+    ],
     "margin_mm": 39.404679468201856,
     "slab_overrun_mm": 0.0
    },
    "infeasible": {
     "feasible": false,
+    "frame_offset_mm": [
+     -56.7188220965,
+     0.0,
+     0.0
+    ],
     "margin_mm": 36.21403330927439,
     "slab_overrun_mm": 37.31758416794469
    },

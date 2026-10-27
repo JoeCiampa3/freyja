@@ -515,17 +515,17 @@
    "pass": true
   },
   {
-   "detail": "feasible: margin 37.13 mm at station 75.0 mm; infeasible: margin -11.59 mm at station 25.0 mm (pose 1)",
+   "detail": "feasible: margin 37.13 mm at station 75.0 mm; infeasible: margin -11.59 mm at station 25.0 mm (pose 1); frame: model body frame of pelvis (origin at the lumbosacral joint); oracle = model + (-56.719, 0.000, 0.000) mm [model HJC x 56.719 mm; mesh hip line x 49.994 mm; mesh-to-model trunk shift -6.725 mm]",
    "gate": "5 oracle example pelvis_box: box in the pelvis, feasible and infeasible",
    "pass": true
   },
   {
-   "detail": "feasible: margin 17.50 mm at station 210.0 mm; infeasible: margin -34.40 mm at station 210.0 mm (pose 1)",
+   "detail": "feasible: margin 17.50 mm at station 210.0 mm; infeasible: margin -34.40 mm at station 210.0 mm (pose 1); frame: model body frame of thorax (origin at the CJC); oracle = model + (-56.719, 0.000, 0.000) mm [model HJC x 56.719 mm; mesh hip line x 49.994 mm; mesh-to-model trunk shift -6.725 mm]",
    "gate": "5 oracle example thorax_box: box in the thorax, feasible and infeasible",
    "pass": true
   },
   {
-   "detail": "feasible in the union: margin 39.40 mm (the pelvis alone overruns its slab by 75.0 mm); infeasible: margin 36.21 mm, overrun 37.3 mm",
+   "detail": "feasible in the union: margin 39.40 mm (the pelvis alone overruns its slab by 75.0 mm); infeasible: margin 36.21 mm, overrun 37.3 mm; frame: model body frame of pelvis (origin at the lumbosacral joint); oracle = model + (-56.719, 0.000, 0.000) mm [model HJC x 56.719 mm; mesh hip line x 49.994 mm; mesh-to-model trunk shift -6.725 mm]",
    "gate": "5 oracle union query trunk_union: rod across the pelvis-abdomen plane, feasible and infeasible",
    "pass": true
   }

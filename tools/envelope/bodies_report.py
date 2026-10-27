@@ -5,7 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
-from . import bodies, masses, oracle, trunk
+from . import bodies, frames, masses, oracle, trunk
 from .bodies import BODIES
 
 EXAMPLES = {"pelvis_box": "pelvis", "thorax_box": "thorax"}       # worked examples in data/envelope/examples: <name>_shapes.yaml, <name>_feasible_poses.csv, <name>_infeasible_poses.csv
@@ -19,25 +19,27 @@ def example_gates(tb: bodies.TrunkBuild, root) -> tuple:
     for ex_name, body in EXAMPLES.items():
         try:
             shapes = oracle.read_shapes(ex / f"{ex_name}_shapes.yaml")
-            feas = oracle.clearance(tb.results[body].seg, shapes, oracle.read_poses(ex / f"{ex_name}_feasible_poses.csv"))
-            infe = oracle.clearance(tb.results[body].seg, shapes, oracle.read_poses(ex / f"{ex_name}_infeasible_poses.csv"))
+            fo = frames.segment_offset_mm(body, tb.results[body].seg.meta)               # the example poses are in the body's model frame (brief 7)
+            feas = oracle.clearance(tb.results[body].seg, shapes, oracle.read_poses(ex / f"{ex_name}_feasible_poses.csv"), frame_offset_mm=fo)
+            infe = oracle.clearance(tb.results[body].seg, shapes, oracle.read_poses(ex / f"{ex_name}_infeasible_poses.csv"), frame_offset_mm=fo)
         except FileNotFoundError:
             gates.append({"gate": f"5 oracle example {ex_name}", "pass": False, "detail": f"data/envelope/examples/{ex_name}_* is missing"})
             continue
         gates.append({"gate": f"5 oracle example {ex_name}: box in the {body}, feasible and infeasible", "pass": bool(feas["feasible"] and not infe["feasible"]),
-                      "detail": f"feasible: margin {feas['margin_mm']:.2f} mm at station {feas['station_mm']:.1f} mm; infeasible: margin {infe['margin_mm']:.2f} mm at station {infe['station_mm']:.1f} mm (pose {infe['pose_index']})"})
-        out[ex_name] = {k: {kk: v[kk] for kk in ("margin_mm", "station_mm", "pose_index", "point_mm", "feasible", "slab_overrun_mm")} for k, v in (("feasible", feas), ("infeasible", infe))}
+                      "detail": f"feasible: margin {feas['margin_mm']:.2f} mm at station {feas['station_mm']:.1f} mm; infeasible: margin {infe['margin_mm']:.2f} mm at station {infe['station_mm']:.1f} mm (pose {infe['pose_index']}); {frames.describe(body, tb.results[body].seg.meta)}"})
+        out[ex_name] = {k: {kk: v[kk] for kk in ("margin_mm", "station_mm", "pose_index", "point_mm", "feasible", "slab_overrun_mm", "frame_offset_mm")} for k, v in (("feasible", feas), ("infeasible", infe))}
     name, names = UNION_EXAMPLE
     try:
         shapes = oracle.read_shapes(ex / f"{name}_shapes.yaml")
         o0 = np.array(tb.results[names[0]].origin_xyz)
         parts = [(tb.results[n].seg, np.array(tb.results[n].origin_xyz) - o0) for n in names]
         pf, pi = oracle.read_poses(ex / f"{name}_feasible_poses.csv"), oracle.read_poses(ex / f"{name}_infeasible_poses.csv")
-        feas, infe = oracle.clearance_union(parts, shapes, pf), oracle.clearance_union(parts, shapes, pi)
-        single = oracle.clearance(tb.results[names[0]].seg, shapes, pf)
+        fo = frames.segment_offset_mm(names[0], tb.results[names[0]].seg.meta)           # the poses are in the first body's model frame
+        feas, infe = oracle.clearance_union(parts, shapes, pf, frame_offset_mm=fo), oracle.clearance_union(parts, shapes, pi, frame_offset_mm=fo)
+        single = oracle.clearance(tb.results[names[0]].seg, shapes, pf, frame_offset_mm=fo)
         gates.append({"gate": f"5 oracle union query {name}: rod across the {names[0]}-{names[1]} plane, feasible and infeasible", "pass": bool(feas["feasible"] and not infe["feasible"] and not single["feasible"]),
-                      "detail": f"feasible in the union: margin {feas['margin_mm']:.2f} mm (the {names[0]} alone overruns its slab by {single['slab_overrun_mm']:.1f} mm); infeasible: margin {infe['margin_mm']:.2f} mm, overrun {infe['slab_overrun_mm']:.1f} mm"})
-        out[name] = {"feasible": {k: feas[k] for k in ("margin_mm", "slab_overrun_mm", "feasible")}, "infeasible": {k: infe[k] for k in ("margin_mm", "slab_overrun_mm", "feasible")},
+                      "detail": f"feasible in the union: margin {feas['margin_mm']:.2f} mm (the {names[0]} alone overruns its slab by {single['slab_overrun_mm']:.1f} mm); infeasible: margin {infe['margin_mm']:.2f} mm, overrun {infe['slab_overrun_mm']:.1f} mm; {frames.describe(names[0], tb.results[names[0]].seg.meta)}"})
+        out[name] = {"feasible": {k: feas[k] for k in ("margin_mm", "slab_overrun_mm", "feasible", "frame_offset_mm")}, "infeasible": {k: infe[k] for k in ("margin_mm", "slab_overrun_mm", "feasible", "frame_offset_mm")},
                      "single_body_overrun_mm": single["slab_overrun_mm"]}
     except FileNotFoundError:
         gates.append({"gate": f"5 oracle union query {name}", "pass": False, "detail": f"data/envelope/examples/{name}_* is missing"})

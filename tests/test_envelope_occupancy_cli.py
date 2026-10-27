@@ -12,7 +12,7 @@ import yaml
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "tools"))
 
-from envelope import field, oracle, registry  # noqa: E402
+from envelope import field, frames, oracle, registry  # noqa: E402
 from envelope.synthetic import box, frustum  # noqa: E402
 
 ENV = REPO / "data" / "envelope"
@@ -143,8 +143,8 @@ def test_a_union_check_reads_the_registry_of_the_second_body_in_the_frame_of_the
     v, f = frustum(R_ENV, R_ENV, 60, -300 - 60)
     upper = field.build_segment(v, f, length=100.0, voxel=2.0, z_top=0.0, margin=40.0)
     lower = field.build_segment(v + np.array([0.0, 0.0, 100.0]), f, length=200.0, voxel=2.0, z_top=0.0, margin=40.0)
-    upper.meta = {"inputs_sha256_12": "u", "origin_xyz": [0.0, 0.0, 1000.0]}
-    lower.meta = {"inputs_sha256_12": "l", "origin_xyz": [0.0, 0.0, 900.0]}                 # the lower body's origin is 100 mm below the upper's
+    upper.meta = {"inputs_sha256_12": "u", "origin_xyz": [0.0, 0.0, 1000.0], **frames.meta("pelvis", 0.0, 0.0, 100.0)}        # a test body whose model frame is its own (brief 7: no shift)
+    lower.meta = {"inputs_sha256_12": "l", "origin_xyz": [0.0, 0.0, 900.0], **frames.meta("abdomen", 0.0, 0.0, 200.0)}      # the lower body's origin is 100 mm below the upper's
     upper.save(cache / "pelvis.npz")
     lower.save(cache / "abdomen.npz")
     reg = {"schema": "components/1", "segment": "abdomen", "components": [
