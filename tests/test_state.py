@@ -214,3 +214,20 @@ def test_the_documented_suite_time_matches_claude_md():
     claude = (Path(__file__).resolve().parents[1] / "CLAUDE.md").read_text(encoding="utf-8")
     assert "about 18 minutes" in doc and "minute and a half" not in doc and "six minutes" not in doc
     assert re.search(r"full suite \(about 18 minutes", claude)
+
+
+def test_every_xfail_is_listed_with_its_test_id_and_reason(repo):
+    (repo / "tests").mkdir()
+    (repo / "checks").joinpath("test_c.py").write_text(
+        "import pytest\n\n@pytest.mark.xfail(strict=True, reason=\"owner Joe; remove after the rerun; review 2026-12-01\")\ndef test_c():\n    assert False\n")
+    (repo / "tests" / "test_t.py").write_text(
+        "import pytest\n\n@pytest.mark.xfail(reason='loose')\ndef test_t():\n    pass\n\n\ndef test_plain():\n    pass\n")
+    text = state.generate(repo, run=False)
+    sec = text.split("## Known failing (xfail)")[1].split("\n## ")[0]
+    assert "checks/test_c.py::test_c | strict | owner Joe; remove after the rerun; review 2026-12-01" in sec
+    assert "tests/test_t.py::test_t | not strict | loose" in sec and "test_plain" not in sec
+    assert text.index("## Waivers") < text.index("## Known failing (xfail)") < text.index("## Latest run per scenario")
+
+
+def test_the_xfail_section_says_none_when_there_are_none(repo):
+    assert "## Known failing (xfail)\n\nnone\n" in state.generate(repo, run=False)

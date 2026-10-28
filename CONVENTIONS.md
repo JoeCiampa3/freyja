@@ -171,6 +171,8 @@ A **gate** check blocks installation of a new `freyja.xml`: `build_model()` runs
 
 Known deviations are recorded in `checks/waivers.yaml`. A waived check still runs and reports as WAIVED. A waiver on a check that now passes produces a warning, as does one that names an unknown check or is past its `review_by` date. A waiver takes effect only with `confirmed: true`; Claude may propose one with `confirmed: false`, and Joe confirms it.
 
+A known-failing test is not a waiver. It is marked `xfail(strict=True)` with a reason that names the owner, the removal condition and a review date, and `fy state` lists every xfail in `docs/STATE.md`, so a known failure is never invisible. When the cause is fixed the strict xfail fails the suite and the marker is removed.
+
 The machinery is `checks/checklib.py` (registry, context, waivers, `run_checks`), shared by pytest, the build gate and `fy check`; the checks are in `checks/mjcf_checks.py` (the model), `checks/sim_checks.py` (run records) and `checks/thread_checks.py` (the thread records; run by `fy check` and pytest, not by the build gate). A check returns one or more results, and a result may carry its own ID (`check.mjcf.mass_closure.target` is the advisory half of `check.mjcf.mass_closure`). A check whose ID is unknown to the registry cannot be waived. `checks/joint_polarity.yaml` carries `status: DRAFT` until Joe approves it; while it is DRAFT, `check.mjcf.joint_signs` reports as advisory.
 
 ```yaml

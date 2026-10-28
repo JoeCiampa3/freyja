@@ -259,7 +259,7 @@ def test_the_tracked_extract_has_the_acceptance_speed_beside_the_sizing_speeds_a
     assert e["dataset_manifest_sha256"] == hashlib.sha256(manifest.read_bytes()).hexdigest()  # Stage 2g T8 regenerated the extract on the manifest with the static tilts
 
 
-@pytest.mark.xfail(strict=True, reason="waiver test.gait_extract.tracked_envelope_matches_fresh_build in checks/waivers.yaml (memo 45): the committed ENVELOPE.md predates the sheet rebuild; rerun the scenarios and the gait on the current model to remove")
+@pytest.mark.xfail(strict=True, reason="owner Joe; remove once the scenarios and the gait are rerun on the current model and `fy runs envelope` is regenerated (memo 46 plan); review 2026-12-01; the committed ENVELOPE.md predates the sheet rebuild")
 def test_the_tracked_envelope_is_what_the_tracked_extract_and_run_records_produce():
     """The clean-clone property: `fy runs envelope` needs no untracked file."""
     meta = json.loads((REPO / "params" / "snapshot.meta.json").read_text(encoding="utf-8"))

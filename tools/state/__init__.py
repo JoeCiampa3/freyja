@@ -97,6 +97,26 @@ def _waivers(root) -> list:
     return [(w["check"], bool(w.get("confirmed")), str(w.get("review_by"))) for w in (yaml.safe_load(path.read_text(encoding="utf-8")) or [])]
 
 
+def _xfails(root) -> list:
+    """Every test marked `xfail` in tests/ and checks/, read from the source (no run needed): `path::name | strict | reason`."""
+    import ast
+    found = []
+    for sub in ("checks", "tests"):
+        for path in sorted((Path(root) / sub).glob("test_*.py")):
+            for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+                if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    continue
+                for dec in node.decorator_list:
+                    call = dec if isinstance(dec, ast.Call) else None
+                    if not (isinstance(dec, ast.Attribute) and dec.attr == "xfail" or call and getattr(call.func, "attr", None) == "xfail"):
+                        continue
+                    kw = {k.arg: k.value for k in call.keywords} if call else {}
+                    strict = isinstance(kw.get("strict"), ast.Constant) and kw["strict"].value is True
+                    reason = kw["reason"].value if isinstance(kw.get("reason"), ast.Constant) else "(no reason)"
+                    found.append(f"{sub}/{path.name}::{node.name} | {'strict' if strict else 'not strict'} | {reason}")
+    return found
+
+
 def _latest_runs(root) -> list:
     d = Path(root) / "sim" / "runs"
     latest = {}
@@ -182,6 +202,7 @@ def generate(root=None, run=True, runner=None) -> str:
     out += [f"- {i} | {tier} | {st}" for i, tier, st in sorted(results["checks"])] if results else ["not run (--no-run)"]
     out += ["", "## Waivers", ""]
     out += [f"- {c} | confirmed {'true' if conf else 'false'} | review by {rb}" for c, conf, rb in sorted(_waivers(root))] or ["none"]
+    out += ["", "## Known failing (xfail)", ""] + (_xfails(root) or ["none"])
     out += ["", "## Latest run per scenario", ""] + [f"- {r}" for r in _latest_runs(root)] + [
         "", "## Latest gait record", "", _latest_gait(root), "", "## docs/memos", ""] + [f"- {n}" for n in _names(root, "docs/memos")] + [
         "", "## docs/briefs", ""] + [f"- {n}" for n in _names(root, "docs/briefs", recursive=True)]
