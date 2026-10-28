@@ -1,4 +1,4 @@
-STATE: STATEPLACEHOLDER
+STATE: base 9e3d1f73a42c | brief architecture sha256:e93e6b785bae, ariadne sha256:f58800563b5d | snapshot sha256:492fe816e6d8 | tests 2028/2032 | dirty no
 
 # Memo 42: Stage 3b, the guarded save and the joint centres against the skin
 
@@ -68,4 +68,4 @@ During this task `print` inside any script raised `RecursionError` in Fusion's o
 
 ## Tests
 
-`fy test --quick`: 904 passed in 271 s. Full suite before the commits: 2027 passed, 2 failed, 3 skipped in 1068 s; the failures were the known stale `test_gait_extract` envelope test (deselected before, left alone, not fixed) and the suite-time doc test fixed above. Live Fusion tests: 28 passed. Commits `6487449` (Q2) and `0b4964c` (Q1, Q4).
+`fy test --quick`: 904 passed in 271 s. Full suite before the commits: 2027 passed, 2 failed, 3 skipped in 1068 s; the failures were the known stale `test_gait_extract` envelope test (deselected before, left alone, not fixed) and the suite-time doc test fixed above. Live Fusion tests: 28 passed. Commits `6487449` (Q2) and `0b4964c` (Q1, Q4). `fy state` at the end: 2028 of 2032 (the known stale test and 3 skipped).
