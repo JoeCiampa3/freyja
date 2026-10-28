@@ -13,6 +13,6 @@ Examples (replace with real entries):
 ## Entries
 - 2026-10-19 | full suite run is not necessary at each commit but is being run | 18 | every commit and more | Claude Code
 
-proposed fix:
+proposed fixes:
 fy state runs the suite again even when the tree hasn’t changed since the last full run. Caching the result by tree hash would remove the second 18 minutes at every checkpoint.
 Running the suite in parallel with pytest-xdist would likely cut 18 minutes to a few on a multi-core machine. It’s a new dependency, so it’s your call.
