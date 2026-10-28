@@ -1,4 +1,4 @@
-STATE: STATEPLACEHOLDER
+STATE: base 1edb28aacf17 | brief architecture sha256:e93e6b785bae, ariadne sha256:f58800563b5d | snapshot sha256:492fe816e6d8 | tests 2028/2032 | dirty no
 
 # Memo 43: why the elbow node is 4.0 mm from the skin (diagnosis, read-only)
 
