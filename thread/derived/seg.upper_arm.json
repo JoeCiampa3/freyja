@@ -6,21 +6,21 @@
   ],
   "budgets": {
     "mass": {
-      "claimed_kg": 0.0,
+      "claimed_kg": 0.121239,
       "claims": [
         {
           "address": "cad/sidecars/part.arm.upper_member.json#/mass_properties/mass_kg",
-          "arithmetic": "unresolved, claims 0 kg: cad/sidecars/part.arm.upper_member.json#/mass_properties/mass_kg, part.arm.upper_member right",
-          "kg": 0.0,
+          "arithmetic": "1 x 0.121239 kg, part.arm.upper_member right (mass from cad/sidecars/part.arm.upper_member.json#/mass_properties/mass_kg)",
+          "kg": 0.121239,
           "part": "part.arm.upper_member",
           "sides": [
             "right"
           ],
-          "total_kg": 0.0
+          "total_kg": 0.121239
         }
       ],
       "over": false,
-      "remaining_kg": 1.43,
+      "remaining_kg": 1.308761,
       "target_kg": 1.43
     }
   },
@@ -32,7 +32,7 @@
     "part.arm.upper_member"
   ],
   "id": "seg.upper_arm",
-  "inputs": "sha256:49c9d61fef80",
+  "inputs": "sha256:261265799d3a",
   "interfaces": [],
   "joints_as_child": [
     "jnt.shoulder"

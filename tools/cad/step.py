@@ -4,7 +4,8 @@ from __future__ import annotations
 import hashlib
 import re
 
-_FILE_NAME = re.compile(rb"(FILE_NAME\s*\(\s*'(?:[^']|'')*'\s*,\s*')((?:[^']|'')*)(')")
+_C = rb"(?:/\*.*?\*/\s*)*"      # Fusion's STEP writer puts a comment before each header field
+_FILE_NAME = re.compile(rb"(FILE_NAME\s*\(\s*" + _C + rb"'(?:[^']|'')*'\s*,\s*" + _C + rb"')((?:[^']|'')*)(')", re.S)
 
 
 def normalise(data: bytes) -> bytes:

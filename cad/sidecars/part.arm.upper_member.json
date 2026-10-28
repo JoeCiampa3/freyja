@@ -1,0 +1,120 @@
+{
+  "component": {
+    "clearance_mm": 0.0,
+    "id": "part.arm.upper_member",
+    "mass_kg": 0.12123873065047777,
+    "mesh": "cad/exports/part.arm.upper_member.stl",
+    "name": "part.arm.upper_member",
+    "owner": "upper_arm_R",
+    "parameter_inputs": "6b78330ea1bd",
+    "primitive": {
+      "half": [
+        14.98,
+        14.99,
+        127.6173
+      ],
+      "offset": [
+        -0.02,
+        0.0,
+        -127.6173
+      ],
+      "type": "box"
+    },
+    "revision": "p1",
+    "sha256": "ff0c57fdde71f172187133e3c0a2af37c5fbac196de3e10514b87f6639780b05",
+    "status": "designed"
+  },
+  "consumes": [
+    {
+      "address": "snapshot#/upper_arm_right_length",
+      "hash": "d245be483398"
+    }
+  ],
+  "document": {
+    "id": "urn:adsk.wipprod:dm.lineage:6NP5Ui4eTYeclyPrItX66g",
+    "name": "Upper Arm v0",
+    "version": 1
+  },
+  "drift": [],
+  "exports": {
+    "step": {
+      "path": "cad/exports/part.arm.upper_member.step",
+      "sha256": "785bfb541a6269ab8125de05cc177094200bc6fb36c1fb2f923a55b9b4400f45"
+    },
+    "stl": {
+      "chord_bound_mm": 0.049999999999999496,
+      "chord_guarantee": true,
+      "chord_tolerance_mm": 0.05,
+      "normal_deviation_deg": 9.358962555319481,
+      "path": "cad/exports/part.arm.upper_member.stl",
+      "sha256": "ff0c57fdde71f172187133e3c0a2af37c5fbac196de3e10514b87f6639780b05",
+      "triangles": 1162
+    }
+  },
+  "generated_by": "tools/cad pull",
+  "identity": {
+    "binding_sha256": "38b742bef0cb",
+    "part": "part.arm.upper_member",
+    "revision": "p1",
+    "side": "right"
+  },
+  "inputs": "sha256:87f330dd489e",
+  "mass_properties": {
+    "accuracy": "veryhigh",
+    "com_mm": [
+      9.494319395753473e-15,
+      -3.164773131917824e-15,
+      -127.6173497170001
+    ],
+    "inertia_kgmm2": {
+      "ixx": 670.1142663179157,
+      "ixy": -7.673861546209084e-15,
+      "ixz": -2.0828857326303315e-13,
+      "iyy": 670.1142663179166,
+      "iyz": 1.103567860007928e-13,
+      "izz": 23.884029938143758
+    },
+    "mass_kg": 0.12123873065047777,
+    "material": {
+      "density_kg_m3": 2699.9999999999995,
+      "name": "Aluminum 6061"
+    }
+  },
+  "parameters": [
+    {
+      "class": "dr",
+      "expression": "dv_uam_od - 2 * dv_uam_wall",
+      "name": "dr_uam_id",
+      "unit": "mm",
+      "value": 26.0
+    },
+    {
+      "class": "dv",
+      "expression": "30 mm",
+      "name": "dv_uam_od",
+      "unit": "mm",
+      "value": 30.0
+    },
+    {
+      "class": "dv",
+      "expression": "2 mm",
+      "name": "dv_uam_wall",
+      "unit": "mm",
+      "value": 2.0
+    },
+    {
+      "address": "snapshot#/upper_arm_right_length",
+      "address_hash": "d245be483398",
+      "class": "in",
+      "expression": "255.234699434 mm",
+      "name": "in_upper_arm_right_length",
+      "unit": "mm",
+      "value": 255.23469943400002
+    }
+  ],
+  "schema": "cad-sidecar/1",
+  "timeline": {
+    "failed_features": [],
+    "healthy": true
+  }
+}

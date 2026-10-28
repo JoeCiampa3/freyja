@@ -67,6 +67,18 @@ def _rows(design):
             for p in sorted(_user_params(design).values(), key=lambda p: p.name)]
 
 
+def activate_document(name):
+    """Make an already open document the active one (what the other verbs act on). It changes which tab is in front and nothing in any document. Returns the
+    name of the document that was active."""
+    app = adsk.core.Application.get()
+    previous = None if app.activeDocument is None else app.activeDocument.name
+    target = next((d for d in app.documents if d.name == name), None)
+    if target is None:
+        raise RuntimeError(f"{name!r} is not open")
+    target.activate()
+    return {"previous": previous, "active": app.activeDocument.name}
+
+
 # ---- read verbs ------------------------------------------------------------------------------------------------------------------------
 
 def doc_info(expect_name=None):
@@ -119,13 +131,13 @@ def physical_properties(expect_name=None, body=None, accuracy="veryhigh"):
 
 def max_curvature_radius(expect_name=None, body=None):
     """The largest radius, in cm, of the analytic curved faces (cylinder, sphere, torus, cone) of one body or of the whole root component, or null when there is
-    none. Fusion's STL export controls the tessellation by its normal deviation alone (its surface deviation setting had no effect on the triangle count in
+    none, and `freeform_faces`, the number of faces that are neither planar nor one of those (free-form, elliptical): for them no chord bound can be stated. Fusion's STL export controls the tessellation by its normal deviation alone (its surface deviation setting had no effect on the triangle count in
     T3), so the client turns the binding's chord tolerance into a normal deviation with this radius: the largest radius is the strictest case."""
     _, _, design = _design(expect_name)
     root = design.rootComponent
     bodies = list(root.bRepBodies) if body is None else [b for b in root.bRepBodies if b.name == body]
     kinds = adsk.core.SurfaceTypes
-    best = None
+    best, freeform = None, 0
     for b in bodies:
         for f in b.faces:
             g = f.geometry
@@ -134,10 +146,13 @@ def max_curvature_radius(expect_name=None, body=None):
                 r = g.radius
             elif t == kinds.TorusSurfaceType:
                 r = g.majorRadius + g.minorRadius
+            elif t == kinds.PlaneSurfaceType:
+                continue
             else:
+                freeform += 1       # no analytic radius: the chord bound says nothing about this face
                 continue
             best = r if best is None else max(best, r)
-    return {"max_radius_cm": best}
+    return {"max_radius_cm": best, "freeform_faces": freeform}
 
 
 def export_stl(path, surface_deviation_cm, normal_deviation_deg, expect_name=None, body=None):

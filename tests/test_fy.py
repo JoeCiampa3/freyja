@@ -78,6 +78,10 @@ class Dispatch(unittest.TestCase):
         code, fn = self.run_from_subdir(["test", "-k", "mirror"], "run_tests")
         fn.assert_called_once_with(REPO, ["-k", "mirror"])
 
+    def test_cad_passes_its_subcommand_and_arguments_to_the_bridge(self):
+        code, fn = self.run_from_subdir(["cad", "pull", "part.arm.upper_member", "--root", "x"], "run_cad")
+        fn.assert_called_once_with(REPO, ["pull", "part.arm.upper_member", "--root", "x"])
+
     def test_quick_runs_only_the_quick_subset_and_passes_the_other_options_on(self):
         with mock.patch("pytest.main", return_value=0) as pm:
             self.assertEqual(cli.run_tests(REPO, ["--quick", "-x"]), 0)

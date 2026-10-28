@@ -44,3 +44,6 @@ data/camargo2021/scripts.zip
 data/camargo2021/processed
 sim/gait/*/gait.json
 data/makehuman/cache
+
+# CAD bridge: the STEP export is the FEA hand-off format; its header carries a timestamp, so only its normalised hash is tracked (the sidecar)
+cad/exports/*.step

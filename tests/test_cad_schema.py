@@ -67,7 +67,8 @@ SIDECAR_OK = {
         "accuracy": "VeryHigh",
     },
     "exports": {
-        "stl": {"path": "cad/exports/part.arm.upper_member.stl", "sha256": "0" * 64, "chord_tolerance_mm": 0.05, "triangles": 1200},
+        "stl": {"path": "cad/exports/part.arm.upper_member.stl", "sha256": "0" * 64, "chord_tolerance_mm": 0.05, "normal_deviation_deg": 9.36, "chord_bound_mm": 0.0499,
+                "chord_guarantee": True, "triangles": 1200},
         "step": {"path": "cad/exports/part.arm.upper_member.step", "sha256": "1" * 64},
     },
     "component": {
@@ -153,6 +154,12 @@ SIDECAR_BAD = {
     "accuracy missing": mutated(SIDECAR_OK, ["mass_properties", "accuracy"], delete=True),
     "stl hash not 64 hex": mutated(SIDECAR_OK, ["exports", "stl", "sha256"], "abc"),
     "stl triangles zero": mutated(SIDECAR_OK, ["exports", "stl", "triangles"], 0),
+    "stl chord bound missing": mutated(SIDECAR_OK, ["exports", "stl", "chord_bound_mm"], delete=True),
+    "stl chord bound negative": mutated(SIDECAR_OK, ["exports", "stl", "chord_bound_mm"], -0.01),
+    "stl chord guarantee missing": mutated(SIDECAR_OK, ["exports", "stl", "chord_guarantee"], delete=True),
+    "stl chord guarantee not a boolean": mutated(SIDECAR_OK, ["exports", "stl", "chord_guarantee"], "yes"),
+    "stl normal deviation missing": mutated(SIDECAR_OK, ["exports", "stl", "normal_deviation_deg"], delete=True),
+    "stl normal deviation zero": mutated(SIDECAR_OK, ["exports", "stl", "normal_deviation_deg"], 0),
     "stl path absolute": mutated(SIDECAR_OK, ["exports", "stl", "path"], "C:/x/y.stl"),
     "component id not a part": mutated(SIDECAR_OK, ["component", "id"], "thigh"),
     "component without primitive": mutated(SIDECAR_OK, ["component", "primitive"], delete=True),

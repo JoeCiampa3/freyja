@@ -92,6 +92,13 @@ class Session:
         return body.get("message", "")
 
 
+def open_document(session: Session, file_id: str) -> str:
+    """Open a document by its id through the server's `document open`. The bridge opens only the two documents it is allowed to: callers pass the id from a
+    binding or the fixture's."""
+    body = session.tool("fusion_mcp_execute", {"featureType": "document", "object": {"operation": "open", "fileId": file_id}})
+    return body.get("message", "")
+
+
 def build_script(verb: str, args: dict, module: str = "bridge", out: str = "result.json") -> str:
     return _SCRIPT.format(addin=ADDIN.as_posix(), module=module, verb=verb, args=json.dumps(args, sort_keys=True), mark=_MARK, out=out)
 

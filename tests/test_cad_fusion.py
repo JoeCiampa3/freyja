@@ -39,13 +39,19 @@ COMMITTED = {"in_fixture_length": "300 mm", "dv_fx_od": "30 mm", "dv_fx_wall": "
 def fx():
     try:
         s = transport.Session().open()
-        info = transport.call("doc_info", {"expect_name": NAME}, session=s)
+        open_names = {r["name"] for r in s.tool("fusion_mcp_read", {"queryType": "document", "operation": "open"})["results"]}
+        if NAME not in open_names:
+            transport.open_document(s, BINDING["document"]["id"])          # the fixture is ours; it stays open for the next run
+        previous = transport.call("activate_document", {"name": NAME}, session=s)["previous"]
+        transport.call("doc_info", {"expect_name": NAME}, session=s)
     except transport.FusionError as e:
         pytest.skip(f"Fusion or the fixture document is not available: {e}")
     s.start = transport.call("capture", {"expect_name": NAME}, session=s)["expressions"]
     assert s.start == COMMITTED, "the fixture is not in its committed state; restore it before running"
     yield s
     transport.call("restore", {"expect_name": NAME, "expressions": s.start}, session=s)
+    if previous and previous != NAME:
+        transport.call("activate_document", {"name": previous}, session=s)      # give Joe's tab back
 
 
 @pytest.fixture(autouse=True)
@@ -260,3 +266,55 @@ def test_g4_an_extra_prefixed_parameter_and_a_missing_one_are_also_validation_er
 def test_the_fixture_is_in_its_committed_state_at_the_end(fx):
     assert expressions(fx) == COMMITTED
     assert call(fx, "timeline_health")["healthy"]
+
+
+# ---- T6: push and pull on the fixture (gate G5's mechanics) ------------------------------------------------------------------------------
+
+from cad import mesh as cmesh, ops, sidecar as csidecar  # noqa: E402
+
+
+@pytest.fixture
+def ctx(fx, tmp_path):
+    root = tmp_path / "root"
+    (root / "cad" / "bindings").mkdir(parents=True)
+    (root / "cad" / "bindings" / "part.fixture.bridge.yaml").write_bytes((FIXTURE_DIR / "part.fixture.bridge.yaml").read_bytes())
+    return ops.Context(root, resolve, lambda verb, **args: transport.call(verb, args, session=fx), lambda *_: None)
+
+
+def test_validate_push_pull_on_the_fixture_g5(ctx):
+    part = "part.fixture.bridge"
+    assert ops.validate(ctx, part) == []
+    assert ops.push(ctx, part)["ok"]
+    assert ops.drift_of(ctx, part) == []
+    doc = ops.pull(ctx, part, segment="upper_arm_R")
+    assert csidecar.problems(doc) == []
+    assert doc["drift"] == [] and doc["timeline"]["healthy"] and doc["document"]["id"] == BINDING["document"]["id"]
+    stl = doc["exports"]["stl"]
+    assert stl["chord_guarantee"] is True and 0 < stl["chord_bound_mm"] <= 0.05 + 1e-9 and stl["normal_deviation_deg"] < 15
+    # the tube is 300 mm long along model z; the marker cube and the sector are inside the overall box
+    half, off = doc["component"]["primitive"]["half"], doc["component"]["primitive"]["offset"]
+    assert off[2] - half[2] == pytest.approx(-303.0, abs=0.01) and half[2] > 150
+
+
+def test_two_pulls_of_the_fixture_with_no_change_are_byte_identical(ctx):
+    part = "part.fixture.bridge"
+    ops.push(ctx, part)
+    ops.pull(ctx, part, segment="upper_arm_R")
+    first = {n: (ctx.root / "cad" / n).read_bytes() for n in (f"sidecars/{part}.json", f"exports/{part}.stl")}
+    step1 = json.loads(first[f"sidecars/{part}.json"])["exports"]["step"]["sha256"]
+    ops.pull(ctx, part, segment="upper_arm_R")
+    assert {n: (ctx.root / "cad" / n).read_bytes() for n in first} == first
+    assert cmesh.hash_stl_file(ctx.root / "cad" / "exports" / f"{part}.stl") == json.loads(first[f"sidecars/{part}.json"])["exports"]["stl"]["sha256"]
+    assert step1 and (ctx.root / "cad" / "exports" / f"{part}.step").is_file()
+
+
+def test_the_pulled_marker_and_tube_are_in_the_model_frame(ctx):
+    import numpy as np
+    from envelope import registry
+    part = "part.fixture.bridge"
+    ops.push(ctx, part)
+    ops.pull(ctx, part, segment="upper_arm_R")
+    v, _ = registry.read_stl(ctx.root / "cad" / "exports" / f"{part}.stl")
+    assert v[:, 2].min() == pytest.approx(-303.0, abs=0.01)         # the marker's far face: ISB y = -303 mm is model z = -303 mm
+    tube = v[(np.abs(v[:, 2] + 150.0) < 140) & (np.hypot(v[:, 0], v[:, 1]) > 14)]
+    assert np.hypot(tube[:, 0], tube[:, 1]).max() == pytest.approx(15.0, abs=0.02)

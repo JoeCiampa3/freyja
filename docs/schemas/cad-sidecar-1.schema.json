@@ -88,12 +88,15 @@
       "properties": {
         "stl": {
           "type": "object",
-          "required": ["path", "sha256", "chord_tolerance_mm", "triangles"],
+          "required": ["path", "sha256", "chord_tolerance_mm", "normal_deviation_deg", "chord_bound_mm", "chord_guarantee", "triangles"],
           "additionalProperties": false,
           "properties": {
             "path": {"$ref": "#/$defs/relpath"},
             "sha256": {"$ref": "#/$defs/hash64", "description": "The canonical mesh hash: vertices rounded to 1e-4 mm, faces sorted."},
-            "chord_tolerance_mm": {"type": "number", "exclusiveMinimum": 0},
+            "chord_tolerance_mm": {"type": "number", "exclusiveMinimum": 0, "description": "The binding's request."},
+            "normal_deviation_deg": {"type": "number", "exclusiveMinimum": 0, "description": "What Fusion was given: its tessellation follows the normal deviation alone, so the tolerance is turned into one from the largest analytic arc radius, clamped to 2 to 15 degrees."},
+            "chord_bound_mm": {"type": "number", "minimum": 0, "description": "The achieved worst-case chord error of the analytic arcs, r_max (1 - cos(deviation / 2)); 0 when the part has none. Tessellating a convex surface puts the mesh inside it, so a clearance measured to the mesh is optimistic by up to this much."},
+            "chord_guarantee": {"type": "boolean", "description": "False when any face has no analytic radius (free-form, elliptical): the bound then covers the analytic arcs only and nothing is guaranteed for those faces."},
             "triangles": {"type": "integer", "minimum": 1}
           }
         },

@@ -5,6 +5,8 @@ from thread import addr
 
 from . import mesh
 
+BOX_DIGITS = 4
+
 
 def parameter_inputs(consumes: list) -> str:
     """The 12 hex hash of what the CAD state consumed: addresses and their hashes, sorted by address."""
@@ -14,8 +16,8 @@ def parameter_inputs(consumes: list) -> str:
 def component_entry(binding: dict, *, segment: str, vertices_model, mesh_hash: str, mass_kg: float, consumes: list, mesh_path: str) -> dict:
     """The registry entry. `segment` is the oracle's name of the owner (`upper_arm_R`); the box encloses the mesh, already in the model frame."""
     lo, hi = mesh.bounds(vertices_model)
-    half = [float(x) for x in (hi - lo) / 2]
-    offset = [float(x) for x in (hi + lo) / 2]
+    half = [round(float(x), BOX_DIGITS) for x in (hi - lo) / 2]         # the mesh hash resolves 1e-4 mm; finer digits are float noise
+    offset = [round(float(x), BOX_DIGITS) + 0.0 for x in (hi + lo) / 2]
     return {"id": binding["part"], "revision": binding["revision"], "name": binding["part"], "status": "designed", "owner": segment,
             "primitive": {"type": "box", "half": half, "offset": offset}, "mesh": mesh_path, "clearance_mm": float(binding.get("clearance_mm", 0.0)),
             "mass_kg": float(mass_kg), "sha256": mesh_hash, "parameter_inputs": parameter_inputs(consumes)}

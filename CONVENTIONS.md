@@ -264,11 +264,14 @@ parameters:
  "drift": [], "timeline": {"healthy": true, "failed_features": []},
  "mass_properties": {"material": {"name": "...", "density_kg_m3": 2700.0}, "mass_kg": 0.0, "com_mm": [0, 0, 0],
                      "inertia_kgmm2": {"ixx": 0, "iyy": 0, "izz": 0, "ixy": 0, "ixz": 0, "iyz": 0}, "accuracy": "..."},
- "exports": {"stl": {"path": "...", "sha256": "<64 hex>", "chord_tolerance_mm": 0.05, "triangles": 0}, "step": {"path": "...", "sha256": "<64 hex>"}},
+ "exports": {"stl": {"path": "...", "sha256": "<64 hex>", "chord_tolerance_mm": 0.05, "normal_deviation_deg": 9.36, "chord_bound_mm": 0.05, "chord_guarantee": true, "triangles": 0},
+             "step": {"path": "...", "sha256": "<64 hex>"}},
  "component": {"id": "part.arm.upper_member", "revision": "p1", "name": "...", "status": "designed", "clearance_mm": 2.0, "mass_kg": 0.0,
                "sha256": "<64 hex>", "parameter_inputs": "<12 hex>", "primitive": {}, "mesh": "cad/exports/part.arm.upper_member.stl"},
  "consumes": [{"address": "snapshot#/upper_arm_right_length", "hash": "<12 hex>"}]}
 ```
+
+Fusion's STL export follows its normal deviation alone and ignores its surface-deviation setting, so the bridge turns the binding's chord tolerance into a normal deviation from the largest analytic arc radius (clamped to 2 to 15 degrees) and records what that achieves: `chord_bound_mm`, the worst-case chord error of the analytic arcs, and `chord_guarantee`, false when any face is neither planar nor an analytic surface (free-form), in which case the bound says nothing about those faces. A tessellated convex surface lies inside the true one, so a clearance measured to the mesh is optimistic by up to the bound. The sidecar's `component` entry also feeds `data/envelope/components/cad/<segment>.yaml`, generated beside the authored registry.
 
 A part's `mass` has two forms: the typed `{kg, source, reserved}` and the address form `{address, source}`, which resolves at build to the mass of one unit in kg and is how a CAD part's budget row reads the sidecar. A record carries exactly one of the two.
 

@@ -78,12 +78,27 @@ def resolve_inherited(doc: dict, resolve) -> list:
         ok, value = resolve(p["address"])
         if not ok:
             raise BindingError(f"{p['name']}: the address {p['address']} does not resolve")
-        if isinstance(value, bool) or not isinstance(value, (int, float)):
+        number = _as_number(value)
+        if number is None:
             raise BindingError(f"{p['name']}: the address {p['address']} holds {value!r}, not a number")
-        v = units.convert(float(value), p["address_unit"], p["unit"])
-        rows.append({"name": p["name"], "address": p["address"], "address_hash": addr.hash_value(value), "address_value": float(value),
+        v = units.convert(number, p["address_unit"], p["unit"])
+        rows.append({"name": p["name"], "address": p["address"], "address_hash": addr.hash_value(value), "address_value": number,
                      "unit": p["unit"], "value": v, "expression": units.format_expression(v, p["unit"])})
     return rows
+
+
+def _as_number(value):
+    """A number, or None. The snapshot's values arrive as the text of the csv (the thread hashes that text), so a numeric string counts."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str):
+        try:
+            return float(value)
+        except ValueError:
+            return None
+    return None
 
 
 def consumes(doc: dict, resolve) -> list:
