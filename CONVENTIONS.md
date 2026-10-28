@@ -28,7 +28,7 @@ Rules that outlive any tool in this repo. Tools get replaced; these do not. If c
 | `requirements/` | `req.*.yaml` | authored |
 | `catalog/` | actuators, bearings, cable, stock; one file each, datasheet cited | authored |
 | `decisions/` | `NNNN-slug.md` decision records | authored |
-| `analysis/` | scripts that produce numbers entering the sheet | authored |
+| `analysis/` | scripts that produce numbers entering the sheet, and read-only diagnostics of non-sim subsystems (envelope, registration, CAD) | authored |
 | `sim/` | `models/` (template authored, `freyja.xml` generated), `scripts/`, `scenarios/` (authored; `scenarios/sweeps/` holds the sweep specs, `scenarios/gait/` the gait spec and the dataset mapping), `controllers/` (authored), `runs/` (tracked summaries), `sweeps/` (generated, tracked), `gait/` (generated: `gait.json` is gitignored, `GAIT.md` and `GAIT-<speed>.md` are tracked), `benchmarks/` (tracked: `walk_reference.json`, written by `fy gait --write-baseline`, and `gait_extract.json`, written by `fy gait --write-extract` or `--extract-only`) | mixed |
 | `cad/` | `fusion_addin/` (the Fusion-side module: pure functions, JSON in and out, run inside Fusion through the MCP server; imports only `adsk` and the standard library) authored; `bindings/<part id>.yaml` (`cad-binding/1`) authored; `sidecars/<part id>.json` (`cad-sidecar/1`) generated, tracked; `exports/<part id>.stl` generated, tracked (the canonical mesh in the model body frame; stop and ask above 5 MB); `exports/<part id>.step` generated, gitignored | mixed |
 | `fea/` | structured study records | authored (entered), later scripted |

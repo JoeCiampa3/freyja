@@ -1,10 +1,10 @@
 """Memo 43 diagnostic, step 1 (read-only): rebuild the right and left arm sides in memory exactly as `fy envelope gates` does and pickle them to the path given.
-Writes nothing in the repo and touches no cache. Usage: python sim/scripts/diag_elbow_anchor_build.py OUT.pkl"""
+Writes nothing in the repo and touches no cache. Usage: python analysis/diag_elbow_anchor_build.py OUT.pkl"""
 import pickle
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 from envelope import arms, bodies, masses, ruler, trial  # noqa: E402
 

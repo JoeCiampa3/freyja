@@ -77,7 +77,7 @@ D10. **Gates.** Topology and watertight; stretch within 8%; area change within 1
 
 D11. **Open.** The left side, discrete hip sweeps, single sculpt, no structural check; **the trunk's x offset** (the model's zero-pose stack is 56.7 mm behind the hip line, 38.6 mm behind the mesh thorax's centre
 line at the CJC, and 52 mm behind the column that fits best, the corridor sweep's d = -5 mm; the design stance brings it to 30 mm; memos 37 and 39), **the hip registration** (the mesh's hip joint centres are 75.6 mm from its midline, the sheet's 92.43 mm: in the
-model frames the two bodies are 17 mm apart at the hip plane; memo 39), and the arm anchors on the skin (the elbow and wrist nodes). The arms are built and the reservations are reported (memo 39); they are no longer open.
+model frames the two bodies are 17 mm apart at the hip plane; memo 39); the arms are built and the reservations reported (memo 39); the elbow and wrist nodes are still on the skin and open, and the forearm frame's roll is 16.5 degrees from the mesh's anterior (memo 43); both are decided in rm.v1-arm-joint-anchors-decision.
 
 ## Consequences
 
