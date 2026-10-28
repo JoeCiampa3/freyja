@@ -212,5 +212,5 @@ def test_the_documented_suite_time_matches_claude_md():
     import re
     doc = (Path(__file__).resolve().parents[1] / "sim" / "scripts" / "state.py").read_text(encoding="utf-8").split('"""')[1]
     claude = (Path(__file__).resolve().parents[1] / "CLAUDE.md").read_text(encoding="utf-8")
-    assert "about six minutes" in doc and "minute and a half" not in doc
-    assert re.search(r"takes about six minutes", claude)
+    assert "about 18 minutes" in doc and "minute and a half" not in doc and "six minutes" not in doc
+    assert re.search(r"full suite \(about 18 minutes", claude)

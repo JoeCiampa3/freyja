@@ -134,6 +134,11 @@ Blunt, technically dense, peer to peer. Findings first, with the measured number
 - **Address:** `<source>#<JSON pointer>`; its hash is 12 hex of the canonical JSON of its value.
 - **Work item, stamp, pinned:** assisted or manual work whose output depends on addresses; a stamp records the hashes it was made against; a pinned stamp makes a difference `drifted` instead of `stale`.
 - **Work status:** `unstamped`, `current`, `stale`, `drifted`, `unknown` (`reverified` is reserved).
+- **Bound document, binding, sidecar:** a Fusion design with a binding; `cad/bindings/<part>.yaml`, the document's name and id, the side and the parameter list; `cad/sidecars/<part>.json`, the one home of CAD-derived quantities (generated).
+- **Parameter classes:** `in_` inherited from a thread address, never edited in Fusion; `dv_` design, authored in Fusion; `dr_` derived.
+- **Push / pull / drift:** the repo's values out to Fusion by expression (a clean document is then saved); Fusion's parameters, mass properties and meshes back; an inherited parameter that no longer equals its address.
+- **CAD frame, canonical mesh:** right-side ISB, mm, converted to the model body frame on pull; the STL the bridge writes, with a hash independent of Fusion's ordering.
+- **Chord bound / guarantee:** the achieved worst-case chord error of the tessellation, and whether it covers every face.
 - **Rework queue, impact, budget, dossier:** the stale, drifted and unknown work items with the values that moved; what an address touches; a segment's provision against its claims (mass first); the generated per-record document.
 
 ## 10. Your first session

@@ -4,7 +4,7 @@ whether it is stale. Every line comes from a tool, never from typing. Determinis
 
     python sim/scripts/state.py [--no-run]          (or: fy state [--no-run])
 
---no-run records the tests and checks as not run (they take about six minutes). The tracked-file count and the dirty
+--no-run records the tests and checks as not run (they take about 18 minutes). The tracked-file count and the dirty
 hash leave out docs/STATE.md itself, otherwise the file would describe itself. The base commit is HEAD at generation; the commit
 that adds the file is its child, so the file names its parent.
 """
