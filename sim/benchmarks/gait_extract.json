@@ -254,10 +254,10 @@
   "attribution": "Data: Camargo, Ramanathan, Flanagan & Young (2021), J. Biomech. 119:110320, Mendeley Data v2 (10.17632/fcgm3chfff.2, k9kvm5tn3f.2, jj3r5f9pnf.2), CC BY 4.0. Processed here; the authors have not endorsed this work.",
   "dataset_manifest_sha256": "ca427c3733c86d9f301742e4dc5b3b0389dcad0d6310469ef9916a5b9ea8ea0e",
   "diff_sha256": null,
-  "gait_id": "gait.20261021-1445-walk_treadmill",
+  "gait_id": "gait.20261028-1654-walk_treadmill",
   "gait_version": "1",
   "generated_by": "sim/scripts/gait_extract.py (fy gait --write-extract)",
-  "git_commit": "fb60b388c1a6b20448127cad0cd869e964c0239e",
+  "git_commit": "98be2bcae0eea3fbfa6719343c871bc89577faec",
   "git_dirty": false,
   "hip_demand": {
     "0.5": {
@@ -1459,7 +1459,7 @@
       }
     }
   },
-  "model_sha256": "cfa2e0743e835eb8b138a6925fb68d02318bb13956084705fb8d7e6007bf9ebb",
+  "model_sha256": "1ceee2452e18c490023a9d1a7d88e77cc09e21df8edde24db6ef788593d96be3",
   "results": {
     "0.5": {
       "counter_rotate": {
@@ -23993,7 +23993,7 @@
     }
   },
   "schema": "gait-extract/1",
-  "snapshot_sha256": "cf4fdfe08804810709bc8e81b987b66577d76ea3a26a8cb901bafb5a85d8647d",
+  "snapshot_sha256": "492fe816e6d805a75bc31092f393046b329c4201d6c85e461fec1af78173cf74",
   "spec": {
     "name": "walk_treadmill",
     "offset_subjects": [

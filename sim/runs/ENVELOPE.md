@@ -4,50 +4,50 @@
 
 Worst case per joint across the latest run of every scenario, with the run that drives it. Joint torque is about the model's own hinge axes (the decoupled hip architecture), not actuator torque.
 
-Scenario classes included: rom_sweep (run.20261021-1549-rom_sweep), stand_static (run.20261021-1548-stand_static), walk_treadmill (gait.20261021-1445-walk_treadmill, gait rows below).
+Scenario classes included: rom_sweep (run.20261028-1654-rom_sweep), stand_static (run.20261028-1653-stand_static), walk_treadmill (gait.20261028-1654-walk_treadmill, gait rows below).
 Not yet included: stairs, sit-to-stand, overground walking, ramps (they need reference kinematics with citable provenance; running is out of scope).
 This is not a complete sizing basis: do not size an actuator from it.
-Excluded latest runs: run.20261021-1548-hold_pose (hold_pose): verification only (envelope: false), so it never drives a row.
+Excluded latest runs: run.20261028-1653-hold_pose (hold_pose): verification only (envelope: false), so it never drives a row.
 
 | joint | peak torque Nm | driving run | peak speed rad/s | driving run | peak power W | driving run | ROM used deg | limit deg |
 |---|---|---|---|---|---|---|---|---|
-| ankle_ie_left | 0.12 | run.20261021-1549-rom_sweep | 0.150 | run.20261021-1549-rom_sweep | 0.01 | run.20261021-1549-rom_sweep | -19.0..35.8 | -19.2..36.2 |
-| ankle_ie_right | 0.12 | run.20261021-1549-rom_sweep | 0.150 | run.20261021-1549-rom_sweep | 0.01 | run.20261021-1549-rom_sweep | -19.0..35.8 | -19.2..36.2 |
-| ankle_pdflex_left | 0.37 | run.20261021-1549-rom_sweep | 0.236 | run.20261021-1549-rom_sweep | 0.08 | run.20261021-1549-rom_sweep | -61.5..24.8 | -62.1..25.0 |
-| ankle_pdflex_right | 0.37 | run.20261021-1549-rom_sweep | 0.236 | run.20261021-1549-rom_sweep | 0.08 | run.20261021-1549-rom_sweep | -61.5..24.8 | -62.1..25.0 |
-| cj_ax | 0.00 | run.20261021-1548-stand_static | 0.000 | run.20261021-1548-stand_static | 0.00 | run.20261021-1548-stand_static | 0.0..0.0 | unlimited |
-| cj_fe | 0.39 | run.20261021-1548-stand_static | 0.000 | run.20261021-1548-stand_static | 0.00 | run.20261021-1548-stand_static | 0.0..0.0 | unlimited |
-| cj_lat | 0.01 | run.20261021-1548-stand_static | 0.000 | run.20261021-1548-stand_static | 0.00 | run.20261021-1548-stand_static | 0.0..0.0 | unlimited |
-| elbow_left | 1.89 | run.20261021-1549-rom_sweep | 0.420 | run.20261021-1549-rom_sweep | 0.79 | run.20261021-1549-rom_sweep | -4.7..148.5 | -4.7..150.0 |
-| elbow_right | 1.89 | run.20261021-1549-rom_sweep | 0.420 | run.20261021-1549-rom_sweep | 0.79 | run.20261021-1549-rom_sweep | -4.7..148.5 | -4.7..150.0 |
-| hip_aa_left | 23.33 | run.20261021-1549-rom_sweep | 0.179 | run.20261021-1549-rom_sweep | 2.85 | run.20261021-1549-rom_sweep | -40.1..25.3 | -40.5..25.6 |
-| hip_aa_right | 23.33 | run.20261021-1549-rom_sweep | 0.179 | run.20261021-1549-rom_sweep | 2.85 | run.20261021-1549-rom_sweep | -40.1..25.3 | -40.5..25.6 |
-| hip_fe_left | 35.50 | run.20261021-1549-rom_sweep | 0.447 | run.20261021-1549-rom_sweep | 15.05 | run.20261021-1549-rom_sweep | -30.7..132.5 | -31.0..133.8 |
-| hip_fe_right | 35.50 | run.20261021-1549-rom_sweep | 0.447 | run.20261021-1549-rom_sweep | 15.05 | run.20261021-1549-rom_sweep | -30.7..132.5 | -31.0..133.8 |
-| hip_ier_left | 0.02 | run.20261021-1548-stand_static | 0.241 | run.20261021-1549-rom_sweep | 0.00 | run.20261021-1549-rom_sweep | -43.8..44.0 | -44.2..44.4 |
-| hip_ier_right | 0.02 | run.20261021-1548-stand_static | 0.241 | run.20261021-1549-rom_sweep | 0.00 | run.20261021-1549-rom_sweep | -43.8..44.0 | -44.2..44.4 |
-| knee_left | 7.56 | run.20261021-1549-rom_sweep | 0.389 | run.20261021-1549-rom_sweep | 2.89 | run.20261021-1549-rom_sweep | -1.6..140.5 | -1.6..141.9 |
-| knee_right | 7.56 | run.20261021-1549-rom_sweep | 0.389 | run.20261021-1549-rom_sweep | 2.89 | run.20261021-1549-rom_sweep | -1.6..140.5 | -1.6..141.9 |
-| lsj_ax | 0.06 | run.20261021-1549-rom_sweep | 0.209 | run.20261021-1549-rom_sweep | 0.01 | run.20261021-1549-rom_sweep | -38.1..38.1 | -38.5..38.5 |
-| lsj_fe | 77.75 | run.20261021-1549-rom_sweep | 0.298 | run.20261021-1549-rom_sweep | 17.22 | run.20261021-1549-rom_sweep | -39.6..69.2 | -40.0..69.9 |
-| lsj_lat | 48.47 | run.20261021-1549-rom_sweep | 0.197 | run.20261021-1549-rom_sweep | 6.37 | run.20261021-1549-rom_sweep | -35.9..35.9 | -36.3..36.3 |
-| shoulder_aa_left | 6.45 | run.20261021-1549-rom_sweep | 0.496 | run.20261021-1549-rom_sweep | 3.20 | run.20261021-1549-rom_sweep | -180.9..0.0 | -182.7..0.0 |
-| shoulder_aa_right | 6.45 | run.20261021-1549-rom_sweep | 0.496 | run.20261021-1549-rom_sweep | 3.20 | run.20261021-1549-rom_sweep | -180.9..0.0 | -182.7..0.0 |
-| shoulder_fe_left | 6.45 | run.20261021-1549-rom_sweep | 0.623 | run.20261021-1549-rom_sweep | 4.00 | run.20261021-1549-rom_sweep | -56.7..170.3 | -57.3..172.0 |
-| shoulder_fe_right | 6.45 | run.20261021-1549-rom_sweep | 0.623 | run.20261021-1549-rom_sweep | 4.00 | run.20261021-1549-rom_sweep | -56.7..170.3 | -57.3..172.0 |
-| shoulder_ier_left | 0.00 | run.20261021-1549-rom_sweep | 0.453 | run.20261021-1549-rom_sweep | 0.00 | run.20261021-1549-rom_sweep | -98.6..66.4 | -99.6..67.1 |
-| shoulder_ier_right | 0.00 | run.20261021-1549-rom_sweep | 0.453 | run.20261021-1549-rom_sweep | 0.00 | run.20261021-1549-rom_sweep | -98.6..66.4 | -99.6..67.1 |
-| tj_ax | 0.00 | run.20261021-1548-stand_static | 0.000 | run.20261021-1548-stand_static | 0.00 | run.20261021-1548-stand_static | 0.0..0.0 | unlimited |
-| tj_fe | 3.12 | run.20261021-1548-stand_static | 0.000 | run.20261021-1548-stand_static | 0.00 | run.20261021-1548-stand_static | 0.0..0.0 | unlimited |
-| tj_lat | 0.07 | run.20261021-1548-stand_static | 0.000 | run.20261021-1548-stand_static | 0.00 | run.20261021-1548-stand_static | 0.0..0.0 | unlimited |
-| toe_left | 19.81 | run.20261021-1549-rom_sweep | 0.217 | run.20261021-1549-rom_sweep | 2.80 | run.20261021-1549-rom_sweep | 0.0..79.2 | 0.0..80.0 |
-| toe_right | 19.81 | run.20261021-1549-rom_sweep | 0.217 | run.20261021-1549-rom_sweep | 2.80 | run.20261021-1549-rom_sweep | 0.0..79.2 | 0.0..80.0 |
-| wrist_left | 0.18 | run.20261021-1549-rom_sweep | 0.404 | run.20261021-1549-rom_sweep | 0.06 | run.20261021-1549-rom_sweep | -73.3..74.1 | -74.0..74.8 |
-| wrist_right | 0.18 | run.20261021-1549-rom_sweep | 0.404 | run.20261021-1549-rom_sweep | 0.06 | run.20261021-1549-rom_sweep | -73.3..74.1 | -74.0..74.8 |
+| ankle_ie_left | 0.12 | run.20261028-1654-rom_sweep | 0.150 | run.20261028-1654-rom_sweep | 0.01 | run.20261028-1654-rom_sweep | -19.0..35.8 | -19.2..36.2 |
+| ankle_ie_right | 0.12 | run.20261028-1654-rom_sweep | 0.150 | run.20261028-1654-rom_sweep | 0.01 | run.20261028-1654-rom_sweep | -19.0..35.8 | -19.2..36.2 |
+| ankle_pdflex_left | 0.37 | run.20261028-1654-rom_sweep | 0.236 | run.20261028-1654-rom_sweep | 0.08 | run.20261028-1654-rom_sweep | -61.5..24.8 | -62.1..25.0 |
+| ankle_pdflex_right | 0.37 | run.20261028-1654-rom_sweep | 0.236 | run.20261028-1654-rom_sweep | 0.08 | run.20261028-1654-rom_sweep | -61.5..24.8 | -62.1..25.0 |
+| cj_ax | 0.00 | run.20261028-1653-stand_static | 0.000 | run.20261028-1653-stand_static | 0.00 | run.20261028-1653-stand_static | 0.0..0.0 | unlimited |
+| cj_fe | 0.39 | run.20261028-1653-stand_static | 0.000 | run.20261028-1653-stand_static | 0.00 | run.20261028-1653-stand_static | 0.0..0.0 | unlimited |
+| cj_lat | 0.01 | run.20261028-1653-stand_static | 0.000 | run.20261028-1653-stand_static | 0.00 | run.20261028-1653-stand_static | 0.0..0.0 | unlimited |
+| elbow_left | 1.89 | run.20261028-1654-rom_sweep | 0.420 | run.20261028-1654-rom_sweep | 0.79 | run.20261028-1654-rom_sweep | -4.7..148.5 | -4.7..150.0 |
+| elbow_right | 1.89 | run.20261028-1654-rom_sweep | 0.420 | run.20261028-1654-rom_sweep | 0.79 | run.20261028-1654-rom_sweep | -4.7..148.5 | -4.7..150.0 |
+| hip_aa_left | 23.33 | run.20261028-1654-rom_sweep | 0.179 | run.20261028-1654-rom_sweep | 2.85 | run.20261028-1654-rom_sweep | -40.1..25.3 | -40.5..25.6 |
+| hip_aa_right | 23.33 | run.20261028-1654-rom_sweep | 0.179 | run.20261028-1654-rom_sweep | 2.85 | run.20261028-1654-rom_sweep | -40.1..25.3 | -40.5..25.6 |
+| hip_fe_left | 35.50 | run.20261028-1654-rom_sweep | 0.447 | run.20261028-1654-rom_sweep | 15.05 | run.20261028-1654-rom_sweep | -30.7..132.5 | -31.0..133.8 |
+| hip_fe_right | 35.50 | run.20261028-1654-rom_sweep | 0.447 | run.20261028-1654-rom_sweep | 15.05 | run.20261028-1654-rom_sweep | -30.7..132.5 | -31.0..133.8 |
+| hip_ier_left | 0.02 | run.20261028-1653-stand_static | 0.241 | run.20261028-1654-rom_sweep | 0.00 | run.20261028-1654-rom_sweep | -43.8..44.0 | -44.2..44.4 |
+| hip_ier_right | 0.02 | run.20261028-1653-stand_static | 0.241 | run.20261028-1654-rom_sweep | 0.00 | run.20261028-1654-rom_sweep | -43.8..44.0 | -44.2..44.4 |
+| knee_left | 7.56 | run.20261028-1654-rom_sweep | 0.389 | run.20261028-1654-rom_sweep | 2.89 | run.20261028-1654-rom_sweep | -1.6..140.5 | -1.6..141.9 |
+| knee_right | 7.56 | run.20261028-1654-rom_sweep | 0.389 | run.20261028-1654-rom_sweep | 2.89 | run.20261028-1654-rom_sweep | -1.6..140.5 | -1.6..141.9 |
+| lsj_ax | 0.06 | run.20261028-1654-rom_sweep | 0.209 | run.20261028-1654-rom_sweep | 0.01 | run.20261028-1654-rom_sweep | -38.1..38.1 | -38.5..38.5 |
+| lsj_fe | 77.75 | run.20261028-1654-rom_sweep | 0.298 | run.20261028-1654-rom_sweep | 17.22 | run.20261028-1654-rom_sweep | -39.6..69.2 | -40.0..69.9 |
+| lsj_lat | 48.47 | run.20261028-1654-rom_sweep | 0.197 | run.20261028-1654-rom_sweep | 6.37 | run.20261028-1654-rom_sweep | -35.9..35.9 | -36.3..36.3 |
+| shoulder_aa_left | 6.45 | run.20261028-1654-rom_sweep | 0.496 | run.20261028-1654-rom_sweep | 3.20 | run.20261028-1654-rom_sweep | -180.9..0.0 | -182.7..0.0 |
+| shoulder_aa_right | 6.45 | run.20261028-1654-rom_sweep | 0.496 | run.20261028-1654-rom_sweep | 3.20 | run.20261028-1654-rom_sweep | -180.9..0.0 | -182.7..0.0 |
+| shoulder_fe_left | 6.45 | run.20261028-1654-rom_sweep | 0.623 | run.20261028-1654-rom_sweep | 4.00 | run.20261028-1654-rom_sweep | -56.7..170.3 | -57.3..172.0 |
+| shoulder_fe_right | 6.45 | run.20261028-1654-rom_sweep | 0.623 | run.20261028-1654-rom_sweep | 4.00 | run.20261028-1654-rom_sweep | -56.7..170.3 | -57.3..172.0 |
+| shoulder_ier_left | 0.00 | run.20261028-1654-rom_sweep | 0.453 | run.20261028-1654-rom_sweep | 0.00 | run.20261028-1654-rom_sweep | -98.6..66.4 | -99.6..67.1 |
+| shoulder_ier_right | 0.00 | run.20261028-1654-rom_sweep | 0.453 | run.20261028-1654-rom_sweep | 0.00 | run.20261028-1654-rom_sweep | -98.6..66.4 | -99.6..67.1 |
+| tj_ax | 0.00 | run.20261028-1653-stand_static | 0.000 | run.20261028-1653-stand_static | 0.00 | run.20261028-1653-stand_static | 0.0..0.0 | unlimited |
+| tj_fe | 3.12 | run.20261028-1653-stand_static | 0.000 | run.20261028-1653-stand_static | 0.00 | run.20261028-1653-stand_static | 0.0..0.0 | unlimited |
+| tj_lat | 0.07 | run.20261028-1653-stand_static | 0.000 | run.20261028-1653-stand_static | 0.00 | run.20261028-1653-stand_static | 0.0..0.0 | unlimited |
+| toe_left | 19.81 | run.20261028-1654-rom_sweep | 0.217 | run.20261028-1654-rom_sweep | 2.80 | run.20261028-1654-rom_sweep | 0.0..79.2 | 0.0..80.0 |
+| toe_right | 19.81 | run.20261028-1654-rom_sweep | 0.217 | run.20261028-1654-rom_sweep | 2.80 | run.20261028-1654-rom_sweep | 0.0..79.2 | 0.0..80.0 |
+| wrist_left | 0.18 | run.20261028-1654-rom_sweep | 0.404 | run.20261028-1654-rom_sweep | 0.06 | run.20261028-1654-rom_sweep | -73.3..74.1 | -74.0..74.8 |
+| wrist_right | 0.18 | run.20261028-1654-rom_sweep | 0.404 | run.20261028-1654-rom_sweep | 0.06 | run.20261028-1654-rom_sweep | -73.3..74.1 | -74.0..74.8 |
 
 Joints with no ROM data (unlimited, so never swept; each row reflects the static standing solve only, or no data): cj_ax, cj_fe, cj_lat, tj_ax, tj_fe, tj_lat.
 
-## Gait: walk_treadmill (gait.20261021-1445-walk_treadmill)
+## Gait: walk_treadmill (gait.20261028-1654-walk_treadmill)
 
 Level treadmill walking at 0.5, 1.4 and 1.6 m/s from the Camargo et al. 2021 kinematics (CC BY 4.0) on Freyja's mass distribution, 17 subjects; each cell is the 95th percentile across subject-strides with the maximum beside it (offset subjects AB13, AB15 included; `sim/benchmarks/gait_extract.json` also keeps the statistics without them and without the pitch-flagged subjects). Rigid at the standing pose from stand_static, arms at the sides; arm swing is not modelled; the arms are excluded. Trunk modes of the record: rigid, counter_rotate (`rigid` is a locked spine; `counter_rotate` is an actuated lumbosacral roll and yaw cancelling the pelvis's roll and yaw by feed-forward; `first_harmonic` is a human-like reference point from the trunk IMU, a diagnostic and never a record mode; no mode is the v1 headline, so every row that depends on the trunk names its mode). Gait torque is about the model's hinge axes and is a different statistic from the worst-case rows above; the two are not merged.
 

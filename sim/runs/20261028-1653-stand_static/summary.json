@@ -1,0 +1,601 @@
+{
+  "balance": {
+    "support_margin_min_m": 0.06197056488319999
+  },
+  "checks": {
+    "failed": [],
+    "passed": [
+      "check.mjcf.com_lateral",
+      "check.mjcf.com_pct_stature",
+      "check.mjcf.floor_contact",
+      "check.mjcf.joint_signs",
+      "check.mjcf.mass_closure",
+      "check.mjcf.mass_closure.target",
+      "check.mjcf.mirror",
+      "check.mjcf.stature_chain",
+      "check.mjcf.top_of_head",
+      "check.thread.coverage"
+    ],
+    "status_model_sha256": "1ceee2452e18c490023a9d1a7d88e77cc09e21df8edde24db6ef788593d96be3",
+    "status_stale": false,
+    "waived": []
+  },
+  "contacts": {
+    "foot_left": {
+      "friction_ratio_peak": 0.0,
+      "normal_force_peak_n": 317.9434524980114
+    },
+    "foot_right": {
+      "friction_ratio_peak": 0.0,
+      "normal_force_peak_n": 319.06889750198866
+    }
+  },
+  "controller": {
+    "name": "statics",
+    "version": "1"
+  },
+  "diagnostics": {
+    "body_weight_n": 637.0123500000001,
+    "com_offset_commanded_m": 0.0,
+    "com_offset_initial_m": 0.0,
+    "cop_x_rel_ankle_m": 0.0,
+    "equilibrium_residual_force_n": 1.1368683772161603e-13,
+    "equilibrium_residual_moment_nm": 6.217248937900877e-15,
+    "feasible": 1.0,
+    "force_left_n": 317.9434524980114,
+    "force_right_n": 319.06889750198866,
+    "lean_angle_deg": 1.809520199915758,
+    "limit_margin_min_deg": 1.6,
+    "stand_pelvis_tilt_deg": 12.0,
+    "support_margin_m": 0.06197056488319999
+  },
+  "diff_sha256": null,
+  "duration_s": 0.0,
+  "env": {
+    "mujoco": "3.10.0",
+    "numpy": "2.4.6",
+    "python": "3.11.9"
+  },
+  "git_commit": "98be2bcae0eea3fbfa6719343c871bc89577faec",
+  "git_dirty": false,
+  "joints": {
+    "ankle_ie_left": {
+      "limit_hit_fraction": 0.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -19.2,
+        36.20000000000001
+      ],
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.043098718650900536,
+      "torque_rms_nm": 0.043098718650900536,
+      "torque_source": "inverse_dynamics"
+    },
+    "ankle_ie_right": {
+      "limit_hit_fraction": 0.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -19.2,
+        36.20000000000001
+      ],
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.043098718650900536,
+      "torque_rms_nm": 0.043098718650900536,
+      "torque_source": "inverse_dynamics"
+    },
+    "ankle_pdflex_left": {
+      "limit_hit_fraction": 0.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -62.1,
+        25.0
+      ],
+      "rom_used_deg": [
+        1.809520199915758,
+        1.809520199915758
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.29837574450622806,
+      "torque_rms_nm": 0.29837574450622806,
+      "torque_source": "inverse_dynamics"
+    },
+    "ankle_pdflex_right": {
+      "limit_hit_fraction": 0.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -62.1,
+        25.0
+      ],
+      "rom_used_deg": [
+        1.809520199915758,
+        1.809520199915758
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.29837574450622806,
+      "torque_rms_nm": 0.29837574450622806,
+      "torque_source": "inverse_dynamics"
+    },
+    "cj_ax": {
+      "limit_hit_fraction": null,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": null,
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.00035849222051174,
+      "torque_rms_nm": 0.00035849222051174,
+      "torque_source": "inverse_dynamics"
+    },
+    "cj_fe": {
+      "limit_hit_fraction": null,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": null,
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.3876906501431214,
+      "torque_rms_nm": 0.3876906501431214,
+      "torque_source": "inverse_dynamics"
+    },
+    "cj_lat": {
+      "limit_hit_fraction": null,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": null,
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.01134735145937639,
+      "torque_rms_nm": 0.01134735145937639,
+      "torque_source": "inverse_dynamics"
+    },
+    "elbow_left": {
+      "limit_hit_fraction": 0.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -4.7,
+        150.0
+      ],
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.003643217823110223,
+      "torque_rms_nm": 0.003643217823110223,
+      "torque_source": "inverse_dynamics"
+    },
+    "elbow_right": {
+      "limit_hit_fraction": 0.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -4.7,
+        150.0
+      ],
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.003643217823110223,
+      "torque_rms_nm": 0.003643217823110223,
+      "torque_source": "inverse_dynamics"
+    },
+    "hip_aa_left": {
+      "limit_hit_fraction": 0.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -40.5,
+        25.6
+      ],
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.738783471663913,
+      "torque_rms_nm": 0.738783471663913,
+      "torque_source": "inverse_dynamics"
+    },
+    "hip_aa_right": {
+      "limit_hit_fraction": 0.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -40.5,
+        25.6
+      ],
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.738783471663913,
+      "torque_rms_nm": 0.738783471663913,
+      "torque_source": "inverse_dynamics"
+    },
+    "hip_fe_left": {
+      "limit_hit_fraction": 0.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -31.0,
+        133.8
+      ],
+      "rom_used_deg": [
+        12.000000000000002,
+        12.000000000000002
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 3.848296671207435,
+      "torque_rms_nm": 3.848296671207435,
+      "torque_source": "inverse_dynamics"
+    },
+    "hip_fe_right": {
+      "limit_hit_fraction": 0.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -31.0,
+        133.8
+      ],
+      "rom_used_deg": [
+        12.000000000000002,
+        12.000000000000002
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 3.8769266937071576,
+      "torque_rms_nm": 3.8769266937071576,
+      "torque_source": "inverse_dynamics"
+    },
+    "hip_ier_left": {
+      "limit_hit_fraction": 0.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -44.2,
+        44.4
+      ],
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.023340083206405127,
+      "torque_rms_nm": 0.023340083206405127,
+      "torque_source": "inverse_dynamics"
+    },
+    "hip_ier_right": {
+      "limit_hit_fraction": 0.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -44.2,
+        44.4
+      ],
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.023340083206405182,
+      "torque_rms_nm": 0.023340083206405182,
+      "torque_source": "inverse_dynamics"
+    },
+    "knee_left": {
+      "limit_hit_fraction": 0.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -1.6,
+        141.9
+      ],
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 3.585933004234075,
+      "torque_rms_nm": 3.585933004234075,
+      "torque_source": "inverse_dynamics"
+    },
+    "knee_right": {
+      "limit_hit_fraction": 0.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -1.6,
+        141.9
+      ],
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 3.6004159882365414,
+      "torque_rms_nm": 3.6004159882365414,
+      "torque_source": "inverse_dynamics"
+    },
+    "lsj_ax": {
+      "limit_hit_fraction": 0.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -38.5,
+        38.5
+      ],
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.0026240293941314934,
+      "torque_rms_nm": 0.0026240293941314934,
+      "torque_source": "inverse_dynamics"
+    },
+    "lsj_fe": {
+      "limit_hit_fraction": 0.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -40.0,
+        69.9
+      ],
+      "rom_used_deg": [
+        -12.000000000000002,
+        -12.000000000000002
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 5.037094434575974,
+      "torque_rms_nm": 5.037094434575974,
+      "torque_source": "inverse_dynamics"
+    },
+    "lsj_lat": {
+      "limit_hit_fraction": 0.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -36.3,
+        36.3
+      ],
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.08305838194324064,
+      "torque_rms_nm": 0.08305838194324064,
+      "torque_source": "inverse_dynamics"
+    },
+    "shoulder_aa_left": {
+      "limit_hit_fraction": 1.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -182.7,
+        0.0
+      ],
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.047956634487494654,
+      "torque_rms_nm": 0.047956634487494654,
+      "torque_source": "inverse_dynamics"
+    },
+    "shoulder_aa_right": {
+      "limit_hit_fraction": 1.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -182.7,
+        0.0
+      ],
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.047956634487494654,
+      "torque_rms_nm": 0.047956634487494654,
+      "torque_source": "inverse_dynamics"
+    },
+    "shoulder_fe_left": {
+      "limit_hit_fraction": 0.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -57.3,
+        172.0
+      ],
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.4014379213939912,
+      "torque_rms_nm": 0.4014379213939912,
+      "torque_source": "inverse_dynamics"
+    },
+    "shoulder_fe_right": {
+      "limit_hit_fraction": 0.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -57.3,
+        172.0
+      ],
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.4014379213939912,
+      "torque_rms_nm": 0.4014379213939912,
+      "torque_source": "inverse_dynamics"
+    },
+    "shoulder_ier_left": {
+      "limit_hit_fraction": 0.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -99.6,
+        67.1
+      ],
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.0015150742838308806,
+      "torque_rms_nm": 0.0015150742838308806,
+      "torque_source": "inverse_dynamics"
+    },
+    "shoulder_ier_right": {
+      "limit_hit_fraction": 0.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -99.6,
+        67.1
+      ],
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.0015150742838309084,
+      "torque_rms_nm": 0.0015150742838309084,
+      "torque_source": "inverse_dynamics"
+    },
+    "tj_ax": {
+      "limit_hit_fraction": null,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": null,
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.0020994350026631962,
+      "torque_rms_nm": 0.0020994350026631962,
+      "torque_source": "inverse_dynamics"
+    },
+    "tj_fe": {
+      "limit_hit_fraction": null,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": null,
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 3.1162049774098723,
+      "torque_rms_nm": 3.1162049774098723,
+      "torque_source": "inverse_dynamics"
+    },
+    "tj_lat": {
+      "limit_hit_fraction": null,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": null,
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.06645339976228558,
+      "torque_rms_nm": 0.06645339976228558,
+      "torque_source": "inverse_dynamics"
+    },
+    "toe_left": {
+      "limit_hit_fraction": 1.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        0.0,
+        80.0
+      ],
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.026830423757182684,
+      "torque_rms_nm": 0.026830423757182684,
+      "torque_source": "inverse_dynamics"
+    },
+    "toe_right": {
+      "limit_hit_fraction": 1.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        0.0,
+        80.0
+      ],
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.026830423757182684,
+      "torque_rms_nm": 0.026830423757182684,
+      "torque_source": "inverse_dynamics"
+    },
+    "wrist_left": {
+      "limit_hit_fraction": 0.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -74.0,
+        74.8
+      ],
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.011406929907813335,
+      "torque_rms_nm": 0.011406929907813335,
+      "torque_source": "inverse_dynamics"
+    },
+    "wrist_right": {
+      "limit_hit_fraction": 0.0,
+      "power_peak_w": 0.0,
+      "rom_limit_deg": [
+        -74.0,
+        74.8
+      ],
+      "rom_used_deg": [
+        0.0,
+        0.0
+      ],
+      "speed_peak_rad_s": 0.0,
+      "torque_peak_nm": 0.011406929907813446,
+      "torque_rms_nm": 0.011406929907813446,
+      "torque_source": "inverse_dynamics"
+    }
+  },
+  "model_sha256": "1ceee2452e18c490023a9d1a7d88e77cc09e21df8edde24db6ef788593d96be3",
+  "outcome": "completed",
+  "run_id": "run.20261028-1653-stand_static",
+  "scenario": {
+    "name": "stand_static",
+    "params": {
+      "drive": "static_equilibrium",
+      "duration_s": 0.0,
+      "model": "sim/models/freyja.xml",
+      "pose": {
+        "com_x_rel_ankle_m": 0.0
+      },
+      "support": "ground_wrench",
+      "window": {
+        "end_s": 0.0,
+        "start_s": 0.0
+      }
+    }
+  },
+  "schema": "run-summary/1",
+  "seed": 0,
+  "snapshot_sha256": "492fe816e6d805a75bc31092f393046b329c4201d6c85e461fec1af78173cf74",
+  "support": "ground_wrench",
+  "timestep_s": 0.002,
+  "window": {
+    "end_s": 0.0,
+    "start_s": 0.0
+  }
+}
