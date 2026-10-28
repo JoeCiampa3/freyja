@@ -1,0 +1,10 @@
+schema: thread-record/1
+id: work.upper-arm-cad
+kind: work_item
+status: proposed
+purpose: The CAD model of the placeholder upper-arm member, pulled into its sidecar by the bridge (Stage 3b).
+of: part.arm.upper_member
+mode: assisted
+output: cad/sidecars/part.arm.upper_member.json
+consumes:
+  - snapshot#/upper_arm_right_length

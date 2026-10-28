@@ -28,9 +28,12 @@ def real():
     return build.build_root(REPO)
 
 
-def test_the_real_store_has_no_errors_and_no_warnings(real):
+def test_the_real_store_has_no_errors_and_no_warnings_except_the_placeholders_mass_address_until_its_first_pull(real):
     assert real.errors == [], [(i.code, i.message) for i in real.errors]
-    assert real.warnings == [], [(i.code, i.message) for i in real.warnings]
+    # Stage 3b: part.arm.upper_member takes its mass from the CAD sidecar; before the first `fy cad pull` that address does not resolve (expected, a warning)
+    sidecar = REPO / "cad" / "sidecars" / "part.arm.upper_member.json"
+    expected = [] if sidecar.exists() else [("address-unresolved", ("part.arm.upper_member",))]
+    assert [(i.code, tuple(i.ids)) for i in real.warnings] == expected, [(i.code, i.message) for i in real.warnings]
 
 
 def test_one_segment_per_pre_processor_segment_and_one_joint_per_anatomical_joint(real):
@@ -80,9 +83,12 @@ def test_the_acceptance_speed_case_says_what_it_is_and_states_no_verdict_and_no_
         assert word not in notes, word  # no verdict
 
 
-def test_no_hardware_records_exist_yet(real):
-    assert {r["kind"] for r in real.recs.values()} == {"segment", "joint", "load_case"}
-    assert real.work == {}
+def test_no_hardware_records_exist_yet_except_the_bridge_test_article(real):
+    # Stage 3b (answer to memo 19's Q5): the first part and work records are the upper-arm placeholder, a bridge test article, not a design
+    assert {r["kind"] for r in real.recs.values()} == {"segment", "joint", "load_case", "part", "work_item"}
+    assert sorted(i for i, r in real.recs.items() if r["kind"] == "part") == ["part.arm.upper_member"]
+    assert sorted(real.work) == ["work.upper-arm-cad"]
+    assert all(r["status"] == "proposed" for r in real.recs.values() if r["kind"] in ("part", "work_item"))
 
 
 def test_the_generated_outputs_on_disk_are_what_a_fresh_build_gives(real):

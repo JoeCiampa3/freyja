@@ -1,0 +1,14 @@
+schema: cad-binding/1
+part: part.arm.upper_member
+revision: p1
+document:
+  name: Upper Arm v0
+  id: urn:adsk.wipprod:dm.lineage:6NP5Ui4eTYeclyPrItX66g
+side: right
+chord_tolerance_mm: 0.05
+clearance_mm: 0
+parameters:
+  - {name: in_upper_arm_right_length, class: in, address: "snapshot#/upper_arm_right_length", address_unit: m, unit: mm}
+  - {name: dv_uam_od, class: dv, unit: mm}
+  - {name: dv_uam_wall, class: dv, unit: mm}
+  - {name: dr_uam_id, class: dr, unit: mm}

@@ -63,13 +63,21 @@ def is_bilateral_segment(id: str) -> bool:
     return segment_name(id) in pre_processor().BILATERAL
 
 
-def _claim(pid: str, p: dict, counted: list) -> dict:
+def _claim(pid: str, p: dict, counted: list, kg_at_address=None) -> dict:
     """A part's mass claim, with its arithmetic. `mass.kg` is the mass of one unit and `sides` gives one unit per side; `counted` is the
-    sides whose units this budget counts."""
-    kg = round(p["mass"]["kg"], MASS_DIGITS)
+    sides whose units this budget counts. A mass given as `{address, source}` claims `kg_at_address`, the value the address resolved to, or
+    nothing (0 kg, said in the arithmetic) when it did not resolve."""
     n = max(len(counted), 1)
     where = f"{pid} {' and '.join(counted)}" if counted else pid
-    return {"part": pid, "kg": kg, "sides": counted, "total_kg": round(kg * n, MASS_DIGITS), "arithmetic": f"{n} x {kg} kg, {where}"}
+    address = p["mass"].get("address")
+    if address is None:
+        kg = round(p["mass"]["kg"], MASS_DIGITS)
+        return {"part": pid, "kg": kg, "sides": counted, "total_kg": round(kg * n, MASS_DIGITS), "arithmetic": f"{n} x {kg} kg, {where}"}
+    if kg_at_address is None:
+        return {"part": pid, "kg": 0.0, "sides": counted, "total_kg": 0.0, "address": address, "arithmetic": f"unresolved, claims 0 kg: {address}, {where}"}
+    kg = round(kg_at_address, MASS_DIGITS)
+    return {"part": pid, "kg": kg, "sides": counted, "total_kg": round(kg * n, MASS_DIGITS), "address": address,
+            "arithmetic": f"{n} x {kg} kg, {where} (mass from {address})"}
 
 
 def expand(base: str, names) -> tuple:
@@ -458,8 +466,23 @@ class Build:
             return source[len("thread/derived/"):-len(".json")]
         return source if "/" not in source and edges.kind_of(source) else None
 
+    def _unit_mass(self, pid, p):
+        """The mass of one unit of a part given by address, or None when the address does not resolve to a non-negative number (a warning, once per part)."""
+        address = p["mass"].get("address")
+        if address is None:
+            return None
+        if pid not in self._mass_warned:
+            ok, value = self.resolve(address)
+            good = ok and isinstance(value, (int, float)) and not isinstance(value, bool) and value >= 0
+            self._mass_values[pid] = float(value) if good else None
+            self._mass_warned.add(pid)
+            if not good:
+                self._warn("address-unresolved", f"{pid}: the mass address {address} does not resolve to a number of kg", (pid,))
+        return self._mass_values[pid]
+
     def _mass_budgets(self, src) -> dict:
         s, recs = self.store, self.recs
+        self._mass_warned, self._mass_values = set(), {}
         segs = {}
         for id, r in sorted(recs.items()):
             if r["kind"] != "segment":
@@ -473,15 +496,17 @@ class Build:
             for pid, p in sorted(recs.items()):
                 if p["kind"] == "part" and p["housed_in"] == id and p["status"] in ("active", "proposed"):
                     counted = (["right"] if bil else list(p["sides"])) if "sides" in p else []
-                    claims.append(_claim(pid, p, counted))
+                    claims.append(_claim(pid, p, counted, self._unit_mass(pid, p)))
                     src[id].update(f"{pid}#/{f}" for f in ("housed_in", "status", "mass", "sides"))
+                    if "address" in p["mass"]:
+                        src[id].add(p["mass"]["address"])
             claimed = round(sum(c["total_kg"] for c in claims), MASS_DIGITS)
             over = target is not None and claimed - target > MASS_EPS_KG
             segs[id] = {"target_kg": target, "claimed_kg": claimed, "remaining_kg": None if target is None else round(target - claimed, MASS_DIGITS),
                         "over": bool(over), "claims": claims}
             if over:
                 self._warn("budget-over", f"{id} claims {claimed} kg against a target of {target} kg", (id,))
-        body_claims = [_claim(pid, p, list(p["sides"]) if "sides" in p else []) for pid, p in sorted(recs.items())
+        body_claims = [_claim(pid, p, list(p["sides"]) if "sides" in p else [], self._unit_mass(pid, p)) for pid, p in sorted(recs.items())
                        if p["kind"] == "part" and p["status"] in ("active", "proposed")]
         total = round(sum(c["total_kg"] for c in body_claims), MASS_DIGITS)
         target = float(s.snapshot["target_mass"][0]) if "target_mass" in s.snapshot else None

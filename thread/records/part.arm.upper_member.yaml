@@ -1,0 +1,13 @@
+schema: thread-record/1
+id: part.arm.upper_member
+kind: part
+status: proposed
+purpose: >-
+  A bridge test article, not a design: a plain 6061 tube from the shoulder joint centre to the elbow joint centre, modelled in Fusion to prove the CAD bridge
+  (Stage 3b). To be revised under the same id when the upper arm's design starts.
+housed_in: seg.upper_arm
+category: structure
+sides: [left, right]
+mass:
+  address: cad/sidecars/part.arm.upper_member.json#/mass_properties/mass_kg
+  source: CAD sidecar of the placeholder tube (fy cad pull)
