@@ -1,4 +1,4 @@
-STATE: PENDING
+STATE: base a2aee99ebc2c | brief architecture sha256:e93e6b785bae, ariadne sha256:f58800563b5d | snapshot sha256:492fe816e6d8 | tests 2028/2032 | dirty yes (data/falls/sources.md, not mine, edited during the run; clean at commit)
 
 # Memo 44: ADR 0007 D11 amended, elbow diagnostics moved to analysis/
 
@@ -50,4 +50,4 @@ Path-dependent output: the one difference is line 1 of `elbow_sections.obj`, now
 
 ## Tests
 
-STATE: PENDING until `fy state` is written after the commit.
+Full suite before the commit: 2028 passed, 1 failed (the known stale `test_gait_extract` envelope test, not fixed), 3 skipped, 1076 s. `fy state`: 2028 of 2032.
