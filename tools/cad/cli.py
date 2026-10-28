@@ -89,6 +89,7 @@ def cmd_push(args, ctx, say) -> int:
     r = ops.push(ctx, args.part)
     if r["ok"]:
         say(f"{args.part}: pushed " + ", ".join(f"{x['name']} = {x['expression']}" for x in r["rows"]))
+        say(f"{args.part}: saved as version {r['version']}" if r["saved"] and r["version"] is not None else f"{args.part}: {r['save_note']}" if r["saved"] else f"{args.part}: not saved: {r['save_skipped']}")
         return 0
     why = r.get("refused") or r.get("errors") or r.get("failed_features")
     say(f"{args.part}: push failed: {why}; failed features {r.get('failed_features')}; rolled back {r.get('rolled_back')}"
@@ -101,6 +102,8 @@ def cmd_pull(args, ctx, say) -> int:
     stl = doc["exports"]["stl"]
     say(f"{args.part}: pulled doc v{doc['document']['version']}; mass {doc['mass_properties']['mass_kg']:.6f} kg; stl {stl['triangles']} triangles, chord bound {stl['chord_bound_mm']:.4f} mm"
         f" (guarantee {stl['chord_guarantee']}); drift {len(doc['drift'])}")
+    if doc["document"]["unsaved_changes"]:
+        say(f"{args.part}: UNSAVED: the document has unsaved changes, so this pull does not describe doc v{doc['document']['version']} and `stamp` will refuse; save it and pull again")
     return 0
 
 

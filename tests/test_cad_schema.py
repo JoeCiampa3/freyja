@@ -50,7 +50,7 @@ SIDECAR_OK = {
     "generated_by": "tools/cad pull",
     "inputs": "sha256:0123456789ab",
     "identity": {"part": "part.arm.upper_member", "revision": "p1", "side": "right", "binding_sha256": "0123456789ab"},
-    "document": {"name": "freyja-bridge-fixture", "id": "urn:adsk.wipprod:dm.lineage:abc", "version": 7},
+    "document": {"name": "freyja-bridge-fixture", "id": "urn:adsk.wipprod:dm.lineage:abc", "version": 7, "unsaved_changes": False},
     "parameters": [
         {"name": "in_upper_arm_right_length", "class": "in", "expression": "255.234699434 mm", "value": 255.234699434, "unit": "mm",
          "address": "snapshot#/upper_arm_right_length", "address_hash": "0123456789ab"},
@@ -141,6 +141,8 @@ SIDECAR_BAD = {
     "banner inputs missing": mutated(SIDECAR_OK, ["inputs"], delete=True),
     "binding hash not 12 hex": mutated(SIDECAR_OK, ["identity", "binding_sha256"], "xyz"),
     "document version not an integer": mutated(SIDECAR_OK, ["document", "version"], "7"),
+    "unsaved_changes missing": mutated(SIDECAR_OK, ["document", "unsaved_changes"], delete=True),
+    "unsaved_changes not a boolean": mutated(SIDECAR_OK, ["document", "unsaved_changes"], "no"),
     "unprefixed parameter": mutated(SIDECAR_OK, ["parameters", 1, "name"], "od"),
     "inherited without address": mutated(SIDECAR_OK, ["parameters", 0, "address"], delete=True),
     "inherited without address hash": mutated(SIDECAR_OK, ["parameters", 0, "address_hash"], delete=True),

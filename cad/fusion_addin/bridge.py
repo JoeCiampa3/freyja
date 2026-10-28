@@ -4,7 +4,8 @@ Autodesk Fusion MCP server (`tools/cad/transport.py` imports this file and print
 
 Rules (CONVENTIONS section 9, rule 12):
   * a parameter is written only by setting its expression, never by assigning a value;
-  * only `set_expressions` and `restore` write to a document, and both only touch user parameters;
+  * only `set_expressions` and `restore` change a document, and both only touch user parameters; `save_document` saves a new version of the active document
+    and changes nothing in it;
   * the module carries no unit factors: lengths are returned in cm, angles in rad, inertia in kg cm^2, density in kg/cm^3, exactly as Fusion holds them, and
     arguments that are lengths are cm. `tools/cad/units.py` converts.
   * every verb takes `expect_name`, the name of the document it is allowed to act on, and refuses when the active document is another one.
@@ -177,6 +178,21 @@ def export_step(path, expect_name=None):
     if not design.exportManager.execute(opts):
         raise RuntimeError("the STEP export failed")
     return {"path": path}
+
+
+def save_document(description, expect_name=None):
+    """Save the active document as a new version with the given description (Joe's decision on memo 41: a push to a clean document saves). Refuses a document that
+    was never saved, one with an unhealthy timeline, and one with no unsaved changes; the client checks the unsaved state before it writes."""
+    _, doc, design = _design(expect_name)
+    if doc.dataFile is None:
+        raise RuntimeError(f"{doc.name!r} has never been saved; the bridge does not save a document for the first time")
+    health = _health(design)
+    if not health["healthy"]:
+        raise RuntimeError("the timeline is not healthy: " + ", ".join(health["failed_features"]) + "; nothing was saved")
+    if not doc.isModified:
+        return {"saved": False, "version": _version(doc), "modified": False}
+    ok = doc.save(description)
+    return {"saved": bool(ok), "version": _version(doc), "modified": bool(doc.isModified)}
 
 
 # ---- write verbs: user-parameter expressions only --------------------------------------------------------------------------------------

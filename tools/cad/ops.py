@@ -22,6 +22,8 @@ BINDINGS = "cad/bindings"
 SIDECARS = "cad/sidecars"
 EXPORTS = "cad/exports"
 COMPONENTS = "data/envelope/components/cad"
+VERSION_WAIT_S = 20.0       # Fusion shows the new version number about a second after a save
+VERSION_POLL_S = 0.5
 ACCURACY = "veryhigh"       # the highest calculation accuracy Fusion's API offers
 
 
@@ -95,9 +97,45 @@ def push(ctx: Context, part: str) -> dict:
     if problems:
         raise Refused("; ".join(problems))
     rows = cb.resolve_inherited(binding, ctx.resolve)
+    before = _call(ctx, binding, "doc_info")
+    unsaved_before = _unsaved(before)
     result = _call(ctx, binding, "set_expressions", expressions={r["name"]: r["expression"] for r in rows}, allowed_prefixes=["in_"], rollback_on_failure=True)
     result["rows"] = rows
+    result.update(unsaved_before=unsaved_before, saved=False, save_skipped=None, save_note=None)
+    if not result["ok"]:
+        result["save_skipped"] = "the push failed"
+    elif unsaved_before:
+        result["save_skipped"] = "the document had unsaved changes before the push, so it was not saved and the pull will record unsaved_changes"
+    elif not _unsaved(_call(ctx, binding, "doc_info")):
+        result["save_skipped"] = "nothing changed"
+    else:
+        desc = "fy cad push: " + "; ".join(f"{r['address']} -> {r['name']} = {r['expression']}" for r in rows)
+        saved = _call(ctx, binding, "save_document", description=desc)
+        if saved["saved"]:
+            result["saved"] = True
+            result["version"] = _new_version(ctx, binding, before["version"])
+            if result["version"] is None:
+                result["save_note"] = "saved, but Fusion's new version number was not confirmed"
+        else:
+            result["save_skipped"] = "save failed: Fusion did not save the document"
     return result
+
+
+def _new_version(ctx: Context, binding: dict, old: int):
+    """The version number after a save, once Fusion shows it (it lags the save by about a second); None when it does not within VERSION_WAIT_S."""
+    import time
+    deadline = time.monotonic() + VERSION_WAIT_S
+    while True:
+        v = _call(ctx, binding, "doc_info")["version"]
+        if v is not None and (old is None or v > old):
+            return v
+        if time.monotonic() >= deadline:
+            return None
+        time.sleep(VERSION_POLL_S)
+
+
+def _unsaved(info: dict) -> bool:
+    return bool(info.get("modified") or not info.get("saved", True))
 
 
 def drift_of(ctx: Context, part: str) -> list:
@@ -169,7 +207,7 @@ def pull(ctx: Context, part: str, segment: str | None = None) -> dict:
     doc = sidecar.assemble(
         require_healthy=True,
         identity={"part": part, "revision": binding["revision"], "side": binding["side"], "binding_sha256": cb.binding_hash(binding)},
-        document={"name": info["name"], "id": info["id"], "version": info["version"]},
+        document={"name": info["name"], "id": info["id"], "version": info["version"], "unsaved_changes": _unsaved(info)},
         parameters=params.sidecar_parameters(binding, raw, resolved),
         drift=drifted,
         timeline={"healthy": health["healthy"], "failed_features": health["failed_features"]},
@@ -228,6 +266,8 @@ def stamp_refusals(ctx: Context, part: str) -> list:
     out = []
     if sc["drift"]:
         out.append("the sidecar shows drift in " + ", ".join(d["name"] for d in sc["drift"]))
+    if sc["document"]["unsaved_changes"]:
+        out.append("the sidecar was pulled with unsaved changes in Fusion, so it does not describe a saved version: save the document and pull again")
     if not sc["timeline"]["healthy"]:
         out.append("the sidecar's timeline is not healthy: " + ", ".join(sc["timeline"]["failed_features"]))
     now = {c["address"]: c["hash"] for c in cb.consumes(load_binding(ctx.root, part), ctx.resolve)}
@@ -273,7 +313,7 @@ def status(ctx: Context) -> list:
             w = graph_work_status(graph, work_item_of(ctx.root, part))
         except Refused:
             w = "no work item"
-        lines.append(f"{part}  rev {d['identity']['revision']}  doc v{d['document']['version']}  drift {'none' if not d['drift'] else ','.join(x['name'] for x in d['drift'])}"
+        lines.append(f"{part}  rev {d['identity']['revision']}  doc v{d['document']['version']}{'  UNSAVED' if d['document']['unsaved_changes'] else ''}  drift {'none' if not d['drift'] else ','.join(x['name'] for x in d['drift'])}"
                      f"  timeline {'healthy' if d['timeline']['healthy'] else 'FAILED'}  work {w}")
     return lines
 

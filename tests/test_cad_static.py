@@ -108,7 +108,7 @@ def test_every_read_only_verb_is_a_verb_of_the_module_and_the_write_verbs_are_no
     tree = ast.parse(BRIDGE.read_text(encoding="utf-8"))
     verbs = {f.name for f in tree.body if isinstance(f, ast.FunctionDef) and not f.name.startswith("_")}
     assert transport.READ_ONLY_VERBS <= verbs
-    assert {"set_expressions", "restore"} <= verbs and not ({"set_expressions", "restore"} & transport.READ_ONLY_VERBS)
+    assert {"set_expressions", "restore", "save_document"} <= verbs and not ({"set_expressions", "restore", "save_document"} & transport.READ_ONLY_VERBS)
 
 
 # ---- the generated script and the transport --------------------------------------------------------------------------------------------

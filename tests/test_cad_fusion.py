@@ -318,3 +318,57 @@ def test_the_pulled_marker_and_tube_are_in_the_model_frame(ctx):
     assert v[:, 2].min() == pytest.approx(-303.0, abs=0.01)         # the marker's far face: ISB y = -303 mm is model z = -303 mm
     tube = v[(np.abs(v[:, 2] + 150.0) < 140) & (np.hypot(v[:, 0], v[:, 1]) > 14)]
     assert np.hypot(tube[:, 0], tube[:, 1]).max() == pytest.approx(15.0, abs=0.02)
+
+
+# ---- push saves a clean document and never an unclean one (memo 41, decision 2) ----------------------------------------------------------
+
+def info(fx):
+    return call(fx, "doc_info")
+
+
+def save_clean(fx, description="fusion test: a clean starting point"):
+    """Save the fixture and wait for Fusion to show the new version number (it lags the save by about a second); returns the version."""
+    import time
+    before = info(fx)["version"]
+    if call(fx, "save_document", description=description)["saved"]:
+        for _ in range(60):
+            if info(fx)["version"] > before:
+                break
+            time.sleep(0.5)
+    return info(fx)["version"]
+
+
+def test_a_push_to_a_clean_fixture_saves_a_version_and_the_pull_records_it(ctx, fx):
+    part = "part.fixture.bridge"
+    call(fx, "set_expressions", expressions={"in_fixture_length": "299 mm"}, allowed_prefixes=["in_"])
+    save_clean(fx)                                                                       # the guarded verb: a modified, healthy document
+    clean = info(fx)
+    assert not clean["modified"] and clean["saved"]
+    r = ops.push(ctx, part)                                                              # 299 mm -> 300 mm: a change
+    assert r["ok"] and r["unsaved_before"] is False and r["saved"] is True
+    after = info(fx)
+    assert not after["modified"] and after["version"] == clean["version"] + 1 == r["version"]
+    doc = ops.pull(ctx, part, segment="upper_arm_R")
+    assert doc["document"]["version"] == after["version"] and doc["document"]["unsaved_changes"] is False and csidecar.problems(doc) == []
+
+
+def test_a_push_to_a_fixture_with_unsaved_changes_does_not_save(ctx, fx):
+    part = "part.fixture.bridge"
+    save_clean(fx)
+    call(fx, "set_expressions", expressions={"in_fixture_length": "299 mm"}, allowed_prefixes=["in_"])
+    dirty = info(fx)
+    assert dirty["modified"]
+    r = ops.push(ctx, part)
+    assert r["ok"] and r["unsaved_before"] is True and r["saved"] is False
+    after = info(fx)
+    assert after["modified"] and after["version"] == dirty["version"]                  # no new version
+    doc = ops.pull(ctx, part, segment="upper_arm_R")
+    assert doc["document"]["unsaved_changes"] is True and doc["document"]["version"] == dirty["version"]
+    with pytest.raises(ops.Refused, match="unsaved changes"):
+        ops.stamp(ctx, part)                                           # refuses on the sidecar, before it looks for a work item
+
+
+def test_save_document_refuses_a_document_with_no_changes_and_saves_nothing(fx):
+    v = save_clean(fx)
+    r = call(fx, "save_document", description="nothing to save")
+    assert r["saved"] is False and info(fx)["version"] == v

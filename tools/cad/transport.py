@@ -30,7 +30,10 @@ def run(_context: str):
     text = json.dumps(result, sort_keys=True)
     with open({out!r}, "w", encoding="utf-8") as f:
         f.write(text)
-    print({mark!r} + text)
+    try:
+        print({mark!r} + text)
+    except RecursionError:
+        pass            # Fusion's stdout capture can fail after the file is written (memo 42); the file is the result
 '''
 
 

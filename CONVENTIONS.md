@@ -258,7 +258,7 @@ parameters:
 ```json
 {"schema": "cad-sidecar/1", "generated_by": "tools/cad pull", "inputs": "sha256:<12 hex>",
  "identity": {"part": "part.arm.upper_member", "revision": "p1", "side": "right", "binding_sha256": "<12 hex>"},
- "document": {"name": "...", "id": "...", "version": 7},
+ "document": {"name": "...", "id": "...", "version": 7, "unsaved_changes": false},
  "parameters": [{"name": "in_upper_arm_right_length", "class": "in", "expression": "255.2347 mm", "value": 255.2347, "unit": "mm",
                  "address": "snapshot#/upper_arm_right_length", "address_hash": "<12 hex>"}],
  "drift": [], "timeline": {"healthy": true, "failed_features": []},
@@ -271,7 +271,9 @@ parameters:
  "consumes": [{"address": "snapshot#/upper_arm_right_length", "hash": "<12 hex>"}]}
 ```
 
-Fusion's STL export follows its normal deviation alone and ignores its surface-deviation setting, so the bridge turns the binding's chord tolerance into a normal deviation from the largest analytic arc radius (clamped to 2 to 15 degrees) and records what that achieves: `chord_bound_mm`, the worst-case chord error of the analytic arcs, and `chord_guarantee`, false when any face is neither planar nor an analytic surface (free-form), in which case the bound says nothing about those faces. A tessellated convex surface lies inside the true one, so a clearance measured to the mesh is optimistic by up to the bound. The sidecar's `component` entry also feeds `data/envelope/components/cad/<segment>.yaml`, generated beside the authored registry.
+Fusion's STL export follows its normal deviation alone and ignores its surface-deviation setting, so the bridge turns the binding's chord tolerance into a normal deviation from the largest analytic arc radius (clamped to 2 to 15 degrees) and records what that achieves: `chord_bound_mm`, the worst-case chord error of the analytic arcs, and `chord_guarantee`, false when any face is neither planar nor an analytic surface (free-form), in which case the bound says nothing about those faces. A tessellated convex surface lies inside the true one, so a clearance measured to the mesh is optimistic by up to the bound.
+
+**Saving.** `fy cad push` records whether the document had unsaved changes before it writes. If it was clean and the recompute is healthy and changed something, it saves a new version whose description names the pushed addresses, and the next pull records that version. If it was not clean, it sets the parameters and does not save. The sidecar's `document.unsaved_changes` is true when the document had unsaved changes at pull; the pulled state is then not that of `version`, and `fy cad stamp` refuses until the document is saved and pulled again. The sidecar's `component` entry also feeds `data/envelope/components/cad/<segment>.yaml`, generated beside the authored registry.
 
 A part's `mass` has two forms: the typed `{kg, source, reserved}` and the address form `{address, source}`, which resolves at build to the mass of one unit in kg and is how a CAD part's budget row reads the sidecar. A record carries exactly one of the two.
 
@@ -289,7 +291,7 @@ A part's `mass` has two forms: the typed `{kg, source, reserved}` and the addres
 10. When tasks are coupled (one change cannot be built or tested without the other), say so before building and propose one combined commit. Never reconstruct per-task commits after the fact.
 11. Thread records: Claude Code creates them only as `proposed` and never sets `active` (the seeded segments and joints of the Stage 3a brief, T7, are the one exception, and that brief says so). It never stamps a manual work item unless the prompt tells it to.
 
-12. Fusion (Stage 3b). Fusion is Joe's live application: Claude Code opens or writes only the scratch fixture documents it created (names starting `freyja-bridge-fixture`) and the bound document Joe names for a task, through its parameters only. It writes parameters only as expressions with explicit units, never as values. It never edits features in a bound document and creates geometry only in scratch fixture documents. It sets a `dv_` parameter only inside a task that says so, through snapshot and rollback. It never saves a document it was not told to save.
+12. Fusion (Stage 3b). Fusion is Joe's live application: Claude Code opens or writes only the scratch fixture documents it created (names starting `freyja-bridge-fixture`) and the bound document Joe names for a task, through its parameters only. It writes parameters only as expressions with explicit units, never as values. It never edits features in a bound document and creates geometry only in scratch fixture documents. It sets a `dv_` parameter only inside a task that says so, through snapshot and rollback. It saves only through `fy cad push`, only a document with a binding (the scratch fixture has one) that had no unsaved changes before the push, and only after a healthy recompute (section 8, Saving); it never saves any other document, never saves a document for the first time, and never saves one that had unsaved changes.
 
 ## 10. Open decisions for Joe
 

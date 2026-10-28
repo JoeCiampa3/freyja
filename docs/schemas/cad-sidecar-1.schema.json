@@ -23,12 +23,13 @@
     },
     "document": {
       "type": "object",
-      "required": ["name", "id", "version"],
+      "required": ["name", "id", "version", "unsaved_changes"],
       "additionalProperties": false,
       "properties": {
         "name": {"type": "string", "minLength": 1},
         "id": {"type": "string", "minLength": 1},
-        "version": {"type": "integer", "minimum": 0, "description": "Fusion's version number of the document at pull."}
+        "version": {"type": "integer", "minimum": 0, "description": "Fusion's version number of the document at pull."},
+        "unsaved_changes": {"type": "boolean", "description": "True when the document had unsaved changes at pull: the pulled state is then not the state of `version`, and `fy cad stamp` refuses."}
       }
     },
     "parameters": {"type": "array", "items": {"$ref": "#/$defs/parameter"}},

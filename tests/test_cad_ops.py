@@ -43,6 +43,11 @@ class FakeFusion:
         self.calls = []
         self.step_counter = 0
         self.local_id = False
+        self.dirty = False               # unsaved changes in the document
+        self.saves = []                  # the description of every save
+        self.save_fails = False
+        self.lag = 0                     # doc_info calls before a saved version number shows (Fusion's takes about a second)
+        self._pending = None
 
     def __call__(self, verb, **args):
         self.calls.append((verb, args))
@@ -51,7 +56,11 @@ class FakeFusion:
         return getattr(self, verb)(**{k: v for k, v in args.items() if k != "expect_name"})
 
     def doc_info(self):
-        return {"name": self.name, "id": "C:/Users/someone/cache/x.f3d" if self.local_id else self.id, "version": self.version, "saved": True, "modified": False,
+        if self._pending is not None:
+            if self.lag <= 0:
+                self.version, self._pending = self._pending, None
+            self.lag -= 1
+        return {"name": self.name, "id": "C:/Users/someone/cache/x.f3d" if self.local_id else self.id, "version": self.version, "saved": True, "modified": self.dirty,
                 "fusion_version": "fake", "length_units": "mm", "parametric": True, "timeline_items": 2}
 
     def read_params(self):
@@ -67,9 +76,21 @@ class FakeFusion:
                 self.params = before
                 return {"ok": False, "refused": [], "errors": [], "applied": [], "rolled_back": True, "failed_features": ["Extrude1"], "failure_messages": ["boom"],
                         "rollback": {"equal": True, "differing": [], "errors": [], "health": {"healthy": True}}, "health": {"healthy": True, "failed_features": [], "items": []}}
+            if self.params[name][0] != expr:
+                self.dirty = True
             self.params[name] = (expr, float(expr.split()[0]) / 10)
         return {"ok": True, "refused": [], "errors": [], "applied": sorted(expressions), "rolled_back": False, "failed_features": [], "failure_messages": [],
                 "health": {"healthy": True, "failed_features": [], "items": []}}
+
+    def save_document(self, description):
+        if self.save_fails:
+            return {"saved": False, "version": self.version, "modified": self.dirty}
+        self.saves.append(description)
+        self._pending = self.version + 1
+        if self.lag <= 0:
+            self.version, self._pending = self._pending, None
+        self.dirty = False
+        return {"saved": True, "version": self.version, "modified": False}
 
     def physical_properties(self, accuracy="veryhigh", body=None):
         return dict(TUBE, accuracy=accuracy)
@@ -193,7 +214,7 @@ def test_pull_writes_a_valid_sidecar_with_every_section(env):
     assert sidecar.problems(doc) == []
     assert json.loads((root / "cad" / "sidecars" / f"{PART}.json").read_text(encoding="utf-8")) == doc
     assert doc["identity"] == {"part": PART, "revision": "t1", "side": "right", "binding_sha256": cb.binding_hash(cb.load(root / "cad" / "bindings" / f"{PART}.yaml"))}
-    assert doc["document"] == {"name": DOC, "id": URN, "version": 3}
+    assert doc["document"] == {"name": DOC, "id": URN, "version": 4, "unsaved_changes": False}      # the push saved version 4
     assert [p["name"] for p in doc["parameters"]] == ["dr_b", "dv_a", "in_pelvis_length"]
     assert next(p for p in doc["parameters"] if p["name"] == "in_pelvis_length")["value"] == pytest.approx(200.0)
     assert doc["drift"] == [] and doc["timeline"] == {"healthy": True, "failed_features": []}
@@ -364,7 +385,7 @@ def test_status_prints_one_line_per_binding(env):
     from thread import build
     build.write_outputs(root, build.build_root(root))
     (line,) = ops.status(ctx)
-    assert line.startswith(f"{PART}  rev t1  doc v3  drift none  timeline healthy  work ")
+    assert line.startswith(f"{PART}  rev t1  doc v4  drift none  timeline healthy  work ")
 
 
 def test_the_command_line_runs_validate_and_pull_and_status(env):
@@ -374,7 +395,99 @@ def test_the_command_line_runs_validate_and_pull_and_status(env):
     assert cli.main(["pull", PART, "--root", str(root)], context=ctx, say=lines.append) == 0
     assert cli.main(["drift", PART, "--root", str(root)], context=ctx, say=lines.append) == 0
     assert cli.main(["status", "--root", str(root)], context=ctx, say=lines.append) == 0
-    assert any("pulled doc v3" in x and "chord bound" in x for x in lines)
+    assert any("pulled doc v4" in x and "chord bound" in x for x in lines)
     fake.local_id = True
     assert cli.main(["validate", "--root", str(root)], context=ctx, say=lines.append) == 1
     assert cli.main(["pull", "no.such.part", "--root", str(root)], context=ctx, say=lines.append) == 1
+
+
+# ---- push saves a clean document, never one with unsaved changes (memo 41, decision 2) ----------------------------------------------------
+
+def test_a_push_to_a_clean_document_saves_it_with_a_description_naming_the_addresses_and_pull_records_that_version(env):
+    root, fake, ctx, _ = env
+    r = ops.push(ctx, PART)
+    assert r["ok"] and r["unsaved_before"] is False and r["saved"] is True and r["version"] == 4
+    (desc,) = fake.saves
+    assert "snapshot#/pelvis_length" in desc and "in_pelvis_length" in desc and "200 mm" in desc
+    assert [v for v, _ in fake.calls].count("save_document") == 1
+    doc = ops.pull(ctx, PART)
+    assert doc["document"]["version"] == 4 and doc["document"]["unsaved_changes"] is False and sidecar.problems(doc) == []
+
+
+def test_the_version_number_that_lags_behind_the_save_is_waited_for(env, monkeypatch):
+    root, fake, ctx, _ = env
+    monkeypatch.setattr(ops, "VERSION_POLL_S", 0.0)
+    fake.lag = 3
+    r = ops.push(ctx, PART)
+    assert r["saved"] is True and r["version"] == 4 and fake.version == 4
+    assert ops.pull(ctx, PART)["document"]["version"] == 4
+
+
+def test_a_version_that_never_shows_is_reported_not_guessed(env, monkeypatch):
+    root, fake, ctx, _ = env
+    monkeypatch.setattr(ops, "VERSION_POLL_S", 0.0)
+    monkeypatch.setattr(ops, "VERSION_WAIT_S", 0.0)
+    fake.lag = 10 ** 6
+    r = ops.push(ctx, PART)
+    assert r["saved"] is True and r["version"] is None and "not confirmed" in r["save_note"]
+
+
+def test_a_push_to_a_document_with_unsaved_changes_sets_the_parameters_and_does_not_save(env):
+    root, fake, ctx, _ = env
+    fake.dirty = True
+    r = ops.push(ctx, PART)
+    assert r["ok"] and r["unsaved_before"] is True and r["saved"] is False and "unsaved" in r["save_skipped"]
+    assert fake.params["in_pelvis_length"][0] == "200 mm" and fake.saves == [] and fake.version == 3
+    assert "save_document" not in [v for v, _ in fake.calls]
+    doc = ops.pull(ctx, PART)
+    assert doc["document"] == {"name": DOC, "id": URN, "version": 3, "unsaved_changes": True}
+
+
+def test_a_push_that_changes_nothing_in_a_clean_document_saves_nothing(env):
+    root, fake, ctx, _ = env
+    ops.push(ctx, PART)
+    fake.saves.clear()
+    r = ops.push(ctx, PART)                                       # same expression: Fusion reports no modification
+    assert r["ok"] and r["saved"] is False and fake.saves == [] and fake.version == 4 and "nothing changed" in r["save_skipped"]
+
+
+def test_a_failed_push_saves_nothing(env):
+    root, fake, ctx, _ = env
+    fake.break_on = "200 mm"
+    r = ops.push(ctx, PART)
+    assert not r["ok"] and r["saved"] is False and fake.saves == [] and fake.version == 3
+
+
+def test_a_save_that_fails_is_reported_and_the_pull_then_records_the_unsaved_state(env):
+    root, fake, ctx, lines = env
+    fake.save_fails = True
+    r = ops.push(ctx, PART)
+    assert r["ok"] and r["saved"] is False and "save failed" in r["save_skipped"]
+    assert ops.pull(ctx, PART)["document"]["unsaved_changes"] is True
+
+
+def test_stamp_refuses_a_sidecar_pulled_with_unsaved_changes(env):
+    root, fake, ctx, _ = env
+    fake.dirty = True
+    ops.push(ctx, PART)
+    ops.pull(ctx, PART)
+    with pytest.raises(ops.Refused, match="unsaved changes"):
+        ops.stamp(ctx, PART)
+    fake.dirty = False                                            # Joe saves, then pulls again
+    ops.pull(ctx, PART)
+    assert ops.stamp(ctx, PART, by="test").is_file()
+
+
+def test_the_command_line_says_whether_the_push_saved_and_status_flags_an_unsaved_pull(env):
+    root, fake, ctx, lines = env
+    assert cli.main(["push", PART, "--root", str(root)], context=ctx, say=lines.append) == 0
+    assert any("saved as version 4" in x for x in lines)
+    fake.dirty = True
+    fake.params["in_pelvis_length"] = ("1 mm", 0.1)
+    lines.clear()
+    assert cli.main(["push", PART, "--root", str(root)], context=ctx, say=lines.append) == 0
+    assert any("not saved" in x and "unsaved" in x for x in lines)
+    cli.main(["pull", PART, "--root", str(root)], context=ctx, say=lines.append)
+    assert any("UNSAVED" in x for x in lines)
+    (line,) = ops.status(ctx)
+    assert "UNSAVED" in line
