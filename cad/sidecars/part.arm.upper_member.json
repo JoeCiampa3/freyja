@@ -33,8 +33,8 @@
   "document": {
     "id": "urn:adsk.wipprod:dm.lineage:6NP5Ui4eTYeclyPrItX66g",
     "name": "Upper Arm v0",
-    "unsaved_changes": true,
-    "version": 1
+    "unsaved_changes": false,
+    "version": 2
   },
   "drift": [],
   "exports": {
@@ -59,7 +59,7 @@
     "revision": "p1",
     "side": "right"
   },
-  "inputs": "sha256:570200d583fb",
+  "inputs": "sha256:4bcf9705aa7d",
   "mass_properties": {
     "accuracy": "veryhigh",
     "com_mm": [
