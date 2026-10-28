@@ -23,6 +23,7 @@ import yaml
 from .model import split_front_matter
 
 STATE_FILE = "docs/STATE.md"
+THREAD_GRAPH = "thread/graph.json"        # the `work` criterion reads this generated file and never builds the thread
 OPS = {"<": operator.lt, "<=": operator.le, ">": operator.gt, ">=": operator.ge, "==": operator.eq}
 
 
@@ -201,6 +202,28 @@ def _metric(root, dw):
     return Evaluation("pass" if holds else "fail", text, float(value))
 
 
+def _work(root, dw):
+    want = dw.get("status", "current")
+    p = safe_path(root, THREAD_GRAPH)
+    if p is None or not p.is_file():
+        return Evaluation("unknown", f"{THREAD_GRAPH} does not exist: run `fy thread build`")
+    try:
+        graph = json.loads(p.read_text(encoding="utf-8"))
+        statuses = graph["work_statuses"]
+        if not isinstance(statuses, dict):
+            raise TypeError
+    except (OSError, ValueError, KeyError, TypeError):
+        return Evaluation("unknown", f"{THREAD_GRAPH} cannot be read as a thread graph")
+    have = statuses.get(dw["work"])
+    if not isinstance(have, str):
+        return Evaluation("unknown", f"{dw['work']} is not a work item in {THREAD_GRAPH}")
+    if have == want:
+        return Evaluation("pass", f"{dw['work']} is {have}")
+    if have == "unstamped":
+        return Evaluation("awaiting", f"{dw['work']} is unstamped (needs {want})")
+    return Evaluation("fail", f"{dw['work']} is {have} (needs {want})")
+
+
 def evaluate(node, root) -> Evaluation | None:
     """The node's done_when evaluated against root; None for a node without one."""
     dw = node.done_when
@@ -209,7 +232,7 @@ def evaluate(node, root) -> Evaluation | None:
     t = dw["type"]
     if t == "manual":
         return Evaluation("pass", "signed off") if node.signed_off else Evaluation("fail", "not signed off")
-    return {"artifact": _artifact, "decision": _decision, "check": _check, "metric": _metric}[t](root, dw)
+    return {"artifact": _artifact, "decision": _decision, "check": _check, "metric": _metric, "work": _work}[t](root, dw)
 
 
 def referenced_files(node) -> list:
@@ -221,4 +244,6 @@ def referenced_files(node) -> list:
             out.append(dw[key])
     if dw.get("type") == "check":
         out.append(STATE_FILE)
+    if dw.get("type") == "work":
+        out.append(THREAD_GRAPH)
     return out

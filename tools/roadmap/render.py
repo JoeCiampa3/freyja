@@ -136,7 +136,8 @@ def _criterion_text(dw) -> str:
         return "no criterion"
     t = dw["type"]
     detail = {"artifact": dw.get("path"), "decision": dw.get("record"), "check": dw.get("check"),
-              "metric": f"{dw.get('record')} {dw.get('pointer')} {dw.get('op')} {dw.get('value')}"}.get(t, "")
+              "metric": f"{dw.get('record')} {dw.get('pointer')} {dw.get('op')} {dw.get('value')}",
+              "work": f"{dw.get('work')} {dw.get('status', 'current')}"}.get(t, "")
     return f"{t}: {detail}" if detail else t
 
 

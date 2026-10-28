@@ -39,6 +39,9 @@
                         "pointer": {"type": "string", "pattern": "^(/([^~/]|~[01])*)+$", "description": "RFC 6901 JSON Pointer."},
                         "op": {"enum": ["<", "<=", ">", ">=", "=="]}, "value": {"type": "number"},
                         "units": {"type": "string", "description": "Documentation only."}}},
+        {"type": "object", "required": ["type", "work"], "additionalProperties": false,
+         "properties": {"type": {"const": "work"}, "work": {"type": "string", "pattern": "^work[.][a-z0-9_-]+$", "description": "A thread work item id (thread/records/work.*.yaml)."},
+                        "status": {"enum": ["unstamped", "current", "stale", "drifted", "unknown", "reverified"], "description": "The work status that passes (default current), read from thread/graph.json."}}},
         {"type": "object", "required": ["type"], "additionalProperties": false, "properties": {"type": {"const": "manual"}}}
       ]
     }

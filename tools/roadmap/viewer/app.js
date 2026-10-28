@@ -468,7 +468,7 @@
 
   function criterionText(dw) {
     if (!dw) return "no criterion";
-    const detail = { artifact: dw.path, decision: dw.record, check: dw.check, metric: dw.record + " " + dw.pointer + " " + dw.op + " " + dw.value }[dw.type];
+    const detail = { artifact: dw.path, decision: dw.record, check: dw.check, metric: dw.record + " " + dw.pointer + " " + dw.op + " " + dw.value, work: dw.work + " " + (dw.status || "current") }[dw.type];
     return detail ? dw.type + ": " + detail : dw.type;
   }
 

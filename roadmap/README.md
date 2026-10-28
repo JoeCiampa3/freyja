@@ -75,6 +75,7 @@ The library evaluates these from files already in the repo. It never runs a simu
 | `decision` | `record` (a path under `decisions/`) | The record exists and its status is accepted. |
 | `check` | `check` (id of a check under `checks/`) | The recorded result in `docs/STATE.md` is a pass. A WAIVED check is not a pass. |
 | `metric` | `record` (JSON path), `pointer` (RFC 6901), `op` (`<`, `<=`, `>`, `>=`, `==`), `value`, `units` | The comparison holds. The measured value is reported either way. |
+| `work` | `work` (a thread work id), optional `status` (one of the thread's work statuses: `unstamped`, `current`, `stale`, `drifted`, `unknown`, `reverified`; default `current`) | `thread/graph.json` reports that status for that work item. `awaiting` while the work item exists but is unstamped, `unknown` when the work item is missing or the graph is unreadable, `fail` for any other status. The evaluator reads the graph file and never builds the thread, so run `fy thread build` first (the hook does on commit). |
 | `manual` | none | `signed_off: true`. Only Joe sets this. |
 
 Each evaluation yields `pass`, `fail`, `awaiting` or `unknown`:
