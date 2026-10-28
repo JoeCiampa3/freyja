@@ -1,8 +1,9 @@
-# Envelope component contract (DRAFT)
+# Envelope component contract
 
-Status: draft from volume-extractor brief 7, item 3. Not agreed with Stage 4: no Stage 4 document or ADR exists yet (memo 36, finding 3; `cad/*/README.md` are empty, the only roadmap
-node is `rm.v1-ariadne-cad-bridge`). Everything below is what the envelope tooling can read today plus what the connector would have to add. When the connector's format is decided,
-this file and `id` / pose fields of the registry are aligned in one edit. Nothing here changes the oracle's behaviour.
+Status: agreed with the CAD bridge (Ariadne Stage 3b, `docs/briefs/ariadne/stage3b-brief.md`; first written as a draft in volume-extractor brief 7, item 3). The connector is the bridge:
+`fy cad pull` writes the sidecar `cad/sidecars/<part id>.json` (`cad-sidecar/1`, CONVENTIONS section 8), whose `component` entry is the record below, and regenerates
+`data/envelope/components/cad/<segment>.yaml` from every sidecar of that segment. The envelope's registry loader reads that file beside the authored `components/<segment>.yaml`.
+Nothing here changes the oracle's behaviour: the oracle sees one registry.
 
 ## What the connector emits
 
@@ -11,8 +12,8 @@ One record per component, per owner segment. The envelope reads them as a compon
 
 | Field | Rule | Registry field |
 |---|---|---|
-| `id` | the Ariadne identifier of the part, `part.<assembly>.<name>` (CONVENTIONS section 3; the revision is a field, not part of the id). Permanent, never reused | `id` (free text today) |
-| `revision` | the part's revision, a string | not yet in the registry (to add with the alignment) |
+| `id` | the Ariadne identifier of the part, `part.<assembly>.<name>` (CONVENTIONS section 3; the revision is a field, not part of the id). Permanent, never reused | `id` (a part id when the file is the bridge's; free text in an authored file) |
+| `revision` | the part's revision, a string (the binding's) | `revision` |
 | `name` | unique within the segment file; what reports call the component | `name` |
 | owner segment | the thread segment record, `seg.<name>` (`seg.pelvis`, `seg.abdomen`, `seg.thorax`, `seg.head_neck`, `seg.thigh`, `seg.shank`, `seg.foot`), and the side for the limbs. The registry's `segment` / `owner` are the oracle's names (`pelvis`, ..., `thigh_R`) | `owner`, `segment` |
 | frame | the **model body frame of the owner** (next section), axes parallel to the world at q = 0: x anterior, y left, z up. Not the oracle's own frame and not an ISB/CAD frame; a CAD frame in ISB axes is converted by the connector (`registry.isb_to_segment`, right side: (a, b, c) -> (a, -c, b)) | `pose`, `poses_file`, `primitive`, `mesh` |
@@ -21,12 +22,14 @@ One record per component, per owner segment. The envelope reads them as a compon
 | `status` | `designed`, `reserved` (both take space), `candidate` (a proposal, takes no space), `foreign` (belongs to another segment; needs its poses in this segment's frame) | `status` |
 | `clearance_mm` | the margin kept around the part, default 0 | `clearance_mm` |
 | `mass_kg` | the part's mass | `mass_kg` |
-| `sha256` | the hash of the geometry the oracle used: of the STL bytes when there is a mesh, else of the canonical JSON of `primitive`, `offset`, `rpy_deg` and `pose` (sorted keys, no whitespace). 64 hex | not yet in the registry (to add) |
-| `parameter_snapshot` | the `snapshot sha256` (12 hex, the STATE line, `params/snapshot.meta.json`) of the parameter set the part was designed against, so a changed sheet makes the part stale rather than silently valid | not yet in the registry (to add) |
+| `sha256` | the canonical hash of the component's mesh (the sidecar's `exports.stl.sha256`: vertices rounded to 1e-4 mm, faces sorted; it does not depend on Fusion's order). 64 hex | `sha256` |
+| `parameter_inputs` | 12 hex: the hash of the sorted `{address, hash}` list the CAD state consumed (the sidecar's `consumes`). A moved address makes the work item stale (`fy thread impact`), and the hash no longer matches a fresh `fy cad pull` | `parameter_inputs` |
 | `source` | where the geometry came from (CAD file and revision) | `source` |
 
-Two fields the registry cannot hold today (`revision`, `sha256`, `parameter_snapshot`) are the additions this contract asks for; the oracle would carry them through to its outputs and
-hash them into the free-space ledger's inputs hash.
+The registry holds `revision`, `sha256` and `parameter_inputs` (optional in an authored file, required per component in the bridge's file) and carries them through `to_dict`, so they are hashed
+into the free-space ledger's inputs hash with the rest of the registry. The bridge's file also records `source`, the sidecar the entry came from. The geometry is a **box** around the mesh in
+the owner's model body frame (the required bounding primitive) with the mesh itself beside it; the box and the mesh come from a tessellation that lies inside a convex surface by up to the
+sidecar's `chord_bound_mm`, and `chord_guarantee` is false when a face has no analytic radius (see "How the envelope should consume the chord bound" in the Stage 3b memo; nothing consumes it yet).
 
 ## Frames: where each owner's origin is
 
@@ -94,9 +97,11 @@ at its signed y, and a bilateral pair is two records, the left the mirror of the
 * **A mesh component trusts its frame.** The registry trusts the STL it is given; a mesh exported in the wrong frame is a wrong answer, not an error. The component's own `inside_skin_mm` (a
   component sticking out of the skin is a registry fault, reported as a warning) is the only guard.
 
-## Open for Stage 4
+## The four open questions, answered (Stage 3b)
 
-1. The connector's format (this document's fields against whatever CAD exports); `revision`, `sha256`, `parameter_snapshot` in the registry.
-2. The left side's CAD frames.
-3. Whether a component's pose may depend on joint angles in the registry itself (today only through `poses_file`).
-4. Who regenerates the registry when the snapshot hash changes.
+1. **The format** is the Stage 3b brief's: the sidecar's `component` entry and the generated `components/cad/<segment>.yaml`, with `id`, `revision`, `sha256` and `parameter_inputs` in the registry.
+2. **The left side is mirrored, never modelled.** A bilateral part is designed once on the right and carries `sides: [left, right]` in its thread record; the bridge refuses `side: left`, and the
+   mirror rule is "Sides" above.
+3. **Joint-angle-dependent poses stay with `poses_file` and the simulation.** The registry holds a static pose; a swept part's poses are built from the MuJoCo model by `fy envelope foreign`.
+4. **The bridge regenerates a component on pull,** and staleness after a snapshot change is the work item's status: `fy thread impact` names the stale `work.*` item, `fy cad pull` rewrites the
+   sidecar and the generated registry, `fy cad stamp` records the new baseline.

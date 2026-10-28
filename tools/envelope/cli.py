@@ -386,13 +386,14 @@ def _report_components(root, seg, skin, shapes, poses, regs, occupancy, skin_sd,
             e["point_mm"] = [float(p + o) for p, o in zip(e["point_mm"], off)]
             e["station_mm"] = seg.z_top - e["point_mm"][2]
             e["point_mm"] = [float(p - o) for p, o in zip(e["point_mm"], frame_offset)]
-            e["registry"] = _label(path, root)
+            origin = next((c.origin for c in reg.components if c.name == e["name"] and c.origin is not None), path)
+            e["registry"] = _label(origin, root)
             rows.append(e)
         inside = occupancy.component_skin_margins(skin_sd, reg, off)
         for e in rows:
             if e["name"] in inside and "inside_skin_mm" not in e:
                 e["inside_skin_mm"] = inside[e["name"]]
-    print(f"components ({', '.join(sorted({_label(p, root) for _, _, p in regs}))}): {len(rows)} placed")
+    print(f"components ({', '.join(sorted({_label(o, root) for reg, _, p in regs for o in (reg.origins() or [p])}))}): {len(rows)} placed")
     for e in rows:
         px, py, pz = e["point_mm"]
         sweep = f", sweep pose {e['component_pose_index']} of {e['sweep_poses']}" if e["sweep_poses"] > 1 else ""
@@ -477,7 +478,8 @@ def cmd_free(args, root):
            "required_skin_margin_mm": args.required, "voxel_mm": virt.h, "length_mm": round(virt.length, 2),
            "skin_volume_l": round(rep["skin_volume_l"], 4), "free_volume_l": round(rep["free_volume_l"], 4), "occupied_volume_l": round(rep["occupied_volume_l"], 4),
            "largest_free_sphere": {"diameter_mm": round(s["diameter_mm"], 2), "centre_mm": [round(v, 2) for v in s["centre_mm"]], "station_mm": round(s["station_mm"], 2), "searched_from_station_mm": zone},
-           "components": rep["components"], "registries": [f"components/{r.segment}.yaml" for r, _ in regs],
+           "components": rep["components"], "registries": [f"components/{r.segment}.yaml" for r, _ in regs] if not any(o.parent.name == registry.CAD_SUBDIR for r, _ in regs for o in r.origins())
+                         else sorted({f"components/{'cad/' if o.parent.name == registry.CAD_SUBDIR else ''}{o.name}" for r, _ in regs for o in r.origins()}),
            "directions": {str(a): n for a, n in ledger.direction_names(side).items()}, "inputs_sha256_12": sha, "rows": rows}
     fl = [l for l in (frames.describe(n, sg.meta) for n, sg in zip(names, segs)) if l]
     if fl:

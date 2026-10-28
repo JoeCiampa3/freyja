@@ -23,6 +23,8 @@ anterior, y up, z right) to it, right side: (a, b, c) -> (a, -c, b). A CAD mesh 
 """
 from __future__ import annotations
 
+import os
+import re
 import struct
 from dataclasses import dataclass, field as dc_field
 from pathlib import Path
@@ -37,7 +39,10 @@ STATUSES = ("designed", "reserved", "candidate", "foreign")
 OCCUPYING = ("designed", "reserved", "foreign")         # a candidate is a proposal: it takes no space in the check and the free field
 KINDS = ("rigid", "flexible")
 POSE_KEYS = oracle.POSE_COLUMNS
-_ALLOWED = {"id", "name", "status", "owner", "kind", "primitive", "mesh", "pose", "poses_file", "clearance_mm", "mass_kg", "source", "polyline", "radius_mm", "bend_radius_mm"}
+_ALLOWED = {"id", "name", "status", "owner", "kind", "primitive", "mesh", "pose", "poses_file", "clearance_mm", "mass_kg", "source", "polyline", "radius_mm", "bend_radius_mm", "revision", "sha256", "parameter_inputs"}
+GENERATED_REQUIRED = ("revision", "sha256", "parameter_inputs")      # what the CAD bridge writes per component (Stage 3b)
+PART_ID = re.compile(r"^part[.][a-z0-9_-]+([.][a-z0-9_-]+)*$")
+CAD_SUBDIR = "cad"
 
 
 class RegistryError(ValueError):
@@ -61,6 +66,10 @@ class Component:
     polyline: list | None = None
     radius_mm: float | None = None
     bend_radius_mm: float | None = None
+    revision: str | None = None             # the CAD bridge's fields (Stage 3b): the part's revision, the canonical mesh hash and the hash of what the CAD state consumed
+    sha256: str | None = None
+    parameter_inputs: str | None = None
+    origin: Path | None = None              # the file the component was read from (not part of the data: to_dict leaves it out)
 
     @property
     def occupies(self) -> bool:
@@ -81,6 +90,9 @@ class Component:
         if self.mass_kg is not None:
             d["mass_kg"] = float(self.mass_kg)
         d["source"] = self.source
+        for k in GENERATED_REQUIRED:
+            if getattr(self, k) is not None:
+                d[k] = getattr(self, k)
         return d
 
 
@@ -90,6 +102,14 @@ class Registry:
     components: list = dc_field(default_factory=list)
     base: Path = Path(".")           # the directory the relative mesh and pose paths resolve against
     frame_offset_mm: tuple = (0.0, 0.0, 0.0)    # model body frame -> the built segment's own frame (frames.py; zero for a leg): the registry is authored in the model frame
+
+    def origins(self) -> list:
+        """The files the registry was read from, in order of first use."""
+        out = []
+        for c in self.components:
+            if c.origin is not None and c.origin not in out:
+                out.append(c.origin)
+        return out
 
     def by_name(self, name):
         return next(c for c in self.components if c.name == name)
@@ -149,7 +169,9 @@ def parse(doc: dict, base=".", name="registry") -> Registry:
             raise RegistryError(f"{where}: kind {kind!r}, choose from {KINDS}")
         c = Component(id=str(raw["id"]), name=str(raw["name"]), status=raw["status"], owner=str(raw["owner"]), kind=kind, mesh=raw.get("mesh"), pose=_pose(raw.get("pose"), where),
                       poses_file=raw.get("poses_file"), clearance_mm=float(raw.get("clearance_mm", 0.0)), mass_kg=(float(raw["mass_kg"]) if raw.get("mass_kg") is not None else None),
-                      source=str(raw.get("source", "")))
+                      source=str(raw.get("source", "")), revision=(str(raw["revision"]) if raw.get("revision") is not None else None),
+                      sha256=(str(raw["sha256"]) if raw.get("sha256") is not None else None),
+                      parameter_inputs=(str(raw["parameter_inputs"]) if raw.get("parameter_inputs") is not None else None))
         if c.clearance_mm < 0:
             raise RegistryError(f"{where}: clearance_mm must not be negative")
         if kind == "flexible":
@@ -186,7 +208,10 @@ def parse(doc: dict, base=".", name="registry") -> Registry:
 def load(path) -> Registry:
     path = Path(path)
     doc = yaml.safe_load(path.read_text(encoding="utf-8"))
-    return parse(doc, path.parent, path.name)
+    reg = parse(doc, path.parent, path.name)
+    for c in reg.components:
+        c.origin = path
+    return reg
 
 
 def dump(reg: Registry, path) -> None:
@@ -194,10 +219,43 @@ def dump(reg: Registry, path) -> None:
                           encoding="utf-8", newline="\n")
 
 
+def load_generated(path) -> Registry:
+    """The CAD bridge's companion file (`components/cad/<segment>.yaml`): the same schema, and every component's id is a part id and carries revision, sha256 and
+    parameter_inputs."""
+    path = Path(path)
+    reg = load(path)
+    for c in reg.components:
+        where = f"{path.name} (generated): component {c.name!r}"
+        if not PART_ID.match(c.id):
+            raise RegistryError(f"{where}: id {c.id!r} is not a part id (part.<assembly>.<name>)")
+        for k in GENERATED_REQUIRED:
+            if getattr(c, k) is None:
+                raise RegistryError(f"{where}: {k} is required in the bridge's file")
+    return reg
+
+
 def find(components_dir, segment):
-    """The registry of a segment if its file exists, else None."""
-    f = Path(components_dir) / f"{segment}.yaml"
-    return load(f) if f.exists() else None
+    """The registry of a segment: the authored `<segment>.yaml` and the bridge's `cad/<segment>.yaml` beside it, merged (authored components first), or None when
+    neither exists. A duplicate id or name across the two is an error naming both files. The merged registry's base is the authored directory; the companion's
+    relative mesh paths are rewritten to it."""
+    base = Path(components_dir)
+    f, g = base / f"{segment}.yaml", base / CAD_SUBDIR / f"{segment}.yaml"
+    authored = load(f) if f.exists() else None
+    if not g.exists():
+        return authored
+    gen = load_generated(g)
+    if gen.segment != segment:
+        raise RegistryError(f"{CAD_SUBDIR}/{g.name}: segment is {gen.segment!r}, expected {segment!r}")
+    merged = authored if authored is not None else Registry(segment, [], base)
+    for c in gen.components:
+        for other in merged.components:
+            for field in ("id", "name"):
+                if getattr(c, field) == getattr(other, field):
+                    raise RegistryError(f"{field} {getattr(c, field)!r} is used in both {f.name} and {CAD_SUBDIR}/{g.name}")
+        if c.mesh:
+            c.mesh = os.path.relpath(Path(gen.base) / c.mesh, merged.base).replace("\\", "/")
+        merged.components.append(c)
+    return merged
 
 
 # ---- frames ----------------------------------------------------------------------------------------------------------------------------

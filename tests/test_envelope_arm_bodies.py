@@ -166,16 +166,17 @@ def test_the_upper_arm_reaches_above_the_sjc_by_the_girdle_and_the_arm_frames_ne
 
 @built
 def test_the_cylinder_and_the_box_examples_through_the_cli():
+    # skin only (--no-occupied): since Stage 3b the upper arm has a component registry, the bridge's placeholder tube, which the cylinder example collides with
     for ex, seg in (("upper_arm_cylinder", "upper_arm_R"), ("forearm_box", "forearm_R")):
-        ok = cli("check", "--segment", seg, "--shapes", str(EX / f"{ex}_shapes.yaml"), "--poses", str(EX / f"{ex}_feasible_poses.csv"))
-        no = cli("check", "--segment", seg, "--shapes", str(EX / f"{ex}_shapes.yaml"), "--poses", str(EX / f"{ex}_infeasible_poses.csv"))
+        ok = cli("check", "--segment", seg, "--shapes", str(EX / f"{ex}_shapes.yaml"), "--poses", str(EX / f"{ex}_feasible_poses.csv"), "--no-occupied")
+        no = cli("check", "--segment", seg, "--shapes", str(EX / f"{ex}_shapes.yaml"), "--poses", str(EX / f"{ex}_infeasible_poses.csv"), "--no-occupied")
         assert ok.returncode == 0 and "FEASIBLE" in ok.stdout and "INFEASIBLE" not in ok.stdout, ok.stdout + ok.stderr
         assert no.returncode == 1 and "INFEASIBLE" in no.stdout
 
 
 @built
 def test_the_union_across_the_elbow_holds_a_rod_neither_body_holds_alone():
-    args = ("--shapes", str(EX / "arm_union_shapes.yaml"))
+    args = ("--shapes", str(EX / "arm_union_shapes.yaml"), "--no-occupied")      # skin only: since Stage 3b the upper arm has a registry (the bridge's placeholder tube)
     alone = cli("check", "--segment", "upper_arm_R", *args, "--poses", str(EX / "arm_union_feasible_poses.csv"))
     both = cli("check", "--segment", "upper_arm_R,forearm_R", *args, "--poses", str(EX / "arm_union_feasible_poses.csv"))
     bad = cli("check", "--segment", "upper_arm_R,forearm_R", *args, "--poses", str(EX / "arm_union_infeasible_poses.csv"))
