@@ -573,10 +573,12 @@ def test_the_library_imports_neither_mujoco_nor_adsk():
 
 
 def test_no_unit_factor_appears_outside_the_conversion_module():
-    import re
+    import ast
+    factors = {10, 100, 1000, 0.1, 0.01, 0.001, 180, 1e6, 1e-6, 1e3}
     for p in sorted((REPO / "tools" / "cad").glob("*.py")):
         if p.name == "units.py":
             continue
-        text = re.sub(r'""".*?"""', "", p.read_text(encoding="utf-8"), flags=re.S)
-        text = re.sub(r"#.*", "", text)
-        assert not re.search(r"\b(1000(\.0)?|100(\.0)?|0\.1|180|math\.pi)\b", text), p.name
+        tree = ast.parse(p.read_text(encoding="utf-8"))
+        found = {n.value for n in ast.walk(tree) if isinstance(n, ast.Constant) and isinstance(n.value, (int, float)) and not isinstance(n.value, bool)} & factors
+        assert not found, (p.name, found)
+        assert "math.pi" not in p.read_text(encoding="utf-8").replace('"""', ""), p.name

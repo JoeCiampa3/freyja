@@ -21,3 +21,10 @@ def compare(expected: list, actual: dict) -> list:
         if not math.isclose(got, row["value"], rel_tol=REL_TOL, abs_tol=ABS_TOL):
             out.append({"name": row["name"], "address": row["address"], "fusion_value": got, "address_value": row["value"]})
     return out
+
+
+def check(binding: dict, raw_params: list, resolve) -> list:
+    """Drift of a bound document: the inherited parameters as Fusion holds them (`raw_params` from the Fusion-side `read_params`) against their addresses now."""
+    from . import binding as cb, units
+    values = {r["name"]: units.fusion_value_to_unit(r["value"], p["unit"]) for p in cb.inherited(binding) for r in raw_params if r["name"] == p["name"]}
+    return compare(cb.resolve_inherited(binding, resolve), values)

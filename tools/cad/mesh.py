@@ -8,6 +8,7 @@ hash of the mesh.
 from __future__ import annotations
 
 import hashlib
+import math
 import struct
 from pathlib import Path
 
@@ -61,6 +62,19 @@ def hash_stl_file(path) -> str:
     a = np.frombuffer(raw[84:], dtype=_STL, count=n)
     flat = a["v"].reshape(-1, 3)
     return mesh_hash(flat, np.arange(len(flat)).reshape(-1, 3))
+
+
+MIN_NORMAL_DEG = 2.0       # below this a large radius would make the mesh enormous (the 5 MB limit on the tracked STL)
+MAX_NORMAL_DEG = 15.0      # Fusion's own default normal deviation
+
+
+def normal_deviation_deg(chord_tolerance_mm: float, max_radius_mm) -> float:
+    """The normal deviation, in degrees, that keeps the chord error of the largest analytic arc within the tolerance: s = r (1 - cos(theta / 2)). Fusion's
+    STL export takes this and ignores its surface deviation setting (T3 finding); a part with no analytic curved face gets the default."""
+    if max_radius_mm is None or max_radius_mm <= chord_tolerance_mm:
+        return MAX_NORMAL_DEG
+    theta = 2.0 * math.degrees(math.acos(1.0 - chord_tolerance_mm / max_radius_mm))
+    return min(MAX_NORMAL_DEG, max(MIN_NORMAL_DEG, theta))
 
 
 def bounds(vertices):

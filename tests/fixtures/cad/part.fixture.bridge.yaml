@@ -1,0 +1,16 @@
+schema: cad-binding/1
+part: part.fixture.bridge
+revision: f1
+document:
+  name: freyja-bridge-fixture
+  id: urn:adsk.wipprod:dm.lineage:0JWYOVgWR5mRgIo-Q2Ntyg
+side: right
+chord_tolerance_mm: 0.05
+clearance_mm: 1.0
+parameters:
+  - {name: in_fixture_length, class: in, address: "snapshot#/fixture_length", address_unit: m, unit: mm}
+  - {name: dv_fx_od, class: dv, unit: mm}
+  - {name: dv_fx_wall, class: dv, unit: mm}
+  - {name: dr_fx_id, class: dr, unit: mm}
+  - {name: dv_fx_ratio, class: dv, unit: unitless}
+  - {name: dv_fx_angle, class: dv, unit: deg}
