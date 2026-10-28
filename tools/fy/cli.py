@@ -5,7 +5,7 @@ CONVENTIONS.md, so it works from any directory.
 
     fy build [pre_processor options]     python sim/scripts/pre_processor.py  (e.g. --dry-run, --xlsx FILE)
     fy watch [watch options]             python sim/scripts/watch.py
-    fy test [pytest options]             pytest over tests/ and checks/
+    fy test [--quick] [pytest options]   pytest over tests/ and checks/; --quick: only the CAD, thread, roadmap, registry and conventions files
     fy check [--tier gate|advisory]      the model checks on the committed model and snapshot
     fy run <scenario>                    run sim/scenarios/<scenario>.yaml and write its run record
     fy sweep <spec>                      sweep pose parameters and record the static standing torques
@@ -61,11 +61,22 @@ def run_watch(root: Path, args: list):
     return watch.main(args)
 
 
+# `fy test --quick`: the files that cover the CAD bridge, the thread, the roadmap, the envelope registry and the conventions: for use between commits. The full
+# suite stays the gate when a commit leaves the bridge's own paths (CLAUDE.md).
+QUICK_GLOBS = ("test_cad_*.py", "test_thread_*.py", "test_roadmap_*.py", "test_envelope_registry.py", "test_envelope_occupancy*.py", "test_conventions.py", "test_fy.py")
+
+
+def quick_files(root: Path) -> list:
+    return sorted({p.as_posix() for g in QUICK_GLOBS for p in (root / "tests").glob(g)})
+
+
 def run_tests(root: Path, args: list) -> int:
     import pytest
-    return int(pytest.main(["--rootdir", str(root), "-c", str(root / "pytest.ini"),
-                            *(() if args and not args[0].startswith("-") else (str(root / "tests"), str(root / "checks"))),
-                            *args]))
+    quick = bool(args) and args[0] == "--quick"
+    if quick:
+        args = args[1:]
+    targets = quick_files(root) if quick else (() if args and not args[0].startswith("-") else (str(root / "tests"), str(root / "checks")))
+    return int(pytest.main(["--rootdir", str(root), "-c", str(root / "pytest.ini"), *targets, *args]))
 
 
 def run_scenario(root: Path, args: list):

@@ -78,6 +78,23 @@ class Dispatch(unittest.TestCase):
         code, fn = self.run_from_subdir(["test", "-k", "mirror"], "run_tests")
         fn.assert_called_once_with(REPO, ["-k", "mirror"])
 
+    def test_quick_runs_only_the_quick_subset_and_passes_the_other_options_on(self):
+        with mock.patch("pytest.main", return_value=0) as pm:
+            self.assertEqual(cli.run_tests(REPO, ["--quick", "-x"]), 0)
+        argv = pm.call_args[0][0]
+        files = [a for a in argv if a.endswith(".py")]
+        names = {Path(f).name for f in files}
+        self.assertIn("-x", argv)
+        self.assertNotIn("--quick", argv)
+        self.assertTrue({"test_cad_lib.py", "test_thread_validate.py", "test_roadmap_evaluate.py", "test_envelope_registry.py", "test_conventions.py", "test_fy.py"} <= names)
+        self.assertNotIn("test_gait_extract.py", names)
+        self.assertTrue(all(Path(f).is_file() for f in files))
+
+    def test_quick_subset_is_a_sorted_list_of_existing_files_and_not_the_whole_suite(self):
+        files = cli.quick_files(REPO)
+        self.assertEqual(files, sorted(files))
+        self.assertTrue(0 < len(files) < len(list((REPO / "tests").glob("test_*.py"))) / 2)
+
     def test_run_passes_the_scenario_and_options_to_the_runner(self):
         code, fn = self.run_from_subdir(["run", "hold_pose"], "run_scenario")
         self.assertEqual(code, 0)
