@@ -1,0 +1,192 @@
+# Fall impact sources
+
+The literature supports fall-impact magnitudes properly only for sideways falls onto the hip and forward falls onto the outstretched hands. Even there, almost every human number comes from falls onto padded surfaces from kneeling or reduced heights. Forces measured on volunteers sit at roughly 0.5–1.7 body weights (BW) per hand and 1.3–3.1 kN at the hip. Models and cadaver rigs for rigid floors from standing height give 5.6–10 kN at the hip. Head, trunk and back, elbow and knee have no human-subject force data in any direction.
+
+## TL;DR
+
+- **Hands, forward falls:** measured per-hand peaks run from 0.46 BW (30 cm mats, slowed fall) to 1.7 BW (1 m shoulder-height falls onto padding). The only full-text number I verified is Lo et al. 2003: about 840 N per hand, roughly 1.2 BW.
+- **Hip, sideways falls:** human volunteer falls onto mats and mattresses give 1.3–3.1 kN. Cadaver and model estimates for rigid floors from standing give 5.6–10 kN. These differ by more than a factor of two, mainly because of surface padding and fall height.
+- **Head:** the only magnitudes are from Hybrid III dummies (95% prediction interval 3.9–24.5 kN and 146–502 g, abstract-level) and from robots. Robot head and body accelerations range from 2.3–6.4 G on a 1.6 kg robot to over 100 G on a life-size humanoid (abstract-level). No source gives magnitudes for trunk, back, elbow or knee contact in humans.
+
+## How to read the tables
+
+- **Status column:**
+  - "Verified" means I read the number in the paper's own results, table or figure text.
+  - "Unverified" means I saw it only in the abstract, a search excerpt or a secondary citation.
+- **Normalisation:** I normalised to body weight only where the paper gives subject mass. I used BW = mass × 9.81 m/s². I did not normalise where mass was missing ("n/r" = not reported in what I read).
+- **Robot figures:** Fujiwara et al. 2002 is a simulation whose forces appear only as plotted traces. The text gives no peak values, so I report the axis full scale only, as a ceiling of the plot. It is not a measured peak.
+- **Head impact velocity** is the head's own contact velocity, not fall height.
+
+## Forward falls
+
+| # | Region | Quantity and value | Normalised | Impact duration | Subject | Surface | Fall condition | Measurement | Source and location | Status |
+|---|---|---|---|---|---|---|---|---|---|---|
+| F1 | Wrist/hand | First (high-frequency) peak hand force Fmax, mean (SD) per hand. Intervention group pre-instruction: left 840 (182) N, right 832 (181) N. After instruction: 721 (198) N and 716 (177) N. Baseline controls: 758 (144) N and 813 (94) N. Wrist velocity at impact 2.45–2.66 m/s. | About 1.19 BW (840 N, mean 72 kgf); about 1.22 BW (813 N, mean 68 kgf). About 1.2 BW per 1 m of shoulder drop. Authors describe it as about one body weight per hand. | Not given | 29 young males, 68–72 kgf, 172–174 cm | Dual AMTI force plates covered with 2.4 cm compact rubber foam | Leaning forward, held by cable at 30% BW, shoulders 1 m above ground. Cable released (subjects told when); both hands arrest the fall with arms pre-positioned. | Force plates at 2 kHz, 300 Hz low-pass; Optotrak kinematics | Lo, McCabe, DeGoede, Okuizumi, Ashton-Miller 2003, Clin Biomech 18:730, Tables 1–2, p. 734 | Verified\[1\] |
+| F2 | Wrist/hand | Peak unilateral wrist force 0.65–1.7 BW. Volitional technique cut it 27% versus a natural landing and 40% versus a stiff-arm landing. | 0.65–1.7 BW; 0.65–1.7 BW per 1 m of shoulder drop | n/r | 5 healthy young males; mass n/r | Padded surface (stiffness n/r) | Forward fall from 1 m shoulder height, both hands, three instruction sets | Force plates and kinematics, EMG | DeGoede & Ashton-Miller 2002, J Biomech 35:843, abstract | Unverified (abstract)\[2\]\[3\] |
+| F3 | Wrist/hand | Maximum vertical ground reaction force after hand impact: 64% BW with the smallest counterweight, 46% BW with the largest. Elbow at impact about 129° (extension).\[4\] | 0.46–0.64 BW | Descent (not impact) 601–816 ms | 13 adults (12 M, 1 F), 185.7 ± 6.1 cm, 82.4 ± 5.6 kg\[4\] | 30 cm two-layer foam gym mats over AMTI OR6 plates\[4\] | Prone on a pendulum frame released from a 37° lean at an unpredictable time; told to land softly on the hands. Counterweights of 6.8–29.1% BW slowed the fall.\[4\] | Force plates at 1500 Hz, 30 Hz low-pass | Borrelli, Creath, Rogers 2023, J Biomech 150:111515, abstract (methods read in full text) | Unverified (value in abstract; methods verified) |
+| F4 | Wrist/hand | Hand force has an early high-frequency peak Fmax1 about 20 ms after contact and a later peak Fmax2 about 110 ms after contact (1–5 cm falls). The paper's model predicts peak hand force up to 4.2 kN for fall heights of 0–2 m.\[5\] | n/r | Time to Fmax1 about 20 ms; time to Fmax2 about 110 ms | Young adults; details n/r | Stiff force plate | Low-height (0–5 cm) forward falls on outstretched hands; model extrapolation to 2 m | Force plate plus a 2-DOF lumped-parameter model | Chiu & Robinovitch 1998, J Biomech 31:1169. Timings from a results-section excerpt; 4.2 kN quoted by the 2021 rotator-cuff review (PMC8178131). | Unverified\[6\] |
+| F5 | Wrist/hand, shoulder | Qualitative only: a softer surface reduces Fmax1 but not Fmax2 or the force passed to the shoulder. | — | — | Human and model | Varying compliance | Forward fall on hands | Experiment and model | Robinovitch & Chiu 1998, J Orthop Res 16:309, abstract | Unverified (no number)\[7\] |
+| F6 | Pelvis/hip (forward martial-arts roll) | Hip impact force, median (IQR; max): from kneeling onto judo mat 1745 (624; 2474) N; from kneeling onto mattress 1453 (669; 2006) N; from standing onto mattress 1833 (419; 3132) N\[8\] | Mass n/r | n/r | Young adults; mass and height n/r | Judo mat or thick mattress over force plate (stiffness n/r) | Trained forward martial-arts fall that rolls onto the hip, from kneeling or standing | Force plate, first distinct peak after fall onset | Groen, Smulders, Duysens, van Lankveld, Weerdesteyn 2010, BMC Res Notes 3:111, Table 1 | Verified (Table 1 seen in PMC excerpt)\[8\] |
+| F7 | Head | Pooled over 5 scenarios (including forward with and without knee flexion), 95% prediction interval: peak head force 3.9–24.5 kN; peak translational acceleration 146–502 g; peak angular acceleration 8.8–43.3 krad/s²; head impact velocity 2.02–7.41 m/s.\[9\]\[10\] Not split by direction in the abstract. | g values are self-normalised; dummy mass n/r | n/r | Hybrid III pedestrian 5th-percentile female and 50th-percentile male; 107 trials\[10\] | Hard surface | Dropped from standing, various postures, no bracing | Head accelerometer array | Hajiaghamemar, Seidi, Ferguson, Caccese 2015, Ann Biomed Eng 43:2143, abstract | Unverified (abstract)\[9\] |
+| F8 | Knees, wrists, elbows, chest (robot) | Contact-force traces for both knees, wrists and elbows, and for "body" without control. Plot full scale 1500 N; no peak values given in the text. The text says the knees received large impact and that forearm impact was much lower than chest impact in an uncontrolled fall.\[11\] | Robot weight about 589 N; no peak to normalise | Traces span about 2 s; contact durations n/r | HRP-2P humanoid, about 150 cm, about 60 kg (simulation)\[11\] | Simulated floor (OpenHRP); knee and hip pads | Falling forward, with and without UKEMI control (squat, then knees, then forearms)\[11\] | Simulated contact forces | Fujiwara, Kanehiro, Kajita, Kaneko, Yokoi, Hirukawa 2002, IROS, Fig. 9, p. 2525 | Verified (figure only; no number extractable) |
+| F9 | Head (robot) | Peak head acceleration. Two-foot stance, 3 N push from behind: 5.7 G unplanned, 2.9 G with learned policy (knees, then hands). One-foot stance, 5 N push: 6.4 G unplanned, 2.3 G with policy (heel, then hands). | Self-normalised (G) | n/r | BioloidGP, 34.6 cm, 1.6 kg | n/r | Pushed from behind into a forward fall; 3 trials per condition | External IMU on the head | Kumar, Ha, Liu 2017, IROS (arXiv:1703.02905), Sec. V.C, Fig. 8 | Verified\[12\] |
+| F10 | Whole body (robot) | No physical magnitude obtained. The method minimises the largest single contact impulse over a planned contact sequence.\[13\] | — | — | Simulated humanoid and BioloidGP | — | Sagittal-plane falls | Abstract inverted-pendulum model\[13\] | Ha & Liu 2015, IROS, pp. 2761–2767 | Unverified (paper not read)\[12\]\[14\] |
+
+## Backward falls
+
+| # | Region | Quantity and value | Normalised | Impact duration | Subject | Surface | Fall condition | Measurement | Source and location | Status |
+|---|---|---|---|---|---|---|---|---|---|---|
+| B1 | Head | Same pooled interval as F7 (the scenarios include backward falls with and without hip flexion): 3.9–24.5 kN, 146–502 g, 2.02–7.41 m/s\[10\] | As F7 | n/r | As F7 | Hard surface | Backward from standing, with and without hip flexion | As F7 | Hajiaghamemar et al. 2015, abstract | Unverified (abstract)\[9\] |
+| B2 | Head | Backward fall without hip flexion: 364 ± 27 g peak translational acceleration (quoted from the authors' ATD study). Companion paper: mean peak acceleration 368 g for the female dummy; ranges across all five scenarios 1.37–7.90 m/s, 64–564 g, 2.6–29.6 kN.\[15\]\[16\]\[17\] | Self-normalised (g) | n/r | Hybrid III 5th-percentile female and 50th-percentile male | Hard surface | Standing drops | Head accelerometers | Hajiaghamemar et al. 2013 ASME IMECE; Seidi, Hajiaghamemar, Caccese 2014, Int J Crashworthiness, Tables 1–2 (via excerpt) | Unverified (secondary or excerpt) |
+| B3 | Head | Head impact velocity about 22–23 km/h (about 6.1–6.4 m/s) when the dummy fell like a rigid body. Mean time to reach the ground 0.83 s (slippery floor) and 0.98 s (non-slippery).\[18\] | — | Descent 0.83–0.98 s | Standing dummy, mass n/r | Lubricated aluminium (slippery) or abrasive floor\[18\] | Knocked backward by sudden floor acceleration (20 combinations); joints fixed or free\[18\] | Dummy instrumentation, motion analysis | Nagata & Ohno 2007, Ind Health 45:462, abstract | Unverified (abstract) |
+| B4 | Pelvis | Relative only: at a 5° lean, squatting reduced average impact velocity by 18% and impact energy by 43% compared with suppressed squatting. Velocity rose 8% from a 2° to a 5° lean and 7% from 5° to 12°.\[19\] Absolute values are in Table 1, which I did not read. | — | n/r | 23 young women, aged 21–29\[19\] | Soft gymnasium mattress\[19\] | Backward fall after sudden tether release from a 2°, 5° or 12° lean\[19\] | Motion capture | Robinovitch, Brumer, Maurer 2004, J Biomech 37:1329, abstract | Unverified (abstract) |
+| B5 | Pelvis | Model: downward impact velocity 3.22 m/s and vertical kinetic energy 352 J with no energy absorbed by the legs. Best case 1.68 m/s and 74 J.\[20\] | — | — | Inverted-pendulum model (no subjects)\[20\] | — | Backward fall from standing | Theoretical | Sandler & Robinovitch 2001, J Biomech Eng 123:590, abstract | Unverified (abstract; model) |
+| B6 | Pelvis/hip (posterior and posterolateral) | Posterior falls: subjects did not strike the greater trochanter (force value not obtained). Posterolateral: mean 2497.7 ± 457.0 N. All directions fell within 2000–4000 N.\[21\] | Mass n/r | n/r | 8 healthy volunteers\[21\] | Force platform under a 13 cm mattress\[21\] | Deliberate falls in lateral, posterolateral and posterior directions; no stepping\[21\] | Force platform, 3-D motion, EMG | Nankaku et al. 2005, Osteoporos Int, "Evaluation of hip fracture risk in relation to fall direction", abstract and results excerpt | Unverified (abstract or excerpt)\[22\] |
+| B7 | Pelvis | Simulated reconstructions of 5 real backward falls: pelvis velocity at impact 0.198–2.52 m/s (video-measured peaks 0.74–2.99 m/s). Femur-load values of 6.8–12.7 kN appear without clear fall attribution. The authors note the software tends to overestimate forces.\[23\]\[24\] | — | n/r | 4 long-term-care residents (45.4–72.4 kg, 147–183 cm), scaled models\[24\] | Linoleum over concrete, modelled at 4×10⁶ N/m\[24\] | Real backward falls captured on video | Madymo multibody reconstruction | Khorami et al. 2023, Proc IMechE H 237:1275, excerpts | Unverified (excerpt; simulation) |
+| B8 | Pelvis/trunk | Relative only: after stage-combat training, median initial vertical impact force fell 35% for backward falls (2% in controls).\[25\] Absolute values are in the thesis's Table 1, which I did not read. | — | n/r | 26 young adults (14 M, 12 F), 65.1 ± 11.5 kg, 168.6 ± 7.0 cm\[25\] | 30.5 cm foam mat over 3 force plates\[25\] | Unexpected tether release from a 10° backward lean\[25\] | Force plates | Lee, Srinivasan, Rawlings, Madigan 2022, Work (Lee 2019 MS thesis) | Unverified (relative only) |
+| B9 | Hip, back (robot) | Contact-force traces: hip with control; hip and back without control. Plot full scale 5000 N. Uncontrolled, the back strikes at about 1.25 s. With control the back does not strike, and the hip impact is larger than without control. No peak values in the text.\[11\] | Robot weight about 589 N | n/r | HRP-2P, about 150 cm, about 60 kg (simulation) | Simulated floor; hip pad | Falling backward with arms at the sides (uncontrolled) or with squat and arm spread (controlled)\[11\] | Simulated contact forces | Fujiwara et al. 2002, Fig. 6, pp. 2523–2524 | Verified (figure only; no number extractable) |
+
+## Sideways falls
+
+| # | Region | Quantity and value | Normalised | Impact duration | Subject | Surface | Fall condition | Measurement | Source and location | Status |
+|---|---|---|---|---|---|---|---|---|---|---|
+| S1 | Pelvis/hip | Abstract gives no number; it concludes that any standing-height fall landing directly on the greater trochanter can fracture the elderly hip. A 2017 review's table lists predicted peak femoral force 5600–8600 N for a 0.7 m fall height and impact velocities of 1.40–6.07 m/s.\[26\]\[27\] | Mass n/r | n/r | 14 subjects (7 M aged 28 ± 5, 7 F aged 26 ± 6) in pelvis-release tests; force predicted by model\[26\] | Model assumes rigid ground; pelvis release onto a force plate | Pelvis-release measurement of body stiffness and damping, extrapolated to a standing-height fall\[27\] | Pelvis release plus a mass-spring-damper model | Robinovitch, Hayes, McMahon 1991, J Biomech Eng 113:366; values via Nasiri Sarvi & Luo 2017, Table 1 | Unverified (secondary)\[27\] |
+| S2 | Pelvis/hip | Hip peak force about 2.76 BW (secondary). Using the arm ("slap") cut hip force 12% and shoulder force 16% against the tensed condition. Relaxed and tensed conditions did not differ significantly.\[28\] | About 2.76 BW | n/r | Healthy volunteers; details n/r | Force-platform array covered with foam padding | Sideways from kneeling:\[28\] arm slap, relaxed, or tensed | Force-platform array; force curve has two peaks (hip, then shoulder) | Sabick, Hay, Goel, Banks 1999, J Biomech 32:993, abstract; 2.76 BW via a ResearchGate citing excerpt | Unverified\[29\]\[30\]\[31\] |
+| S3 | Shoulder (direct lateral) | Peak shoulder force about 3 BW (body tensed) and about 2.5 BW (arm used to break the fall) | 2.5–3 BW | n/r | As S2 | As S2 | As S2 | As S2 | Sabick et al. 1999, quoted by the 2021 rotator-cuff review (PMC8178131) | Unverified (secondary)\[5\] |
+| S4 | Hand/arm | Peak force at the hand/arm in the slap condition averaged 3.78 BW, more than at the hip or shoulder | 3.78 BW | n/r | As S2 | As S2 | Kneeling sideways fall, one arm slaps the floor | As S2 | Sabick et al. 1999, quoted by PMC8178131 | Unverified (secondary)\[5\] |
+| S5 | Pelvis/hip | Martial-arts sideways fall, hip force median (IQR; max): kneeling onto judo mat 1769 (407; 2219) N; kneeling onto mattress 1330 (131; 1426) N; standing onto mattress 1551 (439; 2012) N\[8\] | Mass n/r | n/r | Young adults | Judo mat or thick mattress over force plate | Trained sideways fall from kneeling or standing | Force plate, first distinct peak | Groen et al. 2010, BMC Res Notes 3:111, Table 1 | Verified (Table 1 seen in PMC excerpt)\[8\] |
+| S6 | Pelvis/hip | Martial-arts techniques reduced hip force 27.5% (with arm) and 30% (without arm) against an arm-block fall\[28\] | — | n/r | 6 experienced judokas | Padded force plate | Sideways from kneeling | Force plate and kinematics | Groen, Weerdesteyn, Duysens 2007, J Biomech 40:458, abstract | Unverified (abstract)\[32\] |
+| S7 | Pelvis/hip | Lateral falls: mean 2251.6 ± 442.4 N (range across directions 2000–4000 N)\[21\] | Mass n/r | n/r | 8 healthy volunteers | Force platform under 13 cm mattress\[21\] | Deliberate lateral fall | Force platform | Nankaku et al. 2005, Osteoporos Int, results excerpt | Unverified (excerpt)\[22\] |
+| S8 | Pelvis/hip | Relative to a rigid floor, peak hip force was 8% lower on firm foam (1.5 cm, 263 kN/m) and 15% lower on semifirm foam (4.5 cm, 95 kN/m). Semisoft (67 kN/m) and soft (59 kN/m) were also tested. | — | n/r | 15 young women | Rigid floor or EVA foam of stated stiffness | Pelvis-release from 5 cm, lying on the side | Force plate | Laing, Tootoonchi, Hulme, Robinovitch 2006, J Orthop Res 24:1405, abstract | Unverified (abstract)\[33\]\[34\] |
+| S9 | Pelvis/hip | At 4 m/s impact velocity, SmartCell flooring cut peak femoral force by 33.7% and SofTile by 51.2% against a rigid floor | — | n/r | Mechanical hip surrogate | Two compliant floors | Simulated sideways hip impact at 4 m/s | Impact rig | Laing & Robinovitch 2009, Accid Anal Prev 41:642, quoted in PMC3471987 | Unverified (secondary)\[35\] |
+| S10 | Pelvis/hip | Predicted peak hip force 2.90–9.99 kN\[36\] | n/r | n/r | Link-segment models | Rigid ground | Sideways fall from standing, various configurations\[36\] | Dynamic models | van den Kroonenberg, Hayes, McMahon 1995, J Biomech Eng 117:309, abstract | Unverified (abstract; model) |
+| S11 | Pelvis/hip | Peak ground contact forces 7132 N (specimen H1406, fractured) and 5641 N (specimen H1391, not fractured). The companion paper (Fleps et al. 2018, PLoS ONE 13:e0200952) repeats these in its Table 1. | Specimen mass n/r | n/r | Cadaveric pelvis-femur specimens on an inverted-pendulum fall simulator\[37\] | Six-axis force plate (Bertec FP4000-15)\[37\] | Simulated sideways fall onto the greater trochanter\[37\] | Force plate and high-speed video | Fleps et al. 2018, PLoS ONE 13:e0201096, abstract and results excerpt | Unverified (abstract) |
+| S12 | Pelvis/hip | Finite-element model: pelvis impact velocity 2.62 m/s (middle-BMI model); femoral-neck force 2.11 kN (low-BMI model); effective mass 18.3 kg at peak neck force. This is an internal bone force, not ground contact force. | n/r | n/r | Whole-body FE models based on THUMS v4.02 (small female), with low-, middle- and high-BMI variants | Rigid floor, hip protectors, energy-absorbing floor | Sideways fall from standing | FE simulation | Aoshima et al. 2022, J Biomech 142:111262 (PMID 36027638), abstract | Unverified (abstract; model) |
+| S13 | Pelvis | Vertical pelvis velocity at impact 2.58 ± 0.53 m/s in young adults across six lab studies (mixed directions); 2.08 ± 0.62 m/s in 23 real falls of older adults. Time from fall onset to impact 867 ± 237 ms.\[38\] | — | Descent 867 ± 237 ms | Young adults (lab); older adults with mean age 80 (video)\[38\] | Various | Various | Motion capture or video | Choi, SFU PhD thesis, excerpt | Unverified (excerpt) |
+| S14 | Shoulder, elbow, wrist, hip, back (robot) | Contact-force traces: hip, back and right wrist with control; back, hip, right shoulder, right elbow and right wrist without control. Plot full scale 1200 N; no peak values in the text. Uncontrolled, the robot lands on the right arm, the load moves to the right shoulder, then it rolls onto the upper back.\[11\] | Robot weight about 589 N | n/r | HRP-2P, about 150 cm, about 60 kg (simulation) | Simulated floor | Falling to the right with arms at the sides (uncontrolled) or yaw-rotated onto the hip (controlled)\[11\] | Simulated contact forces | Fujiwara et al. 2002, Fig. 12, p. 2525 | Verified (figure only; no number extractable) |
+| S15 | Head | Same pooled interval as F7 (includes lateral falls)\[10\] | As F7 | n/r | As F7 | Hard surface | Lateral fall from standing | As F7 | Hajiaghamemar et al. 2015, abstract | Unverified (abstract)\[9\] |
+
+**Direction not stated.** In Kajita et al. 2016 (IEEE-RAS 16th Humanoids conference, Cancun) a life-size humanoid suffered maximum acceleration of over 100 G at impact. An airbag brought the peak down to between 20 and 30 G, which the authors call acceptable for most robot hardware. The measurement location, robot mass and fall direction are not in the abstract. Source: Kajita, Cisneros, Benallegue, Sakaguchi, Nakaoka, Morisawa, Kaneko, Kanehiro 2016, Humanoids, pp. 637–643, abstract (IEEE Xplore 7803341). Unverified.
+
+## Gaps
+
+| Region | Forward | Backward | Sideways |
+|---|---|---|---|
+| Head | No human-subject data. Dummy data pooled across directions (abstract only). Small-robot head IMU only. | No human data. Dummy accelerations and velocities only (abstract or secondary); no backward-specific dummy force. | No human data. Pooled dummy interval only. |
+| Shoulder | No force source found | No source found | Single kneeling-height study (Sabick 1999), numbers only secondary. Robot trace only. |
+| Upper arm/elbow | No human or dummy force. Robot simulation trace only. | No source | No human or dummy force. Robot simulation trace only. |
+| Wrist/hand | Covered (F1–F4), but only from ≤1 m shoulder height onto padding; no standing-height rigid-floor measurement | No source for backward falls onto hands | Single kneeling study (S4), secondary only |
+| Trunk/back | No human or dummy force | No human or dummy force. Robot simulation trace only; relative-only volunteer data (B8). | No human or dummy force. Robot trace only. |
+| Pelvis/hip | Only martial-arts forward rolls onto the hip (F6) | No absolute force for a pure posterior (sacral or buttock) fall. Posterolateral force (B6), velocities and models only. | Best covered, but human data are from padded, low-height or trained falls |
+| Knee | No human or dummy force. Robot simulation trace only. | Not applicable / no source | No source (lateral knee impacts are noted in fall-video work but not quantified) |
+
+Cross-cutting gaps:
+- No source measured impact durations, except for times to peak on the hand (F4) and descent times.
+- No human study reports a standing-height fall onto a rigid floor; ethics restrict all volunteer data to padding or low heights.\[24\]
+- Female-specific absolute forces were not obtained. Laing 2006 and Robinovitch 2004 used women but I have only their relative results.
+- Ha & Liu 2015 and the Kajita 2016 full text were not read.
+
+## Conflicts (sources differing by more than a factor of two)
+
+1. **Sideways hip force.**
+   - Volunteers on padding: 1.33–2.5 kN means or medians, maxima up to 3.1 kN (S5, S7, B6).
+   - Rigid-floor predictions and cadaver rigs: 5.6–8.6 kN (S1), up to 9.99 kN (S10), 5.6–7.1 kN (S11).
+   - Ratio about 2.5–4×. Likely reasons:
+     - 13 cm mattresses and judo mats against rigid ground;
+     - kneeling against standing fall heights;
+     - trained or voluntary protective responses;
+     - models that assume the full effective mass and rigid contact;
+     - cadavers lacking active muscle.
+   - The FE femoral-neck force (2.11 kN, S12) is an internal bone load, so it does not compare directly with ground contact force.
+2. **Forward hand force.**
+   - Borrelli 2023: 0.46–0.64 BW. DeGoede 2002: up to 1.7 BW (ratio up to 3.7×). The Chiu & Robinovitch model: up to 4.2 kN for falls up to 2 m.
+   - Likely reasons:
+     - 30 cm foam mats against 2.4 cm rubber foam;
+     - counterweighted, slowed descent;
+     - maximum vertical ground reaction force against first-peak Fmax1;
+     - model extrapolation to heights above standing.
+3. **Hand force by direction.** The sideways one-arm slap (3.78 BW, S4) against forward two-handed arrests (0.46–1.7 BW per hand) differs by 2–8×. One arm takes the whole load from a kneeling side fall, against two arms sharing a forward fall. Both come from secondary or partial readings.
+4. **Head force within a single dummy study.** 3.9–24.5 kN and 146–502 g (about 6× and 3.4×) depending on scenario, dummy size and posture (F7).\[9\]\[10\] The companion paper's range goes to 64–564 g and 2.6–29.6 kN.\[17\]
+5. **Robot acceleration.** Over 100 G (life-size humanoid, Kajita 2016) against 2.3–6.4 G (1.6 kg BioloidGP, F9), a ratio of 15–40×. Likely reasons:
+   - robot mass and size;
+   - sensor location (head IMU against an unspecified location);
+   - surface;
+   - whether a protective strategy was used.
+
+   The airbag condition (20–30 G) also falls well below the unprotected value.\[39\]
+6. **Pelvis impact velocity.** The secondary range for Robinovitch 1991 (1.40–6.07 m/s) spans more than 4×. Lab means are 2.08–2.58 m/s (S13), the model gives 1.68–3.22 m/s (B5), and reconstructions give 0.198–2.52 m/s (B7). The likely reasons are differing definitions (resultant against vertical, peak against at-contact), fall type, and simulation against measurement.
+
+## Reference list
+
+- Aoshima Y, Murakami S, Mizuno K, Otaka Y, Yamada M, Jinzaki M (2022). Analysis of loading to the hip joint in fall using whole-body FE model. J Biomech 142:111262. DOI 10.1016/j.jbiomech.2022.111262 (PMID 36027638)
+- Borrelli J, Creath R, Rogers MW (2023). The timing and amplitude of the muscular activity of the arms preceding impact in a forward fall is modulated with fall velocity. J Biomech 150:111515. DOI 10.1016/j.jbiomech.2023.111515
+- Chiu J, Robinovitch SN (1998). Prediction of upper extremity impact forces during falls on the outstretched hand. J Biomech 31:1169–1176. DOI 10.1016/S0021-9290(98)00137-7
+- Choi WJ. PhD thesis, Simon Fraser University (summit.sfu.ca, etd8091). DOI none.
+- DeGoede KM, Ashton-Miller JA (2002). Fall arrest strategy affects peak hand impact force in a forward fall. J Biomech 35:843–848. DOI 10.1016/S0021-9290(02)00011-8
+- Fleps I, Vuille M, Melnyk A, Ferguson SJ, Guy P, Helgason B, Cripton PA (2018). A novel sideways fall simulator to study hip fractures ex vivo. PLoS ONE 13(7):e0201096. DOI 10.1371/journal.pone.0201096
+- Fujiwara K, Kanehiro F, Kajita S, Kaneko K, Yokoi K, Hirukawa H (2002). UKEMI: falling motion control to minimize damage to biped humanoid robot. Proc IEEE/RSJ IROS, Lausanne, pp. 2521–2526. DOI 10.1109/IRDS.2002.1041648 (not confirmed in retrieved sources)
+- Groen BE, Weerdesteyn V, Duysens J (2007). Martial arts fall techniques decrease the impact forces at the hip during sideways falling. J Biomech 40:458–462. DOI 10.1016/j.jbiomech.2005.12.014
+- Groen BE, Smulders E, Duysens J, van Lankveld W, Weerdesteyn V (2010). Could martial arts fall training be safe for persons with osteoporosis? A feasibility study. BMC Res Notes 3:111. DOI 10.1186/1756-0500-3-111
+- Ha S, Liu CK (2015). Multiple contact planning for minimizing damage of humanoid falls. Proc IEEE/RSJ IROS, pp. 2761–2767. DOI 10.1109/IROS.2015.7353756
+- Hajiaghamemar M, Seidi M, Ferguson JR, Caccese V (2015). Measurement of head impact due to standing fall in adults using anthropomorphic test dummies. Ann Biomed Eng 43:2143–2152. DOI 10.1007/s10439-015-1255-1
+- Kajita S, Cisneros R, Benallegue M, Sakaguchi T, Nakaoka S, Morisawa M, Kaneko K, Kanehiro F (2016). Impact acceleration of falling humanoid robot with an airbag. Proc IEEE-RAS 16th Humanoids, Cancun, pp. 637–643. IEEE Xplore document 7803341; DOI not confirmed.
+- Khorami F, et al. (2023). Proc IMechE Part H 237:1275. DOI 10.1177/09544119231207653
+- Kumar VCV, Ha S, Liu CK (2017). Learning a unified control policy for safe falling. Proc IEEE/RSJ IROS, pp. 3940–3947. arXiv:1703.02905
+- Laing AC, Tootoonchi I, Hulme PA, Robinovitch SN (2006). Effect of compliant flooring on impact force during falls on the hip. J Orthop Res 24:1405–1411. DOI 10.1002/jor.20172
+- Laing AC, Robinovitch SN (2009). Low stiffness floors can attenuate fall-related femoral impact forces by up to 50% without substantially impairing balance in older women. Accid Anal Prev 41:642–650. DOI 10.1016/j.aap.2009.03.001
+- Lee Y, Srinivasan D, Rawlings C, Madigan ML (2022). Fall impacts from standing show equivalence between experts in stage combat landing strategy and naïve participants after training. Work. DOI 10.3233/WOR-205236
+- Lo J, McCabe GN, DeGoede KM, Okuizumi H, Ashton-Miller JA (2003). On reducing hand impact force in forward falls: results of a brief intervention in young males. Clin Biomech 18:730–736. DOI 10.1016/S0268-0033(03)00124-4
+- Lo J, Ashton-Miller JA (2008). Effect of pre-impact movement strategies on the impact forces resulting from a lateral fall. J Biomech 41:1969–1977. DOI 10.1016/j.jbiomech.2008.03.022 (context only; no number extracted)
+- Nagata H, Ohno H (2007). Analysis of backward falls caused by accelerated floor movements using a dummy. Ind Health 45:462–466. DOI 10.2486/indhealth.45.462
+- Nankaku M, Kanzaki H, Tsuboyama T, Nakamura T (2005). Evaluation of hip fracture risk in relation to fall direction. Osteoporos Int 16(11):1315–1320. DOI 10.1007/s00198-005-1843-2
+- Nasiri Sarvi M, Luo Y (2017). Sideways fall-induced impact force and its effect on hip fracture risk: a review. Osteoporos Int 28:2759–2780. DOI 10.1007/s00198-017-4138-5
+- Robinovitch SN, Hayes WC, McMahon TA (1991). Prediction of femoral impact forces in falls on the hip. J Biomech Eng 113:366–374. DOI 10.1115/1.2895414
+- Robinovitch SN, Chiu J (1998). Surface stiffness affects impact force during a fall on the outstretched hand. J Orthop Res 16:309–313. DOI 10.1002/jor.1100160306
+- Robinovitch SN, Brumer R, Maurer J (2004). Effect of the "squat protective response" on impact velocity during backward falls. J Biomech 37:1329–1337. DOI 10.1016/j.jbiomech.2003.12.015
+- Sabick MB, Hay JG, Goel VK, Banks SA (1999). Active responses decrease impact forces at the hip and shoulder in falls to the side. J Biomech 32:993–998. DOI 10.1016/S0021-9290(99)00079-2
+- Sandler R, Robinovitch S (2001). An analysis of the effect of lower extremity strength on impact severity during a backward fall. J Biomech Eng 123:590–598. DOI 10.1115/1.1408940
+- Seidi M, Hajiaghamemar M, Caccese V (2014). Evaluation of effective mass during head impact due to standing falls. Int J Crashworthiness. DOI 10.1080/13588265.2014.983261
+- van den Kroonenberg AJ, Hayes WC, McMahon TA (1995). Dynamic models for sideways falls from standing height. J Biomech Eng 117:309–318. DOI not retrieved.
+- 2021 review: "Can a simple fall cause a rotator cuff tear? Literature review and biomechanical considerations." Int Orthop; PMC8178131 (secondary source for Sabick and Chiu values).
+
+## Sources
+
+1. <https://brl.engin.umich.edu/wp-content/uploads/sites/450/2019/07/lo_2003_clin-biomech.pdf>
+2. [Fall arrest strategy affects peak hand impact force in a forward fall - PubMed](https://pubmed.ncbi.nlm.nih.gov/12021005/)
+3. [Injury tolerance of the wrist and distal forearm to impact loading onto outstretched hands](https://www.researchgate.net/publication/265093723_Injury_tolerance_of_the_wrist_and_distal_forearm_to_impact_loading_onto_outstretched_hands)
+4. [The timing and amplitude of the muscular activity of the arms preceding impact in a forward fall is modulated with fall velocity - PMC](https://pmc.ncbi.nlm.nih.gov/articles/PMC10257944)
+5. [Can a simple fall cause a rotator cuff tear? Literature review and biomechanical considerations - PMC](https://pmc.ncbi.nlm.nih.gov/articles/PMC8178131/)
+6. [Prediction of upper extremity impact forces during falls on the outstretched hand - ScienceDirect](https://sciencedirect.com/science/article/abs/pii/S0021929098001377?via=ihub%3D)
+7. [Surface stiffness affects impact force during a fall on the outstretched hand - PubMed](https://pubmed.ncbi.nlm.nih.gov/9671925/)
+8. [Could martial arts fall training be safe for persons with osteoporosis?: a feasibility study - PMC](https://pmc.ncbi.nlm.nih.gov/articles/PMC2873348/)
+9. [Measurement of Head Impact Due to Standing Fall in Adults Using Anthropomorphic Test Dummies](https://link.springer.com/article/10.1007/s10439-015-1255-1)
+10. [Measurement of Head Impact Due to Standing Fall in Adults Using Anthropomorphic Test Dummies - PubMed](https://pubmed.ncbi.nlm.nih.gov/25608913/)
+11. <http://www.cs.cmu.edu/~cga/falling/ukemi.pdf>
+12. [Learning a Uniﬁed Control Policy for Safe Falling](https://arxiv.org/pdf/1703.02905)
+13. [Chris Paxton on X: "I think this line of work is really important" / X](https://x.com/chris_j_paxton/status/2109997657967988893)
+14. [Multiple contact planning for minimizing damage of humanoid falls](https://www.researchgate.net/publication/308813390_Multiple_contact_planning_for_minimizing_damage_of_humanoid_falls)
+15. [(PDF) Characteristics of Falling Impact of Head Using a Test Dummy](https://www.researchgate.net/publication/264231691_Characteristics_of_Falling_Impact_of_Head_Using_a_Test_Dummy)
+16. [(PDF) Evaluation of effective mass during head impact due to standing falls](https://www.researchgate.net/publication/268745970_Evaluation_of_effective_mass_during_head_impact_due_to_standing_falls)
+17. [Results of the male ATD fall-related head impacts.](https://www.researchgate.net/figure/Results-of-the-male-ATD-fall-related-head-impacts_tbl1_268745970)
+18. [Analysis of Backward Falls Caused by Accelerated Floor Movements Using a Dummy](https://www.jstage.jst.go.jp/article/indhealth/45/3/45_3_462/_article)
+19. [Effect of the “squat protective response” on impact velocity during backward falls - ScienceDirect](https://www.sciencedirect.com/science/article/abs/pii/S0021929003004780)
+20. [An analysis of the effect of lower extremity strength on impact severity during a backward fall - PubMed](https://pubmed.ncbi.nlm.nih.gov/11783730)
+21. [Evaluation of hip fracture risk in relation to fall direction](https://link.springer.com/article/10.1007/s00198-005-1843-2)
+22. [(PDF) Evaluation of hip fracture risk in relation to fall direction](https://www.researchgate.net/publication/8014487_Evaluation_of_hip_fracture_risk_in_relation_to_fall_direction)
+23. [The Role of Hip Soft Tissues in Fall Dynamics by Fatemeh Khorami](https://summit.sfu.ca/_flysystem/fedora/2026-01/etd23534.pdf)
+24. [Impact forces in backward falls: Subject-specific video-based rigid body simulation of backward falls - PMC](https://pmc.ncbi.nlm.nih.gov/articles/PMC10685694/)
+25. <https://stacks.cdc.gov/view/cdc/212628/cdc_212628_DS1.pdf>
+26. [Table 1](https://link.springer.com/article/10.1007/s00198-017-4138-5/tables/1)
+27. [Prediction of femoral impact forces in falls on the hip - PubMed](https://pubmed.ncbi.nlm.nih.gov/1762432/)
+28. [Martial arts fall techniques decrease the impact forces at the hip during sideways falling - ScienceDirect](https://www.sciencedirect.com/science/article/abs/pii/S0021929006000042)
+29. [Active responses decrease impact forces at the hip and shoulder in falls to the side - ScienceDirect](https://www.sciencedirect.com/science/article/abs/pii/S0021929099000792)
+30. [Active responses decrease impact forces at the hip and shoulder in falls to the side - PubMed](https://pubmed.ncbi.nlm.nih.gov/10460138/)
+31. [The relation between hip impact velocity and hip impact force differs between sideways fall techniques](https://www.researchgate.net/publication/6075402_The_relation_between_hip_impact_velocity_and_hip_impact_force_differs_between_sideways_fall_techniques)
+32. [Google Scholar](https://scholar.google.com/scholar_lookup?title=Martial+arts+fall+techniques+decrease+the+impact+forces+at+the+hip+during+sideways+falling&amp=&publication_year=2007)
+33. [Effect of compliant flooring on impact force during falls on the hip - Laing - 2006 - Journal of Orthopaedic Research - Wiley Online Library](https://onlinelibrary.wiley.com/doi/10.1002/jor.20172)
+34. [Effect of compliant flooring on impact force during falls on the hip - PubMed](https://pubmed.ncbi.nlm.nih.gov/16705716/?dopt=Abstract)
+35. [The influence of novel compliant floors on balance control in elderly women—A biomechanical study - PMC](https://ncbi.nlm.nih.gov/pmc/articles/PMC3471987)
+36. [Dynamic Models for Sideways Falls From Standing Height](https://asmedigitalcollection.asme.org/biomechanical/article-abstract/117/3/309/395858/Dynamic-Models-for-Sideways-Falls-From-Standing?redirectedFrom=fulltext)
+37. [A novel sideways fall simulator to study hip fractures ex vivo](https://journals.plos.org/plosone/article?id=10.1371%2Fjournal.pone.0201096)
+38. [Biomechanics of Falls and Hip Fractures in Older Adults by Woochol Joseph Choi](https://summit.sfu.ca/_flysystem/fedora/sfu_migrate/13773/etd8091_WChoi.pdf)
+39. [Impact acceleration of falling humanoid robot with an airbag](https://ieeexplore.ieee.org/abstract/document/7803341/)
