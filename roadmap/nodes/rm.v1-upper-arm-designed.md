@@ -10,4 +10,4 @@ tags: ["region:arm", "phase:design", "stage3"]
 done_when:
   type: manual
 ---
-Manual until Stage 3 defines the part's sidecar; then the criterion becomes an artifact check on it. At the estimate cap: if it runs past three days, split it into layout and detail. Designed to the provisional design rules; rm.v1-design-rules confirms them before fabrication.
+Manual until the real design's work item (`work.upper-arm-cad`, revised from the bridge placeholder `p1`) consumes the upper arm's requirement records; then the criterion becomes `{type: work, work: work.upper-arm-cad, status: current}`. Adopting it earlier would pass on the placeholder, which is stamped and current (memo 41). At the estimate cap: if it runs past three days, split it into layout and detail. Designed to the provisional design rules; rm.v1-design-rules confirms them before fabrication.

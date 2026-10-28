@@ -12,3 +12,5 @@ done_when:
   record: decisions/0020-upper-arm-connectors.md
 ---
 Final once accepted. The shoulder end is set from the shoulder concept (rm.v1-shoulder-concept); the shoulder's detailed design and the forearm are then made to these connectors. Fastener and dowel sizes follow what the provisional design rules say the shop can tap and ream; rm.v1-design-rules confirms them before the part is cut. The values live in the record.
+
+The record also carries the connector's fall provisions (rm.v1-fall-design-basis): an axial compliance stroke and an overload stop that grounds an impact into structure before it reaches the bearings.

@@ -8,4 +8,4 @@ blocked_by: [rm.v1-bridge-tooling, rm.v1-upper-arm-characterized]
 stub: true
 tags: ["stage3"]
 ---
-Waits until the first characterization and the first sidecar exist, so the schema has met a real part before a UI is built on it. Best built while Joe is in Fusion on rm.v1-upper-arm-designed. Read-only, like the roadmap viewer. Until then, each dossier carries a Mermaid neighbourhood graph.
+Waits until the first characterization and the first sidecar exist, so the schema has met a real part before a UI is built on it. Best built while Joe is in Fusion on rm.v1-upper-arm-designed. Read-only, like the roadmap viewer. Until then, each dossier carries a Mermaid neighbourhood graph. It later becomes a pane of rm.v1-workbench.

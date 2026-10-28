@@ -12,3 +12,5 @@ done_when:
   record: decisions/0028-power-architecture.md
 ---
 Actuators lead and the bus follows: the lower-limb actuators under selection set the working voltage, and a joint that wants a different voltage is served by local conversion. The record is written now from that working assumption. A change of bus voltage supersedes the record, which reopens the battery, distribution, harness and controller nodes built on it; a change of detail amends it.
+
+Regenerated energy includes joints backdriven on purpose: a shoulder yielding to bleed fall momentum (the protection hierarchy in rm.v1-fall-design-basis) pumps energy into the bus, so the record needs a bus clamp or brake resistor sized for it.

@@ -11,3 +11,5 @@ done_when:
   record: decisions/0009-actuator-sizing-method.md
 ---
 Approach so far: lock a trusted demand number first, then apply the safety factor on top, rather than lowering the factor to cover a doubtful number.
+
+From the Oct 2026 arm discussion: headroom is checked as a trajectory on the actuator's torque-speed curve (peak speed and peak acceleration do not coincide, and gravity torque acts even at rest), not as two independent peaks. The 70% headroom proposed for the arms is a design choice, not sourced.
