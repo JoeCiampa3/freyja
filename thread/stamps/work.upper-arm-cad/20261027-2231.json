@@ -1,0 +1,15 @@
+{
+  "by": "JoeCiampa3",
+  "consumes": [
+    {
+      "address": "snapshot#/upper_arm_right_length",
+      "hash": "d245be483398",
+      "value": "0.255234699434"
+    }
+  ],
+  "note": "bridge gate G6",
+  "pinned": false,
+  "schema": "thread-stamp/1",
+  "stamp": "20261027-2231",
+  "work": "work.upper-arm-cad"
+}
