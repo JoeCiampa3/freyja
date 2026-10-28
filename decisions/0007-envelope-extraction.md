@@ -95,3 +95,7 @@ model frames the two bodies are 17 mm apart at the hip plane; memo 39); the arms
 Taken from the decision list and the memos, not new: a uniform scale of the whole body (D2: the sheet sets lengths, the sculpt sets cross-sections); a re-sculpt to close the 9% (D7: no, revisit with all segments);
 reading the pelvis, abdomen or thigh alone as a mass result (D6: the frame planes are not the Dumas mass cuts, memo 35); a CJC taken from the brief's anchor (memo 34: 0.62 and 0.89 of draws beyond 8%, against 0.23
 and 0.10 for the cervicale).
+
+## Amendments
+
+- 2026-10-28. D11: the elbow and wrist nodes and the forearm frame roll reopened (memo 43); decided in rm.v1-arm-joint-anchors-decision.

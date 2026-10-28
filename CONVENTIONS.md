@@ -213,6 +213,8 @@ links: [req.x.y, part.a.b]
 
 The rejected-options section is the part that matters on a decade horizon.
 
+Amending an accepted decision record. An `accepted` record is not rewritten. Two kinds of change are allowed. (1) A factual correction, or an update to a list of open items (such as ADR 0007 D11), is made in place and logged in an `## Amendments` section at the end of the record: date, what changed, and the memo or record that caused it. (2) A change to a rule in the Decision section is made by a new record, which names the decisions it amends and lists the amended record in its `links`; the amended record gets an Amendments line pointing to the new one and keeps its status, unless the new record replaces it entirely, in which case its status becomes `superseded-by`.
+
 **Notebook** (`notebook/YYYY-MM-DD-slug.md`) carries front matter `origin: me | source | claude`, plus `source:` for anything read. Notes of `claude` origin record decisions and open questions, not narrative.
 
 **Thread record** (`thread/records/<id>.yaml`, `thread-record/1`, schema `docs/schemas/thread-record-1.schema.json`). Every record has `schema`, `id`, `kind`, `status`, `purpose`, optionally `notes` and (when superseded) `superseded_by`. One short example per kind (bilateral records carry `sides: [left, right]`, checked against `pre_processor.BILATERAL`):
