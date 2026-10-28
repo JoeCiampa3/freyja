@@ -220,7 +220,7 @@ def test_install_hooks_sets_hookspath_and_stops_on_existing_hooks(repo):
 
 
 def test_the_state_line(tmp_path):
-    sys.path.insert(0, str(REPO / "sim" / "scripts"))
+    sys.path.insert(0, str(REPO / "tools"))
     import state
     assert state.roadmap_line(REPO).startswith("Roadmap: ")
     root = make(tmp_path / "r", {"rm.root": {"title": "Top"}, "rm.a": leaf("rm.root"), "rm.b": leaf("rm.root", done=True)})

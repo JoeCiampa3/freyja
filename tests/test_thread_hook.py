@@ -74,7 +74,7 @@ def test_the_hook_text_builds_the_thread_after_the_roadmap_and_keeps_the_roadmap
 
 def test_the_state_line_counts_records_work_items_rework_and_errors(tmp_path):
     from thread import fixture
-    sys.path.insert(0, str(REPO / "sim" / "scripts"))
+    sys.path.insert(0, str(REPO / "tools"))
     import state
     assert state.thread_line(REPO).startswith("Thread: 27 records | 1 work items | rework 0 | errors 0")
     fixture.generate(tmp_path / "f", 0)
@@ -86,7 +86,7 @@ def test_the_state_line_counts_records_work_items_rework_and_errors(tmp_path):
 
 
 def test_the_state_file_has_the_thread_line_right_after_the_roadmap_line():
-    sys.path.insert(0, str(REPO / "sim" / "scripts"))
+    sys.path.insert(0, str(REPO / "tools"))
     import state
     text = state.generate(REPO, run=False)
     lines = text.splitlines()

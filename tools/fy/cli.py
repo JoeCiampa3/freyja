@@ -99,7 +99,7 @@ def run_gait(root: Path, args: list):
 
 
 def run_state(root: Path, args: list):
-    _use(root, "sim/scripts")
+    _use(root, "tools")
     import state
     return state.main(args)
 
