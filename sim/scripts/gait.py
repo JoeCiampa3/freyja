@@ -212,11 +212,16 @@ def stride_count(record: dict) -> int:
     return sum(next(iter(by_mode.values()))["n_strides"] for by_mode in record["results"].values())
 
 
-def baseline_methods(verdicts: dict) -> dict:
-    """verdicts: (speed, mode) -> method -> {meets}. A method is baselined when it meets the band at every speed and trunk mode; the rest
-    are reported as findings and not baselined."""
+ACCEPTANCE_SPEEDS = ("0.5",)  # v1's acceptance speed (Stage 2f), not a sizing speed; the same constant as runs_report.GAIT_ACCEPTANCE_SPEEDS (a test ties them)
+
+
+def baseline_methods(verdicts: dict, acceptance=ACCEPTANCE_SPEEDS) -> dict:
+    """verdicts: (speed, mode) -> method -> {meets}. A method is baselined when it meets the band at every sizing speed and trunk mode; an
+    acceptance speed does not decide it (its misses stay in the full-run verdicts as findings). The rest are reported as findings and not
+    baselined. With no sizing-speed verdict nothing is baselined."""
+    sizing = {k: v for k, v in verdicts.items() if str(k[0]) not in acceptance}
     methods = sorted({m for v in verdicts.values() for m in v})
-    ok = [m for m in methods if all(v.get(m, {}).get("meets", False) for v in verdicts.values())]
+    ok = [m for m in methods if sizing and all(v.get(m, {}).get("meets", False) for v in sizing.values())]
     return {"baselined": ok, "not_baselined": [m for m in methods if m not in ok]}
 
 
@@ -762,7 +767,7 @@ def write_baseline(record: dict, path=None, *, model_path=None) -> Path:
         "schema": "walk-reference/1", "snapshot_sha256": record["snapshot_sha256"], "model_sha256": record["model_sha256"],
         "spec_sha256": record["spec_sha256"], "git_commit": record["git_commit"], "git_dirty": record["git_dirty"], "gait_id": record["gait_id"],
         "dataset_manifest_sha256": record["dataset_manifest_sha256"],
-        "band": {"corr_min": BAND_CORR, "rms_pct_ptp_max": BAND_RMS_PCT, "stems": list(BAND_STEMS)},
+        "band": {"corr_min": BAND_CORR, "rms_pct_ptp_max": BAND_RMS_PCT, "stems": list(BAND_STEMS)}, "acceptance_speeds_not_deciding": list(ACCEPTANCE_SPEEDS),
         "baselined_methods": split["baselined"], "not_baselined_methods": split["not_baselined"],
         "band_verdicts_full_run": table,
         "reproduction": {"subset": REFERENCE_SUBSET, "tolerance_rel": REFERENCE_TOL, "metrics": None},

@@ -156,6 +156,26 @@ def test_the_baseline_methods_are_those_that_meet_the_band_at_every_speed_and_mo
     assert gait.baseline_methods({})["baselined"] == []
 
 
+def test_the_acceptance_speed_does_not_decide_what_is_baselined():
+    """v1's acceptance speed (0.5 m/s) is not a sizing speed: a method that meets the band at the sizing speeds is baselined even if it misses it there.
+    The band itself is untouched; an acceptance-speed miss stays in band_verdicts_full_run as a finding."""
+    verdicts = {
+        ("0.5", "rigid"): {"A_filtered": {"meets": False}, "B": {"meets": False}},
+        ("1.4", "rigid"): {"A_filtered": {"meets": True}, "B": {"meets": False}},
+        ("1.6", "rigid"): {"A_filtered": {"meets": True}, "B": {"meets": False}},
+    }
+    got = gait.baseline_methods(verdicts)
+    assert got["baselined"] == ["A_filtered"] and got["not_baselined"] == ["B"]
+    missed = dict(verdicts); missed[("1.6", "rigid")] = {"A_filtered": {"meets": False}, "B": {"meets": False}}
+    assert gait.baseline_methods(missed)["baselined"] == []  # a sizing-speed miss still blocks it
+    assert gait.baseline_methods({("0.5", "rigid"): {"A_filtered": {"meets": True}}})["baselined"] == []  # nothing at a sizing speed, nothing baselined
+
+
+def test_the_acceptance_speeds_agree_between_the_gait_and_the_report():
+    import runs_report
+    assert tuple(gait.ACCEPTANCE_SPEEDS) == tuple(runs_report.GAIT_ACCEPTANCE_SPEEDS)
+
+
 @pytest.mark.skipif(not PROCESSED.exists(), reason="processed Camargo arrays not present")
 def test_one_record_holds_every_trunk_mode_and_is_byte_identical_on_a_second_run(tmp_path):
     import json

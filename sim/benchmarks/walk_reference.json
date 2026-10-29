@@ -1,4 +1,7 @@
 {
+  "acceptance_speeds_not_deciding": [
+    "0.5"
+  ],
   "band": {
     "corr_min": 0.9,
     "rms_pct_ptp_max": 15.0,
@@ -9,44 +12,44 @@
     ]
   },
   "band_verdicts_full_run": {
-    "1.4": {
+    "0.5": {
       "counter_rotate": {
         "A_filtered": {
           "joints": {
             "ankle_pdflex": {
-              "corr": 0.980047,
+              "corr": 0.973615,
               "meets": true,
-              "rms_pct_ptp": 7.757172
+              "rms_pct_ptp": 8.902477
             },
             "hip_fe": {
-              "corr": 0.914983,
-              "meets": true,
-              "rms_pct_ptp": 14.214764
+              "corr": 0.852776,
+              "meets": false,
+              "rms_pct_ptp": 20.474482
             },
             "knee": {
-              "corr": 0.927186,
-              "meets": true,
-              "rms_pct_ptp": 13.341744
+              "corr": 0.889442,
+              "meets": false,
+              "rms_pct_ptp": 20.902153
             }
           },
-          "meets": true
+          "meets": false
         },
         "A_native": {
           "joints": {
             "ankle_pdflex": {
-              "corr": 0.979217,
+              "corr": 0.974503,
               "meets": true,
-              "rms_pct_ptp": 8.02104
+              "rms_pct_ptp": 8.773677
             },
             "hip_fe": {
-              "corr": 0.828408,
+              "corr": 0.826564,
               "meets": false,
-              "rms_pct_ptp": 16.791205
+              "rms_pct_ptp": 19.776141
             },
             "knee": {
-              "corr": 0.908849,
-              "meets": true,
-              "rms_pct_ptp": 14.347686
+              "corr": 0.884171,
+              "meets": false,
+              "rms_pct_ptp": 20.507201
             }
           },
           "meets": false
@@ -54,19 +57,19 @@
         "B": {
           "joints": {
             "ankle_pdflex": {
-              "corr": 0.127689,
+              "corr": 0.056785,
               "meets": false,
-              "rms_pct_ptp": 44.315387
+              "rms_pct_ptp": 48.902728
             },
             "hip_fe": {
-              "corr": 0.771523,
+              "corr": 0.50418,
               "meets": false,
-              "rms_pct_ptp": 61.80514
+              "rms_pct_ptp": 120.579184
             },
             "knee": {
-              "corr": 0.206553,
+              "corr": 0.051822,
               "meets": false,
-              "rms_pct_ptp": 73.025403
+              "rms_pct_ptp": 131.731781
             }
           },
           "meets": false
@@ -74,19 +77,19 @@
         "H": {
           "joints": {
             "ankle_pdflex": {
-              "corr": 0.971972,
+              "corr": 0.972983,
               "meets": true,
-              "rms_pct_ptp": 9.358668
+              "rms_pct_ptp": 9.502944
             },
             "hip_fe": {
-              "corr": 0.72517,
+              "corr": 0.621884,
               "meets": false,
-              "rms_pct_ptp": 36.994465
+              "rms_pct_ptp": 57.886756
             },
             "knee": {
-              "corr": 0.755104,
+              "corr": 0.626664,
               "meets": false,
-              "rms_pct_ptp": 25.357934
+              "rms_pct_ptp": 37.145949
             }
           },
           "meets": false
@@ -96,39 +99,39 @@
         "A_filtered": {
           "joints": {
             "ankle_pdflex": {
-              "corr": 0.980047,
+              "corr": 0.973615,
               "meets": true,
-              "rms_pct_ptp": 7.757172
+              "rms_pct_ptp": 8.902477
             },
             "hip_fe": {
-              "corr": 0.914983,
-              "meets": true,
-              "rms_pct_ptp": 14.214764
+              "corr": 0.852776,
+              "meets": false,
+              "rms_pct_ptp": 20.474482
             },
             "knee": {
-              "corr": 0.927186,
-              "meets": true,
-              "rms_pct_ptp": 13.341744
+              "corr": 0.889442,
+              "meets": false,
+              "rms_pct_ptp": 20.902153
             }
           },
-          "meets": true
+          "meets": false
         },
         "A_native": {
           "joints": {
             "ankle_pdflex": {
-              "corr": 0.979217,
+              "corr": 0.974503,
               "meets": true,
-              "rms_pct_ptp": 8.02104
+              "rms_pct_ptp": 8.773677
             },
             "hip_fe": {
-              "corr": 0.828408,
+              "corr": 0.826564,
               "meets": false,
-              "rms_pct_ptp": 16.791205
+              "rms_pct_ptp": 19.776141
             },
             "knee": {
-              "corr": 0.908849,
-              "meets": true,
-              "rms_pct_ptp": 14.347686
+              "corr": 0.884171,
+              "meets": false,
+              "rms_pct_ptp": 20.507201
             }
           },
           "meets": false
@@ -136,19 +139,19 @@
         "B": {
           "joints": {
             "ankle_pdflex": {
-              "corr": 0.039248,
+              "corr": 0.042089,
               "meets": false,
-              "rms_pct_ptp": 47.893984
+              "rms_pct_ptp": 49.23163
             },
             "hip_fe": {
-              "corr": 0.77043,
+              "corr": 0.503271,
               "meets": false,
-              "rms_pct_ptp": 61.348937
+              "rms_pct_ptp": 120.691518
             },
             "knee": {
-              "corr": 0.223446,
+              "corr": 0.05748,
               "meets": false,
-              "rms_pct_ptp": 76.089027
+              "rms_pct_ptp": 132.399934
             }
           },
           "meets": false
@@ -156,19 +159,185 @@
         "H": {
           "joints": {
             "ankle_pdflex": {
-              "corr": 0.972103,
+              "corr": 0.97305,
               "meets": true,
-              "rms_pct_ptp": 9.298223
+              "rms_pct_ptp": 9.48778
             },
             "hip_fe": {
-              "corr": 0.725632,
+              "corr": 0.62232,
               "meets": false,
-              "rms_pct_ptp": 37.001448
+              "rms_pct_ptp": 58.110344
             },
             "knee": {
-              "corr": 0.741457,
+              "corr": 0.619269,
               "meets": false,
-              "rms_pct_ptp": 25.280328
+              "rms_pct_ptp": 37.025218
+            }
+          },
+          "meets": false
+        }
+      }
+    },
+    "1.4": {
+      "counter_rotate": {
+        "A_filtered": {
+          "joints": {
+            "ankle_pdflex": {
+              "corr": 0.975902,
+              "meets": true,
+              "rms_pct_ptp": 8.541495
+            },
+            "hip_fe": {
+              "corr": 0.915306,
+              "meets": true,
+              "rms_pct_ptp": 14.692912
+            },
+            "knee": {
+              "corr": 0.921182,
+              "meets": true,
+              "rms_pct_ptp": 14.329511
+            }
+          },
+          "meets": true
+        },
+        "A_native": {
+          "joints": {
+            "ankle_pdflex": {
+              "corr": 0.974605,
+              "meets": true,
+              "rms_pct_ptp": 8.91101
+            },
+            "hip_fe": {
+              "corr": 0.813705,
+              "meets": false,
+              "rms_pct_ptp": 17.389856
+            },
+            "knee": {
+              "corr": 0.900973,
+              "meets": false,
+              "rms_pct_ptp": 15.554152
+            }
+          },
+          "meets": false
+        },
+        "B": {
+          "joints": {
+            "ankle_pdflex": {
+              "corr": 0.16908,
+              "meets": false,
+              "rms_pct_ptp": 43.169684
+            },
+            "hip_fe": {
+              "corr": 0.779662,
+              "meets": false,
+              "rms_pct_ptp": 61.071823
+            },
+            "knee": {
+              "corr": 0.181684,
+              "meets": false,
+              "rms_pct_ptp": 71.486735
+            }
+          },
+          "meets": false
+        },
+        "H": {
+          "joints": {
+            "ankle_pdflex": {
+              "corr": 0.968582,
+              "meets": true,
+              "rms_pct_ptp": 9.921293
+            },
+            "hip_fe": {
+              "corr": 0.711265,
+              "meets": false,
+              "rms_pct_ptp": 37.523833
+            },
+            "knee": {
+              "corr": 0.759183,
+              "meets": false,
+              "rms_pct_ptp": 26.05978
+            }
+          },
+          "meets": false
+        }
+      },
+      "rigid": {
+        "A_filtered": {
+          "joints": {
+            "ankle_pdflex": {
+              "corr": 0.975902,
+              "meets": true,
+              "rms_pct_ptp": 8.541495
+            },
+            "hip_fe": {
+              "corr": 0.915306,
+              "meets": true,
+              "rms_pct_ptp": 14.692912
+            },
+            "knee": {
+              "corr": 0.921182,
+              "meets": true,
+              "rms_pct_ptp": 14.329511
+            }
+          },
+          "meets": true
+        },
+        "A_native": {
+          "joints": {
+            "ankle_pdflex": {
+              "corr": 0.974605,
+              "meets": true,
+              "rms_pct_ptp": 8.91101
+            },
+            "hip_fe": {
+              "corr": 0.813705,
+              "meets": false,
+              "rms_pct_ptp": 17.389856
+            },
+            "knee": {
+              "corr": 0.900973,
+              "meets": false,
+              "rms_pct_ptp": 15.554152
+            }
+          },
+          "meets": false
+        },
+        "B": {
+          "joints": {
+            "ankle_pdflex": {
+              "corr": 0.082292,
+              "meets": false,
+              "rms_pct_ptp": 46.569374
+            },
+            "hip_fe": {
+              "corr": 0.778701,
+              "meets": false,
+              "rms_pct_ptp": 60.598354
+            },
+            "knee": {
+              "corr": 0.200724,
+              "meets": false,
+              "rms_pct_ptp": 74.331906
+            }
+          },
+          "meets": false
+        },
+        "H": {
+          "joints": {
+            "ankle_pdflex": {
+              "corr": 0.96887,
+              "meets": true,
+              "rms_pct_ptp": 9.846814
+            },
+            "hip_fe": {
+              "corr": 0.711997,
+              "meets": false,
+              "rms_pct_ptp": 37.515319
+            },
+            "knee": {
+              "corr": 0.743877,
+              "meets": false,
+              "rms_pct_ptp": 26.062111
             }
           },
           "meets": false
@@ -180,19 +349,19 @@
         "A_filtered": {
           "joints": {
             "ankle_pdflex": {
-              "corr": 0.975035,
+              "corr": 0.969897,
               "meets": true,
-              "rms_pct_ptp": 8.354787
+              "rms_pct_ptp": 9.28474
             },
             "hip_fe": {
-              "corr": 0.926569,
+              "corr": 0.927424,
               "meets": true,
-              "rms_pct_ptp": 13.190691
+              "rms_pct_ptp": 13.641653
             },
             "knee": {
-              "corr": 0.931539,
+              "corr": 0.925401,
               "meets": true,
-              "rms_pct_ptp": 12.776553
+              "rms_pct_ptp": 13.78249
             }
           },
           "meets": true
@@ -200,19 +369,19 @@
         "A_native": {
           "joints": {
             "ankle_pdflex": {
-              "corr": 0.973082,
+              "corr": 0.967377,
               "meets": true,
-              "rms_pct_ptp": 8.775966
+              "rms_pct_ptp": 9.845597
             },
             "hip_fe": {
-              "corr": 0.840987,
+              "corr": 0.828554,
               "meets": false,
-              "rms_pct_ptp": 15.935822
+              "rms_pct_ptp": 16.493056
             },
             "knee": {
-              "corr": 0.90947,
-              "meets": true,
-              "rms_pct_ptp": 14.020134
+              "corr": 0.90134,
+              "meets": false,
+              "rms_pct_ptp": 15.254251
             }
           },
           "meets": false
@@ -220,19 +389,19 @@
         "B": {
           "joints": {
             "ankle_pdflex": {
-              "corr": 0.114476,
+              "corr": 0.14278,
               "meets": false,
-              "rms_pct_ptp": 48.765119
+              "rms_pct_ptp": 48.535205
             },
             "hip_fe": {
-              "corr": 0.790357,
+              "corr": 0.796281,
               "meets": false,
-              "rms_pct_ptp": 54.643246
+              "rms_pct_ptp": 54.791118
             },
             "knee": {
-              "corr": 0.253213,
+              "corr": 0.223347,
               "meets": false,
-              "rms_pct_ptp": 67.966846
+              "rms_pct_ptp": 67.839191
             }
           },
           "meets": false
@@ -240,19 +409,19 @@
         "H": {
           "joints": {
             "ankle_pdflex": {
-              "corr": 0.961534,
+              "corr": 0.957182,
               "meets": true,
-              "rms_pct_ptp": 10.607043
+              "rms_pct_ptp": 11.327731
             },
             "hip_fe": {
-              "corr": 0.728427,
+              "corr": 0.712947,
               "meets": false,
-              "rms_pct_ptp": 35.807884
+              "rms_pct_ptp": 36.482899
             },
             "knee": {
-              "corr": 0.752451,
+              "corr": 0.754231,
               "meets": false,
-              "rms_pct_ptp": 25.516533
+              "rms_pct_ptp": 26.381995
             }
           },
           "meets": false
@@ -262,19 +431,19 @@
         "A_filtered": {
           "joints": {
             "ankle_pdflex": {
-              "corr": 0.975035,
+              "corr": 0.969897,
               "meets": true,
-              "rms_pct_ptp": 8.354787
+              "rms_pct_ptp": 9.28474
             },
             "hip_fe": {
-              "corr": 0.926569,
+              "corr": 0.927424,
               "meets": true,
-              "rms_pct_ptp": 13.190691
+              "rms_pct_ptp": 13.641653
             },
             "knee": {
-              "corr": 0.931539,
+              "corr": 0.925401,
               "meets": true,
-              "rms_pct_ptp": 12.776553
+              "rms_pct_ptp": 13.78249
             }
           },
           "meets": true
@@ -282,19 +451,19 @@
         "A_native": {
           "joints": {
             "ankle_pdflex": {
-              "corr": 0.973082,
+              "corr": 0.967377,
               "meets": true,
-              "rms_pct_ptp": 8.775966
+              "rms_pct_ptp": 9.845597
             },
             "hip_fe": {
-              "corr": 0.840987,
+              "corr": 0.828554,
               "meets": false,
-              "rms_pct_ptp": 15.935822
+              "rms_pct_ptp": 16.493056
             },
             "knee": {
-              "corr": 0.90947,
-              "meets": true,
-              "rms_pct_ptp": 14.020134
+              "corr": 0.90134,
+              "meets": false,
+              "rms_pct_ptp": 15.254251
             }
           },
           "meets": false
@@ -302,19 +471,19 @@
         "B": {
           "joints": {
             "ankle_pdflex": {
-              "corr": 0.035247,
+              "corr": 0.06521,
               "meets": false,
-              "rms_pct_ptp": 52.73074
+              "rms_pct_ptp": 52.308444
             },
             "hip_fe": {
-              "corr": 0.789776,
+              "corr": 0.795861,
               "meets": false,
-              "rms_pct_ptp": 54.125955
+              "rms_pct_ptp": 54.248693
             },
             "knee": {
-              "corr": 0.270776,
+              "corr": 0.243251,
               "meets": false,
-              "rms_pct_ptp": 71.128537
+              "rms_pct_ptp": 70.773659
             }
           },
           "meets": false
@@ -322,19 +491,19 @@
         "H": {
           "joints": {
             "ankle_pdflex": {
-              "corr": 0.961911,
+              "corr": 0.957765,
               "meets": true,
-              "rms_pct_ptp": 10.525949
+              "rms_pct_ptp": 11.234045
             },
             "hip_fe": {
-              "corr": 0.72661,
+              "corr": 0.711487,
               "meets": false,
-              "rms_pct_ptp": 36.015585
+              "rms_pct_ptp": 36.672762
             },
             "knee": {
-              "corr": 0.738179,
+              "corr": 0.738224,
               "meets": false,
-              "rms_pct_ptp": 25.477994
+              "rms_pct_ptp": 26.427584
             }
           },
           "meets": false
@@ -345,17 +514,17 @@
   "baselined_methods": [
     "A_filtered"
   ],
-  "dataset_manifest_sha256": "0498fb7e4dd3014005bbde908375bee1ea21cc375c24a6b4a9744c31bdd0ab9e",
-  "gait_id": "gait.20261014-1929-walk_treadmill",
+  "dataset_manifest_sha256": "ca427c3733c86d9f301742e4dc5b3b0389dcad0d6310469ef9916a5b9ea8ea0e",
+  "gait_id": "gait.20261028-1654-walk_treadmill",
   "generated_by": "sim/scripts/gait.py --write-baseline",
-  "git_commit": "7ce074180803eedf1e525660d9cfb7366faf9558",
+  "git_commit": "98be2bcae0eea3fbfa6719343c871bc89577faec",
   "git_dirty": false,
   "inputs": [
     "sim/scenarios/gait/walk_treadmill.yaml",
     "data/camargo2021/manifest.json",
     "sim/models/freyja.xml"
   ],
-  "model_sha256": "c4d7757d45fe115dc3587fc0ab61100ccbef221c9a5317a7181b1a41b528fe5a",
+  "model_sha256": "1ceee2452e18c490023a9d1a7d88e77cc09e21df8edde24db6ef788593d96be3",
   "not_baselined_methods": [
     "A_native",
     "B",
@@ -365,126 +534,126 @@
     "metrics": {
       "counter_rotate/A_filtered": {
         "ankle_ie_left": {
-          "corr": 0.6003582080353141,
-          "peak_diff": -0.07677680315522158,
-          "rms_pct_ptp": 37.70257607225477
+          "corr": 0.5472796481808705,
+          "peak_diff": -0.07261779439488923,
+          "rms_pct_ptp": 40.03679378394534
         },
         "ankle_ie_right": {
-          "corr": 0.7195558079455514,
-          "peak_diff": 0.3504476426896155,
-          "rms_pct_ptp": 67.03795733256693
+          "corr": 0.7106892480809632,
+          "peak_diff": 0.3657359889292365,
+          "rms_pct_ptp": 69.74129367890438
         },
         "ankle_pdflex_left": {
-          "corr": 0.9936659679410225,
-          "peak_diff": -0.0861793203574716,
-          "rms_pct_ptp": 6.108894773974304
+          "corr": 0.9914846483511931,
+          "peak_diff": -0.04896431512994296,
+          "rms_pct_ptp": 6.386883232330526
         },
         "ankle_pdflex_right": {
-          "corr": 0.9932495452399928,
-          "peak_diff": -0.05804181798296878,
-          "rms_pct_ptp": 5.799568743380077
+          "corr": 0.9904719193149812,
+          "peak_diff": -0.021775948257872546,
+          "rms_pct_ptp": 6.253674950684659
         },
         "hip_aa_left": {
-          "corr": 0.9902310654951533,
-          "peak_diff": 0.19242861113216983,
-          "rms_pct_ptp": 15.811570853003012
+          "corr": 0.9900154396599206,
+          "peak_diff": 0.21403192010150648,
+          "rms_pct_ptp": 17.182009315521242
         },
         "hip_aa_right": {
-          "corr": 0.9925921951913746,
-          "peak_diff": 0.10366852368835144,
-          "rms_pct_ptp": 7.886790012841789
+          "corr": 0.9925257933648939,
+          "peak_diff": 0.1171412887088682,
+          "rms_pct_ptp": 8.459374654170256
         },
         "hip_fe_left": {
-          "corr": 0.9236680912345653,
-          "peak_diff": -0.01837676316520968,
-          "rms_pct_ptp": 14.682815809141289
+          "corr": 0.9253184761850308,
+          "peak_diff": -0.043349867905187946,
+          "rms_pct_ptp": 15.000775747416013
         },
         "hip_fe_right": {
-          "corr": 0.9417418359869671,
-          "peak_diff": -0.12390241742706358,
-          "rms_pct_ptp": 13.247410080298726
+          "corr": 0.9434330689253098,
+          "peak_diff": -0.1563668726143661,
+          "rms_pct_ptp": 13.673287462139555
         },
         "hip_ier_left": {
-          "corr": 0.9490418733782408,
-          "peak_diff": 0.03026035850959574,
-          "rms_pct_ptp": 17.229362261127395
+          "corr": 0.9442720750358866,
+          "peak_diff": 0.033784599806489846,
+          "rms_pct_ptp": 18.723275472725593
         },
         "hip_ier_right": {
-          "corr": 0.9456054703753839,
-          "peak_diff": 0.022892428770301818,
-          "rms_pct_ptp": 10.7693523732963
+          "corr": 0.9447794675959146,
+          "peak_diff": 0.02676262857496696,
+          "rms_pct_ptp": 11.226521489452635
         },
         "knee_left": {
-          "corr": 0.9374419070075396,
-          "peak_diff": -0.024314884669055254,
-          "rms_pct_ptp": 13.009548531419709
+          "corr": 0.9273571956109294,
+          "peak_diff": -0.005884499296778478,
+          "rms_pct_ptp": 13.652614121239994
         },
         "knee_right": {
-          "corr": 0.9134019973789508,
-          "peak_diff": -0.05595358279896053,
-          "rms_pct_ptp": 15.783614971932534
+          "corr": 0.8960342314867659,
+          "peak_diff": -0.034792282724022315,
+          "rms_pct_ptp": 16.766652668753437
         }
       },
       "rigid/A_filtered": {
         "ankle_ie_left": {
-          "corr": 0.600358208035314,
-          "peak_diff": -0.07677680315522162,
-          "rms_pct_ptp": 37.70257607225477
+          "corr": 0.5472796481808707,
+          "peak_diff": -0.07261779439488915,
+          "rms_pct_ptp": 40.036793783945335
         },
         "ankle_ie_right": {
-          "corr": 0.7195558079455514,
-          "peak_diff": 0.35044764268961553,
-          "rms_pct_ptp": 67.03795733256693
+          "corr": 0.7106892480809632,
+          "peak_diff": 0.3657359889292365,
+          "rms_pct_ptp": 69.74129367890438
         },
         "ankle_pdflex_left": {
-          "corr": 0.9936659679410225,
-          "peak_diff": -0.08617932035747174,
-          "rms_pct_ptp": 6.108894773974304
+          "corr": 0.9914846483511931,
+          "peak_diff": -0.0489643151299437,
+          "rms_pct_ptp": 6.386883232330526
         },
         "ankle_pdflex_right": {
-          "corr": 0.9932495452399929,
-          "peak_diff": -0.0580418179829687,
-          "rms_pct_ptp": 5.799568743380077
+          "corr": 0.9904719193149809,
+          "peak_diff": -0.021775948257872917,
+          "rms_pct_ptp": 6.253674950684658
         },
         "hip_aa_left": {
-          "corr": 0.990231065495153,
-          "peak_diff": 0.19242861113216989,
-          "rms_pct_ptp": 15.81157085300301
+          "corr": 0.9900154396599207,
+          "peak_diff": 0.2140319201015064,
+          "rms_pct_ptp": 17.182009315521245
         },
         "hip_aa_right": {
-          "corr": 0.9925921951913743,
-          "peak_diff": 0.1036685236883516,
-          "rms_pct_ptp": 7.8867900128417885
+          "corr": 0.9925257933648938,
+          "peak_diff": 0.11714128870886824,
+          "rms_pct_ptp": 8.459374654170258
         },
         "hip_fe_left": {
-          "corr": 0.9236680912345654,
-          "peak_diff": -0.01837676316520968,
-          "rms_pct_ptp": 14.682815809141289
+          "corr": 0.9253184761850307,
+          "peak_diff": -0.043349867905187946,
+          "rms_pct_ptp": 15.000775747416014
         },
         "hip_fe_right": {
-          "corr": 0.9417418359869675,
-          "peak_diff": -0.12390241742706327,
-          "rms_pct_ptp": 13.247410080298726
+          "corr": 0.9434330689253093,
+          "peak_diff": -0.1563668726143658,
+          "rms_pct_ptp": 13.673287462139555
         },
         "hip_ier_left": {
-          "corr": 0.9490418733782414,
-          "peak_diff": 0.03026035850959573,
-          "rms_pct_ptp": 17.229362261127395
+          "corr": 0.9442720750358865,
+          "peak_diff": 0.03378459980648982,
+          "rms_pct_ptp": 18.723275472725593
         },
         "hip_ier_right": {
-          "corr": 0.9456054703753839,
-          "peak_diff": 0.022892428770301846,
-          "rms_pct_ptp": 10.769352373296298
+          "corr": 0.9447794675959146,
+          "peak_diff": 0.026762628574966932,
+          "rms_pct_ptp": 11.226521489452631
         },
         "knee_left": {
-          "corr": 0.9374419070075395,
-          "peak_diff": -0.02431488466905533,
-          "rms_pct_ptp": 13.009548531419709
+          "corr": 0.9273571956109294,
+          "peak_diff": -0.005884499296778589,
+          "rms_pct_ptp": 13.652614121239994
         },
         "knee_right": {
-          "corr": 0.9134019973789508,
-          "peak_diff": -0.05595358279896049,
-          "rms_pct_ptp": 15.783614971932531
+          "corr": 0.8960342314867656,
+          "peak_diff": -0.034792282724022384,
+          "rms_pct_ptp": 16.766652668753434
         }
       }
     },
@@ -500,6 +669,6 @@
     "tolerance_rel": 1e-06
   },
   "schema": "walk-reference/1",
-  "snapshot_sha256": "e5cc96ceed7e4d6c6807b5d2120bb4780994e067617778016cb4ae5719154199",
-  "spec_sha256": "4ceb8258c5488b4bae2812c75e85cc0fa7d019ab3bb76423bae0b489b69b05bd"
+  "snapshot_sha256": "492fe816e6d805a75bc31092f393046b329c4201d6c85e461fec1af78173cf74",
+  "spec_sha256": "9da7d4a14e5a2babeb90c4fb80186cd855f3276bdc4c8aa33611b063d296ff0a"
 }

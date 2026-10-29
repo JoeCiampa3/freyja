@@ -233,12 +233,14 @@ def test_the_model_mass_is_the_sheets_mass_with_the_toe_counted_under_the_foot(m
 def test_with_the_old_box_a_negligible_toe_and_the_toe_welded_the_tracked_a_filtered_reference_is_reproduced(tmp_path):
     """The toe's footprint, hinge and split must change nothing else: a foot box from 41.25 mm behind to 165 mm ahead (the old box, as heel behind and toe tip
     ahead), a toe of mass fraction 1e-6, the toe held flat (method A never moves it), and the walking-reference subset (AB06, 1.4 m/s, three strides) of A_filtered
-    comes out as the tracked sim/benchmarks/walk_reference.json says, to its own reproduction tolerance. Only A_filtered is compared: it is the one method
-    the tracked reference holds, and B and H see the footprint."""
+    comes out as the pre-foot-split reference says, to its own reproduction tolerance. That reference is the frozen copy of
+    sim/benchmarks/walk_reference.json as it stood at gait.20261014-1929 (tests/fixtures/walk_reference_pre_foot_split.json): the tracked file was
+    re-recorded on the current model at memo 49, so it no longer describes the old box. Only A_filtered is compared: it is the one method
+    the reference holds, and B and H see the footprint."""
     import gait
     old_box = fh.design_table(foot_heel_behind_ankle_mm=41.25, toe_hinge_ahead_ankle_mm=128.0, toe_tip_ahead_ankle_mm=165.0, foot_ball_length_mm=169.25,
                               foot_length_total_mm=206.25, toe_mass_fraction=1e-6)
     path = fh.build_model_file(tmp_path, design=old_box, scaled=False)
-    base = json.loads((REPO / "sim" / "benchmarks" / "walk_reference.json").read_text(encoding="utf-8"))["reproduction"]
+    base = json.loads((REPO / "tests" / "fixtures" / "walk_reference_pre_foot_split.json").read_text(encoding="utf-8"))["reproduction"]
     now = gait.reference_metrics(methods=["A_filtered"], model_path=path)
     assert gait.compare_reference(base["metrics"], now, base["tolerance_rel"]) == []
