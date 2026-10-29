@@ -8,5 +8,6 @@ blocked_by: [rm.v1-stage3-brief, rm.v1-thread-store]
 estimate_days: 3.0
 tags: ["stage3"]
 done_when: {type: manual}
+signed_off: true
 ---
 Reads its parameters through system-model addresses and records what each CAD export consumed as a stamp (Stage 3a), so a changed input marks the CAD model stale.
