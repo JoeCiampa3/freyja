@@ -143,6 +143,17 @@ def _names(root, sub, recursive=False) -> list:
     return sorted(p.relative_to(d).as_posix() for p in files if p.is_file())
 
 
+MEMOS_LISTED = 5
+
+
+def _memo_lines(root) -> list:
+    """The newest MEMOS_LISTED memos by number (memo10 after memo9), then a count of the older ones: the list grows with every memo and would push the file past MAX_LINES."""
+    names = _names(root, "docs/memos")
+    names.sort(key=lambda n: (int(m.group(1)) if (m := re.match(r"memo(\d+)", n)) else -1, n))
+    older = names[:-MEMOS_LISTED]
+    return [f"- {n}" for n in names[-MEMOS_LISTED:]] + ([f"({len(older)} older memos not listed)"] if older else [])
+
+
 def roadmap_line(root) -> str:
     """One line for the roadmap: node count, frontier size and error count, computed from roadmap/nodes under root (tools/roadmap)."""
     tools = str(REPO / "tools")
@@ -204,7 +215,7 @@ def generate(root=None, run=True, runner=None) -> str:
     out += [f"- {c} | confirmed {'true' if conf else 'false'} | review by {rb}" for c, conf, rb in sorted(_waivers(root))] or ["none"]
     out += ["", "## Known failing (xfail)", ""] + (_xfails(root) or ["none"])
     out += ["", "## Latest run per scenario", ""] + [f"- {r}" for r in _latest_runs(root)] + [
-        "", "## Latest gait record", "", _latest_gait(root), "", "## docs/memos", ""] + [f"- {n}" for n in _names(root, "docs/memos")] + [
+        "", "## Latest gait record", "", _latest_gait(root), "", "## docs/memos", ""] + _memo_lines(root) + [
         "", "## docs/briefs", ""] + [f"- {n}" for n in _names(root, "docs/briefs", recursive=True)]
     tracked = [f for f in _git(root, "ls-files").splitlines() if f != STATE_FILE]
     out += ["", f"Tracked files: {len(tracked)} ({STATE_FILE} not counted)", ""]

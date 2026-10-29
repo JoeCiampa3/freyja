@@ -231,3 +231,18 @@ def test_every_xfail_is_listed_with_its_test_id_and_reason(repo):
 
 def test_the_xfail_section_says_none_when_there_are_none(repo):
     assert "## Known failing (xfail)\n\nnone\n" in state.generate(repo, run=False)
+
+
+def test_only_the_newest_memos_are_listed_by_number_and_the_rest_are_counted(repo):
+    for n in (2, 3, 9, 10, 11, 12, 13):
+        (repo / "docs" / "memos" / f"memo{n}-x.md").write_text("m\n")
+    text = state.generate(repo, run=False)
+    sec = text.split("## docs/memos")[1].split("## docs/briefs")[0]
+    listed = [l[2:] for l in sec.splitlines() if l.startswith("- ")]
+    assert listed == ["memo9-x.md", "memo10-x.md", "memo11-x.md", "memo12-x.md", "memo13-x.md"]  # numeric order, not alphabetical
+    assert "3 older memos not listed" in sec
+
+
+def test_the_real_state_file_is_not_truncated():
+    import re
+    assert "(truncated at" not in state.generate(REPO, run=False)
