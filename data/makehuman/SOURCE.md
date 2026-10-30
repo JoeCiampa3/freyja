@@ -8,7 +8,7 @@
 | `ruler_measures.json` | Vertex lists of MakeHuman's Ruler measures. |
 | `mhm_sources.json` | Pins: the upstream commit, `base.obj`, the license statement for the targets folder, and sha256 and size of every target file the analysis scripts read. |
 
-The target files themselves (33 MB for the 161 files read) are not committed. `python analysis/makehuman_fetch.py` downloads them from the pinned commit into `data/makehuman/cache/targets` (gitignored), refuses any file whose hash differs from the manifest, and verifies the lot; `--verify` checks without the network. Then
+The target files themselves (the 165 files read: 33 MB for the original 161, plus the four arm-length targets `measure-upperarm-length-incr`, `-decr` and `measure-lowerarm-length-incr`, `-decr`, pinned for adr-0042) are not committed. `python analysis/makehuman_fetch.py` downloads them from the pinned commit into `data/makehuman/cache/targets` (gitignored), refuses any file whose hash differs from the manifest, and verifies the lot; `--verify` checks without the network. Then
 `python analysis/makehuman_attribution.py --base data/makehuman/base.obj --targets data/makehuman/cache/targets`.
 
 License. The targets folder has no license file of its own. Each target file read carries the header "explicitly released as CC0 in september 2020", and the upstream repository's `LICENSE.ASSETS.md` at the pinned commit is the CC0 1.0 Universal text. The manifest records this under `targets_license`.

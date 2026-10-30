@@ -671,8 +671,8 @@
    "sha256": "a4c13aee1da6179ffe61f2a64af464e4254b9a75128929837fc694a39359ec80"
   }
  },
- "note": "Pins what analysis/makehuman_attribution.py and analysis/makehuman_v2.py read. 'files' are paths in the upstream repo's makehuman/data/targets folder, fetched at 'commit' by analysis/makehuman_fetch.py into data/makehuman/cache/targets (gitignored). The list is the target files those scripts actually read for the v1, default-human, slider-search and v2 meshes, not the whole folder. The pre-pin attribution run of memo 30 read a 414-file folder fetched from master on 2026-10-24; its results reproduce from this pin to the digits stored, only 'inputs.target_files' differs.",
- "retrieved": "2026-10-25",
+ "note": "Pins what analysis/makehuman_attribution.py and analysis/makehuman_v2.py read, and also lists the four arm-length targets (measure-upperarm-length-incr and -decr, measure-lowerarm-length-incr and -decr; pinned for adr-0042). 'files' are paths in the upstream repo's makehuman/data/targets folder, fetched at 'commit' by analysis/makehuman_fetch.py into data/makehuman/cache/targets (gitignored). The list is the target files those scripts actually read for the v1, default-human, slider-search and v2 meshes, not the whole folder. The pre-pin attribution run of memo 30 read a 414-file folder fetched from master on 2026-10-24; its results reproduce from this pin to the digits stored, only 'inputs.target_files' differs.",
+ "retrieved": "2026-10-25 for the 161 files, 2026-10-29 for the four arm targets",
  "source": "github.com/makehumancommunity/makehuman",
  "targets_license": {
   "license_file": "LICENSE.ASSETS.md",
