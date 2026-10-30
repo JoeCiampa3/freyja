@@ -626,6 +626,14 @@
    "bytes": 26447,
    "sha256": "e4294db231dd3283680e6be4b9d3d8d81aa7c575a32f937f8d0751b1ec3d6512"
   },
+  "measure/measure-lowerarm-length-decr.target": {
+   "bytes": 92768,
+   "sha256": "87287a1546234e55b7081192659a335af0ac0ff88bdebb732577352a088d87fa"
+  },
+  "measure/measure-lowerarm-length-incr.target": {
+   "bytes": 89495,
+   "sha256": "6a5c5d34fbc5051f75d6c3511911f7542da96b8ae9cdbcbccf346411a9bf1afb"
+  },
   "measure/measure-lowerleg-height-decr.target": {
    "bytes": 59660,
    "sha256": "267a461a42209dc1547fba016179646d38f9148fa177867e234b6018a404e98a"
@@ -637,6 +645,14 @@
   "measure/measure-underbust-circ-decr.target": {
    "bytes": 39087,
    "sha256": "94c7a07cf0b71a2a5f6e369ba9bf10e1e30ac2ef93596567f16178623867c186"
+  },
+  "measure/measure-upperarm-length-decr.target": {
+   "bytes": 88564,
+   "sha256": "abe56f2b05ed531af994f50549730183bbc00b868ddc96aceb296ab997fbea44"
+  },
+  "measure/measure-upperarm-length-incr.target": {
+   "bytes": 93539,
+   "sha256": "274fef021ec84e4f646e82aa1df39fe9cc781fc872f0159ee815a04f970248a9"
   },
   "measure/measure-upperleg-height-decr.target": {
    "bytes": 93265,
