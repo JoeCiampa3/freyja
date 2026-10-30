@@ -80,7 +80,7 @@ The 33 MB figure is kept for the original 161 only. I did not recompute a total 
 - Sheet lengths: 255.235 and 259.436 mm.
 - Both nodes are inside the skin (`field.contains`).
 - Elbow bend 38.86 degrees. The left side matches the right to the digits shown.
-- ADR 0042 quotes 28.6 mm for the elbow from memo 43. I measure 28.03 mm on the exact skin. Memo 43's point was slightly different (it is the same node to about 0.3 mm), and I have not reconciled the 0.6 mm. It does not touch a criterion.
+- ADR 0042 quotes 28.6 mm for the elbow from memo 43. I measure 28.03 mm on the exact skin. I have not traced the 0.6 mm difference. It does not touch a criterion.
 
 ## 2.2 Weights
 
@@ -170,7 +170,7 @@ D7 share table, raw ratio (mass share over volume share):
 
 1. **Arm oracle examples: all three fail gate 5 on the D1 nodes, on v2 and on v3.** v3 "feasible" margins: `upper_arm_cylinder` -14.04 mm, `forearm_box` -14.98 mm, `arm_union` -13.09 mm. Those examples are authored around the old axis: the cylinder's YAML says it sits at y = +24 mm because the section's centre was about 20 mm medial of the axis. With the axis on the centre line, that placement is about 20 mm off-centre. This follows from D1, not v3.
 2. **Elbow interface sections.** The area step across the elbow, -0.7% committed, is -5.2% on v2 with D1 and -3.6% on v3. The moved bisector and the frames change where the two bodies meet. It is not gated.
-3. **The forearm is now longer than ANSUR scaled to stature:** 259.4 mm against radiale-stylion 251.7 mm (+3.1%). On v2's skin nodes it was 8% short by this comparison (231.7 mm). That is the sheet's length, which D3 conforms to, so this is context only. Radiale-stylion is a surface-landmark distance, not a joint-centre one.
+3. **The forearm is now longer than ANSUR scaled to stature:** 259.4 mm against radiale-stylion 251.7 mm (+3.1%). On v2's skin nodes it was 7.9% short by this comparison (231.7 mm, from `ansur_cross_check` in the committed `arm_bodies.json`), while ADR 0042's context says 11% (memo 38); I have not traced that difference. The new length is the sheet's, which D3 conforms to, so this is context only. Radiale-stylion is a surface-landmark distance, not a joint-centre one.
 4. **Gate failures in the v3 log that are artefacts of the candidate:** gate 6 compares against the v1 Blender key, because `masses.blender_volume_m3` has no v3 key (52.7155 l against 51.2605 l, +2.84%, meaningless). The v2 run's gate 2 failure is the expected 8% on 1.1147 and 1.1449. The printed arm gate label still says "2 x 17.3" in these logs because `tools/` is unchanged. No other gate failed on v3.
 5. **Left and right:** the arm volume difference is -0.47% on v2 and +0.01% on v3. I have not explained that change.
 
@@ -191,7 +191,7 @@ D7 share table, raw ratio (mass share over volume share):
 
 ## Questions for Joe
 
-1. **Phase 3:** after your MakeHuman look and Blender volume, proceed? The candidate is at `data/makehuman/cache/v3-candidate/freyja-body-v3.mhm`. Note that the `.mhm` still carries v2's `name` and camera lines unchanged, as the brief says.
+1. **Phase 3:** after your MakeHuman look and Blender volume, proceed? The candidate is at `data/makehuman/cache/v3-candidate/freyja-body-v3.mhm`. Its only difference from v2's `.mhm` is the two modifier lines, as the brief says.
 2. **Arm examples:** may Phase 3 re-place the authored poses of `upper_arm_cylinder`, `forearm_box` and `arm_union` on the D1 axis? "Rebuild" in the brief does not cover an authored edit, and gate 5 fails without one. Recommended: yes, with the new placements in the Phase 3 memo.
 3. **Blender key:** `masses.blender_volume_m3` chooses between v1 and v2 keys by label, and anything else falls back to v1 silently. That is how the meaningless gate 6 above arose. Phase 3 needs a `blender_volume_v3_m3` key, and I recommend the fallback becoming a stop rather than a silent v1 comparison.
 4. **ADR 0042's 28.6 mm and 0.43:** the record is accepted, so I have changed nothing. Should the measured 28.03 mm and 0.512871 go in with the Phase 3 Amendments line?
