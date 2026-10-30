@@ -138,7 +138,7 @@ def test_share_ratio_arithmetic_with_stand_in_segments():
     inp = SimpleNamespace(V=V, F=F, sheet=sh, stature_mesh=100.0)
     fake = lambda v: SimpleNamespace(seg=SimpleNamespace(volume=lambda t=0.0, s0=0.0, s1=None: v * 1e6))
     consts = {"body_fat_fraction": 0.2, "v_lung_l": 0.1, "blender_volume_m3": 0.001}
-    out = masses.report(inp, {"thigh": fake(0.2), "shank": fake(0.1), "foot": fake(0.02)}, consts)
+    out = masses.report(inp, {"thigh": fake(0.2), "shank": fake(0.1), "foot": fake(0.02)}, consts, mesh_label="data/makehuman/freyja-body-v1.obj")
     D = 4.95 / 4.7
     assert out["cases"]["nominal"]["mesh_mass_kg"] == pytest.approx(D * 0.9)
     r = out["rows"]["thigh"]
@@ -148,6 +148,48 @@ def test_share_ratio_arithmetic_with_stand_in_segments():
     assert c["expected_tissue_ratio"] == pytest.approx(1.05 / mean) and c["normalised_ratio"] == pytest.approx(0.5 / (1.05 / mean))
     assert c["implied_density_kg_per_l"] == pytest.approx(0.1 * D * 0.9 / 0.2)
     assert out["blender_within_tolerance"] is True
+
+
+CONSTS = {"blender_volume_m3": 0.051, "blender_volume_v2_m3": 0.052, "blender_volume_v3_m3": 0.053}
+
+
+def _unknown_label_refuses():
+    from envelope import masses, sheet
+    with pytest.raises(sheet.StopAndAsk, match="freyja-body-v9"):
+        masses.blender_volume_m3(CONSTS, "data/makehuman/freyja-body-v9.obj")
+
+
+def test_each_sculpt_label_reads_its_own_blender_key():
+    from envelope import masses
+    for label, want in (("data/makehuman/freyja-body-v1.obj", 0.051), ("data/makehuman/freyja-body-v2.obj", 0.052), ("freyja-body-v3.obj", 0.053)):
+        assert masses.blender_volume_m3(CONSTS, label) == want
+    assert masses.blender_volume_m3({}, "freyja-body-v3.obj") is None                 # the sculpt is known, its volume not yet entered
+    assert masses.blender_volume_m3(CONSTS, None) is None                             # no mesh named: nothing to compare
+
+
+def test_an_unknown_sculpt_label_raises_instead_of_reading_v1():
+    _unknown_label_refuses()
+
+
+def test_mutation_an_unknown_label_that_returns_v1_fails_the_guard(monkeypatch):
+    from envelope import masses
+
+    class FallsBack(dict):
+        def __contains__(self, k):
+            return True
+
+        def __getitem__(self, k):
+            return "blender_volume_m3"
+    monkeypatch.setattr(masses, "BLENDER_KEYS", FallsBack())
+    with pytest.raises(pytest.fail.Exception):
+        _unknown_label_refuses()
+
+
+def test_the_committed_v3_blender_volume_has_its_provenance():
+    from envelope import masses
+    c = masses.load_constants(REPO)
+    assert c["blender_volume_v3_m3"] == 0.0527178
+    assert c["blender_volume_v3_source"] == "Joe, Blender, MakeHuman export of the v3 .mhm, 2026-10-30, lungs included"
 
 
 # ---- brief 3: pelvis tops at the iliocristale, the lumped region to the tenth rib ----------------------------------------------------

@@ -20,6 +20,7 @@ from .sheet import StopAndAsk
 PATH = "data/envelope/body_density.json"
 BRACKET = (0.15, 0.35)                    # the brief's sensitivity bracket for the body fat fraction
 BLENDER_TOLERANCE = 0.005                 # the brief: the computed volume must match Joe's Blender volume within 0.5%
+BLENDER_KEYS = {"freyja-body-v1": "blender_volume_m3", "freyja-body-v2": "blender_volume_v2_m3", "freyja-body-v3": "blender_volume_v3_m3"}     # sculpt -> its key in body_density.json
 DENSITIES_PATH = "data/envelope/reference_densities.json"
 DUMAS_TABLE1_PATH = "data/envelope/dumas2015_table1_female.json"
 
@@ -67,10 +68,14 @@ def load_dumas_table1(root: Path) -> dict:
 
 
 def blender_volume_m3(constants: dict, mesh_label: str | None):
-    """Joe's Blender volume for the mesh being measured: `blender_volume_m3` is the v1 mesh's (the original key), `blender_volume_v2_m3` the v2 mesh's;
-    None when the mesh has no entry."""
-    key = "blender_volume_v2_m3" if mesh_label and "body-v2" in mesh_label else "blender_volume_m3"
-    return constants.get(key)
+    """Joe's Blender volume for the mesh being measured, by the sculpt's own key (`BLENDER_KEYS`); None when no mesh is named or the sculpt's volume is not entered. An unknown sculpt stops:
+    it never falls back to another sculpt's volume."""
+    if mesh_label is None:
+        return None
+    stem = Path(mesh_label).stem
+    if stem not in BLENDER_KEYS:
+        raise StopAndAsk(f"{mesh_label}: no Blender volume key for sculpt {stem!r} (masses.BLENDER_KEYS)")
+    return constants.get(BLENDER_KEYS[stem])
 
 
 def report(inp, results: dict, constants: dict, cuts: dict | None = None, densities: dict | None = None, mesh_label: str | None = None) -> dict:
