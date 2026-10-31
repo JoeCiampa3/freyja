@@ -88,16 +88,20 @@ def test_the_export_comparison_refuses_another_topology(tmp_path):
     assert not v3.compare_export(a, b)["pass"]
 
 
+def _lf(path):
+    return Path(path).read_bytes().replace(b"\r\n", b"\n")                  # git stores these LF; a checkout may hold either
+
+
 def test_the_committed_v3_is_the_scripted_one():
     mh = ROOT / "data/makehuman"
     w = v3.V3_WEIGHTS
     assert (w["upper"], w["lower"]) == (0.381365, 0.512871)
     assert (mh / "freyja-body-v3.mhm").read_text() == v3.v3_mhm_text((mh / "freyja-body-v2.mhm").read_text(), w["upper"], w["lower"])
-    assert (mh / "freyja-body-v3.mtl").read_bytes() == (mh / "freyja-body-v2.mtl").read_bytes()
-    assert b"mtllib freyja-body-v3.mtl" in (mh / "freyja-body-v3.obj").read_bytes()
+    assert _lf(mh / "freyja-body-v3.mtl") == _lf(mh / "freyja-body-v2.mtl")
+    assert b"mtllib freyja-body-v3.mtl" in _lf(mh / "freyja-body-v3.obj")
     assert v3.meshio.topology_difference(mh / "freyja-body-v3.obj", mh / "base.obj") is None
     if (v3.TARGETS / v3.UPPER_REL).exists():
         import json
         man = json.loads(v3.MANIFEST.read_text(encoding="utf-8"))
         d = sum(w[k] * v3.read_verified_target(man, v3.TARGETS, r, v3.meshio.BODY_VERTICES) for k, r in (("upper", v3.UPPER_REL), ("lower", v3.LOWER_REL)))
-        assert (mh / "freyja-body-v3.obj").read_bytes() == v3.v3_obj_bytes((mh / "freyja-body-v2.obj").read_bytes(), d)
+        assert _lf(mh / "freyja-body-v3.obj") == v3.v3_obj_bytes(_lf(mh / "freyja-body-v2.obj"), d)
