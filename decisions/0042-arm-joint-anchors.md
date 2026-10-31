@@ -65,3 +65,4 @@ D6. **Amendments.** This record amends ADR 0007 D2 (the arm nodes, the arm stret
 ## Amendments
 
 - 2026-10-30. Outcome: v3 with both targets is the baseline (weights 0.381365 and 0.512871, memo 52). C1 1.00001 and 0.99997; C2 -0.430%; C3 0.007 mm; C4 worst thorax -0.026%. The MakeHuman export of the .mhm agrees with the scripted mesh to 0.017 mm, and its Blender volume is 52.7178 l against 52.7155 l. The elbow placeholder is 13.93 mm inside the skin. On v3 the forearm (259.4 mm, the sheet's) is 3.1% longer than ANSUR II radiale-stylion scaled to stature, a surface-landmark distance, context only. In place: Context's ANSUR comparison now names the Ruler chord; Consequences' elbow-to-skin distance is the measured 28.03 mm.
+- 2026-10-30. C3's SJC value of 0.007 mm in the outcome line is a difference at one raster phase; the SJC moves about 0.26 mm across raster phases (memo 54), so C3 reads as under about 0.3 mm. It passes against 2 mm.
