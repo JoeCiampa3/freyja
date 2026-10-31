@@ -9,7 +9,7 @@ links: [adr-0007]
 ADR 0007 D2 registers each arm segment by a rigid rotation about its proximal joint centre and an axial stretch onto the sheet's joint-centre nodes. It puts the elbow and wrist nodes on Ruler chord vertices "on or near the skin", and gives the arms a stretch gate of 2 x sigma / sheet length with sigma = 17.3 mm (the knee anchor SD). Three findings reopened that (D11, amended 2026-10-28):
 
 - The elbow node is the midpoint of two skin vertices. It sits 4.0 mm under the lateral skin and about 30 mm lateral of the section centre line; the wrist node is on the skin (0.07 mm) (memo 43). The room the oracle reports at the elbow is one-sided: a placeholder on the axis sits 10.97 mm proud of the skin. The cause is the anchor, not the roll, the bisector cap or a slender mesh: the elbow's skin breadth, 66.8 to 68.3 mm, is about the 75th percentile of NHANES III women's elbow breadth.
-- The arm stretch is a known length shortfall, not anchor uncertainty. The sculpt's upper arm and forearm are 12.4% and 12.0% short of the sheet on the skin nodes, and the forearm is 11% short of ANSUR II radiale-stylion scaled to stature (memo 38). Sigma was chosen after memo 38 had shown those stretches, so the arm gate was sized with them in view. Moving the elbow to the section centre line puts the forearm at 1.139 against its 1.133 gate (memo 43).
+- The arm stretch is a known length shortfall, not anchor uncertainty. The sculpt's upper arm and forearm are 12.4% and 12.0% short of the sheet on the skin nodes, and the forearm's Ruler chord (223.5 mm) is 11% short of ANSUR II radiale-stylion scaled to stature (memo 38); node to node it is 7.9% short (memo 52). Sigma was chosen after memo 38 had shown those stretches, so the arm gate was sized with them in view. Moving the elbow to the section centre line puts the forearm at 1.139 against its 1.133 gate (memo 43).
 - The shortest-arc rotation leaves the upper arm's +x 0.32 degrees from the mesh's anterior and the forearm's 16.55 degrees (memo 43), so a forearm part designed in the ISB frame would sit twisted against the mesh.
 
 Brief 9 (docs/briefs/architecture/volume-extractor-brief9.md, sha256 5e075048104b) tested the centre-line anchor against three thresholds Joe set in the brief before any result: T1 5 mm, T2 1 mm, T3 5 degrees. The brief was committed after the run with its text unchanged (memo 50, mistakes). Results (memos 50 and 51):
@@ -45,7 +45,7 @@ D6. **Amendments.** This record amends ADR 0007 D2 (the arm nodes, the arm stret
 ## Consequences
 
 - The elbow node moves about 30 mm and the wrist node about 15 mm (memo 50), and the bisector cut moves with the elbow. In the commit that brings v3 in, the arm bodies, ledgers, free-space ledgers, silhouettes, examples and closure are rebuilt on the D1 nodes and the D4 roll, and the gates are rechecked.
-- The elbow placeholder on the axis is expected to move from 10.97 mm proud of the skin to inside it, since the D1 elbow node is 28.6 mm from the skin on v2 (memo 43). The rebuild reports the measured margin.
+- The elbow placeholder on the axis is expected to move from 10.97 mm proud of the skin to inside it, since the D1 elbow node is 28.03 mm from the exact skin on v2 (memo 52; memo 43 gave 28.6 mm, the same node read off the upper arm's 2 mm voxel field in its stretched frame). The rebuild reports the measured margin.
 - A re-sculpted arm grows the mesh volume: about +0.4 l at the weights needed (memo 50 section 5). The sculpt mass, the D8 comparators and the D7 share table move; they are reported, not re-decided. The upper-arm target reaches the shoulder girdle and the axilla, and C3 and C4 bound what that does to the trunk.
 - The sigma = 17.3 mm arm gate leaves `tools/envelope/arms.py` and CONVENTIONS section 2 in the same commit.
 - `rm.v1-upper-arm-characterized` waits on the implementation, `rm.v1-arm-sculpt-v3`, as well as on this record.
@@ -61,3 +61,7 @@ D6. **Amendments.** This record amends ADR 0007 D2 (the arm nodes, the arm stret
 - Redefining T1's cross-check after the trip (the largest Feret diameter, or station -225). That is the post-hoc rescue the thresholds exist to prevent.
 - The styloid-line roll, which failed T3 and assumed a supinated forearm. The shortest-arc roll, whose 16.55 degrees are an artefact of the rotation convention.
 - A manual MakeHuman export for v3. It cannot be reproduced from the repo; the targets are linear and pinned, so v3 is a scripted output.
+
+## Amendments
+
+- 2026-10-30. Outcome: v3 with both targets is the baseline (weights 0.381365 and 0.512871, memo 52). C1 1.00001 and 0.99997; C2 -0.430%; C3 0.007 mm; C4 worst thorax -0.026%. The MakeHuman export of the .mhm agrees with the scripted mesh to 0.017 mm, and its Blender volume is 52.7178 l against 52.7155 l. The elbow placeholder is 13.93 mm inside the skin. On v3 the forearm (259.4 mm, the sheet's) is 3.1% longer than ANSUR II radiale-stylion scaled to stature, a surface-landmark distance, context only. In place: Context's ANSUR comparison now names the Ruler chord; Consequences' elbow-to-skin distance is the measured 28.03 mm.

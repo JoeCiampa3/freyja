@@ -100,3 +100,4 @@ and 0.10 for the cervicale).
 
 - 2026-10-28. D11: the elbow and wrist nodes and the forearm frame roll reopened (memo 43); decided in rm.v1-arm-joint-anchors-decision.
 - 2026-10-30. D2 (the arm nodes, the arm stretch gate, the arm frame roll) and D10 (the arms take the 8% gate) amended by adr-0042, and D1 (the baseline sculpt) when its v3 is committed; D11's arm item closed in place.
+- 2026-10-30. D1 amended by adr-0042: the baseline sculpt is v3 (freyja-body-v3, scripted from v2 and the pinned arm-length targets); v1 and v2 stay in the repo.
