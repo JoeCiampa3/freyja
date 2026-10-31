@@ -90,11 +90,13 @@ class BodyRaster:
     """Inside/outside raster of the body below `z_hi` (heights above the sole), for section centroids."""
 
     def __init__(self, V, F, z_hi, h=GRID_MM, margin=6.0):
-        x0, x1 = V[:, 0].min() - margin, V[:, 0].max() + margin
-        y0, y1 = V[:, 1].min() - margin, V[:, 1].max() + margin
+        snap = lambda a: np.floor(a / h) * h       # the origin sits on the world lattice of h (brief 11 Part B): the grid's phase does not depend on the sculpt's extent
+        x0, x1 = snap(V[:, 0].min() - margin), V[:, 0].max() + margin
+        y0, y1 = snap(V[:, 1].min() - margin), V[:, 1].max() + margin
+        z0 = snap(-margin)
         self.h = h
-        self.o = np.array([x0, y0, -margin])
-        shape = (int(np.ceil((x1 - x0) / h)), int(np.ceil((y1 - y0) / h)), int(np.ceil((z_hi + margin) / h)))
+        self.o = np.array([x0, y0, z0])
+        shape = (int(np.ceil((x1 - x0) / h)), int(np.ceil((y1 - y0) / h)), int(np.ceil((z_hi - z0) / h)))
         self.inside, self.odd = field.parity_inside(V, F, self.o, h, shape)
 
     def layer(self, z):

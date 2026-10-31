@@ -168,7 +168,8 @@ def build_segment(inp: Inputs, feats: dict, reg: register.Registration, name="th
     inz = (Vs[:, 2] <= MARGIN_MM) & (Vs[:, 2] >= -L - MARGIN_MM)
     right = right_of_midplane(Vs[:, 0], Vs[:, 1], Vs[:, 2])
     sel = Vs[inz & right]
-    xy = (sel[:, 0].min() - SIDE_PAD_MM, sel[:, 0].max() + SIDE_PAD_MM, sel[:, 1].min() - SIDE_PAD_MM, sel[:, 1].max() + SIDE_PAD_MM)
+    snap = lambda a: np.floor(a / voxel) * voxel      # the band holds the right fingertips at the thigh: on the lattice of the segment frame, the hand's extent sets the grid's size and not its phase
+    xy = (snap(sel[:, 0].min() - SIDE_PAD_MM), sel[:, 0].max() + SIDE_PAD_MM, snap(sel[:, 1].min() - SIDE_PAD_MM), sel[:, 1].max() + SIDE_PAD_MM)
     sp = _seed_point(feats, (u_m + l_m) / 2)
     seed = reg.apply(sp[None, :])[0] - origin
     seg = field.build_segment(Vs, inp.F, length=L, voxel=voxel, z_top=0.0, margin=MARGIN_MM, xy=xy, region_fn=right_of_midplane, seed_point=seed)

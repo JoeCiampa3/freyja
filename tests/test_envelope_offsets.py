@@ -56,7 +56,7 @@ def test_the_centroid_of_a_section_is_the_centre_of_an_offset_cylinder():
     assert c["x"] == pytest.approx(7.0, abs=0.5) and c["y"] == pytest.approx(-3.0, abs=0.5) and c["area_mm2"] == pytest.approx(np.pi * 40 ** 2, rel=0.01)
 
 
-ROUNDED_THREE = 1.6e-3      # the three numbers are each rounded to offsets.ROUND = 3 decimals: their sum is off by at most 3 x 0.0005 mm
+ROUNDED_THREE = 1.5e-3      # the three numbers are each rounded to offsets.ROUND = 3 decimals: their sum is off by at most 3 x 0.0005 mm
 
 
 @built
