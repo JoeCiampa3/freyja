@@ -68,7 +68,7 @@ D7. **Observation.** Against the reference women (63.9 kg, 1.61 m, BMI 24.7) the
 1.103 on the frame bodies, 1.099 on memo 33's MSR10 region); with all segments in, the thorax is the other way (0.873), the whole arm 1.054, the shank 0.957 and the foot 0.929. One hypothesis, not tested: the
 sculpt is lean against a BMI 24.7 reference, so its soft tissue is thinner where the reference's is thickest. No re-sculpt; revisit with all segments (they are in, memo 39).
 
-D8. **Mass base.** Siri 1956 density, fat fraction 0.207 (Deurenberg), lung gas removed (Hall). Comparators: 1.24 kg/l (robot, skin volume) and 1.31 kg/l (tissue basis).
+D8. **Mass base.** Siri 1956 density, fat fraction 0.207 (Deurenberg), lung gas removed (Hall). Comparators: 1.23 kg/l (robot, skin volume) and 1.30 kg/l (tissue basis), on the v3 baseline (adr-0042; memos 52 and 53); on v2 they were 1.24 and 1.31.
 
 D9. **Oracle and registry.** A component registry per segment; `check`, `free`, `foreign`. Model body frames everywhere (pelvis origin at the LSJ), the mesh-to-model trunk shift a named design parameter. Foreign
 parts from MuJoCo forward kinematics. Fine fits belong to CAD.
@@ -101,3 +101,4 @@ and 0.10 for the cervicale).
 - 2026-10-28. D11: the elbow and wrist nodes and the forearm frame roll reopened (memo 43); decided in rm.v1-arm-joint-anchors-decision.
 - 2026-10-30. D2 (the arm nodes, the arm stretch gate, the arm frame roll) and D10 (the arms take the 8% gate) amended by adr-0042, and D1 (the baseline sculpt) when its v3 is committed; D11's arm item closed in place.
 - 2026-10-30. D1 amended by adr-0042: the baseline sculpt is v3 (freyja-body-v3, scripted from v2 and the pinned arm-length targets); v1 and v2 stay in the repo.
+- 2026-10-31. D8: comparators corrected in place to the v3 baseline's values (1.232 and 1.301 kg/l); they are whole-mesh quantities and moved when D1's baseline did. D7's share ratios were checked against the committed share table and stand (brief 13).
