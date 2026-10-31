@@ -155,14 +155,14 @@ def test_the_model_lsj_origin_maps_to_the_expected_mesh_position():
 
 @built
 def test_the_trunk_example_poses_are_in_the_model_frame_and_their_margins_are_unchanged():
-    """Memo 36's margins (pelvis box +37.128 / -11.588, thorax box +17.497 / -34.405, union +39.405 / overrun 37.318): the poses moved by the constant, the answers did not."""
+    """The margins on the snapped raster, memo 55 (pelvis box +37.12 / -11.64, thorax box +17.51 / -34.40, union +39.405 / overrun 37.318): the poses moved by the constant, the answers did not."""
     for name in ("pelvis_box", "thorax_box"):
         for kind in ("feasible", "infeasible"):
             rows = oracle.read_poses(EX / f"{name}_{kind}_poses.csv")
             assert rows[0, 0] == pytest.approx(10.0 + HJC_X, abs=1e-6), (name, kind)
     def binding(out):
         return float(out.split("binds at pose")[1].split("margin ")[1].split(" mm")[0])
-    want = {("pelvis", "pelvis_box"): (37.128, -11.588), ("thorax", "thorax_box"): (17.497, -34.405)}
+    want = {("pelvis", "pelvis_box"): (37.12, -11.64), ("thorax", "thorax_box"): (17.51, -34.40)}
     for (body, name), (ok, bad) in want.items():
         for kind, margin in (("feasible", ok), ("infeasible", bad)):
             r = cli("check", "--segment", body, "--shapes", str(EX / f"{name}_shapes.yaml"), "--poses", str(EX / f"{name}_{kind}_poses.csv"))
