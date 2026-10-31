@@ -1,4 +1,4 @@
 # Worked example for the union query across the elbow zone (brief 8): a rod 40 mm in diameter and 160 mm long, axis along z, in the upper arm's frame (the poses are in the model-frame stack of the arm:
-# the forearm's origin is 255.23 mm below the upper arm's, as in the zero pose). It is centred on the elbow plane (tz = -255.2347), so each body alone overruns its slab by 80 mm; the union holds it.
+# the forearm's origin is 255.23 mm below the upper arm's, as in the zero pose). It is centred on the elbow plane (tz = -255.2347) on the arm's axis, x = 0, y = 0 (adr-0042 D1), so each body alone overruns its slab by 80 mm; the union holds it. The infeasible pose is the same placement 24 mm medially.
 shapes:
   - {name: rod, type: cylinder, diameter: 40, length: 160}

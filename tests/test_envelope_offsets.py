@@ -56,14 +56,17 @@ def test_the_centroid_of_a_section_is_the_centre_of_an_offset_cylinder():
     assert c["x"] == pytest.approx(7.0, abs=0.5) and c["y"] == pytest.approx(-3.0, abs=0.5) and c["area_mm2"] == pytest.approx(np.pi * 40 ** 2, rel=0.01)
 
 
+ROUNDED_THREE = 1.6e-3      # the three numbers are each rounded to offsets.ROUND = 3 decimals: their sum is off by at most 3 x 0.0005 mm
+
+
 @built
 def test_the_report_is_sim_less_mesh_and_matches_the_committed_file():
     rep = offsets.report(REPO, CACHE)
     zero = rep["poses"]["zero"]["planes"]
     for plane in ("ljc", "tjc", "cjc", "sjc"):
         for e in zero[plane]["mesh"]:
-            assert e["offset_x_mm"] == pytest.approx(zero[plane]["sim"]["x"] - e["centroid_x_mm"], abs=1e-9)
-            assert e["offset_y_mm"] == pytest.approx(zero[plane]["sim"]["y"] - e["centroid_y_mm"], abs=1e-9)
+            assert e["offset_x_mm"] == pytest.approx(zero[plane]["sim"]["x"] - e["centroid_x_mm"], abs=ROUNDED_THREE)
+            assert e["offset_y_mm"] == pytest.approx(zero[plane]["sim"]["y"] - e["centroid_y_mm"], abs=ROUNDED_THREE)
     e = zero["tjc"]["mesh"][1]                                                   # the skin margin at the stack point, against the body field read directly
     thorax = field.Segment.load(CACHE / "thorax.npz")
     assert e["body"] == "thorax" and e["skin_margin_at_stack_mm"] == pytest.approx(
@@ -73,6 +76,6 @@ def test_the_report_is_sim_less_mesh_and_matches_the_committed_file():
     assert ln["cjc"]["sim"]["x"] > ln["tjc"]["sim"]["x"] > ln["ljc"]["sim"]["x"] > st["ljc"]["sim"]["x"] - 5.0 and ln["cjc"]["sim"]["x"] > st["cjc"]["sim"]["x"]
     assert ln["tjc"]["sim"]["x"] < ln["sjc"]["sim"]["x"] < ln["cjc"]["sim"]["x"]                   # the thorax axis at the SJC's height lies between the TJC and CJC origins
     assert rep["poses"]["stance"]["rise_mm"] == pytest.approx(9.67, abs=0.02)
-    assert rep["poses"]["stance"]["tilt_deg"] == 12.0 and rep["mesh_hip_line_x_mm"] == pytest.approx(field.Segment.load(CACHE / "pelvis.npz").meta["mesh_hip_line_x_mm"])
+    assert rep["poses"]["stance"]["tilt_deg"] == 12.0 and rep["mesh_hip_line_x_mm"] == pytest.approx(field.Segment.load(CACHE / "pelvis.npz").meta["mesh_hip_line_x_mm"], abs=5.1e-4)      # the report rounds to 3 decimals
     committed = json.loads((ENV / "trunk_offsets.json").read_text())
     assert json.loads(json.dumps(rep, sort_keys=True)) == {k: v for k, v in committed.items() if k != "generated_by"}

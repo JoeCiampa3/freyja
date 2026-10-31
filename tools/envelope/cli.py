@@ -37,7 +37,7 @@
                     brief 8, item 6b (report only): the model's HJC in the thigh and the pelvis frames (signed skin distance, lateral skin distance, the lateral step of the pelvis and thigh sections at the
                     hip plane) and the volumes under the other shear target; writes <out>/hip_registration.json. Needs `build`
 
-Defaults: mesh data/makehuman/freyja-body-v2.obj (the baseline since volume-extractor brief 4; v1 is historical), sheet values from params/snapshot.csv, out data/envelope, cache data/envelope/cache (gitignored).
+Defaults: mesh data/makehuman/freyja-body-v3.obj (the baseline since adr-0042; v1 and v2 are historical), sheet values from params/snapshot.csv, out data/envelope, cache data/envelope/cache (gitignored).
 """
 from __future__ import annotations
 
@@ -52,7 +52,7 @@ REPO = Path(__file__).resolve().parents[2]
 
 def _paths(args, root: Path):
     return {
-        "mesh": Path(args.mesh) if args.mesh else root / "data/makehuman/freyja-body-v2.obj",
+        "mesh": Path(args.mesh) if args.mesh else root / "data/makehuman/freyja-body-v3.obj",
         "out": Path(args.out) if args.out else root / "data/envelope",
         "cache": Path(args.cache_dir) if args.cache_dir else root / "data/envelope/cache",
     }
@@ -118,7 +118,7 @@ def cmd_build(args, root):
         print(f"built {name}: L {res.seg.length:.1f} mm, skin volume {res.seg.volume() / 1e6:.3f} l, inputs {sha}")
     from . import arms, arms_report, ruler
     arm_S = arms.build_side(inp, tb, ruler.load(root), arms.sheet_arm(root / "params/snapshot.csv"), "R", args.voxel)
-    arm_sha = trial.inputs_hash(inp, {"knee": reg.knee_source, "voxel": args.voxel, "sjc_mm": [round(v, 6) for v in inp.sheet.sjc_mm], "arms": True, "sigma_mm": arms.SIGMA_MM})
+    arm_sha = trial.inputs_hash(inp, {"knee": reg.knee_source, "voxel": args.voxel, "sjc_mm": [round(v, 6) for v in inp.sheet.sjc_mm], "arms": True, "rule": "adr-0042"})
     for n in arms_report.write_products(arm_S, out, p["cache"], arm_sha, _label(p["mesh"], root)):
         r = arm_S["results"][n.replace("_R", "")]
         print(f"built {n}: L {r.seg.length:.1f} mm, skin volume {r.seg.volume() / 1e6:.3f} l, stretch {arm_S['frames'][n.replace('_R', '')].k:.4f}, inputs {arm_sha}")
@@ -281,7 +281,7 @@ def cmd_hip(args, root):
     sh = trial.register.sheet_nodes(root / "params/snapshot.csv")
     res = hipcheck.frame_numbers(field.Segment.load(cache / "thigh_R.npz"), field.Segment.load(cache / "pelvis.npz"), sh.lateral_y, sh.hjc_x_mm)
     if not args.no_alternative:
-        mesh = Path(args.mesh) if args.mesh else root / "data/makehuman/freyja-body-v2.obj"
+        mesh = Path(args.mesh) if args.mesh else root / "data/makehuman/freyja-body-v3.obj"
         res["alternative_shear_target"] = hipcheck.alternative_target(root, mesh)
     res = {"generated_by": "fy envelope hip (report only: nothing is fixed); do not edit, rerun", **res}
     s, lat, st, f = res["signed_skin_distance_at_hjc_mm"], res["lateral_skin_distance_at_hjc_plane_mm"], res["lateral_extent_right_half_pelvis_frame_mm"], res["flag"]
@@ -497,7 +497,7 @@ def cmd_free(args, root):
     print("wrote", _label(out / f"{tag}.yaml", root))
     insp = cache / "inspect"
     if (insp / "inspect.json").exists():
-        inp = trial.load_inputs(root, Path(args.mesh) if args.mesh else root / "data/makehuman/freyja-body-v2.obj")
+        inp = trial.load_inputs(root, Path(args.mesh) if args.mesh else root / "data/makehuman/freyja-body-v3.obj")
         V, F = bundle.marching_tetrahedra(np.where(virt.region, virt.sd.astype(float), -1.0e3), virt.o + virt.h / 2, virt.h, 0.0)
         bundle.write_obj(insp / f"free_{tag}.obj", bundle.to_mh_dm(V + o0, inp), F)
         j = json.loads((insp / "inspect.json").read_text(encoding="utf-8"))

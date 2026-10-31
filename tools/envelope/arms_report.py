@@ -189,7 +189,7 @@ def gate_rows(R: dict, clo: dict, topo) -> list:
         out.append(g(f"1 {SEG_KEY[n]}: topology matches base; surface watertight", ok, f"topology vs base.obj: {topo or 'identical'}; boundary edges near the body {c['boundary_edges_near_segment']} "
                                                                                   f"(whole body {c['boundary_edges_whole_body']}); non-manifold {c['nonmanifold_edges_near_segment']}; odd-parity columns {c['odd_parity_columns']}"))
     reg = R["reg"]
-    out.append(g("2 arms: |stretch-1| within 2 x 17.3 mm / sheet length per segment", not reg["exceeding_gate"],
+    out.append(g("2 arms: |stretch-1| within 8% per segment", not reg["exceeding_gate"],
                  "; ".join(f"{n} {reg['stretch'][n]:.4f} ({(reg['stretch'][n] - 1) * 100:+.2f}%, gate +-{reg['gate'][n] * 100:.2f}%)" for n in ("upper_arm", "forearm")) + "; hand 1.0000 (no stretch)"))
     both, ras = clo["arms_built_unconformed_l"], clo["arms_and_girdles_raster_l"]
     out.append(g("3b arms: field volume (unconformed, both sides) within 1% of the raster accounting of arms and girdles", abs(both - ras) / ras < bodies.FIELD_VS_RASTER_TOL,
@@ -201,7 +201,7 @@ def result(S, L, clo, shares, lr, ansur, gates, examples, inputs_sha) -> dict:
     """The committed result `arm_bodies.json`."""
     reg = S["reg"]
     return {"generated_by": "fy envelope gates", "schema": "arm-bodies/1", "inputs": f"mesh, snapshot, ANSUR II ratios (inputs sha256:{inputs_sha})", "side": "right (the left is built for the comparison only)",
-            "registration": {k: reg[k] for k in ("nodes_mesh_mm", "lengths_mesh_mm", "lengths_sheet_mm", "stretch", "gate", "gate_rule", "sigma_mm", "angle_from_vertical_deg", "elbow_bend_deg", "wrist_bend_deg",
+            "registration": {k: reg[k] for k in ("nodes_mesh_mm", "lengths_mesh_mm", "chord_nodes_mesh_mm", "centre_line_residual_rms_mm", "lengths_sheet_mm", "stretch", "gate", "gate_rule", "angle_from_vertical_deg", "elbow_bend_deg", "wrist_bend_deg",
                                                  "vertex_ids", "mirror_gap_mm", "hand", "node_skin_distance")},
             "ansur_cross_check": ansur, "design": S["design"], "joint_zone_volumes_l": S["zones"], "hand": S["hand"], "interface_sections": S["interfaces"],
             "closure": clo, "share_table": shares, "left_right": lr, "oracle_examples": examples}

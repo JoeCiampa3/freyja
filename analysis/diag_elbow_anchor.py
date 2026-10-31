@@ -1,6 +1,8 @@
 """Memo 43 diagnostic, step 2 (read-only): where the elbow node sits in the upper arm's skin, and why. Reads the pickle of `diag_elbow_anchor_build.py`; writes a result JSON
 and an inspect bundle at the elbow (`--bundle DIR`, default under the gitignored cache). Changes no envelope, cache or registration: the counterfactual is built in memory.
 
+It reads the pre-adr-0042 arms: run it at commit 5dcd23f, whose `arms.py` still has the Ruler-chord nodes, the shortest-arc roll and the sigma gate.
+
 Sections are cut from the skin mesh itself (the exact plane section of the rotated, unstretched mesh), so they carry no voxel error and no bisector cap; the field's own sections
 (`field.Section.mask`, which is cut by the segment region) are reported beside them where the cap matters.
 

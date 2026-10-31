@@ -1,8 +1,9 @@
 """The arm bodies (volume-extractor brief 8, Phase A): upper arm, forearm and hand of one side, each as a voxel field in its own segment frame.
 
 The model's arms hang straight down in the zero pose (the forearm at -L_upper_arm and the hand at -L_forearm along the arm's z); the mesh is in an A-pose. A segment is therefore taken
-from the mesh by a rigid rotation about its proximal joint centre that turns the segment's axis (proximal to distal node) onto -z, then an axial stretch along that axis to the sheet's
-length (a shear would inflate sections by 1/cos of the angle; a rotation leaves every section as it is, the stretch changes only lengths). The hand takes the forearm's rotation and no
+from the mesh by a rigid rotation about its proximal joint centre that turns the segment's axis (proximal to distal node) onto -z and keeps the mesh's anterior as +x (adr-0042 D4), then an axial
+stretch along that axis to the sheet's length (a shear would inflate sections by 1/cos of the angle; a rotation leaves every section as it is, the stretch changes only lengths). The elbow and
+wrist nodes are the proximal segment's section centre line at the joint station (adr-0042 D1), computed once in the frames of the Ruler-chord nodes. The hand takes the forearm's rotation and no
 stretch. Each segment is extracted in its own frame; no assembled arm exists. The frame origin is the proximal node, which for the upper arm is the mesh's own shoulder joint centre (the sheet's
 SJC carried through the trunk registration, as in brief 5's shoulder planes), so `origin_xyz` of a built arm is the position in a model-frame stack of the arm (upper arm 0, forearm -L_upper arm,
 hand -(L_upper arm + L_forearm)), used by the oracle's union query only.
@@ -19,12 +20,14 @@ import numpy as np
 from scipy import ndimage
 from scipy.spatial import cKDTree
 
-from . import anthro, bodies, field, frames, ledger, ruler, sheet, trial
+from . import anthro, bodies, field, frames, ledger, register, ruler, sheet, trial
 from .sheet import StopAndAsk
 
 NAMES = ("upper_arm", "forearm", "hand")
-SIGMA_MM = 17.3                  # Joe, memo 38 decision 1: the knee anchor SD, a stated assumption; the arm stretch gate is GATE_SIGMAS x sigma / sheet length (the legs': 2 x 17.3 / 398 = 8.7%)
-GATE_SIGMAS = 2.0
+ARM_STRETCH_GATE = register.MAX_STRETCH_DEVIATION      # adr-0042 D3: the arms take ADR 0007 D10's 8%; the 2 x 17.3 mm / L gate is retired
+SECTION_TRIM_MM = 40.0           # adr-0042 D1: the centre line's stations run from -40 mm to -(L - 40) mm
+SECTION_STEP_MM = 5.0
+MIN_SECTION_AREA_MM2 = 300.0     # memo 50: the arm's loop is above this, a finger's (150 to 250 mm2) below it
 ZONE_H_MM = bodies.ZONE_H_MM
 UPPER_ID, FORE_ID = ("measure/measure-upperarm-length-decr|incr", "measure/measure-lowerarm-length-decr|incr")
 GIRDLE_PAD_MM = 6.0              # the upper arm's top: the highest frame z of the girdle and arm vertices plus this, rounded up to a voxel
@@ -54,11 +57,21 @@ def rotation_to_down(u) -> np.ndarray:
     return np.eye(3) + K + K @ K / (1.0 + c)
 
 
+def rotation_to_frame(u) -> np.ndarray:
+    """adr-0042 D4: the shortest arc onto -z, then the twist about z that maps the mesh's +x, projected onto the section plane, onto the frame's +x."""
+    u = np.asarray(u, float) / np.linalg.norm(u)
+    R = rotation_to_down(u)
+    r = R @ (np.array([1.0, 0.0, 0.0]) - u[0] * u)
+    a = np.arctan2(r[1], r[0])
+    c, s = np.cos(a), np.sin(a)
+    return np.array([[c, s, 0.0], [-s, c, 0.0], [0.0, 0.0, 1.0]]) @ R
+
+
 class ArmFrame:
     """mesh -> segment frame: rotate about `origin`, then stretch the axial (z) coordinate by k."""
 
     def __init__(self, origin, axis, k=1.0):
-        self.origin, self.R, self.k = np.asarray(origin, float), rotation_to_down(axis), float(k)
+        self.origin, self.R, self.k = np.asarray(origin, float), rotation_to_frame(axis), float(k)
 
     def forward(self, P):
         Q = (np.atleast_2d(P) - self.origin) @ self.R.T
@@ -71,6 +84,98 @@ class ArmFrame:
 def angle_from_vertical_deg(u) -> float:
     u = np.asarray(u, float) / np.linalg.norm(u)
     return float(np.degrees(np.arccos(np.clip(-u[2], -1, 1))))
+
+
+# ---- the D1 nodes: exact plane sections of the skin ---------------------------------------------------------------------------------------
+
+def slice_loops(P, F, z) -> list:
+    """Closed loops (list of (n, 2) arrays) of the plane z = const through the triangle mesh (P, F)."""
+    d = P[:, 2] - z
+    d = np.where(d == 0.0, 1e-9, d)
+    pos = d > 0
+    ts = pos[F]
+    pts, adj = {}, {}
+    for tri in F[ts.any(axis=1) & ~ts.all(axis=1)]:
+        keys = []
+        for a, b in ((tri[0], tri[1]), (tri[1], tri[2]), (tri[2], tri[0])):
+            if pos[a] != pos[b]:
+                k = (int(min(a, b)), int(max(a, b)))
+                if k not in pts:
+                    pts[k] = P[a, :2] + d[a] / (d[a] - d[b]) * (P[b, :2] - P[a, :2])
+                keys.append(k)
+        if len(keys) == 2:
+            adj.setdefault(keys[0], []).append(keys[1])
+            adj.setdefault(keys[1], []).append(keys[0])
+    seen, loops = set(), []
+    for k0 in adj:
+        if k0 in seen:
+            continue
+        loop, prev, cur = [k0], None, k0
+        seen.add(k0)
+        while True:
+            nxt = [n for n in adj[cur] if n != prev and n not in seen]
+            if not nxt:
+                break
+            prev, cur = cur, nxt[0]
+            seen.add(cur)
+            loop.append(cur)
+        loops.append(np.array([pts[k] for k in loop]))
+    return loops
+
+
+def area_centroid(poly) -> tuple:
+    x, y = poly[:, 0], poly[:, 1]
+    x1, y1 = np.roll(x, -1), np.roll(y, -1)
+    c = x * y1 - x1 * y
+    a = c.sum() / 2.0
+    return abs(a), np.array([((x + x1) * c).sum(), ((y + y1) * c).sum()]) / (6.0 * a)
+
+
+def _contains(poly, p) -> bool:
+    x, y = poly[:, 0], poly[:, 1]
+    x1, y1 = np.roll(x, -1), np.roll(y, -1)
+    span = (y > p[1]) != (y1 > p[1])
+    return bool(np.count_nonzero(p[0] < (x1[span] - x[span]) * (p[1] - y[span]) / (y1[span] - y[span]) + x[span]) % 2)
+
+
+def _section_centroid(Q, F, z, hint):
+    """The centroid of the skin loop at rotated height z: the loop containing `hint`, else the one whose centroid is nearest it (area above MIN_SECTION_AREA_MM2)."""
+    loops = [lp for lp in slice_loops(Q, F, z) if len(lp) >= 3 and area_centroid(lp)[0] > MIN_SECTION_AREA_MM2]
+    if not loops:
+        return None
+    inside = [lp for lp in loops if _contains(lp, hint)]
+    if inside:
+        return area_centroid(max(inside, key=lambda p: area_centroid(p)[0]))[1]
+    return min((area_centroid(lp)[1] for lp in loops), key=lambda c: np.linalg.norm(c - hint))
+
+
+def centre_line(V, F, frame, L) -> dict:
+    """adr-0042 D1: the least-squares straight line x(z), y(z) through the exact section centroids (no voxels, no cap) on the stations -SECTION_TRIM_MM to -(L - SECTION_TRIM_MM), in `frame`."""
+    Q = (V - frame.origin) @ frame.R.T
+    rows, hint = [], np.zeros(2)
+    for z in np.arange(-SECTION_TRIM_MM, -(L - SECTION_TRIM_MM) - 1e-9, -SECTION_STEP_MM):
+        c = _section_centroid(Q, F, z / frame.k, hint)
+        if c is not None:
+            rows.append((float(z), c[0], c[1]))
+            hint = c
+    if len(rows) < 3:
+        raise StopAndAsk(f"the centre line has {len(rows)} sections over {L:.1f} mm")
+    P = np.array(rows)
+    fx, fy = np.polyfit(P[:, 0], P[:, 1], 1), np.polyfit(P[:, 0], P[:, 2], 1)
+    res = np.column_stack([P[:, 1] - np.polyval(fx, P[:, 0]), P[:, 2] - np.polyval(fy, P[:, 0])])
+    return {"fx": fx, "fy": fy, "first_station_mm": float(P[0, 0]), "last_station_mm": float(P[-1, 0]), "stations": len(P), "residual_rms_mm": [float(np.sqrt((res[:, i] ** 2).mean())) for i in (0, 1)]}
+
+
+def d1_nodes(V, F, sjc, elbow, wrist, L) -> dict:
+    """adr-0042 D1: each joint on the proximal segment's centre line at the joint station, in the frames of the Ruler-chord nodes `elbow` and `wrist` (one pass, not iterated). L: sheet lengths. Mesh frame, mm."""
+    out = {"residual_rms_mm": {}}
+    for n, name, a, b in (("elbow", "upper_arm", sjc, elbow), ("wrist", "forearm", elbow, wrist)):
+        u = np.asarray(b, float) - np.asarray(a, float)
+        fr = ArmFrame(a, u, L[name] / np.linalg.norm(u))
+        c = centre_line(V, F, fr, L[name])
+        out[n] = fr.inverse(np.array([[np.polyval(c["fx"], -L[name]), np.polyval(c["fy"], -L[name]), -L[name]]]))[0]
+        out["residual_rms_mm"][name] = c["residual_rms_mm"]
+    return out
 
 
 def _mirror_ids(V, ids):
@@ -86,11 +191,11 @@ def _mirror_ids(V, ids):
 
 
 def registration(inp, tb, ruler_measures, arm_sheet, side="R") -> dict:
-    """Nodes, lengths, the stretch against the segment's own gate, and the rotation angle of each arm segment. Stops when a stretch is beyond its gate. Mesh frame, mm.
+    """Nodes, lengths, the stretch against the 8% gate, and the rotation angle of each arm segment. Stops when a stretch is beyond the gate. Mesh frame, mm.
 
-    SJC: the sheet's, through the trunk registration (x the shoulder sphere's centre, y the plane's lateral distance, z the inverse of the trunk map at the sheet's SJC height). Elbow: the mean
-    of the Ruler upper-arm chord's end and the forearm chord's start. Wrist: the forearm chord's end. The Ruler lists belong to the left arm; the right arm takes the nearest vertex to each
-    mirrored position. Hand: the arm-labelled vertices of the side beyond the wrist plane (normal to the forearm axis), below the elbow; the fingertip is the farthest of them from the wrist."""
+    SJC: the sheet's, through the trunk registration (x the shoulder sphere's centre, y the plane's lateral distance, z the inverse of the trunk map at the sheet's SJC height). The Ruler-chord nodes
+    define the frames the centre lines are fitted in: the elbow is the mean of the Ruler upper-arm chord's end and the forearm chord's start, the wrist the forearm chord's end. Elbow and wrist: the
+    D1 nodes on those lines. The Ruler lists belong to the left arm; the right arm takes the nearest vertex to each mirrored position. Hand: the arm-labelled vertices of the side beyond the wrist plane (normal to the forearm axis), below the elbow; the fingertip is the farthest of them from the wrist."""
     V = inp.V
     ids = [ruler_measures[UPPER_ID][0], ruler_measures[UPPER_ID][1], ruler_measures[FORE_ID][0], ruler_measures[FORE_ID][1]]
     mirror_gap = 0.0
@@ -101,12 +206,14 @@ def registration(inp, tb, ruler_measures, arm_sheet, side="R") -> dict:
     sph = tb.acc["spheres"]
     z_sjc = float(tb.tm.inverse(sph["centre_height_mm"]))
     sjc = np.array([sph["centre_x_mesh_mm"], sgn * tb.sjc["lateral_mm"], z_sjc])
-    elbow, wrist = 0.5 * (P[1] + P[2]), P[3]
+    chord = {"sjc": sjc, "elbow": 0.5 * (P[1] + P[2]), "wrist": P[3]}
+    sheet_len = {n: arm_sheet[n]["length_mm"] for n in NAMES}
+    d1 = d1_nodes(V, inp.F, sjc, chord["elbow"], chord["wrist"], sheet_len)
+    elbow, wrist = d1["elbow"], d1["wrist"]
     u_up, u_fo = (elbow - sjc), (wrist - elbow)
     l_mesh = {"upper_arm": float(np.linalg.norm(u_up)), "forearm": float(np.linalg.norm(u_fo))}
-    sheet_len = {n: arm_sheet[n]["length_mm"] for n in NAMES}
     k = {n: sheet_len[n] / l_mesh[n] for n in ("upper_arm", "forearm")}
-    gate = {n: GATE_SIGMAS * SIGMA_MM / sheet_len[n] for n in ("upper_arm", "forearm")}
+    gate = {n: ARM_STRETCH_GATE for n in ("upper_arm", "forearm")}
     u_fo_n = u_fo / np.linalg.norm(u_fo)
     zone = (V[:, 1] * sgn > 0) & tb.arm_mask & (V[:, 2] < elbow[2] + 1.0)
     s = (V - wrist) @ u_fo_n
@@ -115,8 +222,8 @@ def registration(inp, tb, ruler_measures, arm_sheet, side="R") -> dict:
     tip = H[int(np.argmax(np.linalg.norm(H - wrist, axis=1)))]
     u_hand = (tip - wrist) / np.linalg.norm(tip - wrist)
     out = {"side": side, "mirror_gap_mm": mirror_gap, "vertex_ids": dict(zip(("upper_arm_chord_start", "upper_arm_chord_end", "forearm_chord_start", "forearm_chord_end"), ids)),
-           "nodes_mesh_mm": {"sjc": sjc, "elbow": elbow, "wrist": wrist, "fingertip": tip}, "lengths_mesh_mm": l_mesh, "lengths_sheet_mm": sheet_len, "stretch": k, "gate": gate,
-           "sigma_mm": SIGMA_MM, "gate_rule": f"{GATE_SIGMAS:g} x sigma / sheet length, sigma {SIGMA_MM} mm (memo 38 decision 1)",
+           "nodes_mesh_mm": {"sjc": sjc, "elbow": elbow, "wrist": wrist, "fingertip": tip}, "chord_nodes_mesh_mm": chord, "centre_line_residual_rms_mm": d1["residual_rms_mm"],
+           "lengths_mesh_mm": l_mesh, "lengths_sheet_mm": sheet_len, "stretch": k, "gate": gate, "gate_rule": "8% (ADR 0007 D10, adr-0042 D3)",
            "angle_from_vertical_deg": {"upper_arm": angle_from_vertical_deg(u_up), "forearm": angle_from_vertical_deg(u_fo), "hand": angle_from_vertical_deg(u_hand)},
            "elbow_bend_deg": float(np.degrees(np.arccos(np.clip((u_up / np.linalg.norm(u_up)) @ u_fo_n, -1, 1)))),
            "wrist_bend_deg": float(np.degrees(np.arccos(np.clip(u_fo_n @ u_hand, -1, 1)))),

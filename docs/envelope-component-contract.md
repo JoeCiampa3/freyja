@@ -53,12 +53,12 @@ head and neck at the vertex); the oracle converts with the **mesh-to-model trunk
 origin, `thigh_right_pos_x` in the snapshot), applied inside the oracle and printed in every trunk result (`frames:` line). The connector does not apply it.
 
 **Arms (brief 8).** The model's arms hang straight down in the zero pose; the mesh is in an A-pose. Each arm segment is the mesh rotated rigidly about its proximal joint centre so that the segment's
-axis (proximal to distal node) points down, then stretched along that axis to the sheet's length (upper arm 1.124, forearm 1.120, each against its own gate of 2 x 17.3 mm / sheet length, 13.6% and
-13.3%; the hand takes the forearm's rotation and no stretch). Sections are unchanged. The arm bodies are in these model frames with **no offset** (`model_to_segment` is zero, as for a leg). The
+axis (proximal to distal node) points down, with the mesh's anterior kept as +x, then stretched along that axis to the sheet's length (adr-0042: the v3 sculpt is at the sheet's lengths, so both stretches are 1.000 against the 8% gate; the hand takes
+the forearm's rotation and no stretch). Sections are unchanged. The arm bodies are in these model frames with **no offset** (`model_to_segment` is zero, as for a leg). The
 cache's `origin_xyz` of an arm is its position in a model-frame stack of the arm (upper arm 0, forearm -L_upper arm, hand -(L_upper arm + L_forearm)), which the oracle's union query uses; no
 assembled arm exists. The elbow is cut on the bisector plane of the two axes (a cell goes to exactly one body); the upper arm's field starts at the top of the shoulder girdle, so its stations are
-measured from there (`stations.joint_station_mm` in its ledger header is the SJC). **The elbow and wrist nodes are Ruler chord end vertices, on the skin, so a segment's axis runs near its lateral
-skin** (the elbow node is about 4 mm inside the lateral skin and the section's inscribed centre is about 26 mm medial of it): a part placed at the model's axis is not at the arm's centre line.
+measured from there (`stations.joint_station_mm` in its ledger header is the SJC). **The elbow and wrist nodes are the proximal segment's section centre line at the joint
+station (adr-0042 D1)**, so a part placed on the model's axis is on the arm's centre line; the elbow node carries an error bar of 7 mm, mostly anteroposterior, and the wrist node 5 mm (D2).
 
 **The shoulder interface (reported, not fixed).** The arm's frame origin is the mesh's own SJC (the sheet's SJC carried through the trunk registration: its x is the mesh thorax's centre line at
 the CJC plus the sheet's 13.81 mm, its y the plane's 192.33 mm, its z the sheet's 77.57 mm below the CJC). The model's SJC is `upper_arm_right_pos` from the stack axis, which in the zero pose

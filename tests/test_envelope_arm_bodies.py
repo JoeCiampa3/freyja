@@ -41,30 +41,30 @@ def test_every_gate_passes_and_the_arm_gates_are_in_the_table():
     names = " | ".join(g["gate"] for g in gates)
     for body in ("upper_arm_R", "forearm_R", "hand_R"):
         assert f"1 {body}: topology matches base; surface watertight" in names
-    for want in ("2 arms: |stretch-1| within 2 x 17.3 mm / sheet length", "3b arms: field volume", "5 oracle example upper_arm_cylinder", "5 oracle example forearm_box", "5 oracle union query arm_union", "7 closure"):
+    for want in ("2 arms: |stretch-1| within 8%", "3b arms: field volume", "5 oracle example upper_arm_cylinder", "5 oracle example forearm_box", "5 oracle union query arm_union", "7 closure"):
         assert want in names
 
 
-def test_the_stretches_are_each_against_their_own_gate_which_is_two_sigma_over_the_sheet_length(res, snap):
+def test_the_stretches_are_against_the_8_percent_gate_on_the_d1_nodes(res, snap):
     r = res["registration"]
-    assert r["sigma_mm"] == 17.3
+    assert "sigma_mm" not in r
     for n in ("upper_arm", "forearm"):
         L = snap[f"{n}_right_length"] * 1000.0
         assert r["lengths_sheet_mm"][n] == pytest.approx(L)
-        assert r["gate"][n] == pytest.approx(2 * 17.3 / L)
+        assert r["gate"][n] == 0.08
         assert r["stretch"][n] == pytest.approx(L / r["lengths_mesh_mm"][n])
         assert abs(r["stretch"][n] - 1.0) < r["gate"][n]
-    assert 1.12 < r["stretch"]["upper_arm"] < 1.13 and 1.11 < r["stretch"]["forearm"] < 1.13        # the sculpt's arms are about 11% shorter than the sheet's
+    assert r["stretch"]["upper_arm"] == pytest.approx(1.0, abs=1e-3) and r["stretch"]["forearm"] == pytest.approx(1.0, abs=1e-3)        # v3's arms are at the sheet's lengths (adr-0042 D3)
     assert r["hand"]["stretch"] == 1.0
     ang = r["angle_from_vertical_deg"]
-    assert 40 < ang["upper_arm"] < 46 and 53 < ang["forearm"] < 59                                       # the A-pose: far from vertical, hence a rotation and not a shear
+    assert 35 < ang["upper_arm"] < 40 and 55 < ang["forearm"] < 61                                       # the A-pose on the D1 nodes: far from vertical, hence a rotation and not a shear
     assert r["mirror_gap_mm"] == pytest.approx(0.0, abs=1e-6)
 
 
-def test_the_ansur_arm_lengths_are_context_and_the_forearm_is_about_eight_percent_short(res):
+def test_the_ansur_arm_lengths_are_context_and_the_forearm_is_about_three_percent_long(res):
     a = res["ansur_cross_check"]
     assert set(a) == {"shoulder_elbow", "radiale_stylion", "forearm_hand", "hand_length"}
-    assert a["radiale_stylion"]["mesh_over_ansur"] == pytest.approx(0.92, abs=0.01)
+    assert a["radiale_stylion"]["mesh_over_ansur"] == pytest.approx(1.03, abs=0.01)
 
 
 def test_design_numbers_are_the_sheet_mass_over_the_volumes_and_the_conform_adds_volume(res, snap):
@@ -78,7 +78,7 @@ def test_design_numbers_are_the_sheet_mass_over_the_volumes_and_the_conform_adds
         assert d["unconformed_skin_volume_l"] == pytest.approx(d["skin_volume_l"] / d["axial_stretch"], rel=1e-9)
     assert res["design"]["hand"]["conform_volume_change_l"] == 0.0
     assert sum(res["design"][n]["conform_volume_change_l"] for n in NAMES) * 2 == pytest.approx(res["closure"]["conform_effect_arms_l"], abs=1e-9)
-    assert 0.3 < res["closure"]["conform_effect_arms_l"] < 0.5                                           # Joe's expectation, memo 38 decision 4: about +0.3 l
+    assert abs(res["closure"]["conform_effect_arms_l"]) < 0.01                                           # v3: no arm stretch left to add volume
 
 
 def test_the_hand_is_the_whole_hand_with_its_wrist_interface_section(res):
@@ -99,11 +99,11 @@ def test_the_joint_zones_are_reported_with_and_without_and_the_upper_arm_without
     assert set(z["forearm"]["slab_l"]) == {"elbow", "wrist"} and set(z["hand"]["slab_l"]) == {"wrist"}
 
 
-def test_nodes_sit_where_the_ruler_chords_put_them_near_the_skin(res):
+def test_nodes_sit_on_the_centre_lines_inside_the_skin(res):
     nd = res["registration"]["node_skin_distance"]
     assert nd["upper_arm"]["proximal_node_skin_distance_mm"] > 20                                          # the SJC is deep inside
-    assert 0 < nd["upper_arm"]["distal_node_skin_distance_mm"] < 8                                         # the elbow: a chord end vertex, 4 mm inside the lateral skin
-    assert abs(nd["forearm"]["distal_node_skin_distance_mm"]) < 2                                          # the wrist: on the skin
+    assert 20 < nd["upper_arm"]["distal_node_skin_distance_mm"] < 35                                       # adr-0042 D1: the elbow on the section centre line, not 4 mm under the lateral skin
+    assert 10 < nd["forearm"]["distal_node_skin_distance_mm"] < 20                                         # the wrist, not on the skin
 
 
 def test_the_closure_has_no_remainder_the_arms_included_and_the_shares_sum_to_one(res):
@@ -135,7 +135,7 @@ def test_the_left_arm_is_built_the_same_way_and_the_difference_is_reported(res):
     lr = res["left_right"]
     assert set(lr["bodies"]) == set(NAMES)
     assert all(abs(v["left_minus_right_percent"]) < 3 for v in lr["bodies"].values())
-    assert set(lr["left_stretch"]) == {"upper_arm", "forearm"} and all(1.0 < v < 1.2 for v in lr["left_stretch"].values())         # the left's nodes come from the Ruler lists directly
+    assert set(lr["left_stretch"]) == {"upper_arm", "forearm"} and all(abs(v - 1.0) < 0.01 for v in lr["left_stretch"].values())         # the left's nodes come from the Ruler lists directly
     assert set(lr["raster_girdle_l"]) == {"right", "left", "left_minus_right_percent"}
 
 

@@ -162,5 +162,5 @@ def test_the_committed_result_names_every_anchor_candidate_and_both_modes(res):
 
 
 def test_the_committed_result_is_what_a_fresh_run_produces(res):
-    fresh = trunk.run(REPO, REPO / "data/makehuman/freyja-body-v2.obj")
+    fresh = trunk.run(REPO, REPO / "data/makehuman/freyja-body-v3.obj")
     assert json.loads(json.dumps(fresh, sort_keys=True)) == res

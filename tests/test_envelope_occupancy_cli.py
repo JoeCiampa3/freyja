@@ -194,8 +194,8 @@ def test_the_committed_outputs_of_the_worked_example_are_what_the_cli_prints():
 
 @cache_missing
 def test_the_thigh_rod_example_is_reproduced_exactly_with_the_registry_ignored():
-    """Gate 5 of the trial: feasible margin 16.61 mm at station 275.0 mm, infeasible -8.18 mm at station 275.0 mm (pose 3); the output format is the old one."""
-    for poses, margin, feasible in (("rod_feasible_poses.csv", 16.61, True), ("rod_infeasible_poses.csv", -8.18, False)):
+    """Gate 5 of the trial on v3: feasible margin 16.68 mm at station 275.0 mm, infeasible -8.11 mm at station 275.0 mm (pose 3); the output format is the old one."""
+    for poses, margin, feasible in (("rod_feasible_poses.csv", 16.68, True), ("rod_infeasible_poses.csv", -8.11, False)):
         r = fy("check", "--segment", "thigh_R", "--shapes", str(EX / "rod_shapes.yaml"), "--poses", str(EX / poses), "--no-occupied")
         assert r.returncode == (0 if feasible else 1)
         assert f"margin {margin:.2f} mm at station 275.0 mm" in r.stdout.replace("binds at pose 0 on rod: ", "").replace("binds at pose 3 on rod: ", "")

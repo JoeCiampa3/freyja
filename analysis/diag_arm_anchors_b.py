@@ -3,7 +3,7 @@ Ruler-chord frames), their cross-checks, a second iteration, the forearm roll an
 `diag_elbow_anchor_build.py`; writes one result JSON. Changes no envelope, cache, registration or tool: every frame is built in memory.
 
 Sections are the exact plane sections of the skin mesh (memo 43's `slice_loops`), unstretched x, y; stations are segment-frame z (stretched, <= 0 below the proximal node).
-By the brief's hard limit nothing here reports a length or stretch between moved nodes: the second iteration's frames carry a stretch internally and only node positions
+It reads the pre-adr-0042 arms: run it at commit 5dcd23f, whose `arms.py` still has the Ruler-chord nodes and the shortest-arc roll. By the brief's hard limit nothing here reports a length or stretch between moved nodes: the second iteration's frames carry a stretch internally and only node positions
 and offsets leave this script.
 
     python analysis/diag_arm_anchors_b.py ARMS.pkl OUT.json [--targets DIR]

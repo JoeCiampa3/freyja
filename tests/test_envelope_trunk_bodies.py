@@ -113,7 +113,7 @@ def test_the_shoulder_cut_is_the_vertical_plane_through_the_sjc_with_a_sphere_zo
     for side in ("R", "L"):                                        # a sphere holds thorax-side cells and arm-side (shoulder) cells: jointly owned
         assert s["spheres"][side]["thorax"] > 0 and s["spheres"][side][f"shoulder_{side}"] > 0
     ax = s["axilla"]
-    assert ax["merged_below_axilla"] is False and abs(ax["right_minus_left_mm"]) <= 4.0 and ax["level_mm"] == pytest.approx(1296.0)
+    assert ax["merged_below_axilla"] is False and abs(ax["right_minus_left_mm"]) <= 4.0 and ax["level_mm"] == pytest.approx(1294.0)
     assert res["arm_rule_cross_check"]["relative"] == pytest.approx(0.0, abs=0.01)
 
 
@@ -167,5 +167,5 @@ def test_the_whole_body_average_density_is_reported_on_the_robot_and_the_tissue_
     d = bodies_report.whole_body_density(64.94, 52.3315, 2.787)
     assert d["robot_kg_per_l"] == pytest.approx(64.94 / 52.3315) and d["tissue_kg_per_l"] == pytest.approx(64.94 / (52.3315 - 2.787))
     w = res["whole_body_density"]
-    assert w["robot_kg_per_l"] == pytest.approx(1.241, abs=0.002) and w["tissue_kg_per_l"] == pytest.approx(1.311, abs=0.002)        # memo 32: about 1.24 and 1.311
+    assert w["robot_kg_per_l"] == pytest.approx(1.232, abs=0.002) and w["tissue_kg_per_l"] == pytest.approx(1.301, abs=0.002)        # v3, memo 52; on v2 about 1.24 and 1.311 (memo 32)
     assert w["sheet_total_mass_kg"] == pytest.approx(64.94, abs=0.01) and w["v_lung_l"] == pytest.approx(2.787) and "packaging" in w["comparator"]

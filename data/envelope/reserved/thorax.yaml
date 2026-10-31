@@ -7,7 +7,7 @@ components:
   status: reserved
   owner: thorax
   primitive: {type: cylinder, diameter: 90, length: 81.5}
-  pose: {tx: 32.671, ty: -2.329, tz: -119.0, rx: 0, ry: 0, rz: 0}
+  pose: {tx: 32.667, ty: -2.329, tz: -119.0, rx: 0, ry: 0, rz: 0}
   clearance_mm: 5.0
   mass_kg: 1.4
   source: reservations.yaml spine_v2
@@ -16,7 +16,7 @@ components:
   status: reserved
   owner: thorax
   primitive: {type: cylinder, diameter: 90, length: 81.5}
-  pose: {tx: 68.671, ty: -92.329, tz: -119.0, rx: 0, ry: 0, rz: 0}
+  pose: {tx: 68.667, ty: -92.329, tz: -119.0, rx: 0, ry: 0, rz: 0}
   clearance_mm: 5.0
   mass_kg: 1.4
   source: reservations.yaml spine_v2
@@ -25,7 +25,7 @@ components:
   status: reserved
   owner: thorax
   primitive: {type: cylinder, diameter: 90, length: 81.5}
-  pose: {tx: 68.671, ty: 87.671, tz: -119.0, rx: 0, ry: 0, rz: 0}
+  pose: {tx: 68.667, ty: 87.671, tz: -119.0, rx: 0, ry: 0, rz: 0}
   clearance_mm: 5.0
   mass_kg: 1.4
   source: reservations.yaml spine_v2

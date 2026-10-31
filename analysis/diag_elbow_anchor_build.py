@@ -1,5 +1,5 @@
 """Memo 43 diagnostic, step 1 (read-only): rebuild the right and left arm sides in memory exactly as `fy envelope gates` does and pickle them to the path given.
-Writes nothing in the repo and touches no cache. Usage: python analysis/diag_elbow_anchor_build.py OUT.pkl"""
+Writes nothing in the repo and touches no cache. For the pre-adr-0042 arms: run it at commit 5dcd23f. Usage: python analysis/diag_elbow_anchor_build.py OUT.pkl"""
 import pickle
 import sys
 from pathlib import Path

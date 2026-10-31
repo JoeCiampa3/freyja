@@ -1,5 +1,5 @@
 # Worked example for the forearm (brief 8): a box-shaped module 30 mm anterior-posterior x 30 mm wide x 80 mm long.
 # Frame of the forearm: origin at the elbow node, z up (the wrist plane at z = -259.44 mm, the sheet's forearm length), x anterior, y left; stations are distances below the elbow plane.
-# The box centre sits at station 100 mm (tz = -100), x = -5 mm, y = +21 mm (the section's centre is medial of the node-to-node axis).
+# The box centre sits on the node-to-node axis (the section centre line, adr-0042 D1) at station 100 mm (tz = -100), x = 0, y = 0; the infeasible pose is the same placement 19 mm medially.
 shapes:
   - {name: module, type: box, half: [15, 15, 40]}
