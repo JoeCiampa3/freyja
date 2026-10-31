@@ -82,7 +82,7 @@ def alternative_target(root, mesh_path, voxel=2.0) -> dict:
     table = masses.load_dumas_table1(root)
     raster = features.BodyRaster(inp.V, inp.F, inp.stature_mesh + 10.0, h=bodies.RASTER_MM)
     prof = decompose.profile(raster)
-    names = np.array(decompose.vertex_regions(inp.V, raster, {"apex": feats["crotch_apex_mm"], "neck": decompose.neck_height(prof, inp.stature_mesh)}))
+    names = np.array(decompose.labels(inp.V, inp.F, raster, feats["crotch_apex_mm"], decompose.neck_height(prof, inp.stature_mesh)))
     ax = bodies.axilla(prof, feats["crotch_apex_mm"])
     sh = {"ajc": inp.sheet.ajc, "kjc": inp.sheet.kjc, **trunk.sheet_nodes(inp.sheet)}
     sj = bodies.sjc(table, inp.sheet)

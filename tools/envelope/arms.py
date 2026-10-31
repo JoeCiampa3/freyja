@@ -8,7 +8,7 @@ stretch. Each segment is extracted in its own frame; no assembled arm exists. Th
 SJC carried through the trunk registration, as in brief 5's shoulder planes), so `origin_xyz` of a built arm is the position in a model-frame stack of the arm (upper arm 0, forearm -L_upper arm,
 hand -(L_upper arm + L_forearm)), used by the oracle's union query only.
 
-Membership (mesh frame): a cell is arm when its nearest body vertex is an arm vertex (`decompose.vertex_regions`) or `bodies.classify` moved it to the arm in the clean-up below the axilla;
+Membership (mesh frame): a cell is arm when its nearest body vertex is an arm vertex (`decompose.arm_vertices`) or `bodies.classify` moved it to the arm in the clean-up below the axilla;
 the upper arm also takes the shoulder girdle of its side (thorax band, above the axilla, beyond the SJC plane). Every segment is cut by its own plane (perpendicular to its axis) at its distal end; at the
 elbow, whose axes meet at about 40 degrees, the two planes overlap on the inner side (0.048 l a side, counted twice) and leave a small gap on the outer (0.008 l), so the cells of the overlap are
 given to one body by the bisector plane through the EJC (a cell is the upper arm's on its proximal side and the forearm's on the other); the gap stays. The wrist needs no such rule: the hand takes
@@ -265,7 +265,7 @@ class Membership:
         self.sgn = -1.0 if side == "R" else 1.0
         am = np.asarray(tb.arm_mask, bool)
         self.arm_tree, self.rest_tree = cKDTree(inp.V[am]), cKDTree(inp.V[~am])
-        self.arm_mask = am & (inp.V[:, 2] <= tb.tm.mesh[2])        # the label also holds the ears (a separate piece of the head's layers): only what lies below the CJC can be an arm vertex
+        self.arm_mask = am
         self.leak = tb.acc["leak_grid"]
         self.o, self.h = np.array(tb.acc["raster_origin_mm"]), float(tb.acc["layer_h"])
         self.axilla, self.lateral, self.tm, self.sheet = tb.axilla["level_mm"], tb.sjc["lateral_mm"], tb.tm, tb.sheet

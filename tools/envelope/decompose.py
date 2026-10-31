@@ -3,9 +3,10 @@
 The region split is for comparing meshes of the same topology (v1 posed, v1 at rest, v2) volume by volume (volume-extractor brief 4, item 2); it is not the
 conformed segment of the envelope. Two steps.
 
-Which vertices are arms is decided once, on the mesh where the arms hang free (the rest-pose v2), by `vertex_regions`: the mesh is rasterised (the parity
-raster of `features.BodyRaster`), every horizontal layer is split into its connected pieces, and below the crotch apex a piece is a leg when its centroid is
-within LEG_Y_MM_MAX of the midline and otherwise an arm, while from the apex up the largest piece is the core and the others are arms. The label belongs to
+Which vertices are arms is decided once, on the mesh where the arms hang free, by `arm_vertices`: the mesh's own edges, with no raster (brief 12: a raster's layers made the arm set
+depend on the grid's phase at the crotch apex, the axilla and the ears). The other vertices are labelled by `vertex_regions`: the mesh is rasterised (the parity raster of `features.BodyRaster`),
+every horizontal layer is split into its connected pieces, below the crotch apex a piece is a leg and above it the head starts at the neck. Without an arm set it falls back to the older rule, used
+by synthetic bodies: below the apex a piece beyond LEG_Y_MM_MAX of the midline is an arm, and from the apex up the largest piece is the core and the others are arms. The label belongs to
 the vertex, so it carries to a posed mesh of the same topology, where the arms touch the body and no layer separates them.
 
 Then each mesh's own raster cells are given to the arm label or to the rest by the nearest labelled vertex, and the rest is cut by horizontal planes: the AJC
@@ -17,6 +18,8 @@ from __future__ import annotations
 
 import numpy as np
 from scipy import ndimage
+
+from .sheet import StopAndAsk
 
 LEG_Y_MM_MAX = 300.0      # below the crotch apex a piece with its centroid this far from the midline is an arm, not a leg (thigh centroids are within ~130 mm; hands hang at 400+)
 NECK_WINDOW = (0.80, 0.90)  # the neck is the narrowest core section between these fractions of the stature
@@ -84,6 +87,11 @@ def neck_height(prof, stature_mm) -> float:
     return float(zc[k])
 
 
+def labels(V, F, raster, apex, neck) -> list:
+    """The region of every vertex of a body mesh."""
+    return vertex_regions(V, raster, {"apex": apex, "neck": neck}, arm_vertices(V, F, apex))
+
+
 def labelled_profile(raster, V, arm_mask) -> dict:
     """Per layer of the raster, the area (mm2) of cells nearest to an arm-labelled vertex and of the rest. V are the mesh's vertices in the raster's frame,
     arm_mask the arm labels from `vertex_regions` on the reference mesh."""
@@ -114,9 +122,53 @@ def region_volumes(lprof, planes) -> dict:
     }
 
 
-def vertex_regions(V, raster, planes) -> list:
+def arm_vertices(V, F, apex) -> np.ndarray:
+    """Which vertices are arms (a boolean per vertex): add the vertices by rising height, joining them along the mesh's edges; an arm is the component of the side's lowest far-lateral vertex at the
+    moment it would join the core, the component of the midline vertex just above the crotch apex. Stops when an arm never separates from the core."""
+    n = len(V)
+    adj = [set() for _ in range(n)]
+    for a, b, c in F:
+        adj[a].update((b, c))
+        adj[b].update((a, c))
+        adj[c].update((a, b))
+    parent = list(range(n))
+
+    def find(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+    above = np.flatnonzero(V[:, 2] > apex)
+    core = int(above[np.argmin(np.hypot(V[above, 1], V[above, 2] - apex))])
+    pending = {}
+    for sgn in (-1.0, 1.0):
+        far = np.flatnonzero(sgn * V[:, 1] >= 0.5 * (sgn * V[:, 1]).max())
+        pending[int(far[np.argmin(V[far, 2])])] = sgn
+    added, arm = np.zeros(n, bool), np.zeros(n, bool)
+    for v in np.argsort(V[:, 2], kind="stable"):
+        v = int(v)
+        added[v] = True
+        for u in adj[v]:
+            if not added[u] or find(u) == find(v):
+                continue
+            if added[core]:
+                pair = {find(u), find(v)}
+                for s in [s for s in pending if added[s] and find(core) in pair and find(s) in pair]:
+                    part = [i for i in range(n) if added[i] and i != v and find(i) == find(s)]
+                    if (pending[s] * V[part, 1]).min() <= 0.0:
+                        raise StopAndAsk("an arm's component crosses the midline: the arm does not separate from the core")
+                    arm[part] = True
+                    del pending[s]
+            parent[find(u)] = find(v)
+        if not pending:
+            return arm
+    raise StopAndAsk(f"{len(pending)} arm(s) never separate from the core")
+
+
+def vertex_regions(V, raster, planes, arm_mask=None) -> list:
     """'legs', 'torso', 'arms' or 'head' for every vertex (V in the raster's frame): the class of the piece the vertex sits on in its layer, found from the
-    nearest inside cell when the vertex lies on the surface. Legs are the below-apex leg pieces, torso the core up to the neck plane, head the core above it."""
+    nearest inside cell when the vertex lies on the surface. Legs are the below-apex leg pieces, torso the core up to the neck plane, head the core above it. With `arm_mask` the arms are those
+    vertices and no piece of a layer makes an arm."""
     h, o, inside = raster.h, raster.o, raster.inside
     apex, neck = planes["apex"], planes["neck"]
     out = [None] * len(V)
@@ -135,6 +187,9 @@ def vertex_regions(V, raster, planes) -> list:
 
     nz = inside.shape[2]
     for n, p in enumerate(V):
+        if arm_mask is not None and arm_mask[n]:
+            out[n] = "arms"
+            continue
         k0 = int(np.clip(np.floor((p[2] - o[2]) / h), 0, nz - 1))
         i = int(np.clip(np.floor((p[0] - o[0]) / h), 0, inside.shape[0] - 1))
         j = int(np.clip(np.floor((p[1] - o[1]) / h), 0, inside.shape[1] - 1))
@@ -155,7 +210,9 @@ def vertex_regions(V, raster, planes) -> list:
         ni, nj = near[0][i, j], near[1][i, j]
         area, cy, big = pieces[int(lab[ni, nj]) - 1]
         cy_mm = o[1] + h * (cy + 0.5)
-        if zl < apex:
+        if arm_mask is not None:
+            out[n] = "legs" if zl < apex else ("head" if zl > neck else "torso")
+        elif zl < apex:
             out[n] = "legs" if abs(cy_mm) <= LEG_Y_MM_MAX else "arms"
         elif not big:
             out[n] = "arms"

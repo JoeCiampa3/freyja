@@ -6,8 +6,7 @@ HJC to LJC, the abdomen LJC to TJC, the thorax TJC to CJC, the head and neck CJC
 the legs' registration below the hip-centre node and `TrunkMap` above it: slope 1 up to the TJC, the thorax and the head and neck stretched to the sheet's lengths (the CJC from
 the anchor of `trunk.PRIMARY_CANDIDATE`), plus the legs' shear, which is a constant translation above the hip.
 
-Arms: a vertex is an arm vertex by the rule of memo 32 (`decompose.vertex_regions`: below the crotch apex a piece far from the midline, above it every piece but the largest in its
-layer), and a cell goes to the arm when its nearest vertex is one. Where an arm and the core are one connected piece, above the axilla, the thorax is cut at the vertical plane
+Arms: a vertex is an arm vertex by `decompose.arm_vertices` (the mesh's edges, no raster; brief 12), and a cell goes to the arm when its nearest vertex is one. Where an arm and the core are one connected piece, above the axilla, the thorax is cut at the vertical plane
 through the shoulder joint centres (the sheet's SJC: the upper-arm body origin in the thorax frame); what lies beyond the plane is the shoulder girdle of that side, part of the unbuilt remainder.
 The axilla is found from the layer topology: the top of the highest layer in which a separate arm piece (at least ARM_PIECE_MIN_MM2) still exists, on each side.
 """
@@ -415,7 +414,7 @@ def build(inp, feats, reg, table, voxel=trial.VOXEL_MM, h_zone=ZONE_H_MM) -> Tru
     prof = decompose.profile(raster)
     apex = feats["crotch_apex_mm"]
     neck = decompose.neck_height(prof, inp.stature_mesh)
-    names = np.array(decompose.vertex_regions(inp.V, raster, {"apex": apex, "neck": neck}))
+    names = np.array(decompose.labels(inp.V, inp.F, raster, apex, neck))
     arm_mask = names == "arms"
     ax = axilla(prof, apex)
     if ax["merged_below_axilla"]:
