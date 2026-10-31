@@ -7,7 +7,7 @@ links: []
 ## Context
 
 Volume-extractor briefs 1 to 6 (memos 27 to 36) built a way to take the available volume inside the body from a MakeHuman sculpt, registered to the sheet's joint centres, and to ask the oracle whether a
-part fits. This record proposes the rules that work rests on, so that `rm.v1-volume-extracted` can later be signed off against them. It is drafted from Joe's decision list; it is not accepted. Every number
+part fits. This record sets the rules that work rests on, so that `rm.v1-volume-extracted` can later be signed off against them. It is drafted from Joe's decision list. Every number
 below is copied from the memo or file named beside it.
 
 **Sources and what each is allowed to do.**
@@ -88,7 +88,7 @@ model frames the two bodies are 17 mm apart at the hip plane; memo 39); the arms
 - Stage 4 components are placed in the model body frames (D9); `docs/envelope-component-contract.md` is the draft of what the connector would emit. The trunk's mesh-to-model shift is computed at build time and
   printed in every trunk result, not typed.
 - The open list (D11) is the work not done: the left side, continuous hip sweeps in place of discrete ones, a second sculpt, any structural check, the trunk's x offset and the hip registration.
-- `rm.v1-volume-extracted` stays pending until this record is accepted.
+- `rm.v1-volume-extracted` stays open on the D11 list; this record was accepted on 2026-10-26.
 
 ## Rejected options, and why each one died
 
@@ -102,3 +102,4 @@ and 0.10 for the cervicale).
 - 2026-10-30. D2 (the arm nodes, the arm stretch gate, the arm frame roll) and D10 (the arms take the 8% gate) amended by adr-0042, and D1 (the baseline sculpt) when its v3 is committed; D11's arm item closed in place.
 - 2026-10-30. D1 amended by adr-0042: the baseline sculpt is v3 (freyja-body-v3, scripted from v2 and the pinned arm-length targets); v1 and v2 stay in the repo.
 - 2026-10-31. D8: comparators corrected in place to the v3 baseline's values (1.232 and 1.301 kg/l); they are whole-mesh quantities and moved when D1's baseline did. D7's share ratios were checked against the committed share table and stand (brief 13).
+- 2026-10-31. Context and Consequences: leftover drafting text corrected in place; the record has been accepted since 2026-10-26 (front matter; `rm.v1-volume-extracted`). Context no longer says it proposes the rules or is not accepted, and Consequences no longer holds the node pending on acceptance.
