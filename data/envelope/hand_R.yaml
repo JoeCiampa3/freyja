@@ -47,7 +47,7 @@ mesh_nodes_mm:
   - -531.37
   - 888.62
   sjc:
-  - 15.56
+  - 15.51
   - -192.33
   - 1349.24
   wrist:
@@ -78,7 +78,7 @@ nodes:
 pinch_prominence_mm: 3.0
 pinch_stations: []
 required_density_inner_kg_per_l:
-  t10: 7.4672
+  t10: 7.4668
   t3: 1.9556
   t5: 2.7325
   t8: 4.7699

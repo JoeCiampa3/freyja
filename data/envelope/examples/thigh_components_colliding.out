@@ -1,6 +1,6 @@
 segment thigh_R (inputs 00fcb645ad2c), 1 pose(s), 1 shape(s)
-  pose 0: margin    37.63 mm   slab overrun   0.00 mm
-binds at pose 0 on pod: margin 37.63 mm at station 195.0 mm, point (x 42.4, y -23.1, z -195.0) mm
+  pose 0: margin    37.43 mm   slab overrun   0.00 mm
+binds at pose 0 on pod: margin 37.43 mm at station 195.0 mm, point (x 43.2, y -22.6, z -195.0) mm
 slab overrun 0.00 mm; required margin 0.00 mm
 components (data/envelope/components/thigh_R.yaml): 2 placed
   actuator [designed]: margin -23.98 mm (distance -20.98 - clearance 3.00) at pose 0 on pod, station 195.0 mm, point (x 20.0, y -9.5, z -195.0) mm

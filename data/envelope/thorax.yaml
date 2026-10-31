@@ -20,10 +20,10 @@ frame: 'body: origin on the vertical line through the knee section''s x and the 
   at the body''s upper plane, z up (lower plane at z = -length), x anterior, y left;
   stations are distances below the upper plane'
 inner_volume_l:
-  t10: 12.9763
-  t3: 14.9706
-  t5: 14.387
-  t8: 13.5319
+  t10: 12.9685
+  t3: 14.9605
+  t5: 14.3776
+  t8: 13.5234
 inputs_sha256_12: 01a6e055b4a5
 length_mm: 328.76
 map: slope1
@@ -58,15 +58,15 @@ planes:
   upper: cjc
   upper_sheet_mm: 1424.6
 required_density_inner_kg_per_l:
-  t10: 1.3174
-  t3: 1.1419
-  t5: 1.1882
-  t8: 1.2633
-required_density_skin_kg_per_l: 1.0794
+  t10: 1.3182
+  t3: 1.1427
+  t5: 1.189
+  t8: 1.2641
+required_density_skin_kg_per_l: 1.0801
 sections_csv: thorax_sections.csv
 segment: thorax
 sheet_mass_kg: 17.095
 shoulder_plane_lateral_mm: 192.33
-skin_volume_l: 15.8378
+skin_volume_l: 15.8269
 stretch: 1.00382
 voxel_mm: 2.0

@@ -17,11 +17,11 @@
     "free_volume_l": 4.010131422179803,
     "inner_volume_l": 4.010131422179803,
     "largest_free_sphere_centre_mm": [
-     21.848505523066933,
+     21.838696106610925,
      -0.7600000000000193,
      -125.0
     ],
-    "largest_free_sphere_mm": 180.8306954191078,
+    "largest_free_sphere_mm": 180.83069541910783,
     "module_mass_fraction_of_sheet_mass": 0.0,
     "module_mass_kg": 0.0,
     "occupied_volume_l": 0.0,
@@ -40,22 +40,22 @@
    "search": {
     "centres_mm": [
      [
-      -18.901494476933067,
-      0.702335663252569,
+      -18.911303893389075,
+      0.6696106023979098,
       -57.0
      ],
      [
-      29.098505523066933,
-      -83.29766433674743,
+      29.088696106610925,
+      -83.33038939760209,
       -57.0
      ],
      [
-      29.098505523066933,
-      84.70233566325257,
+      29.088696106610925,
+      84.66961060239791,
       -57.0
      ]
     ],
-    "centroid_offset_from_trunk_axis_mm": 69.82086014452858,
+    "centroid_offset_from_trunk_axis_mm": 69.81072966268515,
     "heights_tried": 1,
     "margin_step_mm": 0.5,
     "max_skin_margin_mm": 17.0,
@@ -65,20 +65,20 @@
    },
    "with_modules": {
     "at_required_margin": {
-     "density_remaining_inside_budget_kg_per_l": 1.7170921497597795,
-     "density_remaining_modules_additional_kg_per_l": 3.0803789227259557,
-     "density_without_modules_kg_per_l": 1.8623590018559064,
-     "free_volume_l": 3.080789811274875,
-     "inner_volume_l": 5.095687775849275,
+     "density_remaining_inside_budget_kg_per_l": 1.7170924036336952,
+     "density_remaining_modules_additional_kg_per_l": 3.0803793781632827,
+     "density_without_modules_kg_per_l": 1.862359157727967,
+     "free_volume_l": 3.080789355776865,
+     "inner_volume_l": 5.095687349360459,
      "largest_free_sphere_centre_mm": [
-      71.09850552306693,
-      0.702335663252569,
+      71.08869610661093,
+      0.6696106023979098,
       -1.0
      ],
-     "largest_free_sphere_mm": 82.25773384680207,
+     "largest_free_sphere_mm": 82.26081416750138,
      "module_mass_fraction_of_sheet_mass": 0.4425711275026343,
      "module_mass_kg": 4.199999999999999,
-     "occupied_volume_l": 2.0148979645744003,
+     "occupied_volume_l": 2.0148979935835936,
      "remaining_mass_if_inside_budget_kg": 5.290000000000001,
      "required_skin_margin_mm": 5.0,
      "sheet_mass_kg": 9.49
@@ -86,17 +86,17 @@
     "feasible_at_required_margin": true
    },
    "without_modules": {
-    "density_remaining_inside_budget_kg_per_l": 1.8623590018559064,
-    "density_remaining_modules_additional_kg_per_l": 1.8623590018559064,
-    "density_without_modules_kg_per_l": 1.8623590018559064,
-    "free_volume_l": 5.095687775849275,
-    "inner_volume_l": 5.095687775849275,
+    "density_remaining_inside_budget_kg_per_l": 1.862359157727967,
+    "density_remaining_modules_additional_kg_per_l": 1.862359157727967,
+    "density_without_modules_kg_per_l": 1.862359157727967,
+    "free_volume_l": 5.095687349360459,
+    "inner_volume_l": 5.095687349360459,
     "largest_free_sphere_centre_mm": [
-     1.0985055230669332,
-     48.70233566325257,
+     1.088696106610925,
+     48.66961060239791,
      -55.0
     ],
-    "largest_free_sphere_mm": 192.49133579994492,
+    "largest_free_sphere_mm": 192.46046062082422,
     "module_mass_fraction_of_sheet_mass": 0.0,
     "module_mass_kg": 0.0,
     "occupied_volume_l": 0.0,
@@ -115,22 +115,22 @@
    "search": {
     "centres_mm": [
      [
-      -24.051494476933073,
+      -24.06130389338908,
       -2.3288591460000134,
       -119.0
      ],
      [
-      11.948505523066927,
+      11.93869610661092,
       -92.32885914600001,
       -119.0
      ],
      [
-      11.948505523066927,
+      11.93869610661092,
       87.67114085399999,
       -119.0
      ]
     ],
-    "centroid_offset_from_trunk_axis_mm": 56.71516203331557,
+    "centroid_offset_from_trunk_axis_mm": 56.705360891698355,
     "heights_tried": 3,
     "margin_step_mm": 0.5,
     "max_skin_margin_mm": 13.5,
@@ -140,20 +140,20 @@
    },
    "with_modules": {
     "at_required_margin": {
-     "density_remaining_inside_budget_kg_per_l": 1.0525747846915996,
-     "density_remaining_modules_additional_kg_per_l": 1.3954064322840556,
-     "density_without_modules_kg_per_l": 1.1882214821909387,
-     "free_volume_l": 12.250910992303682,
-     "inner_volume_l": 14.387048421712473,
+     "density_remaining_inside_budget_kg_per_l": 1.0533874265649623,
+     "density_remaining_modules_additional_kg_per_l": 1.3964837578230345,
+     "density_without_modules_kg_per_l": 1.1890025532332522,
+     "free_volume_l": 12.241459955573873,
+     "inner_volume_l": 14.377597384895097,
      "largest_free_sphere_centre_mm": [
-      31.948505523066927,
+      31.93869610661092,
       -26.328859146000013,
       -251.0
      ],
      "largest_free_sphere_mm": 175.23435567457517,
      "module_mass_fraction_of_sheet_mass": 0.2456858730622989,
      "module_mass_kg": 4.199999999999999,
-     "occupied_volume_l": 2.136137429408791,
+     "occupied_volume_l": 2.1361374293212236,
      "remaining_mass_if_inside_budget_kg": 12.895,
      "required_skin_margin_mm": 5.0,
      "sheet_mass_kg": 17.095
@@ -161,17 +161,17 @@
     "feasible_at_required_margin": true
    },
    "without_modules": {
-    "density_remaining_inside_budget_kg_per_l": 1.1882214821909387,
-    "density_remaining_modules_additional_kg_per_l": 1.1882214821909387,
-    "density_without_modules_kg_per_l": 1.1882214821909387,
-    "free_volume_l": 14.387048421712473,
-    "inner_volume_l": 14.387048421712473,
+    "density_remaining_inside_budget_kg_per_l": 1.1890025532332522,
+    "density_remaining_modules_additional_kg_per_l": 1.1890025532332522,
+    "density_without_modules_kg_per_l": 1.1890025532332522,
+    "free_volume_l": 14.377597384895097,
+    "inner_volume_l": 14.377597384895097,
     "largest_free_sphere_centre_mm": [
-     15.948505523066927,
+     15.93869610661092,
      41.67114085399999,
      -163.0
     ],
-    "largest_free_sphere_mm": 195.16461546042774,
+    "largest_free_sphere_mm": 195.16461546042777,
     "module_mass_fraction_of_sheet_mass": 0.0,
     "module_mass_kg": 0.0,
     "occupied_volume_l": 0.0,

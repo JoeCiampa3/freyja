@@ -7,7 +7,7 @@ components:
   status: reserved
   owner: pelvis
   primitive: {type: cylinder, diameter: 90, length: 81.5}
-  pose: {tx: 37.817, ty: 0.702, tz: -57.0, rx: 0, ry: 0, rz: 0}
+  pose: {tx: 37.808, ty: 0.67, tz: -57.0, rx: 0, ry: 0, rz: 0}
   clearance_mm: 5.0
   mass_kg: 1.4
   source: reservations.yaml spine_v2
@@ -16,7 +16,7 @@ components:
   status: reserved
   owner: pelvis
   primitive: {type: cylinder, diameter: 90, length: 81.5}
-  pose: {tx: 85.817, ty: -83.298, tz: -57.0, rx: 0, ry: 0, rz: 0}
+  pose: {tx: 85.808, ty: -83.33, tz: -57.0, rx: 0, ry: 0, rz: 0}
   clearance_mm: 5.0
   mass_kg: 1.4
   source: reservations.yaml spine_v2
@@ -25,7 +25,7 @@ components:
   status: reserved
   owner: pelvis
   primitive: {type: cylinder, diameter: 90, length: 81.5}
-  pose: {tx: 85.817, ty: 84.702, tz: -57.0, rx: 0, ry: 0, rz: 0}
+  pose: {tx: 85.808, ty: 84.67, tz: -57.0, rx: 0, ry: 0, rz: 0}
   clearance_mm: 5.0
   mass_kg: 1.4
   source: reservations.yaml spine_v2

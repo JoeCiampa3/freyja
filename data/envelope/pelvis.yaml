@@ -67,6 +67,6 @@ sections_csv: pelvis_sections.csv
 segment: pelvis
 sheet_mass_kg: 9.49
 shoulder_plane_lateral_mm: 192.33
-skin_volume_l: 5.5325
+skin_volume_l: 5.5326
 stretch: 1.0
 voxel_mm: 2.0

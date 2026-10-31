@@ -30,130 +30,130 @@
   "shank": {
    "areas": [
     {
-     "conformed_mm2": 8089.546609656404,
-     "relative": 0.0009123397575870625,
+     "conformed_mm2": 8089.010410276171,
+     "relative": 0.0008459962896348012,
      "u": 0.1,
      "unconformed_mm2": 8082.1729219719955
     },
     {
-     "conformed_mm2": 7983.863359219943,
-     "relative": 0.0008564090535955211,
+     "conformed_mm2": 7974.235758866078,
+     "relative": -0.00035050608064770867,
      "u": 0.2,
      "unconformed_mm2": 7977.031757002427
     },
     {
-     "conformed_mm2": 8271.946174721668,
-     "relative": -0.0006651609858480099,
+     "conformed_mm2": 8274.653736516879,
+     "relative": -0.00033806011096488837,
      "u": 0.3,
      "unconformed_mm2": 8277.452012862854
     },
     {
-     "conformed_mm2": 8081.947750893638,
-     "relative": 0.00018654007838710162,
+     "conformed_mm2": 8073.026335149652,
+     "relative": -0.000917535352512724,
      "u": 0.4,
      "unconformed_mm2": 8080.440424903374
     },
     {
-     "conformed_mm2": 6922.031198724464,
-     "relative": -0.0002982119207076805,
+     "conformed_mm2": 6923.365860560397,
+     "relative": -0.00010545580829531535,
      "u": 0.5,
      "unconformed_mm2": 6924.096046705717
     },
     {
-     "conformed_mm2": 5427.934295825109,
-     "relative": -0.0005451002894437689,
+     "conformed_mm2": 5429.963463802084,
+     "relative": -0.0001714660915347114,
      "u": 0.6,
      "unconformed_mm2": 5430.894678086072
     },
     {
-     "conformed_mm2": 3944.7123559759243,
-     "relative": 0.0009037477624169964,
+     "conformed_mm2": 3943.8362985566946,
+     "relative": 0.0006814630747049175,
      "u": 0.7,
      "unconformed_mm2": 3941.150549985027
     },
     {
-     "conformed_mm2": 2963.312657798273,
-     "relative": 0.0015379546054914738,
+     "conformed_mm2": 2959.9280894672665,
+     "relative": 0.0003940410078026946,
      "u": 0.8,
      "unconformed_mm2": 2958.7622158218956
     },
     {
-     "conformed_mm2": 2908.1425762863346,
-     "relative": 0.0015467883907878649,
+     "conformed_mm2": 2910.240480278927,
+     "relative": 0.002269293890781692,
      "u": 0.9,
      "unconformed_mm2": 2903.6512422539195
     }
    ],
    "length_mm": 407.535240249,
    "sheet_length_mm": 407.535240249,
-   "volume_conformed_l": 2.4703831907614084,
+   "volume_conformed_l": 2.4703481408216503,
    "volume_profile_nominal_l": 2.470800369329565
   },
   "thigh": {
    "areas": [
     {
-     "conformed_mm2": 28284.646697871234,
-     "relative": -0.0009870919971246852,
+     "conformed_mm2": 28302.896722617934,
+     "relative": -0.0003425016478771188,
      "u": 0.1,
      "unconformed_mm2": 28312.593832661296
     },
     {
-     "conformed_mm2": 20674.78371573099,
-     "relative": 9.586088343773183e-05,
+     "conformed_mm2": 20671.196765241104,
+     "relative": -7.764972675552982e-05,
      "u": 0.2,
      "unconformed_mm2": 20672.802002667882
     },
     {
-     "conformed_mm2": 17688.081853209507,
-     "relative": -0.00035275902316941193,
+     "conformed_mm2": 17697.390853584595,
+     "relative": 0.00017334191973865758,
      "u": 0.3,
      "unconformed_mm2": 17694.323685548465
     },
     {
-     "conformed_mm2": 15609.478746724506,
-     "relative": -0.00024118046212934146,
+     "conformed_mm2": 15613.039310164353,
+     "relative": -1.3132827786765695e-05,
      "u": 0.4,
      "unconformed_mm2": 15613.244356213676
     },
     {
-     "conformed_mm2": 14374.34629955925,
-     "relative": -0.0005197562702296032,
+     "conformed_mm2": 14380.581852872714,
+     "relative": -8.618439046201233e-05,
      "u": 0.5,
      "unconformed_mm2": 14381.821341378754
     },
     {
-     "conformed_mm2": 13381.24583685224,
-     "relative": -8.911825689825146e-05,
+     "conformed_mm2": 13368.891372724625,
+     "relative": -0.001012303083626825,
      "u": 0.6,
      "unconformed_mm2": 13382.438456440526
     },
     {
-     "conformed_mm2": 12099.740508550538,
-     "relative": 0.00025810684862679256,
+     "conformed_mm2": 12099.570843533289,
+     "relative": 0.0002440810264340015,
      "u": 0.7,
      "unconformed_mm2": 12096.618288525046
     },
     {
-     "conformed_mm2": 10616.212862986005,
-     "relative": 0.0006230204566396748,
+     "conformed_mm2": 10617.558928807846,
+     "relative": 0.000749892860741519,
      "u": 0.8,
      "unconformed_mm2": 10609.602863365306
     },
     {
-     "conformed_mm2": 9090.2904905553,
-     "relative": 0.0012582488704077992,
+     "conformed_mm2": 9085.574159801321,
+     "relative": 0.0007387643636442882,
      "u": 0.9,
      "unconformed_mm2": 9078.867016387348
     }
    ],
    "length_mm": 398.082103233,
    "sheet_length_mm": 398.082103233,
-   "volume_conformed_l": 6.420675053012545,
+   "volume_conformed_l": 6.421470462075381,
    "volume_profile_nominal_l": 6.421042437196602
   }
  },
  "cuts": {
-  "core_profile_max_layer_step_fraction": 1.0559513466550825,
+  "core_profile_max_layer_step_fraction": 1.0533078659489494,
   "core_profile_top_mesh_mm": 1120.5617894270395,
   "crotch_apex_mesh_mm": 808.3839168507818,
   "dumas_cut_heights_mesh_mm": {
@@ -183,23 +183,23 @@
   "ljc_mesh_mm": 971.9113537508211,
   "pelvis_core_area_mm2": {
    "area": [
-    21188.0,
-    52052.0,
-    57612.0,
-    60164.0,
+    21204.0,
+    52048.0,
+    57596.0,
+    60220.0,
     61160.0,
-    60260.0,
-    57960.0,
-    55180.0,
-    51840.0,
-    47668.0,
-    42724.0,
-    37284.0,
-    32276.0,
-    28944.0,
-    27664.0,
-    28624.0,
-    31412.0
+    60284.0,
+    58000.0,
+    55208.0,
+    51868.0,
+    47572.0,
+    42708.0,
+    37296.0,
+    32312.0,
+    28988.0,
+    27644.0,
+    28672.0,
+    31424.0
    ],
    "z": [
     798.3839168507818,
@@ -224,36 +224,36 @@
   "raster_odd_columns": 0,
   "s_crotch_mm": 65.28141514328104,
   "volumes_mm3": {
-   "abdomen": 2344132.3367883917,
-   "abdomen_msr10_m10": 2062231.9304816744,
-   "abdomen_msr10_p10": 2635731.8309644083,
-   "abdomen_ri_m10": 2725573.9065987766,
-   "abdomen_ri_p10": 1989950.7063364142,
-   "abdomen_rr10": 1757074.927448062,
-   "lumped": 22932848.55999221,
-   "lumped_hi": 23503146.264697358,
-   "lumped_lo": 22402263.41183304,
-   "lumped_msr10": 22823512.154435664,
-   "lumped_msr10_m10": 22541611.141342357,
-   "lumped_msr10_p10": 23115110.220080137,
-   "lumped_rr10": 22236452.172733065,
-   "pelvis_crotch": 9254491.08171115,
-   "pelvis_crotch_ilio": 11971686.709314637,
-   "pelvis_crotch_ilio_hi": 12634760.296275713,
-   "pelvis_crotch_ilio_lo": 11210089.82663286,
-   "pelvis_crotch_ri": 11341247.311957952,
-   "pelvis_crotch_ri_m10": 10959806.63078634,
-   "pelvis_crotch_ri_p10": 11695429.64255159,
-   "pelvis_hjc": 5541181.433549307,
-   "pelvis_hjc_ilio": 8258369.266163817,
-   "pelvis_hjc_ilio_hi": 8921445.897868585,
-   "pelvis_hjc_ilio_lo": 7496776.985150409,
-   "pelvis_hjc_ri": 7627939.465799313,
-   "pelvis_hjc_ri_m10": 7246500.263071975,
-   "pelvis_hjc_ri_p10": 7982121.040618189,
-   "thigh_crotch": 4569055.200251242,
-   "thigh_in": 6420675.053012544,
-   "thigh_out": 5232515.923521218
+   "abdomen": 2344169.8977762447,
+   "abdomen_msr10_m10": 2062279.3242897852,
+   "abdomen_msr10_p10": 2635965.4493393307,
+   "abdomen_ri_m10": 2725534.0780246584,
+   "abdomen_ri_p10": 1989887.9613615137,
+   "abdomen_rr10": 1757223.12983581,
+   "lumped": 22933916.92595277,
+   "lumped_hi": 23504635.317394845,
+   "lumped_lo": 22403374.308060184,
+   "lumped_msr10": 22824538.029774643,
+   "lumped_msr10_m10": 22542645.235813007,
+   "lumped_msr10_p10": 23116331.22051081,
+   "lumped_rr10": 22237585.74608783,
+   "pelvis_crotch": 9254479.621136252,
+   "pelvis_crotch_ilio": 11971381.685577624,
+   "pelvis_crotch_ilio_hi": 12634463.282931574,
+   "pelvis_crotch_ilio_lo": 11209792.16925668,
+   "pelvis_crotch_ri": 11340928.477910787,
+   "pelvis_crotch_ri_m10": 10959567.33481759,
+   "pelvis_crotch_ri_p10": 11695211.12627998,
+   "pelvis_hjc": 5541402.078510653,
+   "pelvis_hjc_ilio": 8258296.216462877,
+   "pelvis_hjc_ilio_hi": 8921380.861832254,
+   "pelvis_hjc_ilio_lo": 7496712.482144712,
+   "pelvis_hjc_ri": 7627853.827298714,
+   "pelvis_hjc_ri_m10": 7246493.969715191,
+   "pelvis_hjc_ri_p10": 7982135.188991989,
+   "thigh_crotch": 4569708.573487866,
+   "thigh_in": 6421470.462075381,
+   "thigh_out": 5233237.388591529
   }
  },
  "diagnostics": {
@@ -268,10 +268,10 @@
  "example": {
   "feasible": {
    "feasible": true,
-   "margin_mm": 16.677002293944742,
+   "margin_mm": 16.527097247436703,
    "point_mm": [
-    -3.7303111394245487,
-    -44.76717619800516,
+    -2.738841331159465,
+    -44.87471754113723,
     -275.0
    ],
    "pose_index": 3,
@@ -279,7 +279,7 @@
   },
   "infeasible": {
    "feasible": false,
-   "margin_mm": -8.110247941578839,
+   "margin_mm": -8.296709843251389,
    "point_mm": [
     -3.7303111394245487,
     -69.76717619800516,
@@ -405,7 +405,7 @@
    "pass": true
   },
   {
-   "detail": "conformed length 398.082 mm vs sheet 398.082 mm (diff 0.0000); worst area change 0.126% over u = 0.1..0.9",
+   "detail": "conformed length 398.082 mm vs sheet 398.082 mm (diff 0.0000); worst area change 0.101% over u = 0.1..0.9",
    "gate": "3 thigh: length = sheet within 0.5 mm; matched-station areas within 1%",
    "pass": true
   },
@@ -420,7 +420,7 @@
    "pass": true
   },
   {
-   "detail": "conformed length 407.535 mm vs sheet 407.535 mm (diff 0.0000); worst area change 0.155% over u = 0.1..0.9",
+   "detail": "conformed length 407.535 mm vs sheet 407.535 mm (diff 0.0000); worst area change 0.227% over u = 0.1..0.9",
    "gate": "3 shank: length = sheet within 0.5 mm; matched-station areas within 1%",
    "pass": true
   },
@@ -435,7 +435,7 @@
    "pass": true
   },
   {
-   "detail": "feasible case: margin 16.68 mm at station 275.0 mm; infeasible case: margin -8.11 mm at station 275.0 mm (pose 3)",
+   "detail": "feasible case: margin 16.53 mm at station 275.0 mm; infeasible case: margin -8.30 mm at station 275.0 mm (pose 3)",
    "gate": "5 oracle CLI: margin and binding station, feasible and infeasible",
    "pass": true
   },
@@ -470,62 +470,62 @@
    "pass": true
   },
   {
-   "detail": "worst 0.106% over u = 0.1..0.9",
+   "detail": "worst 0.077% over u = 0.1..0.9",
    "gate": "3 pelvis: matched-station areas within 1% of the raster layers",
    "pass": true
   },
   {
-   "detail": "field 5.5325 l, raster 5.5488 l (-0.293%)",
+   "detail": "field 5.5326 l, raster 5.5490 l (-0.296%)",
    "gate": "3b pelvis: field volume within 1% of the raster accounting",
    "pass": true
   },
   {
-   "detail": "worst 0.141% over u = 0.1..0.9",
+   "detail": "worst 0.172% over u = 0.1..0.9",
    "gate": "3 abdomen: matched-station areas within 1% of the raster layers",
    "pass": true
   },
   {
-   "detail": "field 4.4490 l, raster 4.4734 l (-0.547%)",
+   "detail": "field 4.4490 l, raster 4.4732 l (-0.541%)",
    "gate": "3b abdomen: field volume within 1% of the raster accounting",
    "pass": true
   },
   {
-   "detail": "worst 0.275% over u = 0.1..0.9",
+   "detail": "worst 0.340% over u = 0.1..0.9",
    "gate": "3 thorax: matched-station areas within 1% of the raster layers",
    "pass": true
   },
   {
-   "detail": "field 15.8378 l, raster 15.8500 l (-0.077%)",
+   "detail": "field 15.8269 l, raster 15.8251 l (+0.011%)",
    "gate": "3b thorax: field volume within 1% of the raster accounting",
    "pass": true
   },
   {
-   "detail": "worst 0.358% over u = 0.1..0.9",
+   "detail": "worst 0.459% over u = 0.1..0.9",
    "gate": "3 head_neck: matched-station areas within 1% of the raster layers",
    "pass": true
   },
   {
-   "detail": "field 3.7804 l, raster 3.7847 l (-0.114%)",
+   "detail": "field 3.7812 l, raster 3.7862 l (-0.132%)",
    "gate": "3b head_neck: field volume within 1% of the raster accounting",
    "pass": true
   },
   {
-   "detail": "sum 52.4888 l against mesh 52.7155 l (-0.430%); remainder 0.0000 l; conform effect -0.1428 l; raster minus mesh +0.0007 l",
+   "detail": "sum 52.4916 l against mesh 52.7155 l (-0.425%); remainder 0.0000 l; conform effect -0.1429 l; raster minus mesh +0.0022 l",
    "gate": "7 closure: conformed bodies + remainder = mesh volume within 0.5%",
    "pass": true
   },
   {
-   "detail": "feasible: margin 37.12 mm at station 75.0 mm; infeasible: margin -11.59 mm at station 25.0 mm (pose 1); frame: model body frame of pelvis (origin at the lumbosacral joint); oracle = model + (-56.719, 0.000, 0.000) mm [model HJC x 56.719 mm; mesh hip line x 50.038 mm; mesh-to-model trunk shift -6.681 mm]",
+   "detail": "feasible: margin 37.12 mm at station 75.0 mm; infeasible: margin -11.64 mm at station 25.0 mm (pose 1); frame: model body frame of pelvis (origin at the lumbosacral joint); oracle = model + (-56.719, 0.000, 0.000) mm [model HJC x 56.719 mm; mesh hip line x 50.026 mm; mesh-to-model trunk shift -6.693 mm]",
    "gate": "5 oracle example pelvis_box: box in the pelvis, feasible and infeasible",
    "pass": true
   },
   {
-   "detail": "feasible: margin 17.50 mm at station 210.0 mm; infeasible: margin -34.40 mm at station 210.0 mm (pose 1); frame: model body frame of thorax (origin at the CJC); oracle = model + (-56.719, 0.000, 0.000) mm [model HJC x 56.719 mm; mesh hip line x 50.038 mm; mesh-to-model trunk shift -6.681 mm]",
+   "detail": "feasible: margin 17.51 mm at station 210.0 mm; infeasible: margin -34.40 mm at station 210.0 mm (pose 1); frame: model body frame of thorax (origin at the CJC); oracle = model + (-56.719, 0.000, 0.000) mm [model HJC x 56.719 mm; mesh hip line x 50.026 mm; mesh-to-model trunk shift -6.693 mm]",
    "gate": "5 oracle example thorax_box: box in the thorax, feasible and infeasible",
    "pass": true
   },
   {
-   "detail": "feasible in the union: margin 39.41 mm (the pelvis alone overruns its slab by 75.0 mm); infeasible: margin 36.21 mm, overrun 37.3 mm; frame: model body frame of pelvis (origin at the lumbosacral joint); oracle = model + (-56.719, 0.000, 0.000) mm [model HJC x 56.719 mm; mesh hip line x 50.038 mm; mesh-to-model trunk shift -6.681 mm]",
+   "detail": "feasible in the union: margin 39.42 mm (the pelvis alone overruns its slab by 75.0 mm); infeasible: margin 36.21 mm, overrun 37.3 mm; frame: model body frame of pelvis (origin at the lumbosacral joint); oracle = model + (-56.719, 0.000, 0.000) mm [model HJC x 56.719 mm; mesh hip line x 50.026 mm; mesh-to-model trunk shift -6.693 mm]",
    "gate": "5 oracle union query trunk_union: rod across the pelvis-abdomen plane, feasible and infeasible",
    "pass": true
   },
@@ -550,17 +550,17 @@
    "pass": true
   },
   {
-   "detail": "field 3.9754 l, raster 3.9983 l (-0.573%)",
+   "detail": "field 3.9866 l, raster 4.0226 l (-0.895%)",
    "gate": "3b arms: field volume (unconformed, both sides) within 1% of the raster accounting of arms and girdles",
    "pass": true
   },
   {
-   "detail": "feasible: margin 3.94 mm at station 153.0 mm; infeasible: margin -5.48 mm at station 216.0 mm (pose 0)",
+   "detail": "feasible: margin 3.94 mm at station 153.0 mm; infeasible: margin -5.47 mm at station 216.0 mm (pose 0)",
    "gate": "5 oracle example upper_arm_cylinder: in the upper_arm_R, feasible and infeasible",
    "pass": true
   },
   {
-   "detail": "feasible: margin 3.93 mm at station 140.0 mm; infeasible: margin -12.55 mm at station 140.0 mm (pose 0)",
+   "detail": "feasible: margin 3.93 mm at station 140.0 mm; infeasible: margin -12.50 mm at station 140.0 mm (pose 0)",
    "gate": "5 oracle example forearm_box: in the forearm_R, feasible and infeasible",
    "pass": true
   },
@@ -707,16 +707,16 @@
     "kjc": 485.9647305538757
    },
    "section_centre_offset_before_shear_mm": {
-    "shank": 51.5152887349021,
-    "thigh": 67.8826162222585
+    "shank": 51.27376587809274,
+    "thigh": 67.53348813066388
    },
    "shear_deg": {
-    "shank": 7.20437494043239,
-    "thigh": 9.677231385079404
+    "shank": 7.170950583166068,
+    "thigh": 9.62839435020217
    },
    "shear_mm": {
-    "shank": 51.5152887349021,
-    "thigh": 67.8826162222585
+    "shank": 51.27376587809274,
+    "thigh": 67.53348813066388
    },
    "sheet_nodes_mm": {
     "ajc": 65.45287073994474,
@@ -737,16 +737,16 @@
     "kjc": 472.71
    },
    "section_centre_offset_before_shear_mm": {
-    "shank": 48.96204485930449,
-    "thigh": 69.28803138465423
+    "shank": 48.750620498615056,
+    "thigh": 68.9367346164916
    },
    "shear_deg": {
-    "shank": 6.85078630288211,
-    "thigh": 9.873680653507922
+    "shank": 6.821483085274603,
+    "thigh": 9.824598096444694
    },
    "shear_mm": {
-    "shank": 48.96204485930449,
-    "thigh": 69.28803138465423
+    "shank": 48.750620498615056,
+    "thigh": 68.9367346164916
    },
    "sheet_nodes_mm": {
     "ajc": 65.45287073994474,
@@ -767,16 +767,16 @@
     "kjc": 485.1432336211575
    },
    "section_centre_offset_before_shear_mm": {
-    "shank": 51.5152887349021,
-    "thigh": 67.8826162222585
+    "shank": 51.27376587809274,
+    "thigh": 67.53348813066388
    },
    "shear_deg": {
-    "shank": 7.20437494043239,
-    "thigh": 9.677231385079404
+    "shank": 7.170950583166068,
+    "thigh": 9.62839435020217
    },
    "shear_mm": {
-    "shank": 51.5152887349021,
-    "thigh": 67.8826162222585
+    "shank": 51.27376587809274,
+    "thigh": 67.53348813066388
    },
    "sheet_nodes_mm": {
     "ajc": 65.45287073994474,
@@ -836,8 +836,8 @@
    "v_lung_supplied": true
   },
   "cut_diagnostics_per_10mm_l": {
-   "abdomen_msr10": 0.28674995024136696,
-   "abdomen_ri": -0.3678116001311812,
+   "abdomen_msr10": 0.2868430625247727,
+   "abdomen_ri": -0.36782305833157236,
    "label": "diagnostic",
    "note": "volume change of the abdomen slab per 10 mm of the named cut moving up (central difference of the +-10 mm rows, litres); a diagnostic, not a result"
   },
@@ -873,1416 +873,1416 @@
      "f=0.15": {
       "expected_mass_kg": 2.1813186470694634,
       "expected_tissue_ratio": 1.001749052227807,
-      "implied_density_kg_per_l": 0.930544156076959,
-      "normalised_ratio": 0.9213308476009495
+      "implied_density_kg_per_l": 0.9305292458275881,
+      "normalised_ratio": 0.92131608497781
      },
      "f=0.35": {
       "expected_mass_kg": 2.0913673626542284,
       "expected_tissue_ratio": 1.0448350329687877,
-      "implied_density_kg_per_l": 0.8921712011871876,
-      "normalised_ratio": 0.8833378229576117
+      "implied_density_kg_per_l": 0.892156905793461,
+      "normalised_ratio": 0.8833236691024366
      },
      "nominal": {
       "expected_mass_kg": 2.1549036985071184,
       "expected_tissue_ratio": 1.0140285567389864,
-      "implied_density_kg_per_l": 0.9192756162646822,
-      "normalised_ratio": 0.9101738774897846
+      "implied_density_kg_per_l": 0.9192608865728246,
+      "normalised_ratio": 0.9101592936364601
      }
     },
     "mass_kg_sheet": 2.665,
     "mass_share": 0.04104104104104104,
-    "ratio": 0.9229423033724933,
+    "ratio": 0.9229275149287549,
     "reference_density_kg_per_l": 1.01,
     "role": "diagnostic",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.1368812068226564,
-    "volume_l": 2.3441323367883915,
-    "volume_share": 0.04446761286276977
+    "sheet_mass_per_skin_volume_kg_per_l": 1.1368629904035987,
+    "volume_l": 2.344169897776245,
+    "volume_share": 0.04446832538545477
    },
    "abdomen_msr10_m10": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 2.1813186470694634,
       "expected_tissue_ratio": 1.001749052227807,
-      "implied_density_kg_per_l": 1.0577465195973248,
-      "normalised_ratio": 1.0472737817795295
+      "implied_density_kg_per_l": 1.0577222112337634,
+      "normalised_ratio": 1.0472497140928352
      },
      "f=0.35": {
       "expected_mass_kg": 2.0913673626542284,
       "expected_tissue_ratio": 1.0448350329687877,
-      "implied_density_kg_per_l": 1.0141281064180538,
-      "normalised_ratio": 1.004087234077281
+      "implied_density_kg_per_l": 1.0141048004612374,
+      "normalised_ratio": 1.0040641588725123
      },
      "nominal": {
       "expected_mass_kg": 2.1549036985071184,
       "expected_tissue_ratio": 1.0140285567389864,
-      "implied_density_kg_per_l": 1.0449376069954452,
-      "normalised_ratio": 1.0345916900945002
+      "implied_density_kg_per_l": 1.044913592997026,
+      "normalised_ratio": 1.0345679138584416
      }
     },
     "mass_kg_sheet": 2.665,
     "mass_share": 0.04104104104104104,
-    "ratio": 1.0491055183206748,
+    "ratio": 1.0490814085383395,
     "reference_density_kg_per_l": 1.01,
     "role": "diagnostic",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.292289174951111,
-    "volume_l": 2.0622319304816745,
-    "volume_share": 0.039120031612012
+    "sheet_mass_per_skin_volume_kg_per_l": 1.2922594764983069,
+    "volume_l": 2.0622793242897854,
+    "volume_share": 0.0391209306608746
    },
    "abdomen_msr10_p10": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 2.1813186470694634,
       "expected_tissue_ratio": 1.001749052227807,
-      "implied_density_kg_per_l": 0.8275950616232927,
-      "normalised_ratio": 0.8194010511121711
+      "implied_density_kg_per_l": 0.8275217141469672,
+      "normalised_ratio": 0.8193284298484824
      },
      "f=0.35": {
       "expected_mass_kg": 2.0913673626542284,
       "expected_tissue_ratio": 1.0448350329687877,
-      "implied_density_kg_per_l": 0.7934674302161469,
-      "normalised_ratio": 0.78561131704569
+      "implied_density_kg_per_l": 0.7933971073780203,
+      "normalised_ratio": 0.7855416904732874
      },
      "nominal": {
       "expected_mass_kg": 2.1549036985071184,
       "expected_tissue_ratio": 1.0140285567389864,
-      "implied_density_kg_per_l": 0.817573196632316,
-      "normalised_ratio": 0.8094784125072436
+      "implied_density_kg_per_l": 0.8175007373663475,
+      "normalised_ratio": 0.80940667065975
      }
     },
     "mass_kg_sheet": 2.665,
     "mass_share": 0.04104104104104104,
-    "ratio": 0.8208342263460862,
+    "ratio": 0.8207614780640144,
     "reference_density_kg_per_l": 1.01,
     "role": "diagnostic",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.0111043804577353,
-    "volume_l": 2.635731830964408,
-    "volume_share": 0.049999183420669176
+    "sheet_mass_per_skin_volume_kg_per_l": 1.0110147690547107,
+    "volume_l": 2.6359654493393307,
+    "volume_share": 0.05000361510368069
    },
    "abdomen_ri_m10": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 2.1813186470694634,
       "expected_tissue_ratio": 1.001749052227807,
-      "implied_density_kg_per_l": 0.8003153544243878,
-      "normalised_ratio": 0.7923914400241465
+      "implied_density_kg_per_l": 0.8003270495338597,
+      "normalised_ratio": 0.7924030193404552
      },
      "f=0.35": {
       "expected_mass_kg": 2.0913673626542284,
       "expected_tissue_ratio": 1.0448350329687877,
-      "implied_density_kg_per_l": 0.7673126593965782,
-      "normalised_ratio": 0.7597155043530479
+      "implied_density_kg_per_l": 0.7673238722334945,
+      "normalised_ratio": 0.7597266061717768
      },
      "nominal": {
       "expected_mass_kg": 2.1549036985071184,
       "expected_tissue_ratio": 1.0140285567389864,
-      "implied_density_kg_per_l": 0.7906238364294463,
-      "normalised_ratio": 0.7827958776529174
+      "implied_density_kg_per_l": 0.7906353899155403,
+      "normalised_ratio": 0.7828073167480597
      }
     },
     "mass_kg_sheet": 2.665,
     "mass_share": 0.04104104104104104,
-    "ratio": 0.793777374037616,
+    "ratio": 0.7937889736067536,
     "reference_density_kg_per_l": 1.01,
     "role": "diagnostic",
-    "sheet_mass_per_skin_volume_kg_per_l": 0.9777757240586565,
-    "volume_l": 2.7255739065987767,
-    "volume_share": 0.051703465459442745
+    "sheet_mass_per_skin_volume_kg_per_l": 0.9777900124189493,
+    "volume_l": 2.7255340780246584,
+    "volume_share": 0.05170270992120501
    },
    "abdomen_ri_p10": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 2.1813186470694634,
       "expected_tissue_ratio": 1.001749052227807,
-      "implied_density_kg_per_l": 1.0961671764650724,
-      "normalised_ratio": 1.0853140361040319
+      "implied_density_kg_per_l": 1.0962017407135676,
+      "normalised_ratio": 1.085348258132245
      },
      "f=0.35": {
       "expected_mass_kg": 2.0913673626542284,
       "expected_tissue_ratio": 1.0448350329687877,
-      "implied_density_kg_per_l": 1.0509644063015644,
-      "normalised_ratio": 1.0405588181203609
+      "implied_density_kg_per_l": 1.0509975452202247,
+      "normalised_ratio": 1.0405916289309156
      },
      "nominal": {
       "expected_mass_kg": 2.1549036985071184,
       "expected_tissue_ratio": 1.0140285567389864,
-      "implied_density_kg_per_l": 1.0828930041560627,
-      "normalised_ratio": 1.0721712912436263
+      "implied_density_kg_per_l": 1.0829271498445059,
+      "normalised_ratio": 1.0722050988559464
      }
     },
     "mass_kg_sheet": 2.665,
     "mass_share": 0.04104104104104104,
-    "ratio": 1.0872123070367499,
+    "ratio": 1.0872465889210776,
     "reference_density_kg_per_l": 1.01,
     "role": "diagnostic",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.3392291535232956,
-    "volume_l": 1.9899507063364141,
-    "volume_share": 0.03774887459920353
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3392713819810054,
+    "volume_l": 1.9898879613615137,
+    "volume_share": 0.03774768434248928
    },
    "abdomen_rr10": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 2.1813186470694634,
       "expected_tissue_ratio": 1.001749052227807,
-      "implied_density_kg_per_l": 1.2414488494452334,
-      "normalised_ratio": 1.229157276678449
+      "implied_density_kg_per_l": 1.241344146928728,
+      "normalised_ratio": 1.2290536108205232
      },
      "f=0.35": {
       "expected_mass_kg": 2.0913673626542284,
       "expected_tissue_ratio": 1.0448350329687877,
-      "implied_density_kg_per_l": 1.1902550824578013,
-      "normalised_ratio": 1.1784703786710906
+      "implied_density_kg_per_l": 1.1901546975708428,
+      "normalised_ratio": 1.178370987693904
      },
      "nominal": {
       "expected_mass_kg": 2.1549036985071184,
       "expected_tissue_ratio": 1.0140285567389864,
-      "implied_density_kg_per_l": 1.2264153707075283,
-      "normalised_ratio": 1.2142726442648797
+      "implied_density_kg_per_l": 1.2263119360991261,
+      "normalised_ratio": 1.2141702337615112
      }
     },
     "mass_kg_sheet": 2.665,
     "mass_share": 0.04104104104104104,
-    "ratio": 1.2313071369515487,
+    "ratio": 1.231203289776623,
     "reference_density_kg_per_l": 1.01,
     "role": "diagnostic",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.516725302016909,
-    "volume_l": 1.757074927448062,
-    "volume_share": 0.033331278451491655
+    "sheet_mass_per_skin_volume_kg_per_l": 1.516597382968098,
+    "volume_l": 1.75722312983581,
+    "volume_share": 0.033334089814271946
    },
    "foot": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 0.5320289383096253,
-      "implied_density_kg_per_l": 0.9403762750075813
+      "implied_density_kg_per_l": 0.9401960773297486
      },
      "f=0.35": {
       "expected_mass_kg": 0.5100896006473729,
-      "implied_density_kg_per_l": 0.9015978719144854
+      "implied_density_kg_per_l": 0.9014251050687284
      },
      "nominal": {
       "expected_mass_kg": 0.5255862679285654,
-      "implied_density_kg_per_l": 0.9289886719322823
+      "implied_density_kg_per_l": 0.9288106563805675
      }
     },
     "inner_volume_l": {
-     "t10": 0.22237562382398368,
-     "t3": 0.4409096566405763,
-     "t5": 0.36705074481789585,
-     "t8": 0.27428975423852925
+     "t10": 0.22240370646451232,
+     "t3": 0.44090166394805297,
+     "t5": 0.36706725103929516,
+     "t8": 0.2742559956258257
     },
     "mass_kg_sheet": 0.65,
     "mass_share": 0.01001001001001001,
-    "ratio": 0.9326941012142179,
+    "ratio": 0.9325153756172057,
     "reference_density_kg_per_l": 1.1,
     "role": "result",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.148893480676048,
-    "volume_l": 0.5657617620195023,
-    "volume_share": 0.010732361228594224
+    "sheet_mass_per_skin_volume_kg_per_l": 1.148673326315717,
+    "volume_l": 0.5658701957368732,
+    "volume_share": 0.010734418189495982
    },
    "lumped": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 25.484186145031053,
       "expected_tissue_ratio": 1.0259339856287057,
-      "implied_density_kg_per_l": 1.1112525370916988,
-      "normalised_ratio": 1.0743132082001405
+      "implied_density_kg_per_l": 1.111200769903911,
+      "normalised_ratio": 1.0742631618139813
      },
      "f=0.35": {
       "expected_mass_kg": 24.43329187100916,
       "expected_tissue_ratio": 1.0700601785589723,
-      "implied_density_kg_per_l": 1.0654276902013198,
-      "normalised_ratio": 1.030011632604259
+      "implied_density_kg_per_l": 1.0653780577429253,
+      "normalised_ratio": 1.0299636499866012
      },
      "nominal": {
       "expected_mass_kg": 25.175582233778286,
       "expected_tissue_ratio": 1.0385099506138318,
-      "implied_density_kg_per_l": 1.0977956867381344,
-      "normalised_ratio": 1.0613036792289472
+      "implied_density_kg_per_l": 1.0977445464315245,
+      "normalised_ratio": 1.0612542388857051
      }
     },
     "mass_kg_sheet": 31.135,
     "mass_share": 0.4794794794794795,
-    "ratio": 1.1021744315023319,
+    "ratio": 1.1021230872139132,
     "reference_density_kg_per_l": 1.034384133611691,
     "role": "sensitivity",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.3576595126659041,
-    "volume_l": 22.93284855999221,
-    "volume_share": 0.435030486804089
+    "sheet_mass_per_skin_volume_kg_per_l": 1.357596266722612,
+    "volume_l": 22.93391692595277,
+    "volume_share": 0.43505075344312827
    },
    "lumped_hi": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 25.484186145031053,
       "expected_tissue_ratio": 1.0259339856287057,
-      "implied_density_kg_per_l": 1.0842882845565784,
-      "normalised_ratio": 1.0482452788314147
+      "implied_density_kg_per_l": 1.084219593322991,
+      "normalised_ratio": 1.048178870974454
      },
      "f=0.35": {
       "expected_mass_kg": 24.43329187100916,
       "expected_tissue_ratio": 1.0700601785589723,
-      "implied_density_kg_per_l": 1.039575365605792,
-      "normalised_ratio": 1.005018669395068
+      "implied_density_kg_per_l": 1.0395095070003937,
+      "normalised_ratio": 1.0049550000064356
      },
      "nominal": {
       "expected_mass_kg": 25.175582233778286,
       "expected_tissue_ratio": 1.0385099506138318,
-      "implied_density_kg_per_l": 1.0711579611616933,
-      "normalised_ratio": 1.0355514226824047
+      "implied_density_kg_per_l": 1.071090101753114,
+      "normalised_ratio": 1.03548581899962
      }
     },
     "mass_kg_sheet": 31.135,
     "mass_share": 0.4794794794794795,
-    "ratio": 1.0754304568279873,
+    "ratio": 1.0753623267506185,
     "reference_density_kg_per_l": 1.034384133611691,
     "role": "sensitivity",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.3247162592340238,
-    "volume_l": 23.503146264697357,
-    "volume_share": 0.44584889374782805
+    "sheet_mass_per_skin_volume_kg_per_l": 1.324632336539943,
+    "volume_l": 23.504635317394847,
+    "volume_share": 0.4458771407106147
    },
    "lumped_lo": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 25.484186145031053,
       "expected_tissue_ratio": 1.0259339856287057,
-      "implied_density_kg_per_l": 1.137571935323737,
-      "normalised_ratio": 1.0997577189740448
+      "implied_density_kg_per_l": 1.137515527554368,
+      "normalised_ratio": 1.099703186264642
      },
      "f=0.35": {
       "expected_mass_kg": 24.43329187100916,
       "expected_tissue_ratio": 1.0700601785589723,
-      "implied_density_kg_per_l": 1.0906617524237894,
-      "normalised_ratio": 1.0544068852019195
+      "implied_density_kg_per_l": 1.0906076707480026,
+      "normalised_ratio": 1.0543546012640386
      },
      "nominal": {
       "expected_mass_kg": 25.175582233778286,
       "expected_tissue_ratio": 1.0385099506138318,
-      "implied_density_kg_per_l": 1.1237963669546158,
-      "normalised_ratio": 1.0864400665454235
+      "implied_density_kg_per_l": 1.1237406422621226,
+      "normalised_ratio": 1.0863861942066255
      }
     },
     "mass_kg_sheet": 31.135,
     "mass_share": 0.4794794794794795,
-    "ratio": 1.1282788198529758,
+    "ratio": 1.1282228728930712,
     "reference_density_kg_per_l": 1.034384133611691,
     "role": "sensitivity",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.3898149230561347,
-    "volume_l": 22.40226341183304,
-    "volume_share": 0.42496541727332937
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3897460075377304,
+    "volume_l": 22.403374308060183,
+    "volume_share": 0.42498649070104677
    },
    "lumped_msr10": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 25.484186145031053,
       "expected_tissue_ratio": 1.0259339856287057,
-      "implied_density_kg_per_l": 1.1165760104138178,
-      "normalised_ratio": 1.0794597230674283
+      "implied_density_kg_per_l": 1.116525824609764,
+      "normalised_ratio": 1.0794112054979654
      },
      "f=0.35": {
       "expected_mass_kg": 24.43329187100916,
       "expected_tissue_ratio": 1.0700601785589723,
-      "implied_density_kg_per_l": 1.0705316388503616,
-      "normalised_ratio": 1.034945920054339
+      "implied_density_kg_per_l": 1.0704835225640008,
+      "normalised_ratio": 1.03489940320939
      },
      "nominal": {
       "expected_mass_kg": 25.175582233778286,
       "expected_tissue_ratio": 1.0385099506138318,
-      "implied_density_kg_per_l": 1.1030546948001385,
-      "normalised_ratio": 1.0663878717364652
+      "implied_density_kg_per_l": 1.1030051167273003,
+      "normalised_ratio": 1.0663399416965242
      }
     },
     "mass_kg_sheet": 31.135,
     "mass_share": 0.4794794794794795,
-    "ratio": 1.1074544160122257,
+    "ratio": 1.1074046401888136,
     "reference_density_kg_per_l": 1.034384133611691,
     "role": "result",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.364163402605371,
-    "volume_l": 22.823512154435665,
-    "volume_share": 0.432956402129861
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3641020886987656,
+    "volume_l": 22.824538029774644,
+    "volume_share": 0.432975862732278
    },
    "lumped_msr10_m10": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 25.484186145031053,
       "expected_tissue_ratio": 1.0259339856287057,
-      "implied_density_kg_per_l": 1.1305396932472087,
-      "normalised_ratio": 1.0929592368163825
+      "implied_density_kg_per_l": 1.130487832215222,
+      "normalised_ratio": 1.0929090997055146
      },
      "f=0.35": {
       "expected_mass_kg": 24.43329187100916,
       "expected_tissue_ratio": 1.0700601785589723,
-      "implied_density_kg_per_l": 1.0839194997112418,
-      "normalised_ratio": 1.0478887528239547
+      "implied_density_kg_per_l": 1.0838697772785122,
+      "normalised_ratio": 1.0478406832228133
      },
      "nominal": {
       "expected_mass_kg": 25.175582233778286,
       "expected_tissue_ratio": 1.0385099506138318,
-      "implied_density_kg_per_l": 1.1168492826852603,
-      "normalised_ratio": 1.0797239114502186
+      "implied_density_kg_per_l": 1.1167980496708696,
+      "normalised_ratio": 1.07967438148091
      }
     },
     "mass_kg_sheet": 31.135,
     "mass_share": 0.4794794794794795,
-    "ratio": 1.1213040259567397,
+    "ratio": 1.1212525885907592,
     "reference_density_kg_per_l": 1.034384133611691,
     "role": "sensitivity",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.3812233653031558,
-    "volume_l": 22.541611141342358,
-    "volume_share": 0.4276088093685111
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3811600047068349,
+    "volume_l": 22.54264523581301,
+    "volume_share": 0.4276284258858309
    },
    "lumped_msr10_p10": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 25.484186145031053,
       "expected_tissue_ratio": 1.0259339856287057,
-      "implied_density_kg_per_l": 1.1024903581421341,
-      "normalised_ratio": 1.0658422942863992
+      "implied_density_kg_per_l": 1.1024321248009838,
+      "normalised_ratio": 1.065785996689348
      },
      "f=0.35": {
       "expected_mass_kg": 24.43329187100916,
       "expected_tissue_ratio": 1.0700601785589723,
-      "implied_density_kg_per_l": 1.0570268382187473,
-      "normalised_ratio": 1.0218900347281974
+      "implied_density_kg_per_l": 1.05697100625249,
+      "normalised_ratio": 1.02183605868154
      },
      "nominal": {
       "expected_mass_kg": 25.175582233778286,
       "expected_tissue_ratio": 1.0385099506138318,
-      "implied_density_kg_per_l": 1.089139614480757,
-      "normalised_ratio": 1.052935344897335
+      "implied_density_kg_per_l": 1.0890820863234703,
+      "normalised_ratio": 1.052879729043014
      }
     },
     "mass_kg_sheet": 31.135,
     "mass_share": 0.4794794794794795,
-    "ratio": 1.0934838330288894,
+    "ratio": 1.0934260754107652,
     "reference_density_kg_per_l": 1.034384133611691,
     "role": "sensitivity",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.3469544252033447,
-    "volume_l": 23.115110220080137,
-    "volume_share": 0.43848794558886894
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3468832793144239,
+    "volume_l": 23.116331220510812,
+    "volume_share": 0.438511107666199
    },
    "lumped_rr10": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 25.484186145031053,
       "expected_tissue_ratio": 1.0259339856287057,
-      "implied_density_kg_per_l": 1.146054503077629,
-      "normalised_ratio": 1.1079583162939919
+      "implied_density_kg_per_l": 1.145996082309177,
+      "normalised_ratio": 1.1079018374999412
      },
      "f=0.35": {
       "expected_mass_kg": 24.43329187100916,
       "expected_tissue_ratio": 1.0700601785589723,
-      "implied_density_kg_per_l": 1.0987945235692733,
-      "normalised_ratio": 1.0622693135602195
+      "implied_density_kg_per_l": 1.0987385119046753,
+      "normalised_ratio": 1.0622151637886037
      },
      "nominal": {
       "expected_mass_kg": 25.175582233778286,
       "expected_tissue_ratio": 1.0385099506138318,
-      "implied_density_kg_per_l": 1.1321762140027565,
-      "normalised_ratio": 1.0945413577155434
+      "implied_density_kg_per_l": 1.1321185006878423,
+      "normalised_ratio": 1.0944855628584504
      }
     },
     "mass_kg_sheet": 31.135,
     "mass_share": 0.4794794794794795,
-    "ratio": 1.1366920913459653,
+    "ratio": 1.1366341478316813,
     "reference_density_kg_per_l": 1.034384133611691,
     "role": "sensitivity",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.4001783988804912,
-    "volume_l": 22.236452172733063,
-    "volume_share": 0.4218200189215044
+    "sheet_mass_per_skin_volume_kg_per_l": 1.4001070240045037,
+    "volume_l": 22.23758574608783,
+    "volume_share": 0.4218415225287454
    },
    "pelvis_crotch": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 7.76762249932053,
       "expected_tissue_ratio": 1.001749052227807,
-      "implied_density_kg_per_l": 0.8393354567784942,
-      "normalised_ratio": 0.8310252047311822
+      "implied_density_kg_per_l": 0.8393364961958641,
+      "normalised_ratio": 0.8310262338572912
      },
      "f=0.35": {
       "expected_mass_kg": 7.447308169451643,
       "expected_tissue_ratio": 1.0448350329687877,
-      "implied_density_kg_per_l": 0.8047236853649482,
-      "normalised_ratio": 0.796756124123711
+      "implied_density_kg_per_l": 0.8047246819197462,
+      "normalised_ratio": 0.7967571108116299
      },
      "nominal": {
       "expected_mass_kg": 7.673559511757056,
       "expected_tissue_ratio": 1.0140285567389864,
-      "implied_density_kg_per_l": 0.8291714200169955,
-      "normalised_ratio": 0.8209618019970253
+      "implied_density_kg_per_l": 0.829172446847412,
+      "normalised_ratio": 0.8209628186608041
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 0.8324787112168811,
+    "ratio": 0.8324797421429854,
     "reference_density_kg_per_l": 1.01,
     "role": "non_result",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.025448067993092,
-    "volume_l": 9.254491081711151,
-    "volume_share": 0.17555541562440208
+    "sheet_mass_per_skin_volume_kg_per_l": 1.0254493378888474,
+    "volume_l": 9.254479621136252,
+    "volume_share": 0.17555519822011997
    },
    "pelvis_crotch_ilio": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 7.76762249932053,
       "expected_tissue_ratio": 1.001749052227807,
-      "implied_density_kg_per_l": 0.648832757482443,
-      "normalised_ratio": 0.642408670774696
+      "implied_density_kg_per_l": 0.6488492893580095,
+      "normalised_ratio": 0.6424250389683261
      },
      "f=0.35": {
       "expected_mass_kg": 7.447308169451643,
       "expected_tissue_ratio": 1.0448350329687877,
-      "implied_density_kg_per_l": 0.6220767674831671,
-      "normalised_ratio": 0.6159175915674922
+      "implied_density_kg_per_l": 0.622092617631906,
+      "normalised_ratio": 0.6159332847840654
      },
      "nominal": {
       "expected_mass_kg": 7.673559511757056,
       "expected_tissue_ratio": 1.0140285567389864,
-      "implied_density_kg_per_l": 0.6409756367736053,
-      "normalised_ratio": 0.6346293433402033
+      "implied_density_kg_per_l": 0.6409919684543751,
+      "normalised_ratio": 0.6346455133211636
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 0.643532277091477,
+    "ratio": 0.6435486739139327,
     "reference_density_kg_per_l": 1.01,
     "role": "non_result",
-    "sheet_mass_per_skin_volume_kg_per_l": 0.7927036707881984,
-    "volume_l": 11.971686709314637,
-    "volume_share": 0.22709994719561166
+    "sheet_mass_per_skin_volume_kg_per_l": 0.7927238684096892,
+    "volume_l": 11.971381685577624,
+    "volume_share": 0.2270941609704747
    },
    "pelvis_crotch_ilio_hi": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 7.76762249932053,
       "expected_tissue_ratio": 1.001749052227807,
-      "implied_density_kg_per_l": 0.6147819441901208,
-      "normalised_ratio": 0.6086949942476444
+      "implied_density_kg_per_l": 0.6147963965999361,
+      "normalised_ratio": 0.6087093035642931
      },
      "f=0.35": {
       "expected_mass_kg": 7.447308169451643,
       "expected_tissue_ratio": 1.0448350329687877,
-      "implied_density_kg_per_l": 0.5894301114400129,
-      "normalised_ratio": 0.583594169742587
+      "implied_density_kg_per_l": 0.5894439678741656,
+      "normalised_ratio": 0.5836078889843224
      },
      "nominal": {
       "expected_mass_kg": 7.673559511757056,
       "expected_tissue_ratio": 1.0140285567389864,
-      "implied_density_kg_per_l": 0.607337166025932,
-      "normalised_ratio": 0.6013239267583486
+      "implied_density_kg_per_l": 0.607351443422499,
+      "normalised_ratio": 0.6013380627945535
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 0.6097596335833881,
+    "ratio": 0.609773967927779,
     "reference_density_kg_per_l": 1.01,
     "role": "non_result",
-    "sheet_mass_per_skin_volume_kg_per_l": 0.7511024964040925,
-    "volume_l": 12.634760296275713,
-    "volume_share": 0.23967828976688044
+    "sheet_mass_per_skin_volume_kg_per_l": 0.7511201534631423,
+    "volume_l": 12.634463282931574,
+    "volume_share": 0.23967265549692265
    },
    "pelvis_crotch_ilio_lo": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 7.76762249932053,
       "expected_tissue_ratio": 1.001749052227807,
-      "implied_density_kg_per_l": 0.6929134930628532,
-      "normalised_ratio": 0.6860529634285676
+      "implied_density_kg_per_l": 0.6929318922275435,
+      "normalised_ratio": 0.6860711804233104
      },
      "f=0.35": {
       "expected_mass_kg": 7.447308169451643,
       "expected_tissue_ratio": 1.0448350329687877,
-      "implied_density_kg_per_l": 0.6643397407716017,
-      "normalised_ratio": 0.6577621195758433
+      "implied_density_kg_per_l": 0.664357381207851,
+      "normalised_ratio": 0.657779585354308
      },
      "nominal": {
       "expected_mass_kg": 7.673559511757056,
       "expected_tissue_ratio": 1.0140285567389864,
-      "implied_density_kg_per_l": 0.6845225712220666,
-      "normalised_ratio": 0.6777451200218483
+      "implied_density_kg_per_l": 0.6845407475797911,
+      "normalised_ratio": 0.6777631164156349
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 0.6872529058926459,
+    "ratio": 0.6872711547498639,
     "reference_density_kg_per_l": 1.01,
     "role": "non_result",
-    "sheet_mass_per_skin_volume_kg_per_l": 0.8465587829148093,
-    "volume_l": 11.21008982663286,
-    "volume_share": 0.2126526419794801
+    "sheet_mass_per_skin_volume_kg_per_l": 0.8465812618744814,
+    "volume_l": 11.20979216925668,
+    "volume_share": 0.2126469954923932
    },
    "pelvis_crotch_ri": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 7.76762249932053,
       "expected_tissue_ratio": 1.001749052227807,
-      "implied_density_kg_per_l": 0.6849001953365859,
-      "normalised_ratio": 0.6781190052837484
+      "implied_density_kg_per_l": 0.6849194503298264,
+      "normalised_ratio": 0.6781380696334914
      },
      "f=0.35": {
       "expected_mass_kg": 7.447308169451643,
       "expected_tissue_ratio": 1.0448350329687877,
-      "implied_density_kg_per_l": 0.6566568883123968,
-      "normalised_ratio": 0.6501553349627692
+      "implied_density_kg_per_l": 0.6566753492852976,
+      "normalised_ratio": 0.65017361315376
      },
      "nominal": {
       "expected_mass_kg": 7.673559511757056,
       "expected_tissue_ratio": 1.0140285567389864,
-      "implied_density_kg_per_l": 0.6766063115179783,
-      "normalised_ratio": 0.6699072391267114
+      "implied_density_kg_per_l": 0.6766253333404912,
+      "normalised_ratio": 0.6699260726143479
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 0.6793050708406582,
+    "ratio": 0.6793241685349446,
     "reference_density_kg_per_l": 1.01,
     "role": "non_result",
-    "sheet_mass_per_skin_volume_kg_per_l": 0.8367686321410134,
-    "volume_l": 11.341247311957952,
-    "volume_share": 0.21514066716046504
+    "sheet_mass_per_skin_volume_kg_per_l": 0.8367921566989934,
+    "volume_l": 11.340928477910786,
+    "volume_share": 0.2151346189571472
    },
    "pelvis_crotch_ri_m10": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 7.76762249932053,
       "expected_tissue_ratio": 1.001749052227807,
-      "implied_density_kg_per_l": 0.7087371849701349,
-      "normalised_ratio": 0.7017199851189454
+      "implied_density_kg_per_l": 0.7087526598466592,
+      "normalised_ratio": 0.7017353067788705
      },
      "f=0.35": {
       "expected_mass_kg": 7.447308169451643,
       "expected_tissue_ratio": 1.0448350329687877,
-      "implied_density_kg_per_l": 0.6795109093012635,
-      "normalised_ratio": 0.6727830785161024
+      "implied_density_kg_per_l": 0.6795257460385498,
+      "normalised_ratio": 0.6727977683549998
      },
      "nominal": {
       "expected_mass_kg": 7.673559511757056,
       "expected_tissue_ratio": 1.0140285567389864,
-      "implied_density_kg_per_l": 0.700154644170624,
-      "normalised_ratio": 0.6932224199709149
+      "implied_density_kg_per_l": 0.7001699316522128,
+      "normalised_ratio": 0.6932375560912999
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 0.7029473300222143,
+    "ratio": 0.702962678480523,
     "reference_density_kg_per_l": 1.01,
     "role": "non_result",
-    "sheet_mass_per_skin_volume_kg_per_l": 0.8658911894797833,
-    "volume_l": 10.95980663078634,
-    "volume_share": 0.20790483142105068
+    "sheet_mass_per_skin_volume_kg_per_l": 0.865910095725321,
+    "volume_l": 10.95956733481759,
+    "volume_share": 0.20790029203548313
    },
    "pelvis_crotch_ri_p10": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 7.76762249932053,
       "expected_tissue_ratio": 1.001749052227807,
-      "implied_density_kg_per_l": 0.6641587984984765,
-      "normalised_ratio": 0.6575829688103728
+      "implied_density_kg_per_l": 0.6641712078088204,
+      "normalised_ratio": 0.6575952552562577
      },
      "f=0.35": {
       "expected_mass_kg": 7.447308169451643,
       "expected_tissue_ratio": 1.0448350329687877,
-      "implied_density_kg_per_l": 0.6367708068078177,
-      "normalised_ratio": 0.6304661453542751
+      "implied_density_kg_per_l": 0.6367827043940238,
+      "normalised_ratio": 0.6304779251425978
      },
      "nominal": {
       "expected_mass_kg": 7.673559511757056,
       "expected_tissue_ratio": 1.0140285567389864,
-      "implied_density_kg_per_l": 0.656116085196073,
-      "normalised_ratio": 0.6496198863327457
+      "implied_density_kg_per_l": 0.6561283442343351,
+      "normalised_ratio": 0.6496320239943911
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 0.6587331157669385,
+    "ratio": 0.658745423702459,
     "reference_density_kg_per_l": 1.01,
     "role": "non_result",
-    "sheet_mass_per_skin_volume_kg_per_l": 0.8114280783215048,
-    "volume_l": 11.69542964255159,
-    "volume_share": 0.22185941870554607
+    "sheet_mass_per_skin_volume_kg_per_l": 0.8114432392481815,
+    "volume_l": 11.69521112627998,
+    "volume_share": 0.22185527350571346
    },
    "pelvis_hjc": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 7.76762249932053,
       "expected_tissue_ratio": 1.001749052227807,
-      "implied_density_kg_per_l": 1.4017989832080113,
-      "normalised_ratio": 1.3879197853544667
+      "implied_density_kg_per_l": 1.4017431670304301,
+      "normalised_ratio": 1.387864521812307
      },
      "f=0.35": {
       "expected_mass_kg": 7.447308169451643,
       "expected_tissue_ratio": 1.0448350329687877,
-      "implied_density_kg_per_l": 1.3439928395705678,
-      "normalised_ratio": 1.3306859797728396
+      "implied_density_kg_per_l": 1.343939325091031,
+      "normalised_ratio": 1.3306329951396347
      },
      "nominal": {
       "expected_mass_kg": 7.673559511757056,
       "expected_tissue_ratio": 1.0140285567389864,
-      "implied_density_kg_per_l": 1.3848237246478123,
-      "normalised_ratio": 1.3711125986612005
+      "implied_density_kg_per_l": 1.3847685843831525,
+      "normalised_ratio": 1.371058004339755
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 1.3903473295470583,
+    "ratio": 1.390291969346077,
     "reference_density_kg_per_l": 1.01,
     "role": "non_result",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.7126311624705899,
-    "volume_l": 5.5411814335493075,
-    "volume_share": 0.10511484651375355
+    "sheet_mass_per_skin_volume_kg_per_l": 1.712562969722385,
+    "volume_l": 5.541402078510653,
+    "volume_share": 0.105119032094306
    },
    "pelvis_hjc_ilio": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 7.76762249932053,
       "expected_tissue_ratio": 1.001749052227807,
-      "implied_density_kg_per_l": 0.9405758266521245,
-      "normalised_ratio": 0.9312631947050737
+      "implied_density_kg_per_l": 0.9405841466228602,
+      "normalised_ratio": 0.9312714322998615
      },
      "f=0.35": {
       "expected_mass_kg": 7.447308169451643,
       "expected_tissue_ratio": 1.0448350329687877,
-      "implied_density_kg_per_l": 0.9017891946252329,
-      "normalised_ratio": 0.8928605887378543
+      "implied_density_kg_per_l": 0.9017971715043918,
+      "normalised_ratio": 0.8928684866380118
      },
      "nominal": {
       "expected_mass_kg": 7.673559511757056,
       "expected_tissue_ratio": 1.0140285567389864,
-      "implied_density_kg_per_l": 0.9291858070814486,
-      "normalised_ratio": 0.9199859476053948
+      "implied_density_kg_per_l": 0.9291940263004672,
+      "normalised_ratio": 0.9199940854460074
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 0.9328920226704472,
+    "ratio": 0.9329002746732186,
     "reference_density_kg_per_l": 1.01,
     "role": "non_result",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.1491372805140139,
-    "volume_l": 8.258369266163816,
-    "volume_share": 0.15665923021594283
+    "sheet_mass_per_skin_volume_kg_per_l": 1.1491474453388735,
+    "volume_l": 8.258296216462877,
+    "volume_share": 0.15665784448111458
    },
    "pelvis_hjc_ilio_hi": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 7.76762249932053,
       "expected_tissue_ratio": 1.001749052227807,
-      "implied_density_kg_per_l": 0.870668565190345,
-      "normalised_ratio": 0.8620480843468762
+      "implied_density_kg_per_l": 0.870674912283168,
+      "normalised_ratio": 0.862054368597196
      },
      "f=0.35": {
       "expected_mass_kg": 7.447308169451643,
       "expected_tissue_ratio": 1.0448350329687877,
-      "implied_density_kg_per_l": 0.8347647068319803,
-      "normalised_ratio": 0.826499709734634
+      "implied_density_kg_per_l": 0.8347707921890168,
+      "normalised_ratio": 0.8265057348406109
      },
      "nominal": {
       "expected_mass_kg": 7.673559511757056,
       "expected_tissue_ratio": 1.0140285567389864,
-      "implied_density_kg_per_l": 0.8601250962683459,
-      "normalised_ratio": 0.8516090062062832
+      "implied_density_kg_per_l": 0.8601313665002616,
+      "normalised_ratio": 0.8516152143566947
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 0.8635558514692798,
+    "ratio": 0.8635621467110817,
     "reference_density_kg_per_l": 1.01,
     "role": "non_result",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.0637289189039691,
-    "volume_l": 8.921445897868585,
-    "volume_share": 0.1692376305452493
+    "sheet_mass_per_skin_volume_kg_per_l": 1.063736673388806,
+    "volume_l": 8.921380861832253,
+    "volume_share": 0.16923639682766417
    },
    "pelvis_hjc_ilio_lo": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 7.76762249932053,
       "expected_tissue_ratio": 1.001749052227807,
-      "implied_density_kg_per_l": 1.0361282608121611,
-      "normalised_ratio": 1.0258695651605556
+      "implied_density_kg_per_l": 1.036137175838217,
+      "normalised_ratio": 1.0258783919190266
      },
      "f=0.35": {
       "expected_mass_kg": 7.447308169451643,
       "expected_tissue_ratio": 1.0448350329687877,
-      "implied_density_kg_per_l": 0.9934013222219691,
-      "normalised_ratio": 0.9835656655663062
+      "implied_density_kg_per_l": 0.9934098696180844,
+      "normalised_ratio": 0.983574128334737
      },
      "nominal": {
       "expected_mass_kg": 7.673559511757056,
       "expected_tissue_ratio": 1.0140285567389864,
-      "implied_density_kg_per_l": 1.0235811371949328,
-      "normalised_ratio": 1.013446670490033
+      "implied_density_kg_per_l": 1.0235899442633756,
+      "normalised_ratio": 1.0134553903597778
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 1.027663864608939,
+    "ratio": 1.0276727068058715,
     "reference_density_kg_per_l": 1.01,
     "role": "non_result",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.2658773255223892,
-    "volume_l": 7.496776985150409,
-    "volume_share": 0.14221201229232647
+    "sheet_mass_per_skin_volume_kg_per_l": 1.2658882173489778,
+    "volume_l": 7.496712482144711,
+    "volume_share": 0.14221078868620116
    },
    "pelvis_hjc_ri": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 7.76762249932053,
       "expected_tissue_ratio": 1.001749052227807,
-      "implied_density_kg_per_l": 1.0183120270090633,
-      "normalised_ratio": 1.0082297297119438
+      "implied_density_kg_per_l": 1.0183234596763784,
+      "normalised_ratio": 1.0082410491845328
      },
      "f=0.35": {
       "expected_mass_kg": 7.447308169451643,
       "expected_tissue_ratio": 1.0448350329687877,
-      "implied_density_kg_per_l": 0.9763197784726072,
-      "normalised_ratio": 0.9666532460124825
+      "implied_density_kg_per_l": 0.9763307396897237,
+      "normalised_ratio": 0.9666640987026967
      },
      "nominal": {
       "expected_mass_kg": 7.673559511757056,
       "expected_tissue_ratio": 1.0140285567389864,
-      "implied_density_kg_per_l": 1.0059806512836507,
-      "normalised_ratio": 0.996020446815496
+      "implied_density_kg_per_l": 1.0059919455056636,
+      "normalised_ratio": 0.9960316292135284
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 1.0099931761668377,
+    "ratio": 1.0100045154377755,
     "reference_density_kg_per_l": 1.01,
     "role": "non_result",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.2441105546982163,
-    "volume_l": 7.627939465799313,
-    "volume_share": 0.14470013223337336
+    "sheet_mass_per_skin_volume_kg_per_l": 1.2441245224229391,
+    "volume_l": 7.627853827298714,
+    "volume_share": 0.14469850769211728
    },
    "pelvis_hjc_ri_m10": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 7.76762249932053,
       "expected_tissue_ratio": 1.001749052227807,
-      "implied_density_kg_per_l": 1.0719136434596137,
-      "normalised_ratio": 1.0613006370887264
+      "implied_density_kg_per_l": 1.0719145743835927,
+      "normalised_ratio": 1.0613015587956365
      },
      "f=0.35": {
       "expected_mass_kg": 7.447308169451643,
       "expected_tissue_ratio": 1.0448350329687877,
-      "implied_density_kg_per_l": 1.0277110189870524,
-      "normalised_ratio": 1.0175356623634184
+      "implied_density_kg_per_l": 1.0277119115224138,
+      "normalised_ratio": 1.017536546061796
      },
      "nominal": {
       "expected_mass_kg": 7.673559511757056,
       "expected_tissue_ratio": 1.0140285567389864,
-      "implied_density_kg_per_l": 1.0589331723151059,
-      "normalised_ratio": 1.048448685460501
+      "implied_density_kg_per_l": 1.0589340919659456,
+      "normalised_ratio": 1.0484495960058868
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 1.0631569073323994,
+    "ratio": 1.0631578306514229,
     "reference_density_kg_per_l": 1.01,
     "role": "non_result",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.3095976892957357,
-    "volume_l": 7.246500263071975,
-    "volume_share": 0.13746432453968255
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3095988266409868,
+    "volume_l": 7.246493969715191,
+    "volume_share": 0.13746420515625496
    },
    "pelvis_hjc_ri_p10": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 7.76762249932053,
       "expected_tissue_ratio": 1.001749052227807,
-      "implied_density_kg_per_l": 0.9731276260775611,
-      "normalised_ratio": 0.9634926990866942
+      "implied_density_kg_per_l": 0.9731259012040677,
+      "normalised_ratio": 0.9634909912911561
      },
      "f=0.35": {
       "expected_mass_kg": 7.447308169451643,
       "expected_tissue_ratio": 1.0448350329687877,
-      "implied_density_kg_per_l": 0.9329986518063216,
-      "normalised_ratio": 0.9237610413923978
+      "implied_density_kg_per_l": 0.932996998061632,
+      "normalised_ratio": 0.923759404021418
      },
      "nominal": {
       "expected_mass_kg": 7.673559511757056,
       "expected_tissue_ratio": 1.0140285567389864,
-      "implied_density_kg_per_l": 0.9613434164564817,
-      "normalised_ratio": 0.9518251648083979
+      "implied_density_kg_per_l": 0.9613417124705576,
+      "normalised_ratio": 0.9518234776936216
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 0.9651778981385075,
+    "ratio": 0.9651761873559459,
     "reference_density_kg_per_l": 1.01,
     "role": "non_result",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.1889070526128016,
-    "volume_l": 7.982121040618189,
-    "volume_share": 0.15141886944159336
+    "sheet_mass_per_skin_volume_kg_per_l": 1.1889049452692155,
+    "volume_l": 7.982135188991989,
+    "volume_share": 0.15141913783275834
    },
    "shank": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 2.3941302223933136,
-      "implied_density_kg_per_l": 0.9691331415088715
+      "implied_density_kg_per_l": 0.9691468918210911
      },
      "f=0.35": {
       "expected_mass_kg": 2.2954032029131777,
-      "implied_density_kg_per_l": 0.929168888250774
+      "implied_density_kg_per_l": 0.9291820715398094
      },
      "nominal": {
       "expected_mass_kg": 2.3651382056785444,
-      "implied_density_kg_per_l": 0.9573973035938501
+      "implied_density_kg_per_l": 0.9574108873949594
      }
     },
     "inner_volume_l": {
-     "t10": 1.469778053518507,
-     "t3": 2.146001377240113,
-     "t5": 1.9381314328514887,
-     "t8": 1.6483850720257622
+     "t10": 1.4697016425204381,
+     "t3": 2.145967189764716,
+     "t5": 1.9381406288629646,
+     "t8": 1.6484198024385646
     },
     "mass_kg_sheet": 2.925,
     "mass_share": 0.04504504504504504,
-    "ratio": 0.961216045533732,
+    "ratio": 0.9612296835161417,
     "reference_density_kg_per_l": 1.09,
     "role": "result",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.1840268388073316,
-    "volume_l": 2.4703831907614084,
-    "volume_share": 0.04686256045594099
+    "sheet_mass_per_skin_volume_kg_per_l": 1.184043638087031,
+    "volume_l": 2.4703481408216503,
+    "volume_share": 0.04686189556721967
    },
    "thigh": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 7.76762249932053,
       "expected_tissue_ratio": 1.0414222820190073,
-      "implied_density_kg_per_l": 1.2097828398395594,
-      "normalised_ratio": 1.1521741331805329
+      "implied_density_kg_per_l": 1.2096329875213785,
+      "normalised_ratio": 1.152031416687027
      },
      "f=0.35": {
       "expected_mass_kg": 7.447308169451643,
       "expected_tissue_ratio": 1.0862146382348783,
-      "implied_density_kg_per_l": 1.1598948876812272,
-      "normalised_ratio": 1.104661797791645
+      "implied_density_kg_per_l": 1.1597512148400848,
+      "normalised_ratio": 1.1045249665143664
      },
      "nominal": {
       "expected_mass_kg": 7.673559511757056,
       "expected_tissue_ratio": 1.0541881035405305,
-      "implied_density_kg_per_l": 1.1951328245706292,
-      "normalised_ratio": 1.1382217376863135
+      "implied_density_kg_per_l": 1.1949847869076715,
+      "normalised_ratio": 1.1380807494358778
      }
     },
     "inner_volume_l": {
-     "t10": 4.778151280235971,
-     "t3": 5.9095934064607265,
-     "t5": 5.5724761442857424,
-     "t8": 5.087497191172533
+     "t10": 4.7784547730028235,
+     "t3": 5.909684827553488,
+     "t5": 5.572604008099072,
+     "t8": 5.087695664908788
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 1.199899815060142,
+    "ratio": 1.1997511869237936,
     "reference_density_kg_per_l": 1.05,
     "role": "non_result",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.4780377330491667,
-    "volume_l": 6.420675053012545,
-    "volume_share": 0.1217986237782868
+    "sheet_mass_per_skin_volume_kg_per_l": 1.477854652769498,
+    "volume_l": 6.421470462075381,
+    "volume_share": 0.12181371249222955
    },
    "thigh_crotch": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 7.76762249932053,
       "expected_tissue_ratio": 1.0414222820190073,
-      "implied_density_kg_per_l": 1.7000500451151053,
-      "normalised_ratio": 1.6190952810620047
+      "implied_density_kg_per_l": 1.69980697333437,
+      "normalised_ratio": 1.6188637841279712
      },
      "f=0.35": {
       "expected_mass_kg": 7.447308169451643,
       "expected_tissue_ratio": 1.0862146382348783,
-      "implied_density_kg_per_l": 1.6299448886155135,
-      "normalised_ratio": 1.5523284653481082
+      "implied_density_kg_per_l": 1.6297118404133653,
+      "normalised_ratio": 1.5521065146793955
      },
      "nominal": {
       "expected_mass_kg": 7.673559511757056,
       "expected_tissue_ratio": 1.0541881035405305,
-      "implied_density_kg_per_l": 1.6794630783482556,
-      "normalised_ratio": 1.5994886460459579
+      "implied_density_kg_per_l": 1.6792229500753815,
+      "normalised_ratio": 1.5992599524527442
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 1.6861619024097991,
+    "ratio": 1.6859208163444774,
     "reference_density_kg_per_l": 1.05,
     "role": "non_result",
-    "sheet_mass_per_skin_volume_kg_per_l": 2.077015834581768,
-    "volume_l": 4.569055200251242,
-    "volume_share": 0.08667385138833915
+    "sheet_mass_per_skin_volume_kg_per_l": 2.0767188645372814,
+    "volume_l": 4.5697085734878655,
+    "volume_share": 0.08668624571765457
    },
    "thigh_in": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 7.76762249932053,
       "expected_tissue_ratio": 1.0414222820190073,
-      "implied_density_kg_per_l": 1.2097828398395594,
-      "normalised_ratio": 1.1521741331805329
+      "implied_density_kg_per_l": 1.2096329875213785,
+      "normalised_ratio": 1.152031416687027
      },
      "f=0.35": {
       "expected_mass_kg": 7.447308169451643,
       "expected_tissue_ratio": 1.0862146382348783,
-      "implied_density_kg_per_l": 1.1598948876812272,
-      "normalised_ratio": 1.104661797791645
+      "implied_density_kg_per_l": 1.1597512148400848,
+      "normalised_ratio": 1.1045249665143664
      },
      "nominal": {
       "expected_mass_kg": 7.673559511757056,
       "expected_tissue_ratio": 1.0541881035405305,
-      "implied_density_kg_per_l": 1.1951328245706292,
-      "normalised_ratio": 1.1382217376863135
+      "implied_density_kg_per_l": 1.1949847869076715,
+      "normalised_ratio": 1.1380807494358778
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 1.199899815060142,
+    "ratio": 1.1997511869237936,
     "reference_density_kg_per_l": 1.05,
     "role": "non_result",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.4780377330491667,
-    "volume_l": 6.420675053012545,
-    "volume_share": 0.1217986237782868
+    "sheet_mass_per_skin_volume_kg_per_l": 1.477854652769498,
+    "volume_l": 6.421470462075381,
+    "volume_share": 0.12181371249222955
    },
    "thigh_out": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 7.76762249932053,
       "expected_tissue_ratio": 1.0414222820190073,
-      "implied_density_kg_per_l": 1.4844909433344473,
-      "normalised_ratio": 1.4138008984137593
+      "implied_density_kg_per_l": 1.4842862883029093,
+      "normalised_ratio": 1.4136059888599135
      },
      "f=0.35": {
       "expected_mass_kg": 7.447308169451643,
       "expected_tissue_ratio": 1.0862146382348783,
-      "implied_density_kg_per_l": 1.4232748219598312,
-      "normalised_ratio": 1.3554998304379346
+      "implied_density_kg_per_l": 1.423078606311037,
+      "normalised_ratio": 1.3553129583914638
      },
      "nominal": {
       "expected_mass_kg": 7.673559511757056,
       "expected_tissue_ratio": 1.0541881035405305,
-      "implied_density_kg_per_l": 1.4665143162322456,
-      "normalised_ratio": 1.3966803011735673
+      "implied_density_kg_per_l": 1.466312139496182,
+      "normalised_ratio": 1.3964877519011256
      }
     },
     "mass_kg_sheet": 9.49,
     "mass_share": 0.14614614614614616,
-    "ratio": 1.47236375794658,
+    "ratio": 1.4721607747942265,
     "reference_density_kg_per_l": 1.05,
     "role": "non_result",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.8136590769538856,
-    "volume_l": 5.232515923521218,
-    "volume_share": 0.09925953784000204
+    "sheet_mass_per_skin_volume_kg_per_l": 1.8134090421138214,
+    "volume_l": 5.233237388591529,
+    "volume_share": 0.09927322385462549
    },
    "thigh_pelvis_crotch": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 23.302867497961586,
       "expected_tissue_ratio": 1.0281978720886074,
-      "implied_density_kg_per_l": 1.2669696301796334,
-      "normalised_ratio": 1.2221571995301928
+      "implied_density_kg_per_l": 1.2668804110263296,
+      "normalised_ratio": 1.2220711360382601
      },
      "f=0.35": {
       "expected_mass_kg": 22.34192450835493,
       "expected_tissue_ratio": 1.072421436479515,
-      "implied_density_kg_per_l": 1.2147234598629477,
-      "normalised_ratio": 1.17175896449802
+      "implied_density_kg_per_l": 1.2146379198499866,
+      "normalised_ratio": 1.171676450016064
      },
      "nominal": {
       "expected_mass_kg": 23.020678535271166,
       "expected_tissue_ratio": 1.040801587940016,
-      "implied_density_kg_per_l": 1.251627104383959,
-      "normalised_ratio": 1.2073573354186098
+      "implied_density_kg_per_l": 1.2515389656410523,
+      "normalised_ratio": 1.2072723141232014
      }
     },
     "mass_kg_sheet": 28.47,
     "mass_share": 0.4384384384384384,
-    "ratio": 1.2566194319147157,
+    "ratio": 1.256530941615446,
     "reference_density_kg_per_l": 1.0366666666666668,
     "role": "sensitivity",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.5479050110193275,
-    "volume_l": 18.392601482213635,
-    "volume_share": 0.34890311840108035
+    "sheet_mass_per_skin_volume_kg_per_l": 1.547796008584551,
+    "volume_l": 18.393896768111983,
+    "volume_share": 0.3489276896554291
    },
    "thigh_pelvis_crotch_ilio": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 23.302867497961586,
       "expected_tissue_ratio": 1.0281978720886074,
-      "implied_density_kg_per_l": 1.1038887478044292,
-      "normalised_ratio": 1.0648444512582917
+      "implied_density_kg_per_l": 1.1038363674816514,
+      "normalised_ratio": 1.0647939236157407
      },
      "f=0.35": {
       "expected_mass_kg": 22.34192450835493,
       "expected_tissue_ratio": 1.072421436479515,
-      "implied_density_kg_per_l": 1.0583675623279583,
-      "normalised_ratio": 1.0209333398661975
+      "implied_density_kg_per_l": 1.0583173420184908,
+      "normalised_ratio": 1.020884895837772
      },
      "nominal": {
       "expected_mass_kg": 23.020678535271166,
       "expected_tissue_ratio": 1.040801587940016,
-      "implied_density_kg_per_l": 1.0905210701700865,
-      "normalised_ratio": 1.0519495853730736
+      "implied_density_kg_per_l": 1.0904693241533205,
+      "normalised_ratio": 1.0518996696012735
      }
     },
     "mass_kg_sheet": 28.47,
     "mass_share": 0.4384384384384384,
-    "ratio": 1.0948707988891364,
+    "ratio": 1.0948188464745836,
     "reference_density_kg_per_l": 1.0366666666666668,
     "role": "sensitivity",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.3486628910687166,
-    "volume_l": 21.109797109817123,
-    "volume_share": 0.40044764997229
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3485988960350745,
+    "volume_l": 21.110798832553357,
+    "volume_share": 0.4004666524057839
    },
    "thigh_pelvis_crotch_ilio_hi": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 23.302867497961586,
       "expected_tissue_ratio": 1.0281978720886074,
-      "implied_density_kg_per_l": 1.0702707889322922,
-      "normalised_ratio": 1.032415552024719
+      "implied_density_kg_per_l": 1.070221156627376,
+      "normalised_ratio": 1.0323676752032565
      },
      "f=0.35": {
       "expected_mass_kg": 22.34192450835493,
       "expected_tissue_ratio": 1.072421436479515,
-      "implied_density_kg_per_l": 1.0261359110381774,
-      "normalised_ratio": 0.9898417148278235
+      "implied_density_kg_per_l": 1.0260883254262474,
+      "normalised_ratio": 0.9897958123082768
      },
      "nominal": {
       "expected_mass_kg": 23.020678535271166,
       "expected_tissue_ratio": 1.040801587940016,
-      "implied_density_kg_per_l": 1.0573102121383384,
-      "normalised_ratio": 1.0199133879147957
+      "implied_density_kg_per_l": 1.0572611808619712,
+      "normalised_ratio": 1.0198660908636377
      }
     },
     "mass_kg_sheet": 28.47,
     "mass_share": 0.4384384384384384,
-    "ratio": 1.061527473703001,
+    "ratio": 1.0614782468570507,
     "reference_density_kg_per_l": 1.0366666666666668,
     "role": "sensitivity",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.3075905514017865,
-    "volume_l": 21.772870696778195,
-    "volume_share": 0.4130259925435587
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3075299137261405,
+    "volume_l": 21.773880429907308,
+    "volume_share": 0.4130451469322319
    },
    "thigh_pelvis_crotch_ilio_lo": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 23.302867497961586,
       "expected_tissue_ratio": 1.0281978720886074,
-      "implied_density_kg_per_l": 1.1452053369755053,
-      "normalised_ratio": 1.1046996819699406
+      "implied_density_kg_per_l": 1.1451485478294756,
+      "normalised_ratio": 1.1046449014432238
      },
      "f=0.35": {
       "expected_mass_kg": 22.34192450835493,
       "expected_tissue_ratio": 1.072421436479515,
-      "implied_density_kg_per_l": 1.0979803746260002,
-      "normalised_ratio": 1.0591450559093247
+      "implied_density_kg_per_l": 1.0979259273004254,
+      "normalised_ratio": 1.0590925343734003
      },
      "nominal": {
       "expected_mass_kg": 23.020678535271166,
       "expected_tissue_ratio": 1.040801587940016,
-      "implied_density_kg_per_l": 1.131337330982813,
-      "normalised_ratio": 1.0913221842277936
+      "implied_density_kg_per_l": 1.1312812295319867,
+      "normalised_ratio": 1.0912680670726558
      }
     },
     "mass_kg_sheet": 28.47,
     "mass_share": 0.4384384384384384,
-    "ratio": 1.1358498622984543,
+    "ratio": 1.1357935370774521,
     "reference_density_kg_per_l": 1.0366666666666668,
     "role": "sensitivity",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.3991409403389803,
-    "volume_l": 20.348200227135344,
-    "volume_share": 0.3860003447561584
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3990715588781963,
+    "volume_l": 20.349209316232415,
+    "volume_share": 0.3860194869277024
    },
    "thigh_pelvis_crotch_ri": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 23.302867497961586,
       "expected_tissue_ratio": 1.0281978720886074,
-      "implied_density_kg_per_l": 1.137871012613995,
-      "normalised_ratio": 1.0976247710102844
+      "implied_density_kg_per_l": 1.1378161250191647,
+      "normalised_ratio": 1.0975718247773292
      },
      "f=0.35": {
       "expected_mass_kg": 22.34192450835493,
       "expected_tissue_ratio": 1.072421436479515,
-      "implied_density_kg_per_l": 1.090948496629913,
-      "normalised_ratio": 1.0523618938552213
+      "implied_density_kg_per_l": 1.0908958724410551,
+      "normalised_ratio": 1.0523111309720785
      },
      "nominal": {
       "expected_mass_kg": 23.020678535271166,
       "expected_tissue_ratio": 1.040801587940016,
-      "implied_density_kg_per_l": 1.1240918225313525,
-      "normalised_ratio": 1.0843329477794397
+      "implied_density_kg_per_l": 1.124037599604656,
+      "normalised_ratio": 1.0842806427054559
      }
     },
     "mass_kg_sheet": 28.47,
     "mass_share": 0.4384384384384384,
-    "ratio": 1.1285754539045194,
+    "ratio": 1.1285210147004596,
     "reference_density_kg_per_l": 1.0366666666666668,
     "role": "sensitivity",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.3901803171628642,
-    "volume_l": 20.479357712460438,
-    "volume_share": 0.38848836993714336
+    "sheet_mass_per_skin_volume_kg_per_l": 1.390113258899543,
+    "volume_l": 20.48034562488652,
+    "volume_share": 0.3885071103924564
    },
    "thigh_pelvis_crotch_ri_m10": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 23.302867497961586,
       "expected_tissue_ratio": 1.0281978720886074,
-      "implied_density_kg_per_l": 1.1594667975633113,
-      "normalised_ratio": 1.1184567179067308
+      "implied_density_kg_per_l": 1.1594052186602015,
+      "normalised_ratio": 1.1183973170355639
      },
      "f=0.35": {
       "expected_mass_kg": 22.34192450835493,
       "expected_tissue_ratio": 1.072421436479515,
-      "implied_density_kg_per_l": 1.1116537337462677,
-      "normalised_ratio": 1.0723347913951131
+      "implied_density_kg_per_l": 1.1115946941793688,
+      "normalised_ratio": 1.0722778400444068
      },
      "nominal": {
       "expected_mass_kg": 23.020678535271166,
       "expected_tissue_ratio": 1.040801587940016,
-      "implied_density_kg_per_l": 1.1454260906457185,
-      "normalised_ratio": 1.1049126276325256
+      "implied_density_kg_per_l": 1.1453652574399698,
+      "normalised_ratio": 1.1048539460835718
      }
     },
     "mass_kg_sheet": 28.47,
     "mass_share": 0.4384384384384384,
-    "ratio": 1.1499948173749084,
+    "ratio": 1.1499337415255744,
     "reference_density_kg_per_l": 1.0366666666666668,
     "role": "sensitivity",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.4165647094511014,
-    "volume_l": 20.097917031288826,
-    "volume_share": 0.381252534197729
+    "sheet_mass_per_skin_volume_kg_per_l": 1.4164894761618212,
+    "volume_l": 20.098984481793323,
+    "volume_share": 0.3812727834707923
    },
    "thigh_pelvis_crotch_ri_p10": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 23.302867497961586,
       "expected_tissue_ratio": 1.0281978720886074,
-      "implied_density_kg_per_l": 1.1185265418073194,
-      "normalised_ratio": 1.0789645097819798
+      "implied_density_kg_per_l": 1.1184681191492252,
+      "normalised_ratio": 1.0789081535201526
      },
      "f=0.35": {
       "expected_mass_kg": 22.34192450835493,
       "expected_tissue_ratio": 1.072421436479515,
-      "implied_density_kg_per_l": 1.0724017359595952,
-      "normalised_ratio": 1.0344711279353005
+      "implied_density_kg_per_l": 1.072345722483278,
+      "normalised_ratio": 1.034417095643033
      },
      "nominal": {
       "expected_mass_kg": 23.020678535271166,
       "expected_tissue_ratio": 1.040801587940016,
-      "implied_density_kg_per_l": 1.1049816059919344,
-      "normalised_ratio": 1.0658986552976857
+      "implied_density_kg_per_l": 1.1049238908102608,
+      "normalised_ratio": 1.0658429814889971
      }
     },
     "mass_kg_sheet": 28.47,
     "mass_share": 0.4384384384384384,
-    "ratio": 1.109389013016959,
+    "ratio": 1.1093310676284693,
     "reference_density_kg_per_l": 1.0366666666666668,
     "role": "sensitivity",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.366546441035206,
-    "volume_l": 20.833540043054075,
-    "volume_share": 0.3952071214822244
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3664750638505703,
+    "volume_l": 20.834628273255714,
+    "volume_share": 0.39522776494102263
    },
    "thigh_pelvis_hjc": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 23.302867497961586,
       "expected_tissue_ratio": 1.0281978720886074,
-      "implied_density_kg_per_l": 1.267663675582145,
-      "normalised_ratio": 1.2228266967030337
+      "implied_density_kg_per_l": 1.2675387689724968,
+      "normalised_ratio": 1.2227062080120548
      },
      "f=0.35": {
       "expected_mass_kg": 22.34192450835493,
       "expected_tissue_ratio": 1.072421436479515,
-      "implied_density_kg_per_l": 1.21538888483649,
-      "normalised_ratio": 1.172400853540022
+      "implied_density_kg_per_l": 1.2152691290148685,
+      "normalised_ratio": 1.1722853334548569
      },
      "nominal": {
       "expected_mass_kg": 23.020678535271166,
       "expected_tissue_ratio": 1.040801587940016,
-      "implied_density_kg_per_l": 1.2523127451576324,
-      "normalised_ratio": 1.2080187252324424
+      "implied_density_kg_per_l": 1.2521893511200575,
+      "normalised_ratio": 1.2078996956142032
      }
     },
     "mass_kg_sheet": 28.47,
     "mass_share": 0.4384384384384384,
-    "ratio": 1.2573078074832,
+    "ratio": 1.2571839212675249,
     "reference_density_kg_per_l": 1.0366666666666668,
     "role": "sensitivity",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.5487529526990904,
-    "volume_l": 18.382531539574394,
-    "volume_share": 0.3487120940703271
+    "sheet_mass_per_skin_volume_kg_per_l": 1.5486003495408311,
+    "volume_l": 18.384343002661414,
+    "volume_share": 0.34874645707876506
    },
    "thigh_pelvis_hjc_ilio": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 23.302867497961586,
       "expected_tissue_ratio": 1.0281978720886074,
-      "implied_density_kg_per_l": 1.1044159918390482,
-      "normalised_ratio": 1.0653530467900783
+      "implied_density_kg_per_l": 1.1043365534767846,
+      "normalised_ratio": 1.065276418144808
      },
      "f=0.35": {
       "expected_mass_kg": 22.34192450835493,
       "expected_tissue_ratio": 1.072421436479515,
-      "implied_density_kg_per_l": 1.0588730643405309,
-      "normalised_ratio": 1.021420962386364
+      "implied_density_kg_per_l": 1.0587969017870207,
+      "normalised_ratio": 1.0213474936852283
      },
      "nominal": {
       "expected_mass_kg": 23.020678535271166,
       "expected_tissue_ratio": 1.040801587940016,
-      "implied_density_kg_per_l": 1.0910419294777085,
-      "normalised_ratio": 1.0524520220042202
+      "implied_density_kg_per_l": 1.0909634530841403,
+      "normalised_ratio": 1.0523763213030288
      }
     },
     "mass_kg_sheet": 28.47,
     "mass_share": 0.4384384384384384,
-    "ratio": 1.095393735732673,
+    "ratio": 1.095314946322665,
     "reference_density_kg_per_l": 1.0366666666666668,
     "role": "sensitivity",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.3493070451697906,
-    "volume_l": 21.099719372188904,
-    "volume_share": 0.40025647777251644
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3492099922996303,
+    "volume_l": 21.101237140613637,
+    "volume_share": 0.4002852694655737
    },
    "thigh_pelvis_hjc_ilio_hi": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 23.302867497961586,
       "expected_tissue_ratio": 1.0281978720886074,
-      "implied_density_kg_per_l": 1.0707662514408707,
-      "normalised_ratio": 1.0328934901358877
+      "implied_density_kg_per_l": 1.070691185652725,
+      "normalised_ratio": 1.032821079407773
      },
      "f=0.35": {
       "expected_mass_kg": 22.34192450835493,
       "expected_tissue_ratio": 1.072421436479515,
-      "implied_density_kg_per_l": 1.0266109421031029,
-      "normalised_ratio": 0.9902999441509027
+      "implied_density_kg_per_l": 1.0265389718113758,
+      "normalised_ratio": 0.9902305194321949
      },
      "nominal": {
       "expected_mass_kg": 23.020678535271166,
       "expected_tissue_ratio": 1.040801587940016,
-      "implied_density_kg_per_l": 1.0577996747822496,
-      "normalised_ratio": 1.0203855383751599
+      "implied_density_kg_per_l": 1.0577255180125709,
+      "normalised_ratio": 1.0203140045137336
      }
     },
     "mass_kg_sheet": 28.47,
     "mass_share": 0.4384384384384384,
-    "ratio": 1.0620188886518946,
+    "ratio": 1.0619444360953307,
     "reference_density_kg_per_l": 1.0366666666666668,
     "role": "sensitivity",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.3081958768030686,
-    "volume_l": 21.762796003893673,
-    "volume_share": 0.4128348781018229
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3081041660731039,
+    "volume_l": 21.764321785983014,
+    "volume_share": 0.4128638218121233
    },
    "thigh_pelvis_hjc_ilio_lo": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 23.302867497961586,
       "expected_tissue_ratio": 1.0281978720886074,
-      "implied_density_kg_per_l": 1.1457725381248334,
-      "normalised_ratio": 1.1052468213422828
+      "implied_density_kg_per_l": 1.1456865578028457,
+      "normalised_ratio": 1.1051638821249312
      },
      "f=0.35": {
       "expected_mass_kg": 22.34192450835493,
       "expected_tissue_ratio": 1.072421436479515,
-      "implied_density_kg_per_l": 1.0985241860372117,
-      "normalised_ratio": 1.0596696328333228
+      "implied_density_kg_per_l": 1.0984417512955122,
+      "normalised_ratio": 1.0595901137898827
      },
      "nominal": {
       "expected_mass_kg": 23.020678535271166,
       "expected_tissue_ratio": 1.040801587940016,
-      "implied_density_kg_per_l": 1.1318976635395104,
-      "normalised_ratio": 1.0918626979480806
+      "implied_density_kg_per_l": 1.1318127244068903,
+      "normalised_ratio": 1.091780763093463
      }
     },
     "mass_kg_sheet": 28.47,
     "mass_share": 0.4384384384384384,
-    "ratio": 1.1364124298368323,
+    "ratio": 1.1363271519100389,
     "reference_density_kg_per_l": 1.0366666666666668,
     "role": "sensitivity",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.3998339115676408,
-    "volume_l": 20.338127091175497,
-    "volume_share": 0.3858092598489001
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3997288661363347,
+    "volume_l": 20.339653406295472,
+    "volume_share": 0.38583821367066023
    },
    "thigh_pelvis_hjc_ri": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 23.302867497961586,
       "expected_tissue_ratio": 1.0281978720886074,
-      "implied_density_kg_per_l": 1.138430692291224,
-      "normalised_ratio": 1.0981646549433026
+      "implied_density_kg_per_l": 1.1383469855908541,
+      "normalised_ratio": 1.098083908930084
      },
      "f=0.35": {
       "expected_mass_kg": 22.34192450835493,
       "expected_tissue_ratio": 1.072421436479515,
-      "implied_density_kg_per_l": 1.0914850967328233,
-      "normalised_ratio": 1.0528795145332697
+      "implied_density_kg_per_l": 1.091404841855149,
+      "normalised_ratio": 1.052802098252555
      },
      "nominal": {
       "expected_mass_kg": 23.020678535271166,
       "expected_tissue_ratio": 1.040801587940016,
-      "implied_density_kg_per_l": 1.12464472469815,
-      "normalised_ratio": 1.0848662939210447
+      "implied_density_kg_per_l": 1.1245620316544447,
+      "normalised_ratio": 1.0847865257116827
      }
     },
     "mass_kg_sheet": 28.47,
     "mass_share": 0.4384384384384384,
-    "ratio": 1.1291305614156235,
+    "ratio": 1.1290475385366525,
     "reference_density_kg_per_l": 1.0366666666666668,
     "role": "sensitivity",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.3908640991228356,
-    "volume_l": 20.4692895718244,
-    "volume_share": 0.38829737978994694
+    "sheet_mass_per_skin_volume_kg_per_l": 1.3907618314615813,
+    "volume_l": 20.470794751449475,
+    "volume_share": 0.38832593267657634
    },
    "thigh_pelvis_hjc_ri_m10": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 23.302867497961586,
       "expected_tissue_ratio": 1.0281978720886074,
-      "implied_density_kg_per_l": 1.160047843337706,
-      "normalised_ratio": 1.119017212222867
+      "implied_density_kg_per_l": 1.1599563462622244,
+      "normalised_ratio": 1.1189289513783514
      },
      "f=0.35": {
       "expected_mass_kg": 22.34192450835493,
       "expected_tissue_ratio": 1.072421436479515,
-      "implied_density_kg_per_l": 1.112210818870172,
-      "normalised_ratio": 1.0728721725435737
+      "implied_density_kg_per_l": 1.112123094869968,
+      "normalised_ratio": 1.0727875513215124
      },
      "nominal": {
       "expected_mass_kg": 23.020678535271166,
       "expected_tissue_ratio": 1.040801587940016,
-      "implied_density_kg_per_l": 1.1460001001742792,
-      "normalised_ratio": 1.1054663345732594
+      "implied_density_kg_per_l": 1.1459097110939758,
+      "normalised_ratio": 1.1053791425343815
      }
     },
     "mass_kg_sheet": 28.47,
     "mass_share": 0.4384384384384384,
-    "ratio": 1.1505711164380774,
+    "ratio": 1.1504803668255577,
     "reference_density_kg_per_l": 1.0366666666666668,
     "role": "sensitivity",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.4172745951850552,
-    "volume_l": 20.087850369097062,
-    "volume_share": 0.38106157209625613
+    "sheet_mass_per_skin_volume_kg_per_l": 1.417162809726069,
+    "volume_l": 20.08943489386595,
+    "volume_share": 0.381091630140714
    },
    "thigh_pelvis_hjc_ri_p10": {
     "cases": {
      "f=0.15": {
       "expected_mass_kg": 23.302867497961586,
       "expected_tissue_ratio": 1.0281978720886074,
-      "implied_density_kg_per_l": 1.1190673895748635,
-      "normalised_ratio": 1.0794862278857205
+      "implied_density_kg_per_l": 1.118981144239617,
+      "normalised_ratio": 1.079403033028569
      },
      "f=0.35": {
       "expected_mass_kg": 22.34192450835493,
       "expected_tissue_ratio": 1.072421436479515,
-      "implied_density_kg_per_l": 1.072920280726416,
-      "normalised_ratio": 1.034971331890433
+      "implied_density_kg_per_l": 1.0728375918998392,
+      "normalised_ratio": 1.0348915677490407
      },
      "nominal": {
       "expected_mass_kg": 23.020678535271166,
       "expected_tissue_ratio": 1.040801587940016,
-      "implied_density_kg_per_l": 1.1055159042963918,
-      "normalised_ratio": 1.0664140555913746
+      "implied_density_kg_per_l": 1.1054307033597235,
+      "normalised_ratio": 1.066331868192659
      }
     },
     "mass_kg_sheet": 28.47,
     "mass_share": 0.4384384384384384,
-    "ratio": 1.1099254424610552,
+    "ratio": 1.1098399016859635,
     "reference_density_kg_per_l": 1.0366666666666668,
     "role": "sensitivity",
-    "sheet_mass_per_skin_volume_kg_per_l": 1.3672072153344776,
-    "volume_l": 20.82347114664328,
-    "volume_share": 0.39501611699816697
+    "sheet_mass_per_skin_volume_kg_per_l": 1.367101846126388,
+    "volume_l": 20.82507611314275,
+    "volume_share": 0.39504656281721745
    }
   },
   "stature_mesh_m": 1.69895,
@@ -2561,9 +2561,9 @@
    },
    "segment": "shank",
    "shear_mm": {
-    "nominal": 48.96204485930449,
-    "p2_5": 34.65585504218736,
-    "p97_5": 63.97709608038604
+    "nominal": 48.750620498615056,
+    "p2_5": 34.417013487389085,
+    "p97_5": 63.74324110497646
    },
    "spread": {
     "area_t0": {
@@ -3438,9 +3438,9 @@
    },
    "segment": "thigh",
    "shear_mm": {
-    "nominal": 69.28803138465423,
-    "p2_5": 54.15167818880794,
-    "p97_5": 84.31236281326002
+    "nominal": 68.9367346164916,
+    "p2_5": 53.813775207487865,
+    "p97_5": 83.96090648784556
    },
    "spread": {
     "area_t0": {
@@ -4077,16 +4077,16 @@
    "kjc": 472.71
   },
   "section_centre_offset_before_shear_mm": {
-   "shank": 48.96204485930449,
-   "thigh": 69.28803138465423
+   "shank": 48.750620498615056,
+   "thigh": 68.9367346164916
   },
   "shear_deg": {
-   "shank": 6.85078630288211,
-   "thigh": 9.873680653507922
+   "shank": 6.821483085274603,
+   "thigh": 9.824598096444694
   },
   "shear_mm": {
-   "shank": 48.96204485930449,
-   "thigh": 69.28803138465423
+   "shank": 48.750620498615056,
+   "thigh": 68.9367346164916
   },
   "sheet_nodes_mm": {
    "ajc": 65.45287073994474,
@@ -4101,16 +4101,16 @@
  },
  "section_centroids_before_shear_mm": {
   "ajc": [
-   36.68920444824636,
-   -185.3468349016254
+   36.87993138936534,
+   -185.25385934819894
   ],
   "hjc": [
-   20.621494476933066,
-   -75.50575048732952
+   20.631303893389074,
+   -75.95322707081266
   ],
   "kjc": [
-   50.03762395679922,
-   -138.23949435444285
+   50.0255905511811,
+   -138.30905511811022
   ]
  },
  "shank_cut_sensitivity": {

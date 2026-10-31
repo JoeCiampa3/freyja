@@ -21,11 +21,11 @@ directions:
 frame: 'segment: origin at the proximal joint centre on the vertical axis, z up (distal
   end at z = -length), x anterior, y left; stations are distances below the origin'
 inner_volume_l:
-  t0: 6.4207
-  t10: 4.7782
-  t3: 5.9096
-  t5: 5.5725
-  t8: 5.0875
+  t0: 6.4215
+  t10: 4.7785
+  t3: 5.9097
+  t5: 5.5726
+  t8: 5.0877
 inputs_sha256_12: 00fcb645ad2c
 knee_source: chords
 length_mm: 398.08
@@ -41,37 +41,37 @@ min_inscribed_radius:
     station_mm: 0.0
   outside_hip_zone:
     from_station_mm: 40.0
-    r_mm: 46.47
+    r_mm: 46.38
     station_mm: 398.1
 min_inscribed_radius_inner:
   t10:
-    r_mm: 36.52
+    r_mm: 36.55
     station_mm: 398.1
   t3:
-    r_mm: 43.56
+    r_mm: 43.58
     station_mm: 398.1
   t5:
-    r_mm: 41.52
+    r_mm: 41.55
     station_mm: 398.1
   t8:
-    r_mm: 38.48
+    r_mm: 38.56
     station_mm: 398.1
 pelvis_scale_k: 1.05035
 sections_csv: thigh_R_sections.csv
 segment: thigh_R
 shear_deg:
-  shank: 6.85
-  thigh: 9.87
+  shank: 6.82
+  thigh: 9.82
 shear_mm:
-  shank: 48.96
-  thigh: 69.29
+  shank: 48.75
+  thigh: 68.94
 sheet_mass_kg: 9.49
 sheet_nodes_mm:
   ajc: 65.45
   hjc: 871.07
   kjc: 472.99
-skin_volume_excluding_hip_zone_l: 5.2325
-skin_volume_l: 6.4207
+skin_volume_excluding_hip_zone_l: 5.2332
+skin_volume_l: 6.4215
 stretch:
   foot: 0.99969
   shank: 1.00073

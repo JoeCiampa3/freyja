@@ -16,19 +16,19 @@
    "registry": "data/envelope/corridor/abdomen.yaml",
    "without_corridor": {
     "free_volume_l": 4.010131422179803,
-    "largest_free_sphere_mm": 180.8306954191078
+    "largest_free_sphere_mm": 180.83069541910783
    }
   },
   "thorax": {
-   "free_volume_l": 13.5787,
-   "inner_volume_l": 14.387,
+   "free_volume_l": 13.5693,
+   "inner_volume_l": 14.3776,
    "largest_free_sphere_mm": 136.49,
    "ledger": "data/envelope/corridor/free/thorax.yaml",
    "occupied_volume_l": 0.8083,
    "registry": "data/envelope/corridor/thorax.yaml",
    "without_corridor": {
-    "free_volume_l": 14.387048421712473,
-    "largest_free_sphere_mm": 195.16461546042774
+    "free_volume_l": 14.377597384895097,
+    "largest_free_sphere_mm": 195.16461546042777
    }
   }
  },

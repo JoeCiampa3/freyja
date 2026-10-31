@@ -18,7 +18,7 @@ directions:
 frame: 'segment: origin at the proximal joint centre on the vertical axis, z up (distal
   end at z = -length), x anterior, y left; stations are distances below the origin'
 inner_volume_l:
-  t0: 0.5658
+  t0: 0.5659
   t10: 0.2224
   t3: 0.4409
   t5: 0.3671
@@ -35,7 +35,7 @@ min_inscribed_radius:
   hip_zone: null
   outside_hip_zone:
     from_station_mm: 0.0
-    r_mm: 0.25
+    r_mm: 0.0
     station_mm: 65.5
 min_inscribed_radius_inner:
   t10:
@@ -54,18 +54,18 @@ pelvis_scale_k: 1.05035
 sections_csv: foot_R_sections.csv
 segment: foot_R
 shear_deg:
-  shank: 6.85
-  thigh: 9.87
+  shank: 6.82
+  thigh: 9.82
 shear_mm:
-  shank: 48.96
-  thigh: 69.29
+  shank: 48.75
+  thigh: 68.94
 sheet_mass_kg: 0.65
 sheet_nodes_mm:
   ajc: 65.45
   hjc: 871.07
   kjc: 472.99
 skin_volume_excluding_hip_zone_l: null
-skin_volume_l: 0.5658
+skin_volume_l: 0.5659
 stretch:
   foot: 0.99969
   shank: 1.00073

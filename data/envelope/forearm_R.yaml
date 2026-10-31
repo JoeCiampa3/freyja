@@ -23,7 +23,7 @@ frame: 'arm segment: origin at the proximal node (upper arm: the mesh''s own SJC
   the top of the field'
 gate_rule: 8% (ADR 0007 D10, adr-0042 D3)
 inner_volume_l:
-  t10: 0.2627
+  t10: 0.2626
   t3: 0.5022
   t5: 0.4253
   t8: 0.3226
@@ -37,7 +37,7 @@ joint_zone_volumes_l:
   zone_h_mm: 25.0
 length_mm: 259.44
 mesh_file: data/makehuman/freyja-body-v3.obj
-mesh_length_mm: 259.443
+mesh_length_mm: 259.444
 mesh_nodes_mm:
   elbow:
   - 25.45
@@ -48,7 +48,7 @@ mesh_nodes_mm:
   - -531.37
   - 888.62
   sjc:
-  - 15.56
+  - 15.51
   - -192.33
   - 1349.24
   wrist:
@@ -79,7 +79,7 @@ nodes:
 pinch_prominence_mm: 3.0
 pinch_stations: []
 required_density_inner_kg_per_l:
-  t10: 3.2172
+  t10: 3.2173
   t3: 1.6826
   t5: 1.9869
   t8: 2.6194

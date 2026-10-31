@@ -23,24 +23,24 @@ frame: 'arm segment: origin at the proximal node (upper arm: the mesh''s own SJC
   the top of the field'
 gate_rule: 8% (ADR 0007 D10, adr-0042 D3)
 inner_volume_l:
-  t10: 0.5927
-  t3: 0.9368
-  t5: 0.8297
-  t8: 0.6823
+  t10: 0.5967
+  t3: 0.942
+  t5: 0.8346
+  t8: 0.6867
 inputs_sha256_12: 770c1272e683
 joint_zone_volumes_l:
-  girdle_l: 0.2702
+  girdle_l: 0.2681
   slab_l:
     elbow: 0.0809
     sjc_sphere: 0.0334
-  with_zones_l: 1.1052
-  without_all_l: 0.9909
-  without_girdle_and_zones_l: 0.7207
-  without_girdle_l: 0.835
+  with_zones_l: 1.1108
+  without_all_l: 0.9965
+  without_girdle_and_zones_l: 0.7284
+  without_girdle_l: 0.8427
   zone_h_mm: 25.0
 length_mm: 291.23
 mesh_file: data/makehuman/freyja-body-v3.obj
-mesh_length_mm: 255.233
+mesh_length_mm: 255.234
 mesh_nodes_mm:
   elbow:
   - 25.45
@@ -51,7 +51,7 @@ mesh_nodes_mm:
   - -531.37
   - 888.62
   sjc:
-  - 15.56
+  - 15.51
   - -192.33
   - 1349.24
   wrist:
@@ -85,22 +85,22 @@ pinch_stations:
   r_mm: 21.66
   station_mm: 120.0
 required_density_inner_kg_per_l:
-  t10: 2.4128
-  t3: 1.5264
-  t5: 1.7235
-  t8: 2.0958
-required_density_skin_kg_per_l: 1.2939
+  t10: 2.3965
+  t3: 1.518
+  t5: 1.7134
+  t8: 2.0823
+required_density_skin_kg_per_l: 1.2874
 sections_csv: upper_arm_R_sections.csv
 segment: upper_arm_R
 sheet_length_mm: 255.235
 sheet_mass_kg: 1.43
-skin_volume_l: 1.1052
+skin_volume_l: 1.1108
 stations:
   joint_station_mm: 36.0
   note: 'the upper arm reaches above its SJC by the shoulder girdle: the SJC is at
     joint_station_mm'
   top_z_mm: 36.0
-stretch: 1.00001
+stretch: 1.0
 stretch_gate: 0.08
-unconformed_skin_volume_l: 1.1052
+unconformed_skin_volume_l: 1.1108
 voxel_mm: 2.0
