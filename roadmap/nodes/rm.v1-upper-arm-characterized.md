@@ -8,3 +8,4 @@ blocked_by: [rm.v1-elbow-load-basis, rm.v1-fall-load-cases, rm.v1-bridge-tooling
 stub: true
 tags: ["region:arm", "stage3"]
 ---
+Elbow-position quantities in the file (the elbow node, anything measured from it, interface positions at the elbow) carry adr-0042 D2's error bar of 7 mm, mostly anteroposterior, and the wrist node's 5 mm; results quote it, and a clearance or position stated more finely than that is inside the anchor's uncertainty. The arms are on the adr-0042 D1 nodes with the D4 roll, the sculpt is v3, and the arm stretch gate is 8% (adr-0042 D3).
