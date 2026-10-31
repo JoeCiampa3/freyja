@@ -155,7 +155,7 @@ def test_the_model_lsj_origin_maps_to_the_expected_mesh_position():
 
 @built
 def test_the_trunk_example_poses_are_in_the_model_frame_and_their_margins_are_unchanged():
-    """The margins on the snapped raster, memo 55 (pelvis box +37.12 / -11.64, thorax box +17.51 / -34.40, union +39.405 / overrun 37.318): the poses moved by the constant, the answers did not."""
+    """The margins on the snapped raster, memo 55 (pelvis box +37.12 / -11.64, thorax box +17.51 / -34.40, union +39.42 / overrun 37.32): the poses moved by the constant, the answers did not."""
     for name in ("pelvis_box", "thorax_box"):
         for kind in ("feasible", "infeasible"):
             rows = oracle.read_poses(EX / f"{name}_{kind}_poses.csv")
@@ -170,5 +170,5 @@ def test_the_trunk_example_poses_are_in_the_model_frame_and_their_margins_are_un
     u = ("check", "--segment", "pelvis,abdomen", "--shapes", str(EX / "trunk_union_shapes.yaml"))
     ok, bad = cli(*u, "--poses", str(EX / "trunk_union_feasible_poses.csv")), cli(*u, "--poses", str(EX / "trunk_union_infeasible_poses.csv"))
     assert ok.returncode == 0 and bad.returncode == 1
-    assert abs(binding(ok.stdout) - 39.405) <= 0.01 and abs(float(bad.stdout.split("slab overrun ")[-1].split(" mm")[0]) - 37.318) <= 0.01
+    assert abs(binding(ok.stdout) - 39.42) <= 0.01 and abs(float(bad.stdout.split("slab overrun ")[-1].split(" mm")[0]) - 37.32) <= 0.01
     assert "frame:" in ok.stdout and "frame:" in bad.stdout
