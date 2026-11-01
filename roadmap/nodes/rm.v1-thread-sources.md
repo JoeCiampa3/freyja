@@ -9,6 +9,7 @@ estimate_days: 2.0
 tags: ["stage3"]
 done_when:
   type: manual
+signed_off: true
 ---
 Brief: `docs/briefs/ariadne/thread-sources-brief.md`. A schema bump (thread-record/2) and one rule. Evidence on a load case is resolved and graded by the build from the cited source's own status, never from a grade typed into the record. Stamping is refused for an active work item that consumes a flagged case with no admissible evidence, and warned on every build for anything else. The rule sits in `build.write_stamp`, so `fy thread stamp` and `fy cad stamp` both enforce it. The bump also carries the energy-defined load-case form adr-0037 D1(a) specifies, so rm.v1-fall-load-cases needs no further bump.
 
