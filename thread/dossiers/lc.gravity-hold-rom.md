@@ -16,14 +16,18 @@ No model or snapshot binding.
 
 Authored:
 
-- evidence: `[]`
 - independent_source_required: `false`
 - source: `{"scenario":"rom_sweep"}`
-- sourcing: `"not_required"`
 
 Derived:
 
 - consumed_by: none
+
+## Evidence
+
+Sourcing: **not_required**.
+
+No evidence attached.
 
 ## Budgets
 

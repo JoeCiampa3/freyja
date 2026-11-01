@@ -286,7 +286,16 @@ def stamp(ctx: Context, part: str, note: str = "", by: str | None = None) -> Pat
         raise Refused("; ".join(why))
     work = work_item_of(ctx.root, part)
     b = thread_build.build_root(ctx.root)
-    return thread_build.write_stamp(ctx.root, b, work, note=note, pinned=False, by=by or _git_user())
+    try:
+        return thread_build.write_stamp(ctx.root, b, work, note=note, pinned=False, by=by or _git_user())
+    except ValueError as e:
+        raise Refused(str(e)) from None
+
+
+def stamp_warnings(ctx: Context, part: str) -> list:
+    """The `unsourced-consumption` warning for the part's work item, printed after a stamp that proceeds."""
+    from thread import build as thread_build
+    return thread_build.unsourced_warnings_of(ctx.root, work_item_of(ctx.root, part))
 
 
 def _git_user() -> str:

@@ -10,7 +10,8 @@
                                             in-memory what-if. Writes nothing. Either an address or at least one --edit is needed.
     why <work query> [--json]               a work item's status and, for each moved address, the stamped value against the current one
     stamp <work query> [--note TEXT] [--pin] [--by NAME]   write a stamp for the work item's current `consumes`; refuses when the work item
-                                            is unknown, an address does not resolve, or the thread has errors
+                                            is unknown, it is active and consumes an unsourced load case, an address does not resolve, or
+                                            the thread has errors
     fixture --out DIR [--seed N] [--scenario general|reallocation]   write a synthetic repo-shaped root (deterministic, never into a non-empty directory)
 
 <query> is an exact id, the id with a kind prefix (seg. jnt. part. if. lc. hn. work.) added, or a unique case-insensitive substring of an id.
@@ -175,8 +176,9 @@ def cmd_why(args, default_root, say) -> int:
     if id is None:
         return 2
     w = b.work[id]
+    unsourced = b.unsourced_of(id)
     if args.json:
-        say(json.dumps({"id": id, **w}, indent=2, sort_keys=True, ensure_ascii=False))
+        say(json.dumps({"id": id, **w, "unsourced": unsourced}, indent=2, sort_keys=True, ensure_ascii=False))
         return 0
     say(f"{id}: {w['status']}" + (f" (baseline stamp {w['stamp']}{', pinned' if w['pinned'] else ''})" if w["stamp"] else " (no stamp yet)"))
     if w["status"] == "current":
@@ -185,6 +187,8 @@ def cmd_why(args, default_root, say) -> int:
         say(f"  {m['address']}")
         say(f"    stamped: {_full(m['stamped'], m['stamped_hash'])}")
         say(f"    current: {'does not resolve' if m['current_hash'] is None else _full(m['current'], m['current_hash'])}")
+    for c in unsourced:
+        say(f"  unsourced load case {c}: {b.unsourced_reason(c)}")
     return 0
 
 
@@ -224,6 +228,8 @@ def cmd_stamp(args, default_root, say) -> int:
     say(f"stamped {id} as {doc['stamp']}{' (pinned)' if doc['pinned'] else ''}; it consumed:")
     for c in doc["consumes"]:
         say(f"  {c['address']}  hash {c['hash']}")
+    for line in build.unsourced_warnings_of(root, id):
+        say(line)
     return 0
 
 

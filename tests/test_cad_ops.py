@@ -351,6 +351,30 @@ def test_stamp_refuses_without_a_sidecar_with_drift_and_with_stale_hashes_and_st
     assert [c["address"] for c in stamp["consumes"]] == ["snapshot#/pelvis_length"]
 
 
+def flag_a_case_and_consume_it(root, status):
+    write_record(root, id="lc.none", kind="load_case", source={"scenario": "fall_impact"}, independent_source_required=True)
+    write_record(root, id="work.base-cad", kind="work_item", status=status, of=PART, mode="assisted", output=f"cad/sidecars/{PART}.json",
+                 consumes=["snapshot#/pelvis_length", "lc.none#/source"])
+
+
+def test_fy_cad_stamp_refuses_active_work_on_an_unsourced_case_with_exit_1_and_writes_nothing(env):
+    root, fake, ctx, lines = env
+    ops.push(ctx, PART)
+    ops.pull(ctx, PART)
+    flag_a_case_and_consume_it(root, "active")
+    assert cli.main(["stamp", PART, "--root", str(root), "--by", "test"], say=lines.append, context=ctx) == 1
+    assert any("refused" in x and "lc.none" in x for x in lines) and not (root / "thread" / "stamps").exists()
+
+
+def test_fy_cad_stamp_prints_the_warning_for_work_that_proceeds(env):
+    root, fake, ctx, lines = env
+    ops.push(ctx, PART)
+    ops.pull(ctx, PART)
+    flag_a_case_and_consume_it(root, "proposed")
+    assert cli.main(["stamp", PART, "--root", str(root), "--by", "test"], say=lines.append, context=ctx) == 0
+    assert any("unsourced-consumption" in x and "work.base-cad" in x and "lc.none" in x for x in lines)
+
+
 def test_stamp_refuses_an_unhealthy_sidecar_timeline(env):
     root, fake, ctx, _ = env
     ops.push(ctx, PART)

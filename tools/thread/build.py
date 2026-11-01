@@ -331,6 +331,11 @@ class Build:
         """The unsourced load cases a work item consumes directly: an address into the record or into its derived file."""
         return sorted(t for t in self._consumed_targets.get(work, ()) if self.sourcing.get(t, {}).get("sourcing") == "unsourced")
 
+    def unsourced_reason(self, case: str) -> str:
+        """Why a case is unsourced: its attached entries with the reason each is not admissible, or that it has none."""
+        entries = self.sourcing[case]["evidence"]
+        return "; ".join(e["reason"] for e in entries) if entries else "no evidence"
+
     def _unsourced_warnings(self):
         for id, r in sorted(self.recs.items()):
             if r["kind"] != "work_item" or r["status"] == "superseded":
@@ -739,6 +744,11 @@ def build_root(root) -> Build:
     return Build(st.load(root))
 
 
+def unsourced_warnings_of(root, work: str) -> list:
+    """The `unsourced-consumption` warning text for one work item, from a fresh build, so it names a stamp just written."""
+    return [f"warning {i.code}: {i.message}" for i in build_root(root).warnings if i.code == "unsourced-consumption" and i.ids[0] == work]
+
+
 def write_outputs(root, b: Build) -> list:
     """Write the generated outputs under root; only files whose bytes changed. Removes generated files for ids that no longer exist.
     Returns the repo-relative paths written or removed. Nothing is written when the build has errors."""
@@ -766,12 +776,16 @@ def write_outputs(root, b: Build) -> list:
 
 def write_stamp(root, b: Build, work: str, *, stamp: str | None = None, note: str = "", pinned: bool = False, by: str) -> Path:
     """Write thread/stamps/<work>/<stamp>.json for the work item's current `consumes`. ValueError (nothing written) when the thread has errors,
-    the work item is unknown, an address does not resolve, or the stamp already exists (a stamp is never edited)."""
+    the work item is unknown, it is active and consumes an unsourced load case, an address does not resolve, or the stamp already exists (a
+    stamp is never edited). Every stamping path ends here, so this is where the sourcing rule lives."""
     if b.errors:
         raise ValueError("the thread has errors: " + "; ".join(f"{i.code} {i.message}" for i in b.errors[:3]))
     r = b.recs.get(work)
     if r is None or r["kind"] != "work_item":
         raise ValueError(f"{work} is not a work item")
+    cases = b.unsourced_of(work) if r["status"] == "active" else []
+    if cases:
+        raise ValueError(f"{work} is active and consumes unsourced load cases: " + "; ".join(f"{c} ({b.unsourced_reason(c)})" for c in cases))
     rows, bad = [], []
     for a in r["consumes"]:
         ok, value = b.resolve(a)

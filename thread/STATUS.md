@@ -33,6 +33,10 @@ Claims with their arithmetic:
 - seg.upper_arm: 1 x 0.121239 kg, part.arm.upper_member right (mass from cad/sidecars/part.arm.upper_member.json#/mass_properties/mass_kg) = 0.121239 kg
 - whole body: 2 x 0.121239 kg, part.arm.upper_member left and right (mass from cad/sidecars/part.arm.upper_member.json#/mass_properties/mass_kg) = 0.242478 kg
 
+## Unsourced load cases
+
+None.
+
 ## Proposed records
 
 - [lc.gravity-hold-rom](dossiers/lc.gravity-hold-rom.md) (load_case)

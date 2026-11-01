@@ -5,7 +5,7 @@
     push <part id>                         set the inherited parameters from their addresses by expression; on a failed regeneration roll back and exit 1
     pull <part id> [--segment NAME]        read parameters, mass properties and exports; write the sidecar, the STL and the generated component registry
     drift <part id>                        inherited values in Fusion against the current addresses; exit 1 on drift. Reads only
-    stamp <part id> [--note TEXT] [--by NAME]   stamp the part's work item for the addresses it consumed; refuses on drift, an unhealthy timeline or stale hashes
+    stamp <part id> [--note TEXT] [--by NAME]   stamp the part's work item for the addresses it consumed; refuses on drift, an unhealthy timeline, stale hashes or active work on an unsourced load case
     status                                 one line per binding: revision, document version, drift, timeline, work status (from the sidecar and thread/graph.json)
 
 Fusion must be running with its MCP server (port FUSION_MCP_PORT, default 27182) and the bound document active. Nothing here saves a document.
@@ -119,6 +119,8 @@ def cmd_drift(args, ctx, say) -> int:
 def cmd_stamp(args, ctx, say) -> int:
     path = ops.stamp(ctx, args.part, note=args.note, by=args.by)
     say(f"{args.part}: stamped {path.relative_to(ctx.root).as_posix()}")
+    for line in ops.stamp_warnings(ctx, args.part):
+        say(line)
     return 0
 
 

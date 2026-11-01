@@ -105,7 +105,7 @@ class Context:
             L.append(f"- {f}: {self._links(v) if isinstance(v, list) else self.link(v)}")
         for f in sorted(d):
             if f in REFERENCE_FIELDS or f in ("id", "kind", "status", "purpose", "notes", "superseded_by") or f in self._derived_keys(d) or f in (
-                    "work", "decisions", "budgets", "values", "rom", "rom_missing", "bound_bodies", "bound_hinges"):
+                    "work", "decisions", "budgets", "values", "rom", "rom_missing", "bound_bodies", "bound_hinges", "evidence", "sourcing"):
                 continue
             L.append(f"- {f}: `{addr.canonical(d[f])}`")
         if not authored and not any(f not in REFERENCE_FIELDS for f in d):
@@ -116,7 +116,10 @@ class Context:
             L.append(f"- {n}: {self._links(d[n]) if d[n] else 'none'}")
         if not derived:
             L.append("- none")
-        L += ["", "## Budgets", ""]
+        L.append("")
+        if k == "load_case":
+            L += self._evidence(d)
+        L += ["## Budgets", ""]
         if "budgets" in d:
             m = d["budgets"]["mass"]
             L += [self._mass_line(m)]
@@ -163,6 +166,26 @@ class Context:
             L += [f"{len(nodes)} nodes (cap {MERMAID_CAP}), listed instead of drawn:", ""]
             L += [f"- {label}: {self.link(c)}" for a, label, c in es]
         return ("\n".join(L).rstrip("\n") + "\n").encode("utf-8")
+
+    def _evidence(self, d) -> list:
+        L = ["## Evidence", "", f"Sourcing: **{d['sourcing']}**.", ""]
+        for e in d["evidence"]:
+            verdict = "admissible" if e["admissible"] else "not admissible"
+            note = f" Note: {e['note']}" if e.get("note") else ""
+            L.append(f"- {self._citation(e)}: {verdict}. {e['reason']}.{note}")
+        if not d["evidence"]:
+            L.append("No evidence attached.")
+        L.append("")
+        return L
+
+    def _citation(self, e) -> str:
+        """A relative link from thread/dossiers/ to the cited file. An entry in a generated output has resolved, so the file exists."""
+        if e["kind"] == "decision":
+            path = next(x["path"] for x in self.b.store.decisions if x["id"] == e["record"])
+            return f"[{e['record']} {e['clause']}](../../{path})"
+        if e["kind"] == "literature":
+            return f"[{e['row']}](../../{e['file']})"
+        return f"[{e['path']}](../../{e['path']})"
 
     def _derived_keys(self, d):
         return [n for n, t in edges.BY_NAME.items() if t.origin == "derived" and n in d]
@@ -212,6 +235,12 @@ class Context:
         rows = [(i, c) for i, m in sorted(b.budgets["segments"].items()) for c in m["claims"]]
         L += [f"- {i}: {c['arithmetic']} = {c['total_kg']} kg" for i, c in rows] or ["- none"]
         L += ["- whole body: " + (", ".join(f"{c['arithmetic']} = {c['total_kg']} kg" for c in bd["claims"]) or "none"), ""]
+        L += ["## Unsourced load cases", ""]
+        unsourced = [i for i, s in sorted(b.sourcing.items()) if s["sourcing"] == "unsourced"]
+        for i in unsourced:
+            users = [f"{w} ({b.recs[w]['status']}, {b.work[w]['status']})" for w in b.docs[i]["consumed_by"]]
+            L.append(f"- {self.link(i).replace('](', '](dossiers/')}: {', '.join(users) or 'no consumers'}")
+        L += ([""] if unsourced else ["None.", ""])
         L += ["## Proposed records", ""]
         proposed = [f"- {self.link(i).replace('](', '](dossiers/')} ({r['kind']})" for i, r in sorted(b.recs.items()) if r["status"] == "proposed"]
         L += proposed or ["None."]
