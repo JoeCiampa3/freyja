@@ -186,13 +186,21 @@ def test_a_decision_that_fails_on_status_still_holds_its_id_against_a_later_file
     assert "adr-0910" not in b.store.decision_bodies
 
 
-@pytest.mark.parametrize("name", ["README.md", "notes.md", "091-short.md", "09100-long.md", "0910.md", "0910_x.md"])
-def test_a_file_not_named_nnnn_dash_anything_is_ignored_whatever_it_holds(name, tmp_path):
+def test_the_readme_is_ignored_whatever_it_holds(tmp_path):
     root = make_root(tmp_path / "r")
-    decision_file(root, name, "---\nstatus: nonsense: [\n")
-    decision_file(root, name.replace(".md", "2.md"), GOOD)
+    decision_file(root, "README.md", "---\nstatus: nonsense: [\n")
     b = build.build_root(root)
     assert b.errors == [] and [d["id"] for d in b.store.decisions] == ["adr-0001"]
+
+
+@pytest.mark.parametrize("name", ["notes.md", "091-short.md", "09100-long.md", "0910.md", "0910_x.md"])
+def test_any_other_file_not_named_nnnn_dash_anything_is_the_error_and_stays_out(name, tmp_path):
+    root = make_root(tmp_path / "r")
+    decision_file(root, name, GOOD)
+    b = build.build_root(root)
+    assert got(b.errors) == [("decision-front-matter", (Path(name).stem,))]
+    assert f"decisions/{name}" in b.errors[0].message and "filename" in b.errors[0].message
+    assert [d["id"] for d in b.store.decisions] == ["adr-0001"]
 
 
 def test_a_citing_case_gets_the_loud_error_beside_evidence_unresolved(tmp_path):

@@ -31,7 +31,8 @@ SCHEMA_DIR = Path(__file__).resolve().parents[2] / "docs" / "schemas"  # the sch
 
 _YAML_LOADER = getattr(yaml, "CSafeLoader", yaml.SafeLoader)  # the C loader is several times faster; same results
 
-DECISION_FILE = re.compile(r"([0-9]{4})-.*\.md")  # any other name under decisions/ (README.md) is not a decision
+DECISION_README = "README.md"  # the one Markdown file under decisions/ that is not a decision
+DECISION_FILE = re.compile(r"([0-9]{4})-.*\.md")
 DECISION_STATUS = re.compile(r"proposed|accepted|superseded-by: adr-[0-9]{4}")
 FRONT_MATTER_OPEN = re.compile(r"---[ \t]*\n")
 FRONT_MATTER = re.compile(r"---[ \t]*\n(.*?)^---[ \t]*$(.*)", re.DOTALL | re.MULTILINE)  # whole lines only: a table's |---| is not a delimiter
@@ -219,10 +220,13 @@ def _load_decisions(s: Store):
         return
     paths = {}  # decision id -> the file that holds it, kept even when that file then fails on its status
     for p in sorted(base.glob("*.md")):
-        name = DECISION_FILE.fullmatch(p.name)
-        if name is None:
+        if p.name == DECISION_README:
             continue
         rel = p.relative_to(s.root).as_posix()
+        name = DECISION_FILE.fullmatch(p.name)
+        if name is None:
+            s.issues.append(error("decision-front-matter", f"{rel}: the filename is not NNNN-<slug>.md", (p.stem,)))
+            continue
         try:
             front, body = _read_decision(p)
             _check_decision(front, name.group(1), paths, rel)

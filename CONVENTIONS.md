@@ -214,7 +214,7 @@ links: [req.x.y, part.a.b]
 ## Rejected options, and why each one died
 ```
 
-The rejected-options section is the part that matters on a decade horizon. Every `decisions/NNNN-*.md` file must open with closed, readable YAML front matter that is a mapping, with a string id equal to `adr-NNNN` of its filename and used by no other decision file, and a status of `proposed`, `accepted` or `superseded-by: adr-NNNN`; any failure is a `decision-front-matter` build error that names the file, and other filenames under `decisions/` are ignored.
+The rejected-options section is the part that matters on a decade horizon. Every Markdown file in `decisions/` except `README.md` must be named `NNNN-*.md` and open with closed, readable YAML front matter that is a mapping, with a string id equal to `adr-NNNN` of its filename and used by no other decision file, and a status of `proposed`, `accepted` or `superseded-by: adr-NNNN`; any failure is a `decision-front-matter` build error that names the file.
 
 Amending an accepted decision record. An `accepted` record is not rewritten. Two kinds of change are allowed. (1) A factual correction, or an update to a list of open items (such as ADR 0007 D11), is made in place and logged in an `## Amendments` section at the end of the record: date, what changed, and the memo or record that caused it. (2) A change to a rule in the Decision section is made by a new record, which names the decisions it amends and lists the amended record in its `links`; the amended record gets an Amendments line pointing to the new one and keeps its status, unless the new record replaces it entirely, in which case its status becomes `superseded-by`.
 
