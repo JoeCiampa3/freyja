@@ -2,7 +2,7 @@ body: forearm
 id: seg.forearm
 kind: segment
 purpose: The forearm, from the elbow to the wrist.
-schema: thread-record/1
+schema: thread-record/2
 sides:
 - left
 - right

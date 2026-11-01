@@ -14,7 +14,7 @@
     "elbow"
   ],
   "id": "jnt.elbow",
-  "inputs": "sha256:aab09af96a4c",
+  "inputs": "sha256:ca35037aa362",
   "interfaces": [],
   "kind": "joint",
   "parent_segments": [

@@ -210,10 +210,12 @@ class Build:
         self._finalize()
 
     def _validate_schemas(self):
-        v = st.validator("thread-record-1.schema.json")
+        v = st.validator("thread-record-2.schema.json")
         for id in sorted(self.store.records):
             msg = st.schema_message(v, self.store.records[id])
-            if msg is not None:
+            if self.store.records[id].get("schema") == "thread-record/1":
+                self._err("schema", f"{self.store.files[id]}: thread-record/1 no longer loads; migrate the record to thread-record/2", (id,))
+            elif msg is not None:
                 self._err("schema", f"{self.store.files[id]}: {msg}", (id,))
             else:
                 self.recs[id] = self.store.records[id]

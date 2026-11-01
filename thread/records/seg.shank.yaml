@@ -2,7 +2,7 @@ body: shank
 id: seg.shank
 kind: segment
 purpose: The lower leg, from the knee to the ankle.
-schema: thread-record/1
+schema: thread-record/2
 sides:
 - left
 - right

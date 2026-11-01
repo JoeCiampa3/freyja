@@ -7,7 +7,7 @@ notes: 'Not an impact or other contact transient: the loads come from rigid-body
   deliberate zero (pose-dependent, a placeholder in the sheet), so that side of the shoulder abduction-adduction range has no width. Sweeping one joint at a time is near-worst, not a
   bound, for a proximal joint whose distal pose matters.'
 purpose: Each limited joint swept through its range against gravity, one at a time, with the other joints at the reference pose and the pelvis held by the gantry.
-schema: thread-record/1
+schema: thread-record/2
 source:
   scenario: rom_sweep
 status: proposed

@@ -4,7 +4,7 @@ body: foot
 id: seg.foot
 kind: segment
 purpose: The foot, distal to the ankle.
-schema: thread-record/1
+schema: thread-record/2
 sides:
 - left
 - right

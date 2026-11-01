@@ -176,8 +176,8 @@ def test_the_sidecar_schema_rejects(case):
 
 
 def test_the_thread_record_schema_accepts_the_address_form_of_a_part_mass_and_still_the_typed_form():
-    rec = load("thread-record-1.schema.json")
-    base = {"schema": "thread-record/1", "id": "part.arm.upper_member", "kind": "part", "status": "proposed", "purpose": "Bridge test article.",
+    rec = load("thread-record-2.schema.json")
+    base = {"schema": "thread-record/2", "id": "part.arm.upper_member", "kind": "part", "status": "proposed", "purpose": "Bridge test article.",
             "housed_in": "seg.upper_arm", "category": "structure", "sides": ["left", "right"]}
     typed = {**base, "mass": {"kg": 1.2, "source": "datasheet", "reserved": False}}
     addr = {**base, "mass": {"address": "cad/sidecars/part.arm.upper_member.json#/mass_properties/mass_kg", "source": "CAD sidecar"}}

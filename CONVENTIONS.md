@@ -220,7 +220,7 @@ Amending an accepted decision record. An `accepted` record is not rewritten. Two
 
 **Notebook** (`notebook/YYYY-MM-DD-slug.md`) carries front matter `origin: me | source | claude`, plus `source:` for anything read. Notes of `claude` origin record decisions and open questions, not narrative.
 
-**Thread record** (`thread/records/<id>.yaml`, `thread-record/1`, schema `docs/schemas/thread-record-1.schema.json`). Every record has `schema`, `id`, `kind`, `status`, `purpose`, optionally `notes` and (when superseded) `superseded_by`. One short example per kind (bilateral records carry `sides: [left, right]`, checked against `pre_processor.BILATERAL`):
+**Thread record** (`thread/records/<id>.yaml`, `thread-record/2`, schema `docs/schemas/thread-record-2.schema.json`; `thread-record-1.schema.json` stays as history and a `/1` record no longer loads). Every record has `schema`, `id`, `kind`, `status`, `purpose`, optionally `notes` and (when superseded) `superseded_by`. One short example per kind (bilateral records carry `sides: [left, right]`, checked against `pre_processor.BILATERAL`):
 
 ```yaml
 # seg.thigh          kind: segment      body: thigh                                   # binds thigh_right, thigh_left; keys thigh_<side>_<column>
@@ -233,6 +233,8 @@ Amending an accepted decision record. An `accepted` record is not rewritten. Two
 # if.hip-m2-thigh    kind: interface    between: [part.hip.m2, seg.thigh]             # carries_cut_of: jnt.hip; mechanical, electrical, thermal: {status: open|defined, notes}
 # lc.walk-1p4        kind: load_case    source: {gait_spec: walk_treadmill, condition: "1.4 m/s"}   # or {scenario: stand_static}
 #                                       independent_source_required: false   # true only where the simulation's physics is itself the untrusted part (impacts and other contact transients)
+#                                       evidence: [{kind: decision, record: adr-0037, clause: D1(b)}, {kind: literature, file: data/falls/sources.md, row: S1}, {kind: test, path: bench/<record>.json}]   # optional; each entry may carry note
+#                                       energy-defined form (fall cases, adr-0037 D1(a)): source: {zone: hip, direction: lateral, hip first, energy_j: 540, energy_basis: E_max}; zone_in: seg.pelvis   # flag must be true, zone_in required; zone_in forbidden on the other two forms; contact_velocity_m_s and effective_mass_kg optional
 # hn.leg-power       kind: harness_run  path: [seg.pelvis, seg.thigh, seg.shank]; carries: motor power
 # work.thigh-cad     kind: work_item    of: seg.thigh; mode: assisted|manual; consumes: [snapshot#/thigh_right_mass, part.hip.m2#/housed_in]; output: <path>
 ```

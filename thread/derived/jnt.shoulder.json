@@ -20,7 +20,7 @@
     "shoulder_ier"
   ],
   "id": "jnt.shoulder",
-  "inputs": "sha256:b24febbc1e30",
+  "inputs": "sha256:9113e261d6e9",
   "interfaces": [],
   "kind": "joint",
   "parent_segments": [

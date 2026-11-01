@@ -1,0 +1,682 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "thread-record/2",
+  "title": "thread-record/2",
+  "description": "One authored record in thread/records/<id>.yaml (CONVENTIONS sections 2, 3 and 8; docs/briefs/ariadne/stage3a-brief.md, docs/briefs/ariadne/thread-sources-brief.md). thread-record/1 plus a load case's `evidence`, its energy-defined `source` form and `zone_in`. One schema, a branch per kind selected by `kind`. The schema checks the shape of one record. Whether a reference resolves, whether it names the right kind, bindings to the model, `sides` against pre_processor.BILATERAL and everything across records is checked by tools/thread, so reference fields accept any record id here. Records carry bindings, relations and intent only: masses, lengths, centres of mass, inertias and ROM are read from params/snapshot.csv and never restated. Every relation is stored once, on the record that owns it; inverse relations are derived.",
+  "type": "object",
+  "required": [
+    "schema",
+    "id",
+    "kind",
+    "status",
+    "purpose"
+  ],
+  "unevaluatedProperties": false,
+  "properties": {
+    "schema": {
+      "const": "thread-record/2"
+    },
+    "id": {
+      "$ref": "#/$defs/record_id",
+      "description": "Equals the filename stem. The prefix selects the kind."
+    },
+    "kind": {
+      "enum": [
+        "segment",
+        "joint",
+        "part",
+        "interface",
+        "load_case",
+        "harness_run",
+        "work_item"
+      ]
+    },
+    "status": {
+      "enum": [
+        "proposed",
+        "active",
+        "superseded"
+      ],
+      "description": "Proposed records are loaded, rendered and flagged. IDs are permanent: a retired record is superseded, never deleted."
+    },
+    "superseded_by": {
+      "$ref": "#/$defs/record_id",
+      "description": "Required when superseded, forbidden otherwise; must name a live record of the same kind (the library checks it)."
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1,
+      "description": "One or two sentences of intent that no relation captures."
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "superseded"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "superseded_by"
+        ]
+      },
+      "else": {
+        "not": {
+          "required": [
+            "superseded_by"
+          ]
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "segment"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "id": {
+            "pattern": "^seg[.][a-z0-9_-]+$"
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The model body, as named in sim/models/freyja.xml; for a bilateral segment the name without the side suffix (body `thigh` binds thigh_right and thigh_left). The snapshot keys come from the id: seg.<name> owns <name>_<column> (<name>_right_ and <name>_left_ when bilateral) by pre_processor's naming."
+          },
+          "also_bodies": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1},
+            "description": "Further model bodies the segment owns, named like `body` (a bilateral name without its side suffix): a part of the segment that the model makes a body of its own, such as the toe of the foot."
+          },
+          "sides": {
+            "$ref": "#/$defs/sides"
+          }
+        },
+        "required": [
+          "body"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "joint"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "id": {
+            "pattern": "^jnt[.][a-z0-9_-]+$"
+          },
+          "hinges": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "Hinge names from the model; for a bilateral joint without the side suffix. The root free joint is not a joint record."
+          },
+          "rom_keys": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "Snapshot ROM placeholder names this joint owns (may be empty, or name keys the sheet does not have yet)."
+          },
+          "sides": {
+            "$ref": "#/$defs/sides"
+          }
+        },
+        "required": [
+          "hinges",
+          "rom_keys"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "part"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "id": {
+            "pattern": "^part[.][a-z0-9_-]+[.][a-z0-9_-]+$"
+          },
+          "housed_in": {
+            "$ref": "#/$defs/record_id",
+            "description": "A segment."
+          },
+          "acts_across": {
+            "$ref": "#/$defs/record_id",
+            "description": "A joint."
+          },
+          "reacts_into": {
+            "$ref": "#/$defs/record_id",
+            "description": "A segment: where the reaction torque goes, which sets the load path."
+          },
+          "harness": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/$defs/record_id"
+            },
+            "description": "Harness runs."
+          },
+          "mass": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "kg",
+                  "source",
+                  "reserved"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "kg": {
+                    "type": "number",
+                    "minimum": 0,
+                    "description": "The mass of one unit. `sides` gives one unit per side."
+                  },
+                  "source": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "reserved": {
+                    "type": "boolean",
+                    "description": "True: a claim with no hardware yet."
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "address",
+                  "source"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "address": {
+                    "type": "string",
+                    "pattern": "^[^#\\s]+#/.+$",
+                    "description": "A thread address resolving at build to the mass of one unit in kg, normally a CAD sidecar's mass_kg (Stage 3b). The budget never holds a typed copy."
+                  },
+                  "source": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            ]
+          },
+          "category": {
+            "type": "string",
+            "minLength": 1
+          },
+          "catalog": {
+            "type": "string",
+            "minLength": 1,
+            "description": "A repo-relative path."
+          },
+          "sides": {
+            "$ref": "#/$defs/sides"
+          }
+        },
+        "required": [
+          "housed_in",
+          "mass",
+          "category"
+        ],
+        "dependentRequired": {
+          "acts_across": [
+            "reacts_into"
+          ]
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "interface"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "id": {
+            "pattern": "^if[.][a-z0-9_-]+$"
+          },
+          "between": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/$defs/record_id"
+            },
+            "description": "Exactly two ids, each a part or a segment."
+          },
+          "carries_cut_of": {
+            "$ref": "#/$defs/record_id",
+            "description": "A joint whose cut wrench passes through the interface."
+          },
+          "mechanical": {
+            "type": "object",
+            "required": [
+              "status"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "status": {
+                "enum": [
+                  "open",
+                  "defined"
+                ]
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          },
+          "electrical": {
+            "type": "object",
+            "required": [
+              "status"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "status": {
+                "enum": [
+                  "open",
+                  "defined"
+                ]
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          },
+          "thermal": {
+            "type": "object",
+            "required": [
+              "status"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "status": {
+                "enum": [
+                  "open",
+                  "defined"
+                ]
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "required": [
+          "between",
+          "mechanical",
+          "electrical",
+          "thermal"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "load_case"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "id": {
+            "pattern": "^lc[.][a-z0-9_-]+$"
+          },
+          "source": {
+            "oneOf": [
+              {
+                "type": "object",
+                "required": [
+                  "scenario"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "scenario": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "required": [
+                  "gait_spec",
+                  "condition"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "gait_spec": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "condition": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "description": "The energy-defined form of a fall case (adr-0037 D1(a)): the force is an output, never an input. The decision decides the energy and the record carries it, so work consumes a number.",
+                "required": [
+                  "zone",
+                  "direction",
+                  "energy_j",
+                  "energy_basis"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "zone": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9_-]+$",
+                    "description": "The adr-0037 D3 zone, as a slug."
+                  },
+                  "direction": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "energy_j": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "description": "E_design, J."
+                  },
+                  "energy_basis": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Free text, as in adr-0037 D3."
+                  },
+                  "contact_velocity_m_s": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "effective_mass_kg": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  }
+                }
+              }
+            ]
+          },
+          "independent_source_required": {
+            "type": "boolean",
+            "description": "True only where the simulation's physics is itself the untrusted part (impacts and other contact transients). Provisional envelope rows and per-joint trust stay on the envelope rows and in the load-basis decision records."
+          },
+          "zone_in": {
+            "$ref": "#/$defs/record_id",
+            "description": "The segment housing the zone (adr-0037 D3, \"Housed in\"). Required with the energy-defined source form, forbidden on the other two."
+          },
+          "evidence": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/$defs/evidence_entry"
+            },
+            "description": "Citations the build resolves and grades. Whether an entry resolves and is admissible is the library's job, read from the cited source and never typed here."
+          }
+        },
+        "required": [
+          "source",
+          "independent_source_required"
+        ],
+        "if": {
+          "properties": {
+            "source": {
+              "required": [
+                "energy_j"
+              ]
+            }
+          },
+          "required": [
+            "source"
+          ]
+        },
+        "then": {
+          "properties": {
+            "independent_source_required": {
+              "const": true
+            }
+          },
+          "required": [
+            "zone_in"
+          ]
+        },
+        "else": {
+          "not": {
+            "required": [
+              "zone_in"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "harness_run"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "id": {
+            "pattern": "^hn[.][a-z0-9_-]+$"
+          },
+          "path": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "$ref": "#/$defs/record_id"
+            },
+            "description": "Ordered segment ids."
+          },
+          "carries": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "work_item"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "id": {
+            "pattern": "^work[.][a-z0-9_-]+$"
+          },
+          "of": {
+            "$ref": "#/$defs/record_id",
+            "description": "The owner's id."
+          },
+          "mode": {
+            "enum": [
+              "assisted",
+              "manual"
+            ]
+          },
+          "consumes": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/$defs/address"
+            }
+          },
+          "output": {
+            "type": "string",
+            "minLength": 1,
+            "description": "A repo-relative path."
+          }
+        },
+        "required": [
+          "of",
+          "mode",
+          "consumes"
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "record_id": {
+      "type": "string",
+      "pattern": "^(seg|jnt|part|if|lc|hn|work)[.][a-z0-9_.-]+$"
+    },
+    "sides": {
+      "const": [
+        "left",
+        "right"
+      ],
+      "description": "A bilateral record is one record with sides [left, right]; pre_processor.BILATERAL is the authority and values are read from the right side."
+    },
+    "address": {
+      "type": "string",
+      "pattern": "^[^#\\s]+#(/[^\\s]*)?$",
+      "description": "<source>#<JSON pointer, RFC 6901>; an empty pointer means the whole source."
+    },
+    "evidence_entry": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "record",
+            "clause"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "decision"
+            },
+            "record": {
+              "type": "string",
+              "pattern": "^adr-[0-9]{4}$"
+            },
+            "clause": {
+              "type": "string",
+              "pattern": "^D[0-9]+(\\([a-z]\\))?$",
+              "description": "D<n>, optionally one lowercase letter in parentheses. The library checks the D<n> label against the record's body; the letter is not checked."
+            },
+            "note": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "file",
+            "row"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "literature"
+            },
+            "file": {
+              "type": "string",
+              "minLength": 1,
+              "description": "A repo-relative .md path."
+            },
+            "row": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The first cell of one row across the file's qualifying tables."
+            },
+            "note": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "path"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "test"
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "description": "A repo-relative JSON or YAML file."
+            },
+            "note": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

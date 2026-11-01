@@ -22,7 +22,7 @@ import thread_help  # noqa: E402,F401  (puts tools/ on the path)
 import thread_checks as tc  # noqa: E402
 from thread import build  # noqa: E402
 
-JNT_TOE = {"schema": "thread-record/1", "id": "jnt.toe", "kind": "joint", "status": "proposed", "hinges": ["toe"], "rom_keys": ["toe_extension", "toe_flexion"], "sides": ["left", "right"],
+JNT_TOE = {"schema": "thread-record/2", "id": "jnt.toe", "kind": "joint", "status": "proposed", "hinges": ["toe"], "rom_keys": ["toe_extension", "toe_flexion"], "sides": ["left", "right"],
            "purpose": "The metatarsophalangeal joint, between the foot and the toe, a passive hinge with a spring, a damper and stops."}
 
 

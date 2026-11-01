@@ -5,7 +5,7 @@ notes: 'Not an impact or other contact transient: the loads come from rigid-body
   (no contact solver), so the simulation''s physics is not the untrusted part. The envelope rows are provisional (method A with the measured centre
   of pressure); that trust stays on the envelope rows and in the load-basis decision records.'
 purpose: Level walking at 1.6 m/s, the faster condition above the design speed.
-schema: thread-record/1
+schema: thread-record/2
 source:
   condition: 1.6 m/s level treadmill walking
   gait_spec: walk_treadmill

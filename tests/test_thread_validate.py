@@ -9,7 +9,7 @@ fixtures were made.
 from pathlib import Path
 
 import pytest
-from thread_help import FIXTURES, codes, edit_record, make_root
+from thread_help import FIXTURES, codes, edit_record, make_root, write_record
 
 from thread import build
 
@@ -88,6 +88,14 @@ def test_an_unresolved_address_in_the_baseline_is_unknown_and_warns(tmp_path):
     assert b.errors == []
     assert b.work["work.base"]["status"] == "unknown"
     assert ("address-unresolved", ("work.base",)) in got(b.warnings)
+
+
+def test_a_record_in_the_old_schema_is_a_schema_error_that_says_to_migrate(tmp_path):
+    root = make_root(tmp_path / "r")
+    write_record(root, schema="thread-record/1", id="part.bad.old", kind="part", housed_in="seg.pelvis", mass={"kg": 1, "source": "s", "reserved": False}, category="c")
+    b = build.build_root(root)
+    assert got(b.errors) == [("schema", ("part.bad.old",))]
+    assert "migrate" in b.errors[0].message and "thread-record/2" in b.errors[0].message
 
 
 def test_a_missing_snapshot_is_reported_not_raised(tmp_path):

@@ -20,7 +20,7 @@
     "hip_ier"
   ],
   "id": "jnt.hip",
-  "inputs": "sha256:6686e5f3d607",
+  "inputs": "sha256:42dfc45d4e59",
   "interfaces": [],
   "kind": "joint",
   "parent_segments": [

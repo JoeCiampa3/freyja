@@ -1,5 +1,5 @@
 """
-Thread T1: the three schemas (docs/schemas/thread-record-1, thread-stamp-1, thread-graph-1). Each accepts one valid example per kind and
+Thread T1: the three schemas (docs/schemas/thread-record-2, thread-stamp-1, thread-graph-1). Each accepts one valid example per kind and
 rejects one example of each schema-level error. Reference resolution, kinds of referenced records and everything across records is the
 library's job (tests/test_thread_validate.py), so the schema accepts any record id in a reference field.
 
@@ -19,7 +19,7 @@ def load(name):
     return json.loads((SCHEMAS / name).read_text(encoding="utf-8"))
 
 
-RECORD = load("thread-record-1.schema.json")
+RECORD = load("thread-record-2.schema.json")
 STAMP = load("thread-stamp-1.schema.json")
 GRAPH = load("thread-graph-1.schema.json")
 
@@ -29,7 +29,7 @@ def errors(schema, doc):
 
 
 def base(kind, id, **f):
-    return {"schema": "thread-record/1", "id": id, "kind": kind, "status": "proposed", "purpose": "Why this exists.", **f}
+    return {"schema": "thread-record/2", "id": id, "kind": kind, "status": "proposed", "purpose": "Why this exists.", **f}
 
 
 EXAMPLES = {
@@ -83,7 +83,7 @@ def mutate(kind, fn):
 
 
 SCHEMA_ERRORS = {
-    "wrong schema string": ("segment", lambda d: d.update(schema="thread-record/2")),
+    "wrong schema string": ("segment", lambda d: d.update(schema="thread-record/3")),
     "unknown kind": ("segment", lambda d: d.update(kind="widget")),
     "id prefix does not match kind": ("segment", lambda d: d.update(id="jnt.thigh")),
     "id with an upper-case letter": ("segment", lambda d: d.update(id="seg.Thigh")),
@@ -130,6 +130,89 @@ def test_each_schema_level_error_is_rejected(name):
 
 def test_a_field_of_another_kind_is_rejected():
     assert errors(RECORD, mutate("segment", lambda d: d.update(housed_in="seg.thigh")))
+
+
+FALL = base("load_case", "lc.fall-hip-lateral", source={"zone": "hip", "direction": "lateral, hip first", "energy_j": 540, "energy_basis": "E_max"},
+            zone_in="seg.pelvis", independent_source_required=True, evidence=[{"kind": "decision", "record": "adr-0037", "clause": "D1(b)"}])
+ADR, ROW, TEST = {"kind": "decision", "record": "adr-0037", "clause": "D3"}, {"kind": "literature", "file": "data/falls/sources.md", "row": "S1"}, {"kind": "test", "path": "bench/drop.json"}
+
+
+def fall(fn):
+    doc = copy.deepcopy(FALL)
+    fn(doc)
+    return doc
+
+
+@pytest.mark.parametrize("source, flag", [({"scenario": "stand_static"}, False), ({"scenario": "fall_impact"}, True),
+                                          ({"gait_spec": "walk_treadmill", "condition": "1.4 m/s"}, False)])
+def test_the_scenario_and_gait_forms_accept_either_flag_and_no_zone(source, flag):
+    assert errors(RECORD, mutate("load_case", lambda d: d.update(source=source, independent_source_required=flag))) == []
+
+
+def test_the_energy_form_is_accepted_with_and_without_its_optional_numbers():
+    assert errors(RECORD, FALL) == []
+    assert errors(RECORD, fall(lambda d: d["source"].update(contact_velocity_m_s=3.0, effective_mass_kg=30.0))) == []
+
+
+@pytest.mark.parametrize("entry", [ADR, ROW, TEST, {**ADR, "note": "why"}, {**ROW, "note": "cross-check"}, {**TEST, "note": "n"},
+                                   {**ADR, "clause": "D3"}, {**ADR, "clause": "D10"}, {**ADR, "clause": "D1(b)"}])
+def test_each_evidence_kind_is_accepted(entry):
+    assert errors(RECORD, mutate("load_case", lambda d: d.update(evidence=[entry]))) == []
+
+
+def test_an_empty_evidence_list_is_valid_because_it_is_how_a_what_if_removes_evidence():
+    assert errors(RECORD, mutate("load_case", lambda d: d.update(evidence=[]))) == []
+
+
+EVIDENCE_ERRORS = {
+    "unknown evidence kind": lambda d: d.update(evidence=[{"kind": "hearsay", "path": "x.json"}]),
+    "decision without clause": lambda d: d.update(evidence=[{"kind": "decision", "record": "adr-0037"}]),
+    "clause without a D": lambda d: d.update(evidence=[{**ADR, "clause": "1(b)"}]),
+    "clause with two letters": lambda d: d.update(evidence=[{**ADR, "clause": "D1(bc)"}]),
+    "clause with an upper-case letter": lambda d: d.update(evidence=[{**ADR, "clause": "D1(B)"}]),
+    "clause with a trailing word": lambda d: d.update(evidence=[{**ADR, "clause": "D1 extra"}]),
+    "decision record not an adr id": lambda d: d.update(evidence=[{**ADR, "record": "0037"}]),
+    "literature without row": lambda d: d.update(evidence=[{"kind": "literature", "file": "x.md"}]),
+    "test without path": lambda d: d.update(evidence=[{"kind": "test"}]),
+    "a field of another evidence kind": lambda d: d.update(evidence=[{**ADR, "row": "S1"}]),
+    "a repeated entry": lambda d: d.update(evidence=[ADR, ADR]),
+    "the energy form with the flag false": lambda d: d.update(independent_source_required=False),
+    "the energy form without zone_in": lambda d: d.pop("zone_in"),
+    "energy_j of 0": lambda d: d["source"].update(energy_j=0),
+    "energy_j negative": lambda d: d["source"].update(energy_j=-1),
+    "energy form without direction": lambda d: d["source"].pop("direction"),
+    "energy form without energy_basis": lambda d: d["source"].pop("energy_basis"),
+    "energy form with a zone that is not a slug": lambda d: d["source"].update(zone="hand and arm"),
+    "energy form with an unknown key": lambda d: d["source"].update(force_n=1000),
+}
+
+
+@pytest.mark.parametrize("name", sorted(EVIDENCE_ERRORS))
+def test_each_evidence_and_energy_error_is_rejected(name):
+    assert errors(RECORD, fall(EVIDENCE_ERRORS[name])), name
+
+
+def test_zone_in_on_the_other_source_forms_is_rejected():
+    assert errors(RECORD, mutate("load_case", lambda d: d.update(source={"scenario": "stand_static"}, zone_in="seg.pelvis")))
+    assert errors(RECORD, mutate("load_case", lambda d: d.update(zone_in="seg.pelvis")))
+
+
+def test_evidence_and_zone_in_on_a_record_that_is_not_a_load_case_are_rejected():
+    assert errors(RECORD, mutate("part", lambda d: d.update(evidence=[ADR])))
+    assert errors(RECORD, mutate("work_item", lambda d: d.update(zone_in="seg.pelvis")))
+
+
+def test_a_record_in_the_old_schema_is_rejected():
+    assert errors(RECORD, mutate("segment", lambda d: d.update(schema="thread-record/1")))
+
+
+def test_the_old_schema_file_stays_as_history():
+    assert load("thread-record-1.schema.json")["$id"] == "thread-record/1"
+
+
+def test_every_real_record_is_on_the_new_schema():
+    records = sorted((SCHEMAS.parents[1] / "thread" / "records").glob("*.yaml"))
+    assert records and [p.name for p in records if "\nschema: thread-record/2\n" not in "\n" + p.read_text(encoding="utf-8")] == []
 
 
 STAMP_OK = {

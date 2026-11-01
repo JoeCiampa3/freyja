@@ -17,7 +17,7 @@
     "ankle_ie"
   ],
   "id": "jnt.ankle",
-  "inputs": "sha256:e925875a81b7",
+  "inputs": "sha256:22ef5463b6aa",
   "interfaces": [],
   "kind": "joint",
   "parent_segments": [

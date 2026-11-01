@@ -12,7 +12,7 @@ rom_keys:
 - shoulder_adduction
 - shoulder_external_rotation
 - shoulder_internal_rotation
-schema: thread-record/1
+schema: thread-record/2
 sides:
 - left
 - right

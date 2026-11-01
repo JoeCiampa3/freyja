@@ -1,4 +1,4 @@
-schema: thread-record/1
+schema: thread-record/2
 id: "part.bad.old"
 kind: "part"
 status: "superseded"

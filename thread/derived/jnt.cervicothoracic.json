@@ -17,7 +17,7 @@
     "cj_ax"
   ],
   "id": "jnt.cervicothoracic",
-  "inputs": "sha256:b16939aae5c4",
+  "inputs": "sha256:485bd11b4e4b",
   "interfaces": [],
   "kind": "joint",
   "parent_segments": [

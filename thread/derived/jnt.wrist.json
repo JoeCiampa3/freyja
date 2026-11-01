@@ -14,7 +14,7 @@
     "wrist"
   ],
   "id": "jnt.wrist",
-  "inputs": "sha256:5b0bb7fb7c2c",
+  "inputs": "sha256:0bef166e69b4",
   "interfaces": [],
   "kind": "joint",
   "parent_segments": [

@@ -32,7 +32,7 @@
     "part.arm.upper_member"
   ],
   "id": "seg.upper_arm",
-  "inputs": "sha256:261265799d3a",
+  "inputs": "sha256:f1fe6934d2b6",
   "interfaces": [],
   "joints_as_child": [
     "jnt.shoulder"

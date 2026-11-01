@@ -64,7 +64,7 @@ def _structural(out: Path):
 
 
 def _record(kind, id, purpose, **f) -> dict:
-    return {"schema": "thread-record/1", "id": id, "kind": kind, "status": f.pop("status", "proposed"), "purpose": purpose, **f}
+    return {"schema": "thread-record/2", "id": id, "kind": kind, "status": f.pop("status", "proposed"), "purpose": purpose, **f}
 
 
 def _part(id, purpose, housed_in, kg, **f) -> dict:

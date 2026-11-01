@@ -29,7 +29,7 @@ def make_root(dest, overlay=None):
 
 def write_record(root, **fields):
     """Write thread/records/<id>.yaml with the common fields defaulted."""
-    fields.setdefault("schema", "thread-record/1")
+    fields.setdefault("schema", "thread-record/2")
     fields.setdefault("status", "proposed")
     fields.setdefault("purpose", "A test record.")
     p = Path(root) / "thread" / "records" / f"{fields['id']}.yaml"

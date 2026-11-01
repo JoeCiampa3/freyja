@@ -5,7 +5,7 @@ notes: 'Not an impact or other contact transient: the loads come from rigid-body
   solver), so the simulation''s physics is not the untrusted part. The CoM position over the ankle is a design choice, not a measurement; that
   stays on the envelope row.'
 purpose: 'Quiet standing at the design pose: the joint torques that hold it, from statics alone.'
-schema: thread-record/1
+schema: thread-record/2
 source:
   scenario: stand_static
 status: proposed

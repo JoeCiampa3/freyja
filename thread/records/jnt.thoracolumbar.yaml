@@ -6,5 +6,5 @@ id: jnt.thoracolumbar
 kind: joint
 purpose: The thoracolumbar junction between the lumbar spine and the thorax, modelled as three hinges.
 rom_keys: []
-schema: thread-record/1
+schema: thread-record/2
 status: active

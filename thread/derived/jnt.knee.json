@@ -14,7 +14,7 @@
     "knee"
   ],
   "id": "jnt.knee",
-  "inputs": "sha256:17066e61e6f6",
+  "inputs": "sha256:bb790ac606f0",
   "interfaces": [],
   "kind": "joint",
   "parent_segments": [

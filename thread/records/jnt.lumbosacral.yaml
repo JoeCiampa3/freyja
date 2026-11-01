@@ -10,5 +10,5 @@ rom_keys:
 - lumbosacral_extension
 - lumbosacral_lateral_bending
 - lumbosacral_axial_rotation
-schema: thread-record/1
+schema: thread-record/2
 status: active

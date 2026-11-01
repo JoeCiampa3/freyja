@@ -17,7 +17,7 @@
     "tj_ax"
   ],
   "id": "jnt.thoracolumbar",
-  "inputs": "sha256:bdd10e5b0bf6",
+  "inputs": "sha256:c82bda97a40a",
   "interfaces": [],
   "kind": "joint",
   "parent_segments": [

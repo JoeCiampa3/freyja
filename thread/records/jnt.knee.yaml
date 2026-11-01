@@ -6,7 +6,7 @@ purpose: The knee, a hinge between the thigh and the shank.
 rom_keys:
 - knee_flexion
 - knee_extension
-schema: thread-record/1
+schema: thread-record/2
 sides:
 - left
 - right

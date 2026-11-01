@@ -9,7 +9,7 @@ rom_keys:
 - ankle_plantarflexion
 - ankle_inversion
 - ankle_eversion
-schema: thread-record/1
+schema: thread-record/2
 sides:
 - left
 - right

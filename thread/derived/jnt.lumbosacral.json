@@ -17,7 +17,7 @@
     "lsj_ax"
   ],
   "id": "jnt.lumbosacral",
-  "inputs": "sha256:27d7ade74e44",
+  "inputs": "sha256:3dba48dac85b",
   "interfaces": [],
   "kind": "joint",
   "parent_segments": [

@@ -6,7 +6,7 @@ purpose: The metatarsophalangeal joint, between the foot and the toe, a passive 
 rom_keys:
 - toe_extension
 - toe_flexion
-schema: thread-record/1
+schema: thread-record/2
 sides:
 - left
 - right
