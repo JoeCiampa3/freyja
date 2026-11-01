@@ -12,7 +12,7 @@
     stamp <work query> [--note TEXT] [--pin] [--by NAME]   write a stamp for the work item's current `consumes`; refuses when the work item
                                             is unknown, it is active and consumes an unsourced load case, an address does not resolve, or
                                             the thread has errors
-    fixture --out DIR [--seed N] [--scenario general|reallocation]   write a synthetic repo-shaped root (deterministic, never into a non-empty directory)
+    fixture --out DIR [--seed N] [--scenario general|reallocation|sources]   write a synthetic repo-shaped root (deterministic, never into a non-empty directory)
 
 <query> is an exact id, the id with a kind prefix (seg. jnt. part. if. lc. hn. work.) added, or a unique case-insensitive substring of an id.
 """
@@ -54,7 +54,7 @@ def _parser() -> argparse.ArgumentParser:
     fx = sub.add_parser("fixture", parents=[common], help="generate a synthetic thread")
     fx.add_argument("--out", required=True)
     fx.add_argument("--seed", type=int, default=0)
-    fx.add_argument("--scenario", choices=("general", "reallocation"), default="general")
+    fx.add_argument("--scenario", choices=("general", "reallocation", "sources"), default="general")
     im = sub.add_parser("impact", parents=[data], help="impact of an address, or the in-memory what-if")
     im.add_argument("address", nargs="?")
     im.add_argument("--edit", action="append", default=[], metavar="ADDRESS=VALUE")
@@ -238,6 +238,9 @@ def cmd_fixture(args, default_root, say) -> int:
         if args.scenario == "reallocation":
             info = fixture.reallocation(args.out)
             say(f"wrote the reallocation fixture to {args.out} (M1 {info['m1_kg']} kg and M2 {info['m2_kg']} kg per unit)")
+        elif args.scenario == "sources":
+            info = fixture.sources(args.out)
+            say(f"wrote the sources fixture to {args.out} ({len(info['sourcing'])} load cases, {len(info['stamps'])} work items)")
         else:
             intent = fixture.generate(args.out, args.seed)
             say(f"wrote the fixture to {args.out} (seed {args.seed}; {len(intent)} work items: {', '.join(sorted(set(intent.values())))})")

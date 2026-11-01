@@ -7,6 +7,8 @@ interfaces, harness runs, load cases, work items, stamps and decision records. D
 `reallocation(out)` writes the fixture of the Stage 3a acceptance test (T4): hip actuators M1 and M2 and a harness run, with masses chosen
 so that moving M2 from the thigh into the pelvis overfills the pelvis budget.
 
+`sources(out)` writes the fixture of the thread sources brief (T4): load cases graded by evidence and the work items that consume them.
+
 Fixtures are generated into temporary directories and never committed. The generator is deliberately independent of the library's
 judgement: the intended status of each work item is decided here, by how its stamp is made (current values, a tampered value, a pinned
 baseline, an address that no longer resolves), and only the stamps' hashes use the library's `addr`.
@@ -72,10 +74,10 @@ def _part(id, purpose, housed_in, kg, **f) -> dict:
     return _record("part", id, purpose, housed_in=housed_in, mass={"kg": kg, "source": "fixture", "reserved": reserved}, category=f.pop("category", "fixture"), **f)
 
 
-def _decision(out: Path, name: str, id: str, status: str, links: list):
+def _decision(out: Path, name: str, id: str, status: str, links: list, body: str = "## Context\nA fixture decision.\n"):
     p = out / "decisions" / name
     p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(f"---\nid: {id}\nstatus: {status}\ndate: 2026-01-01\nlinks: [{', '.join(links)}]\n---\n## Context\nA fixture decision.\n", encoding="utf-8", newline="\n")
+    p.write_text(f"---\nid: {id}\nstatus: {status}\ndate: 2026-01-01\nlinks: [{', '.join(links)}]\n---\n{body}", encoding="utf-8", newline="\n")
 
 
 def _stamp(out: Path, work: str, name: str, rows: list, pinned=False, note=""):
@@ -212,3 +214,82 @@ def reallocation(out) -> dict:
         _yaml(rec / f"{r['id']}.yaml", r)
     _decision(out, "0001-hip-drive.md", "adr-0001", "accepted", ["part.hip.m1", "part.hip.m2"])
     return {"m1_kg": m1, "m2_kg": m2}
+
+
+SOURCES_MD = """# Synthetic sources
+
+Not a copy of data/falls/sources.md. The X1 in the last table is not a duplicate, because that table does not qualify.
+
+## Forward
+
+| # | Region | Status |
+|---|---|---|
+| X1 | Hip | Verified |
+| X2 | Hand | Unverified (abstract) |
+
+## Sideways
+
+| # | Region | Status |
+|---|---|---|
+| X3 | Head | Verified (figure only) |
+
+## Gaps
+
+| Region | Forward |
+|---|---|
+| X1 | No source |
+"""
+
+
+def sources(out) -> dict:
+    """The fixture of the thread sources brief (T4): decisions, a synthetic literature file, a test file, one load case per row of the brief's
+    table and the work items that consume them. No stamps (the tests stamp). Writes `fixture-intent.json`, typed from the brief and independent
+    of the library: each case's sourcing, each work item's stamp outcome and the cases each refusal must name. Returns that intent."""
+    out = _prepare(out)
+    _structural(out)
+    rec = out / st.RECORDS_DIR
+    for name, id, status, labels in (("0901-accepted.md", "adr-0901", "accepted", ("D1", "D3")), ("0902-proposed.md", "adr-0902", "proposed", ("D1",)),
+                                     ("0903-superseded.md", "adr-0903", '"superseded-by: adr-0901"', ("D1",)), ("0904-post.md", "adr-0904", "accepted", ("D1",))):
+        _decision(out, name, id, status, [], "## Decision\n\n" + "".join(f"**{d} A clause.** Fixture text.\n\n" for d in labels))
+    p = out / "data" / "falls" / "sources.md"
+    p.parent.mkdir(parents=True)
+    p.write_text(SOURCES_MD, encoding="utf-8", newline="\n")
+    _json(out / "bench" / "drop-0001.json", {"drop_height_m": 0.5})
+
+    def adr(n, clause="D1"):
+        return {"kind": "decision", "record": f"adr-{n}", "clause": clause}
+
+    def row(id):
+        return {"kind": "literature", "file": "data/falls/sources.md", "row": id}
+
+    table = (("lc.src-none", True, [], "unsourced"), ("lc.src-adr", True, [adr("0901")], "sourced"), ("lc.src-adr-proposed", True, [adr("0902")], "unsourced"),
+             ("lc.src-adr-superseded", True, [adr("0903")], "unsourced"), ("lc.src-row", True, [row("X1")], "sourced"), ("lc.src-row-qualified", True, [row("X3")], "sourced"),
+             ("lc.src-row-unverified", True, [row("X2")], "unsourced"), ("lc.src-test", True, [{"kind": "test", "path": "bench/drop-0001.json"}], "unsourced"),
+             ("lc.src-mixed", True, [row("X2"), adr("0901", "D3")], "sourced"), ("lc.src-post", True, [adr("0904")], "sourced"),
+             ("lc.src-plain", False, [], "not_required"), ("lc.src-plain-cited", False, [row("X2")], "not_required"))
+    records, stamps, names = [], {}, {}
+
+    def work(id, status, consumes, refuses=()):
+        records.append(_record("work_item", id, "Fixture work on a load case.", status=status, of="seg.pelvis", mode="assisted", consumes=consumes))
+        stamps[id] = "refused" if refuses else "written"
+        if refuses:
+            names[id] = sorted(refuses)
+
+    for id, flag, ev, sourcing in table:
+        f = {"evidence": ev} if ev else {}
+        records.append(_record("load_case", id, "A fixture load case.", source={"scenario": "fall_impact"}, independent_source_required=flag, **f))
+        if flag:
+            work(f"work.a-{id.split('.', 1)[1]}", "active", [f"{id}#/source"], [id] if sourcing == "unsourced" else ())
+    records.append(_record("load_case", "lc.fall-sample", "A fixture fall case.", source={"zone": "hip", "direction": "lateral, hip first", "energy_j": 540, "energy_basis": "E_max"},
+                           zone_in="seg.pelvis", independent_source_required=True, evidence=[adr("0901", "D3")]))
+    work("work.a-fall-sample", "active", ["lc.fall-sample#/source/energy_j"])
+    work("work.p-none", "proposed", ["lc.src-none#/source"])
+    work("work.a-derived-none", "active", ["thread/derived/lc.src-none.json#/sourcing"], ["lc.src-none"])
+    work("work.a-two", "active", ["lc.src-adr#/source", "lc.src-none#/source"], ["lc.src-none"])
+    work("work.a-snapshot", "active", ["snapshot#/pelvis_mass"])
+    work("work.a-plain", "active", ["lc.src-plain#/source"])
+    for r in records:
+        _yaml(rec / f"{r['id']}.yaml", r)
+    intent = {"sourcing": {**{id: s for id, _, _, s in table}, "lc.fall-sample": "sourced"}, "stamps": stamps, "refusal_names": names}
+    _json(out / "fixture-intent.json", intent)
+    return intent
