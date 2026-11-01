@@ -12,6 +12,7 @@ import csv
 import hashlib
 import io
 import json
+import re
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -29,6 +30,12 @@ MODEL_PATH = "sim/models/freyja.xml"
 SCHEMA_DIR = Path(__file__).resolve().parents[2] / "docs" / "schemas"  # the schemas ship with the library, not with a fixture root
 
 _YAML_LOADER = getattr(yaml, "CSafeLoader", yaml.SafeLoader)  # the C loader is several times faster; same results
+
+DECISION_FILE = re.compile(r"([0-9]{4})-.*\.md")  # any other name under decisions/ (README.md) is not a decision
+DECISION_STATUS = re.compile(r"proposed|accepted|superseded-by: adr-[0-9]{4}")
+FRONT_MATTER_OPEN = re.compile(r"---[ \t]*\n")
+FRONT_MATTER = re.compile(r"---[ \t]*\n(.*?)^---[ \t]*$(.*)", re.DOTALL | re.MULTILINE)  # whole lines only: a table's |---| is not a delimiter
+UNQUOTED_SUPERSEDED = re.compile(r"^status:[ \t]*superseded-by:", re.MULTILINE)
 
 
 @dataclass(frozen=True)
@@ -210,22 +217,57 @@ def _load_decisions(s: Store):
     base = s.root / DECISIONS_DIR
     if not base.is_dir():
         return
+    paths = {}  # decision id -> the file that holds it, kept even when that file then fails on its status
     for p in sorted(base.glob("*.md")):
-        text = p.read_text(encoding="utf-8")
-        if not text.startswith("---"):
+        name = DECISION_FILE.fullmatch(p.name)
+        if name is None:
             continue
-        parts = text.split("---", 2)
-        if len(parts) < 3:
-            continue
+        rel = p.relative_to(s.root).as_posix()
         try:
-            front = yaml.load(parts[1], Loader=_YAML_LOADER)
-        except yaml.YAMLError:
+            front, body = _read_decision(p)
+            _check_decision(front, name.group(1), paths, rel)
+        except ValueError as e:
+            s.issues.append(error("decision-front-matter", f"{rel}: {e}", (p.stem,)))
             continue
-        if isinstance(front, dict) and isinstance(front.get("id"), str):
-            links = front.get("links") or []
-            s.decisions.append({"id": front["id"], "status": str(front.get("status", "")), "links": [str(x) for x in links] if isinstance(links, list) else [],
-                                "path": p.relative_to(s.root).as_posix()})
-            s.decision_bodies[front["id"]] = parts[2]
+        links = front.get("links") or []
+        s.decisions.append({"id": front["id"], "status": front["status"], "links": [str(x) for x in links] if isinstance(links, list) else [], "path": rel})
+        s.decision_bodies[front["id"]] = body
+
+
+def _read_decision(p: Path) -> tuple:
+    """(front matter mapping, body) of a decision file; ValueError with the reason when the file has none that can be read."""
+    try:
+        text = p.read_text(encoding="utf-8")
+    except UnicodeDecodeError as e:
+        raise ValueError(f"not readable UTF-8: {e}") from None
+    if FRONT_MATTER_OPEN.match(text) is None:
+        raise ValueError("no front matter: the first line is not ---")
+    m = FRONT_MATTER.match(text)
+    if m is None:
+        raise ValueError("unclosed front matter: no closing --- line")
+    try:
+        front = yaml.load(m.group(1), Loader=_YAML_LOADER)
+    except (yaml.YAMLError, ValueError) as e:  # an impossible date raises ValueError from the loader, not a YAMLError
+        hint = '; quote the status: status: "superseded-by: adr-NNNN"' if UNQUOTED_SUPERSEDED.search(m.group(1)) else ""
+        raise ValueError(f"front matter is not readable YAML: {str(e).splitlines()[0]}{hint}") from None
+    if not isinstance(front, dict):
+        raise ValueError("front matter is not a mapping")
+    return front, m.group(2)
+
+
+def _check_decision(front: dict, number: str, paths: dict, rel: str):
+    """The rules of CONVENTIONS section 8 on one front matter; ValueError with the first reason."""
+    id = front.get("id")
+    if not isinstance(id, str):
+        raise ValueError("front matter has no string id")
+    if id != f"adr-{number}":
+        raise ValueError(f"the id {id!r} differs from adr-{number}, which the filename gives")
+    if id in paths:
+        raise ValueError(f"the id {id!r} is already used by {paths[id]}")
+    paths[id] = rel
+    status = front.get("status")
+    if not isinstance(status, str) or DECISION_STATUS.fullmatch(status) is None:
+        raise ValueError(f"the status {status!r} is not proposed, accepted or superseded-by: adr-NNNN")
 
 
 def apply_edit(s: Store, address: str, value) -> None:
