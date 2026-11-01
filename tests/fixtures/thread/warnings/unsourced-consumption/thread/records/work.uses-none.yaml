@@ -1,0 +1,9 @@
+schema: thread-record/2
+id: work.uses-none
+kind: work_item
+status: proposed
+purpose: Work on an unsourced case.
+of: seg.pelvis
+mode: assisted
+consumes:
+  - lc.none#/source

@@ -34,6 +34,14 @@ ERRORS = {
     "reaction-path": [("reaction-path", ("part.bad.react",))],
     "stamp-unknown-work": [("stamp-unknown-work", ("work.ghost",))],
     "stamp-schema": [("stamp-schema", ("work.base",))],
+    "evidence-unresolved-decision": [("evidence-unresolved", ("lc.bad-adr",))],
+    "evidence-unresolved-file": [("evidence-unresolved", ("lc.bad-file",))],
+    "evidence-unresolved-row": [("evidence-unresolved", ("lc.bad-row",))],
+    "evidence-unresolved-test": [("evidence-unresolved", ("lc.bad-test",))],
+    "evidence-ambiguous": [("evidence-ambiguous", ("lc.bad-twice",))],
+    "evidence-clause": [("evidence-clause", ("lc.bad-clause",))],
+    "zone-in-joint": [("ref-kind", ("lc.bad-zone",))],
+    "zone-in-unresolved": [("ref-unresolved", ("lc.bad-ghost",))],
 }
 WARNINGS = {
     "unbound-hinge": [("unbound-hinge", ("lsj_lat",))],
@@ -42,6 +50,7 @@ WARNINGS = {
     "consumes-changed": [("consumes-changed", ("work.base",))],
     "budget-over": [("budget-over", ("seg.pelvis",))],
     "active-refs-proposed": [("active-refs-inactive", ("work.active", "part.base.p1"))],
+    "unsourced-consumption": [("unsourced-consumption", ("work.uses-none", "lc.none"))],
 }
 
 

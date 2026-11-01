@@ -1,0 +1,10 @@
+schema: thread-record/2
+id: lc.bad-twice
+kind: load_case
+status: proposed
+purpose: A load case with one bad citation.
+source:
+  scenario: stand_static
+independent_source_required: true
+evidence:
+  - {kind: literature, file: data/falls/sources.md, row: X1}

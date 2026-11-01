@@ -1,0 +1,12 @@
+schema: thread-record/2
+id: lc.bad-ghost
+kind: load_case
+status: proposed
+purpose: A fall case housed nowhere.
+source:
+  zone: hip
+  direction: lateral
+  energy_j: 540
+  energy_basis: E_max
+zone_in: seg.ghost
+independent_source_required: true

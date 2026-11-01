@@ -16,8 +16,10 @@ No model or snapshot binding.
 
 Authored:
 
+- evidence: `[]`
 - independent_source_required: `false`
 - source: `{"scenario":"rom_sweep"}`
+- sourcing: `"not_required"`
 
 Derived:
 

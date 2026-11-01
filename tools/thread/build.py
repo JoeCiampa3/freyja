@@ -11,6 +11,7 @@ Names (`EXPECTED_SEGMENTS`, `BILATERAL` and the column lists) come from pre_proc
 from __future__ import annotations
 
 import json
+import re
 import sys
 from collections import defaultdict
 from datetime import datetime
@@ -18,7 +19,7 @@ from pathlib import Path
 
 import yaml
 
-from . import addr, edges, refs, render
+from . import addr, edges, evidence, refs, render
 from . import store as st
 from .store import Issue, error, warning
 
@@ -32,6 +33,7 @@ REFS = {
              ("harness", True, ("harness_run",))),
     "interface": (("between", True, ("part", "segment")), ("carries_cut_of", False, ("joint",))),
     "harness_run": (("path", True, ("segment",)),),
+    "load_case": (("zone_in", False, ("segment",)),),
     "work_item": (("of", False, edges.KINDS),),
 }
 
@@ -107,6 +109,10 @@ class Build:
         self.sources: dict = {}  # output path -> set of addresses its content was built from
         self.input_hashes: dict = {}  # output path -> 12 hex
         self.graph_core = None
+        self.sourcing: dict = {}  # load case id -> {sourcing, evidence: graded entries}
+        self._evidence_src: dict = {}  # load case id -> addresses its grading read
+        self._row_cells: dict = {}  # the address standing for a cited literature row -> its cells
+        self._literature: dict = {}  # file -> its qualifying rows, or None when it cannot be read
         self._file_cache: dict = {}
         self._snapshot_doc = None
         self._stamp_docs = {st_path: doc for work, lst in store.stamps.items() for name, doc in lst
@@ -153,8 +159,12 @@ class Build:
             return False, None
         return addr.pointer_get(addr.strip_banner(doc), pointer)
 
+    @staticmethod
+    def _repo_relative(rel: str) -> bool:
+        return not (rel.startswith("/") or "\\" in rel or ":" in rel or ".." in rel.split("/"))
+
     def _file_doc(self, rel: str):
-        if rel.startswith("/") or "\\" in rel or ":" in rel or ".." in rel.split("/"):
+        if not self._repo_relative(rel):
             return None
         if rel.startswith("thread/derived/") and rel.endswith(".json"):
             return self.core.get(rel[len("thread/derived/"):-len(".json")])
@@ -180,8 +190,10 @@ class Build:
         return addr.hash_value(value) if ok else None
 
     def _source_hash(self, a: str) -> str:
-        """The hash of a source for the `inputs` banner: addresses, plus the model, decision files and stamps, which are not JSON addresses."""
+        """The hash of a source for the `inputs` banner: addresses, plus the model, decision files, stamps and cited literature rows, which are not JSON addresses."""
         source, _ = addr.parse(a)
+        if a in self._row_cells:
+            return addr.hash_value(self._row_cells[a])
         if source == st.MODEL_PATH:
             return self.store.model.sha
         if source.startswith(st.DECISIONS_DIR + "/"):
@@ -200,6 +212,7 @@ class Build:
             return
         self._validate_schemas()
         self._check_references()
+        self._grade_evidence()
         self._bind()
         self._check_stamps()
         self._static_warnings()
@@ -207,6 +220,7 @@ class Build:
             return
         self._derive_core()
         self._work_statuses()
+        self._unsourced_warnings()
         self._finalize()
 
     def _validate_schemas(self):
@@ -242,6 +256,91 @@ class Build:
                     self._err("ref-kind", f"{id}: superseded_by names {t}, a {self._kind(t)} (expected {r['kind']})", (id,))
                 elif t in self.recs and self.recs[t]["status"] == "superseded":
                     self._err("superseded-by", f"{id}: superseded_by names {t}, which is itself superseded", (id,))
+
+    # ---- evidence -------------------------------------------------------------------------
+
+    def _grade_evidence(self):
+        """Every load case's `sourcing`, and each entry's `resolved`, `admissible` and `reason`, from the cited sources (CONVENTIONS section 3).
+        An entry that does not resolve is an error, so a generated output only ever shows resolved entries."""
+        for id, r in sorted(self.recs.items()):
+            if r["kind"] != "load_case":
+                continue
+            src = set()
+            graded = []
+            for e in r.get("evidence", []):
+                grade = {"decision": self._grade_decision, "literature": self._grade_row, "test": self._grade_test}[e["kind"]]
+                graded.append({**e, **grade(id, e, src)})
+            sourcing = "not_required" if not r["independent_source_required"] else "sourced" if any(e["admissible"] for e in graded) else "unsourced"
+            self.sourcing[id] = {"sourcing": sourcing, "evidence": graded}
+            self._evidence_src[id] = src
+
+    def _unresolved(self, code, id, message) -> dict:
+        self._err(code, f"{id}: {message}", (id,))
+        return {"resolved": False, "admissible": False, "reason": message}
+
+    def _grade_decision(self, id, e, src) -> dict:
+        label = evidence.clause_label(e["clause"])
+        d = next((x for x in self.store.decisions if x["id"] == e["record"]), None)
+        if d is None:
+            return self._unresolved("evidence-unresolved", id, f"evidence cites {e['record']}, which is not a decision in {st.DECISIONS_DIR}/")
+        if not evidence.has_clause(self.store.decision_bodies[d["id"]], label):
+            return self._unresolved("evidence-clause", id, f"evidence cites {e['record']} {e['clause']}, but {d['path']} carries no {label} label")
+        src.add(f"{d['path']}#")
+        ok = d["status"] == "accepted"
+        return {"resolved": True, "admissible": ok, "reason": f"{e['record']} is {d['status']}" + ("" if ok else ", not accepted")}
+
+    def _rows_of(self, rel: str):
+        if rel not in self._literature:
+            p = self.root / rel
+            rows = None
+            if self._repo_relative(rel) and rel.endswith(".md") and p.is_file():
+                try:
+                    rows = evidence.qualifying_rows(p.read_text(encoding="utf-8"))
+                except UnicodeDecodeError:
+                    pass
+            self._literature[rel] = rows
+        return self._literature[rel]
+
+    def _grade_row(self, id, e, src) -> dict:
+        rows = self._rows_of(e["file"])
+        if rows is None:
+            return self._unresolved("evidence-unresolved", id, f"evidence cites {e['file']}, which is not a repo-relative .md file that exists")
+        found = [r for r in rows if r["id"] == e["row"]]
+        if not found:
+            return self._unresolved("evidence-unresolved", id, f"evidence cites row {e['row']}, which is in no qualifying table of {e['file']}")
+        if len(found) > 1:
+            return self._unresolved("evidence-ambiguous", id, f"evidence cites row {e['row']}, which is the first cell of {len(found)} rows of {e['file']}")
+        row = found[0]
+        key = re.sub(r"\s", "_", f"{e['file']}#/{e['row']}")  # an address in form, so impact finds it; it stands for the row, which has no JSON pointer
+        self._row_cells[key] = row["cells"]
+        src.add(key)
+        word = (row["status"].split() or ["(empty)"])[0]
+        return {"resolved": True, "admissible": row["status"].startswith(evidence.VERIFIED), "reason": f"row {e['row']} of {e['file']}: Status {word}"}
+
+    def _grade_test(self, id, e, src) -> dict:
+        doc = self._file_doc(e["path"]) if e["path"].endswith((".json", ".yaml", ".yml")) else None
+        if doc is None:
+            return self._unresolved("evidence-unresolved", id, f"evidence cites {e['path']}, which is not a repo-relative JSON or YAML file that exists and parses")
+        src.add(f"{e['path']}#")
+        ok = any(st.schema_message(st.validator(n), doc) is None for n in evidence.ADMITTED_TEST_SCHEMAS)
+        return {"resolved": True, "admissible": ok, "reason": f"{e['path']} validates against an admitted test-record schema" if ok
+                else f"{e['path']} is on no admitted test-record schema (none is admitted yet)" if not evidence.ADMITTED_TEST_SCHEMAS
+                else f"{e['path']} validates against no admitted test-record schema"}
+
+    def unsourced_of(self, work: str) -> list:
+        """The unsourced load cases a work item consumes directly: an address into the record or into its derived file."""
+        return sorted(t for t in self._consumed_targets.get(work, ()) if self.sourcing.get(t, {}).get("sourcing") == "unsourced")
+
+    def _unsourced_warnings(self):
+        for id, r in sorted(self.recs.items()):
+            if r["kind"] != "work_item" or r["status"] == "superseded":
+                continue
+            cases = self.unsourced_of(id)
+            if cases:
+                stamp = self.work[id]["stamp"]
+                self._warn("unsourced-consumption", f"{id} ({r['status']}{f', baseline stamp {stamp}' if stamp else ', no stamp'}) consumes unsourced {', '.join(cases)}", (id, *cases))
+
+    # ---- binding --------------------------------------------------------------------------
 
     def _expand(self, base: str, names: dict):
         return expand(base, names)
@@ -387,6 +486,10 @@ class Build:
             elif k == "harness_run":
                 for t in r["path"]:
                     link("crossed_by", t, id, "path")
+            elif k == "load_case":
+                src[id] |= self._evidence_src[id]
+                if "zone_in" in r:
+                    link("fall_cases", r["zone_in"], id, "zone_in")
             elif k == "work_item":
                 for a in r["consumes"]:
                     t = self._record_of_address(a)
@@ -436,7 +539,7 @@ class Build:
                         src[id].add(f"snapshot#/{key}")
                 doc.update(houses=lst("houses"), reacted_by=lst("reacted_by"), crossed_by=lst("crossed_by"),
                            joints_as_parent=sorted(joints_parent[id]), joints_as_child=sorted(joints_child[id]), interfaces=lst("interfaces"),
-                           budgets={"mass": budgets["segments"][id]})
+                           fall_cases=lst("fall_cases"), budgets={"mass": budgets["segments"][id]})
             elif k == "joint":
                 doc["bound_hinges"] = sorted(self.jnt_hinges[id])
                 doc["parent_segments"] = jnt_parent_segs[id]
@@ -450,6 +553,8 @@ class Build:
                 doc["interfaces"] = lst("interfaces")
             elif k == "harness_run":
                 doc["used_by"] = lst("used_by")
+            elif k == "load_case":
+                doc.update(self.sourcing[id])
             doc["consumed_by"] = lst("consumed_by")
             doc["decisions"] = sorted(decisions[id], key=lambda d: d["id"])
             self.core[id] = doc

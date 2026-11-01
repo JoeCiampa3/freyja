@@ -1,0 +1,8 @@
+schema: thread-record/2
+id: lc.none
+kind: load_case
+status: proposed
+purpose: A flagged case with no evidence.
+source:
+  scenario: fall_impact
+independent_source_required: true

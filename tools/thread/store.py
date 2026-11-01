@@ -113,6 +113,7 @@ class Store:
     stamps: dict = field(default_factory=dict)  # work id -> [(stamp name, document)] sorted by name; documents that fail their schema are not here
     stamp_dirs: set = field(default_factory=set)
     decisions: list = field(default_factory=list)  # [{id, status, links, path}]
+    decision_bodies: dict = field(default_factory=dict)  # decision id -> the text after its front matter (evidence checks clause labels in it)
 
     def edited(self) -> "Store":
         """A deep copy for the in-memory what-if."""
@@ -224,6 +225,7 @@ def _load_decisions(s: Store):
             links = front.get("links") or []
             s.decisions.append({"id": front["id"], "status": str(front.get("status", "")), "links": [str(x) for x in links] if isinstance(links, list) else [],
                                 "path": p.relative_to(s.root).as_posix()})
+            s.decision_bodies[front["id"]] = parts[2]
 
 
 def apply_edit(s: Store, address: str, value) -> None:

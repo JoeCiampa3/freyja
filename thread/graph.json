@@ -176,6 +176,17 @@
       ]
     },
     {
+      "doc": "Inverse of `zone_in`: the energy-defined load cases whose zone a segment houses.",
+      "from_kinds": [
+        "segment"
+      ],
+      "name": "fall_cases",
+      "origin": "derived",
+      "to_kinds": [
+        "load_case"
+      ]
+    },
+    {
       "doc": "A cable run the part is wired into. Stored on the part. Derives `used_by` on the run.",
       "from_kinds": [
         "part"
@@ -340,6 +351,17 @@
       "origin": "derived",
       "to_kinds": [
         "part"
+      ]
+    },
+    {
+      "doc": "The segment housing a fall case's zone (adr-0037 D3, \"Housed in\"). Stored on an energy-defined load case, where it is required. Derives `fall_cases` on the segment.",
+      "from_kinds": [
+        "load_case"
+      ],
+      "name": "zone_in",
+      "origin": "authored",
+      "to_kinds": [
+        "segment"
       ]
     }
   ],

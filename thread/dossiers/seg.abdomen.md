@@ -38,6 +38,7 @@ Derived:
 
 - consumed_by: none
 - crossed_by: none
+- fall_cases: none
 - houses: none
 - interfaces: none
 - joints_as_child: [jnt.lumbosacral](jnt.lumbosacral.md)

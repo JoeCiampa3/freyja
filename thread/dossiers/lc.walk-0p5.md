@@ -16,8 +16,10 @@ No model or snapshot binding.
 
 Authored:
 
+- evidence: `[]`
 - independent_source_required: `false`
 - source: `{"condition":"0.5 m/s level treadmill walking","gait_spec":"walk_treadmill"}`
+- sourcing: `"not_required"`
 
 Derived:
 

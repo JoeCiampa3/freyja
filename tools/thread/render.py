@@ -18,7 +18,7 @@ MAX_REFERENCES = 20  # references listed per dossier; the rest are counted
 SHOW_CHARS = 100  # a value in STATUS.md or a dossier is shown at most this long; `fy thread why` shows it whole
 KIND_TITLES = {"segment": "segments", "joint": "joints", "part": "parts", "interface": "interfaces", "load_case": "load cases",
                "harness_run": "harness runs", "work_item": "work items"}
-REFERENCE_FIELDS = {"housed_in", "acts_across", "reacts_into", "harness", "between", "carries_cut_of", "path", "of", "superseded_by"}
+REFERENCE_FIELDS = {"housed_in", "acts_across", "reacts_into", "harness", "between", "carries_cut_of", "path", "of", "superseded_by", "zone_in"}
 
 
 def json_bytes(doc: dict, banner: tuple) -> bytes:

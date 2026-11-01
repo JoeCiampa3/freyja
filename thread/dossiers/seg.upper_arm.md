@@ -39,6 +39,7 @@ Derived:
 
 - consumed_by: none
 - crossed_by: none
+- fall_cases: none
 - houses: [part.arm.upper_member](part.arm.upper_member.md)
 - interfaces: none
 - joints_as_child: [jnt.shoulder](jnt.shoulder.md)
