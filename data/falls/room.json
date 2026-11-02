@@ -1,0 +1,689 @@
+{
+ "arguments": {},
+ "baseline_mesh": "data/makehuman/freyja-body-v3.obj",
+ "generated_by": "analysis/fall_room.py",
+ "inputs": "sha256:bbc78518b5f3",
+ "registry_ties": {
+  "pelvis": {
+   "ledger_inner_volume_t5_l": 5.0957,
+   "reserved_inner_volume_l": 5.0957,
+   "ties": true
+  },
+  "thorax": {
+   "ledger_inner_volume_t5_l": 14.3776,
+   "reserved_inner_volume_l": 14.3776,
+   "ties": true
+  }
+ },
+ "schema": "fall-room/1",
+ "shell_mm": 5.0,
+ "strokes_mm_by_cap_kN": {
+  "back": {
+   "10": 113,
+   "20": 57,
+   "40": 29
+  },
+  "buttock": {
+   "10": 113,
+   "20": 57,
+   "40": 29
+  },
+  "hand_arm": {
+   "10": 90,
+   "20": 45,
+   "40": 23
+  },
+  "hip": {
+   "10": 113,
+   "20": 57,
+   "40": 29
+  },
+  "knee": {
+   "10": 55,
+   "20": 28,
+   "40": 14
+  },
+  "shoulder": {
+   "10": 113,
+   "20": 57,
+   "40": 29
+  }
+ },
+ "zones": {
+  "back": {
+   "not_in_a_file": [
+    "the thorax structure and any spine other than the v2 modules and the corridor",
+    "the shoulder mechanism"
+   ],
+   "outcome": "answered",
+   "ray_origin_mm": [
+    1.69,
+    -61.08
+   ],
+   "reading_a": {
+    "beside_the_ray": {
+     "gap_mm": 8.75,
+     "occupant": "part.spine.m1"
+    },
+    "claim_released_kg": 0.15,
+    "clearance_mm": 5.0,
+    "label": "ledger ray r_post through the section's centre, at the support vertex's side",
+    "lowest_cap_kN": 20,
+    "occupant": "part.spine.m2",
+    "occupant_file": "data/envelope/reserved/thorax.yaml",
+    "occupant_status": "reserved",
+    "room_mm": 66.77,
+    "s_res_mm": 57,
+    "skin_to_occupant_mm": 76.77
+   },
+   "reading_b": {
+    "claim_released_kg": 0.15,
+    "lowest_cap_kN": 20,
+    "room_mm": 93.9,
+    "s_res_mm": 57
+   },
+   "shell_sensitivity": {
+    "t10": {
+     "cheb_r_mm": 85.98,
+     "reading_a_mm": 61.77,
+     "reading_b_mm": 88.9
+    },
+    "t3": {
+     "cheb_r_mm": 93.8,
+     "reading_a_mm": 68.77,
+     "reading_b_mm": 95.9
+    },
+    "t5": {
+     "cheb_r_mm": 91.53,
+     "reading_a_mm": 66.77,
+     "reading_b_mm": 93.9
+    },
+    "t8": {
+     "cheb_r_mm": 88.21,
+     "reading_a_mm": 63.77,
+     "reading_b_mm": 90.9
+    }
+   },
+   "skin_depth_mm": 98.9,
+   "sources": [
+    {
+     "column": "r_post_mm",
+     "file": "data/envelope/thorax_sections.csv",
+     "inputs_sha256_12": "01a6e055b4a5",
+     "mesh_file": "data/makehuman/freyja-body-v3.obj",
+     "shell_mm": 5.0,
+     "station_mm": 100.0,
+     "value_mm": 98.9
+    },
+    {
+     "column": "hw_post_mm",
+     "file": "data/envelope/thorax_sections.csv",
+     "inputs_sha256_12": "01a6e055b4a5",
+     "mesh_file": "data/makehuman/freyja-body-v3.obj",
+     "shell_mm": 5.0,
+     "station_mm": 100.0,
+     "value_mm": 89.15
+    }
+   ],
+   "station": {
+    "frame": "thorax ledger frame: origin on the hip line and midline at the body's upper plane, x anterior, y left, z up",
+    "normal": "-x (posterior)",
+    "point_mm": [
+     -100.06,
+     -82.45,
+     -99.14
+    ],
+    "section_station_mm": 100.0,
+    "segment": "thorax",
+    "vertex": 3839
+   },
+   "variants": [
+    {
+     "beside_the_ray": {
+      "gap_mm": 37.67,
+      "occupant": "part.spine.m3"
+     },
+     "claim_released_kg": null,
+     "clearance_mm": 5.0,
+     "label": "midline ray hw_post from the frame axis",
+     "lowest_cap_kN": null,
+     "occupant": "part.spine.m1",
+     "occupant_file": "data/envelope/reserved/thorax.yaml",
+     "occupant_status": "reserved",
+     "room_mm": 10.15,
+     "s_res_mm": null,
+     "skin_to_occupant_mm": 20.15
+    },
+    {
+     "beside_the_ray": {
+      "gap_mm": 33.08,
+      "occupant": "part.spine.corridor"
+     },
+     "claim_released_kg": 0.15,
+     "label": "spine modules not in this body: the support-vertex ray",
+     "lowest_cap_kN": 20,
+     "occupant": null,
+     "room_mm": 93.9,
+     "s_res_mm": 57,
+     "skin_to_occupant_mm": null
+    },
+    {
+     "beside_the_ray": null,
+     "claim_released_kg": 0.0,
+     "clearance_mm": 0.0,
+     "label": "spine modules not in this body: the midline ray",
+     "lowest_cap_kN": 40,
+     "occupant": "part.spine.corridor",
+     "occupant_file": "data/envelope/corridor/thorax.yaml",
+     "occupant_status": "reserved",
+     "room_mm": 51.15,
+     "s_res_mm": 29,
+     "skin_to_occupant_mm": 56.15
+    }
+   ],
+   "vertex_minus_ledger_mm": 2.85
+  },
+  "buttock": {
+   "not_in_a_file": [
+    "the LSJ actuators and pelvis structure",
+    "the hip mechanism"
+   ],
+   "outcome": "answered",
+   "ray_origin_mm": [
+    -1.66,
+    -53.58
+   ],
+   "reading_a": {
+    "beside_the_ray": {
+     "gap_mm": 4.25,
+     "occupant": "part.spine.m1"
+    },
+    "claim_released_kg": 0.15,
+    "clearance_mm": 5.0,
+    "label": "ledger ray r_post through the section's centre, at the support vertex's side",
+    "lowest_cap_kN": 20,
+    "occupant": "part.spine.m2",
+    "occupant_file": "data/envelope/reserved/pelvis.yaml",
+    "occupant_status": "reserved",
+    "room_mm": 97.61,
+    "s_res_mm": 57,
+    "skin_to_occupant_mm": 107.61
+   },
+   "reading_b": {
+    "claim_released_kg": 0.15,
+    "lowest_cap_kN": 20,
+    "room_mm": 105.62,
+    "s_res_mm": 57
+   },
+   "shell_sensitivity": {
+    "t10": {
+     "cheb_r_mm": 91.53,
+     "reading_a_mm": 92.61,
+     "reading_b_mm": 100.62
+    },
+    "t3": {
+     "cheb_r_mm": 98.64,
+     "reading_a_mm": 99.61,
+     "reading_b_mm": 107.62
+    },
+    "t5": {
+     "cheb_r_mm": 96.58,
+     "reading_a_mm": 97.61,
+     "reading_b_mm": 105.62
+    },
+    "t8": {
+     "cheb_r_mm": 93.51,
+     "reading_a_mm": 94.61,
+     "reading_b_mm": 102.62
+    }
+   },
+   "skin_depth_mm": 110.62,
+   "sources": [
+    {
+     "column": "r_post_mm",
+     "file": "data/envelope/pelvis_sections.csv",
+     "inputs_sha256_12": "01a6e055b4a5",
+     "mesh_file": "data/makehuman/freyja-body-v3.obj",
+     "shell_mm": 5.0,
+     "station_mm": 70.0,
+     "value_mm": 110.62
+    },
+    {
+     "column": "hw_post_mm",
+     "file": "data/envelope/pelvis_sections.csv",
+     "inputs_sha256_12": "01a6e055b4a5",
+     "mesh_file": "data/makehuman/freyja-body-v3.obj",
+     "shell_mm": 5.0,
+     "station_mm": 70.0,
+     "value_mm": 88.7
+    }
+   ],
+   "station": {
+    "frame": "pelvis ledger frame: origin on the hip line and midline at the body's upper plane, x anterior, y left, z up",
+    "normal": "-x (posterior)",
+    "point_mm": [
+     -112.91,
+     -46.74,
+     -70.64
+    ],
+    "section_station_mm": 70.0,
+    "segment": "pelvis",
+    "vertex": 4219
+   },
+   "variants": [
+    {
+     "beside_the_ray": {
+      "gap_mm": 33.33,
+      "occupant": "part.spine.m2"
+     },
+     "claim_released_kg": null,
+     "clearance_mm": 5.0,
+     "label": "midline ray hw_post from the frame axis",
+     "lowest_cap_kN": null,
+     "occupant": "part.spine.m1",
+     "occupant_file": "data/envelope/reserved/pelvis.yaml",
+     "occupant_status": "reserved",
+     "room_mm": 14.79,
+     "s_res_mm": null,
+     "skin_to_occupant_mm": 24.79
+    },
+    {
+     "beside_the_ray": null,
+     "claim_released_kg": 0.15,
+     "label": "spine modules not in this body: the support-vertex ray",
+     "lowest_cap_kN": 20,
+     "occupant": null,
+     "room_mm": 105.62,
+     "s_res_mm": 57,
+     "skin_to_occupant_mm": null
+    },
+    {
+     "beside_the_ray": null,
+     "claim_released_kg": 0.15,
+     "label": "spine modules not in this body: the midline ray",
+     "lowest_cap_kN": 20,
+     "occupant": null,
+     "room_mm": 83.7,
+     "s_res_mm": 57,
+     "skin_to_occupant_mm": null
+    }
+   ],
+   "vertex_minus_ledger_mm": 0.63
+  },
+  "hand_arm": {
+   "fits_45_mm": null,
+   "fits_90_mm": null,
+   "outcome": "cannot be answered",
+   "reason": "the stroke home is a swept arc about the sternal end of the clavicle (adr-0008 D6(c)). No file holds that pivot (adr-0008 D6(c), D9), no ledger or registry holds the shoulder shell's sweep, and the repo's sweeps cover the model's hinges and the column corridor, not this arc. Answering needs a new sweep tool and a pivot choice adr-0007 does not make. Not built (brief, T1)."
+  },
+  "hip": {
+   "not_in_a_file": [
+    "the hip mechanism: components/thigh_R.yaml holds two hand-typed worked examples, the higher ending 40 mm below the HJC, outside the hip zone, and neither is a hip part",
+    "any pelvis structure or the LSJ actuators"
+   ],
+   "outcome": "answered",
+   "reading_a": {
+    "beside_the_ray": null,
+    "claim_released_kg": 0.0,
+    "clearance_mm": 5.0,
+    "label": "ledger ray at x = 0 (the hip line), spine modules in the pelvis",
+    "lowest_cap_kN": 40,
+    "occupant": "part.spine.m2",
+    "occupant_file": "data/envelope/reserved/pelvis.yaml",
+    "occupant_status": "reserved",
+    "room_mm": 36.11,
+    "s_res_mm": 29,
+    "skin_to_occupant_mm": 46.11
+   },
+   "reading_b": {
+    "claim_released_kg": 0.5,
+    "lowest_cap_kN": 10,
+    "room_mm": 158.77,
+    "s_res_mm": 113
+   },
+   "shell_sensitivity": {
+    "t10": {
+     "cheb_r_mm": 88.36,
+     "reading_a_mm": 31.11,
+     "reading_b_mm": 153.77
+    },
+    "t3": {
+     "cheb_r_mm": 95.76,
+     "reading_a_mm": 38.11,
+     "reading_b_mm": 160.77
+    },
+    "t5": {
+     "cheb_r_mm": 93.61,
+     "reading_a_mm": 36.11,
+     "reading_b_mm": 158.77
+    },
+    "t8": {
+     "cheb_r_mm": 90.42,
+     "reading_a_mm": 33.11,
+     "reading_b_mm": 155.77
+    }
+   },
+   "skin_depth_mm": 163.77,
+   "sources": [
+    {
+     "column": "hw_right_mm",
+     "file": "data/envelope/pelvis_sections.csv",
+     "inputs_sha256_12": "01a6e055b4a5",
+     "mesh_file": "data/makehuman/freyja-body-v3.obj",
+     "shell_mm": 5.0,
+     "station_mm": 97.7,
+     "value_mm": 163.77
+    },
+    {
+     "column": "hw_lat_mm",
+     "file": "data/envelope/thigh_R_sections.csv",
+     "inputs_sha256_12": "00fcb645ad2c",
+     "mesh_file": "data/makehuman/freyja-body-v3.obj",
+     "shell_mm": 5.0,
+     "station_mm": 0.0,
+     "value_mm": 87.66
+    }
+   ],
+   "station": {
+    "frame": "pelvis ledger frame: origin on the hip line and midline at the LSJ plane, x anterior, y left, z up",
+    "normal": "-y (right lateral)",
+    "point_mm": [
+     17.19,
+     -165.23,
+     -110.49
+    ],
+    "section_station_mm": 97.7,
+    "segment": "pelvis (lower plane) / thigh_R (top)",
+    "vertex": 4302
+   },
+   "variants": [
+    {
+     "beside_the_ray": null,
+     "claim_released_kg": null,
+     "clearance_mm": 5.0,
+     "label": "the same ray at the contact vertex's own x",
+     "lowest_cap_kN": null,
+     "occupant": "part.spine.m2",
+     "occupant_file": "data/envelope/reserved/pelvis.yaml",
+     "occupant_status": "reserved",
+     "room_mm": 27.04,
+     "s_res_mm": null,
+     "skin_to_occupant_mm": 37.04
+    },
+    {
+     "beside_the_ray": null,
+     "claim_released_kg": 0.5,
+     "label": "spine modules not in the pelvis (thorax candidate): nothing named on the ray",
+     "lowest_cap_kN": 10,
+     "occupant": null,
+     "room_mm": 158.77,
+     "s_res_mm": 113,
+     "skin_to_occupant_mm": null
+    },
+    {
+     "beside_the_ray": null,
+     "claim_released_kg": 0.5,
+     "label": "10 mm below the HJC plane, in the hip zone: below the modules, nothing named",
+     "lowest_cap_kN": 10,
+     "occupant": null,
+     "room_mm": 158.77,
+     "s_res_mm": 113,
+     "skin_to_occupant_mm": null
+    },
+    {
+     "claim_released_kg": 0.3,
+     "label": "to the HJC node, pelvis frame (a node, not an occupant; the mesh places the hip)",
+     "lowest_cap_kN": 20,
+     "room_mm": 66.22,
+     "s_res_mm": 57,
+     "skin_to_node_mm": 71.22
+    },
+    {
+     "claim_released_kg": 0.3,
+     "label": "to the HJC node, thigh frame (the model places the hip)",
+     "lowest_cap_kN": 20,
+     "room_mm": 82.75,
+     "s_res_mm": 57,
+     "skin_to_node_mm": 87.75
+    },
+    {
+     "claim_released_kg": 0.3,
+     "label": "thigh ledger radius from its axis, hw_lat at station 0",
+     "lowest_cap_kN": 20,
+     "room_mm": 82.66,
+     "s_res_mm": 57,
+     "skin_to_node_mm": 87.66
+    }
+   ],
+   "vertex_minus_ledger_mm": 1.46
+  },
+  "knee": {
+   "not_in_a_file": [
+    "the knee mechanism: the thigh registry's two worked examples end 245 mm below the HJC"
+   ],
+   "outcome": "answered",
+   "reading_a": {
+    "beside_the_ray": null,
+    "claim_released_kg": 0.3,
+    "label": "ledger ray at the KJC plane; nothing named on it",
+    "lowest_cap_kN": 20,
+    "occupant": null,
+    "room_mm": 51.1,
+    "s_res_mm": 28,
+    "skin_to_occupant_mm": null
+   },
+   "reading_b": {
+    "claim_released_kg": 0.3,
+    "lowest_cap_kN": 20,
+    "room_mm": 51.1,
+    "s_res_mm": 28
+   },
+   "shank_min_inscribed_t5": {
+    "r_mm": 19.75,
+    "station_mm": 360.0
+   },
+   "shank_top_hw_ant_mm": 56.11,
+   "shell_sensitivity": {
+    "t10": {
+     "cheb_r_mm": 36.55,
+     "reading_b_mm": 46.1
+    },
+    "t3": {
+     "cheb_r_mm": 43.58,
+     "reading_b_mm": 53.1
+    },
+    "t5": {
+     "cheb_r_mm": 41.55,
+     "reading_b_mm": 51.1
+    },
+    "t8": {
+     "cheb_r_mm": 38.56,
+     "reading_b_mm": 48.1
+    }
+   },
+   "skin_depth_mm": 56.1,
+   "sources": [
+    {
+     "column": "hw_ant_mm",
+     "file": "data/envelope/thigh_R_sections.csv",
+     "inputs_sha256_12": "00fcb645ad2c",
+     "mesh_file": "data/makehuman/freyja-body-v3.obj",
+     "shell_mm": 5.0,
+     "station_mm": 398.1,
+     "value_mm": 56.1
+    },
+    {
+     "column": "hw_ant_mm",
+     "file": "data/envelope/shank_R_sections.csv",
+     "inputs_sha256_12": "00fcb645ad2c",
+     "mesh_file": "data/makehuman/freyja-body-v3.obj",
+     "shell_mm": 5.0,
+     "station_mm": 0.0,
+     "value_mm": 56.11
+    }
+   ],
+   "station": {
+    "frame": "thigh_R ledger frame: origin at the HJC, x anterior, y left, z up",
+    "normal": "+x (anterior, zero pose)",
+    "point_mm": [
+     56.42,
+     3.8,
+     -404.25
+    ],
+    "section_station_mm": 398.1,
+    "segment": "thigh_R (distal end)",
+    "vertex": 4605
+   },
+   "thigh_min_inscribed_t5": {
+    "r_mm": 41.55,
+    "station_mm": 398.1
+   },
+   "variants": [
+    {
+     "claim_released_kg": 0.3,
+     "label": "the inscribed radius at the same row, cheb_r_t5",
+     "lowest_cap_kN": 20,
+     "room_mm": 41.55,
+     "s_res_mm": 28,
+     "skin_to_node_mm": 41.55
+    },
+    {
+     "claim_released_kg": 0.3,
+     "label": "shank top, hw_ant at station 0",
+     "lowest_cap_kN": 20,
+     "room_mm": 51.11,
+     "s_res_mm": 28,
+     "skin_to_node_mm": 56.11
+    }
+   ],
+   "vertex_minus_ledger_mm": 0.32
+  },
+  "shoulder": {
+   "not_in_a_file": [
+    "the shoulder mechanism and any joint hardware at the SJC (rm.v1-shoulder-concept)",
+    "the sternal pivot position (adr-0008 D6(c))",
+    "the thorax structure"
+   ],
+   "outcome": "answered",
+   "reading_a": {
+    "claim_released_kg": null,
+    "clearance_mm": 0.0,
+    "label": "ledger ray at the skin, in the upper arm",
+    "lowest_cap_kN": null,
+    "occupant": "part.arm.upper_member",
+    "occupant_file": "data/envelope/components/cad/upper_arm_R.yaml",
+    "occupant_status": "designed",
+    "room_mm": 14.31,
+    "s_res_mm": null,
+    "skin_to_occupant_mm": 19.31
+   },
+   "reading_b": {
+    "claim_released_kg": 0.2,
+    "lowest_cap_kN": 10,
+    "room_mm": 221.63,
+    "s_res_mm": 113
+   },
+   "shell_sensitivity": {
+    "t10": {
+     "cheb_r_mm": 77.6,
+     "reading_a_mm": 9.31,
+     "reading_b_mm": 216.63
+    },
+    "t3": {
+     "cheb_r_mm": 85.66,
+     "reading_a_mm": 16.31,
+     "reading_b_mm": 223.63
+    },
+    "t5": {
+     "cheb_r_mm": 83.32,
+     "reading_a_mm": 14.31,
+     "reading_b_mm": 221.63
+    },
+    "t8": {
+     "cheb_r_mm": 79.86,
+     "reading_a_mm": 11.31,
+     "reading_b_mm": 218.63
+    }
+   },
+   "shoulder_plane_lateral_mm": 192.328859146,
+   "skin_depth_mm": 226.63,
+   "skin_to_sjc_mm": 34.3,
+   "sources": [
+    {
+     "column": "hw_lat_mm",
+     "file": "data/envelope/upper_arm_R_sections.csv",
+     "inputs_sha256_12": "770c1272e683",
+     "mesh_file": "data/makehuman/freyja-body-v3.obj",
+     "shell_mm": 5.0,
+     "station_mm": 40.0,
+     "value_mm": 34.3
+    },
+    {
+     "column": "hw_right_mm",
+     "file": "data/envelope/thorax_sections.csv",
+     "inputs_sha256_12": "01a6e055b4a5",
+     "mesh_file": "data/makehuman/freyja-body-v3.obj",
+     "shell_mm": 5.0,
+     "station_mm": 80.0,
+     "value_mm": 193.25
+    }
+   ],
+   "station": {
+    "frame": "thorax ledger frame: origin on the hip line and midline at the CJC plane, x anterior, y left, z up; station is the upper arm ledger's, 4 mm below its joint station",
+    "normal": "-y (right lateral)",
+    "point_mm": [
+     -36.51,
+     -223.19,
+     -84.76
+    ],
+    "section_station_mm": 40.0,
+    "segment": "upper_arm_R (the zone is housed in the thorax)",
+    "vertex": 1671
+   },
+   "thorax_ray_is_the_cut_plane_not_skin": 193.25,
+   "variants": [
+    {
+     "claim_released_kg": 0.2,
+     "clearance_mm": 5.0,
+     "label": "inboard of the SJC, arm moving as a block, ray at model SJC x (-42.91 mm), spine modules in the thorax",
+     "lowest_cap_kN": 10,
+     "occupant": "part.spine.m1",
+     "room_mm": 144.14,
+     "s_res_mm": 113,
+     "sjc_to_occupant_mm": 149.14
+    },
+    {
+     "claim_released_kg": 0.2,
+     "clearance_mm": 0.0,
+     "label": "inboard of the SJC, arm moving as a block, ray at model SJC x (-42.91 mm), modules elsewhere, corridor only",
+     "lowest_cap_kN": 10,
+     "occupant": "the midline (nothing named on the ray)",
+     "room_mm": 192.33,
+     "s_res_mm": 113,
+     "sjc_to_occupant_mm": 192.33
+    },
+    {
+     "claim_released_kg": 0.2,
+     "clearance_mm": 5.0,
+     "label": "inboard of the SJC, arm moving as a block, ray at mesh SJC x (-34.52 mm), spine modules in the thorax",
+     "lowest_cap_kN": 10,
+     "occupant": "part.spine.m1",
+     "room_mm": 141.23,
+     "s_res_mm": 113,
+     "sjc_to_occupant_mm": 146.23
+    },
+    {
+     "claim_released_kg": 0.2,
+     "clearance_mm": 0.0,
+     "label": "inboard of the SJC, arm moving as a block, ray at mesh SJC x (-34.52 mm), modules elsewhere, corridor only",
+     "lowest_cap_kN": 10,
+     "occupant": "the midline (nothing named on the ray)",
+     "room_mm": 192.33,
+     "s_res_mm": 113,
+     "sjc_to_occupant_mm": 192.33
+    }
+   ],
+   "vertex_minus_ledger_mm": -3.44
+  }
+ }
+}
