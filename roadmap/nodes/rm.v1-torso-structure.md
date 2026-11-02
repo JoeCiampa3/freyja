@@ -9,3 +9,5 @@ stub: true
 tags: ["region:torso"]
 ---
 Thoracic and cervical joints are rigid in v1, so this is one rigid assembly: abdomen, thorax, shoulder mounts, neck, and the head mount with routing for the head harness. The shoulder, battery and compute placements join the blockers when it is expanded. The trial rig's harness hardpoint is a final interface decided in rm.v1-trial-rig-concept, so this waits on it; if the record places the hardpoint on the pelvis instead, add the same edge to rm.v1-pelvis-structure.
+
+Fall zones (adr-0044 D3): this node owns the back zone (backward, 540 J) and the chest zone (forward, 540 J, adr-0044 D1). The record that designs their stroke home sets mechanism, cap and reserved stroke under adr-0044 D2, and an adr-0037 Revisions entry points to it.
