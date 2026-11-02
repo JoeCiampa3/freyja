@@ -1,6 +1,6 @@
 ---
 id: adr-0044
-status: proposed
+status: accepted
 date: 2026-11-01
 links: [adr-0037, adr-0008, adr-0036]
 ---
