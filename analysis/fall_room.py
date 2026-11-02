@@ -22,14 +22,14 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 
-from envelope import bodies, frames, masses, trial  # noqa: E402
+from envelope import bodies, frames, masses, register, trial  # noqa: E402
 
 BASELINE_MESH = "data/makehuman/freyja-body-v3.obj"     # adr-0042
 OUT = "data/falls/room.json"
 SHELL_MM = 5.0                                           # adr-0007 D4
 SHELLS_MM = (3.0, 5.0, 8.0, 10.0)                        # the shell thicknesses the ledgers carry
 CAPS_KN = (10, 20, 40)                                   # adr-0037 D2(c)
-HIP_SLAB_MM = 15.0                                       # half height of the slab at the HJC plane the hip vertex is searched in: a locator only, wider than the mesh's vertex spacing there (5 mm missed the lateral ring by 12 mm)
+HIP_SLAB_MM = 15.0                                       # half height of the slab at the trochanter the hip vertex is searched in: a locator only, wider than the mesh's vertex spacing there (5 mm missed the lateral ring by 12 mm)
 KNEE_SLAB_MM = 10.0                                      # the same at the KJC plane
 ARM_EXCLUDE_MM = 180.0                                   # trunk vertices further than this from the midline are arm or shoulder: below the SJC's 192 mm
 
@@ -242,12 +242,13 @@ def build(root: Path = ROOT) -> dict:
 
     zones = {}
 
-    # hip: right lateral skin at the HJC plane, the plane the pelvis's lower end and the thigh's top share
+    # hip: right lateral skin at the greater trochanter's height, Dumas 2007 Table 1B above the HJC times the pelvis scale (the ANSUR trochanterion, scaled, is 3 mm above that: leg_R_trial.json)
     p = pelvis_ledger = led["pelvis"]
-    v = support(V, right & (np.abs(V[:, 2] - thigh_o[2]) <= HIP_SLAB_MM) & (V[:, 1] > pelvis_o[1] - 260.0), (0, -1, 0))
+    gt_above_hjc = register.DUMAS_GT_ABOVE_HJC_MM * led["thigh_R"].header["pelvis_scale_k"]
+    gt_z = thigh_o[2] + gt_above_hjc
+    v = support(V, right & (np.abs(V[:, 2] - gt_z) <= HIP_SLAB_MM) & (V[:, 1] > pelvis_o[1] - 260.0), (0, -1, 0))
     pt = V[v] - pelvis_o
-    s = pelvis_o[2] - V[v, 2]
-    row = p.row(s)
+    row = p.row(pelvis_o[2] - gt_z)
     skin = row["hw_right_mm"]
     th_row = led["thigh_R"].row(0.0)
     case = ray_case("ledger ray at x = 0 (the hip line), spine modules in the pelvis", skin, (0.0, -skin), (0.0, 1.0), row["s_mm"], pelvis_cyl, strokes["hip"], claims["hip"])
@@ -257,12 +258,12 @@ def build(root: Path = ROOT) -> dict:
         "outcome": "answered",
         "station": station(v, "pelvis (lower plane) / thigh_R (top)", row["s_mm"], pt, "pelvis ledger frame: origin on the hip line and midline at the LSJ plane, x anterior, y left, z up", "-y (right lateral)"),
         "sources": [p.source(row, "hw_right_mm"), led["thigh_R"].source(th_row, "hw_lat_mm")],
-        "skin_depth_mm": skin, "vertex_minus_ledger_mm": round(float(-pt[1] - skin), 2),
+        "skin_depth_mm": skin, "greater_trochanter_above_hjc_mm": round(gt_above_hjc, 2), "vertex_minus_ledger_mm": round(float(-pt[1] - skin), 2),
         "reading_b": reading(skin - SHELL_MM, strokes["hip"], claims["hip"]), "reading_a": case,
         "variants": [
             ray_case("the same ray at the contact vertex's own x", skin, (float(pt[0]), -skin), (0.0, 1.0), row["s_mm"], pelvis_cyl, strokes["hip"], claims["hip"]),
             ray_case("spine modules not in the pelvis (thorax candidate): nothing named on the ray", skin, (0.0, -skin), (0.0, 1.0), row["s_mm"], [], strokes["hip"], claims["hip"]),
-            ray_case("10 mm below the HJC plane, in the hip zone: below the modules, nothing named", skin, (0.0, -skin), (0.0, 1.0), row["s_mm"] + 10.0, pelvis_cyl, strokes["hip"], claims["hip"]),
+            ray_case("10 mm below the HJC plane, in the hip zone: below the modules, nothing named", th_row["hw_lat_mm"] + hip_reg["origins_conformed_mm"]["thigh_minus_pelvis_y"] * -1.0, (0.0, 0.0), (0.0, 1.0), led["pelvis"].header["length_mm"] + 10.0, pelvis_cyl, strokes["hip"], claims["hip"]),
             {"label": "to the HJC node, pelvis frame (a node, not an occupant; the mesh places the hip)", "skin_to_node_mm": round(hjc_pelvis, 2), **reading(hjc_pelvis - SHELL_MM, strokes["hip"], claims["hip"])},
             {"label": "to the HJC node, thigh frame (the model places the hip)", "skin_to_node_mm": round(hjc_thigh, 2), **reading(hjc_thigh - SHELL_MM, strokes["hip"], claims["hip"])},
             {"label": "thigh ledger radius from its axis, hw_lat at station 0", "skin_to_node_mm": th_row["hw_lat_mm"], **reading(th_row["hw_lat_mm"] - SHELL_MM, strokes["hip"], claims["hip"])},
