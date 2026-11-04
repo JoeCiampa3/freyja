@@ -15,3 +15,5 @@ Simulation enters only where 0036 and 0037 D1(c) let it. The ranking is forward 
 Head and neck have no energy in D3 and get no case until they do. The foot is not a fall case (stumble, adr-0019 D1(c)).
 
 Retitled 2026-10-31: the first title had the sources give the magnitudes and the simulation rank how severe each direction is, both from before adr-0037.
+
+Under adr-0044 (accepted 2026-11-01) the case list adds the chest zone (D1), and each zone's cap and stroke are set by its owning record (D3), not here. A case's evidence cites adr-0037 D1(b) for the energy and adr-0044 for the zone, and gains its cap by citation when an owning record enters one. This node also creates the adr-0037 D7 reservation records, `part.<segment>.fall-reserve`: seven, one per zone and segment (hip and buttock in the pelvis; back, chest and shoulder in the thorax; knee in the thigh; hand and arm in the upper arm), 3.50 kg in all (adr-0044 D6), each at the 40 kN element until an owning record enters a cap and releases mass. Memo 59's room numbers are evidence for a linear stroke only.

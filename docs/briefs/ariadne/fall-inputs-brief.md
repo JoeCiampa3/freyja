@@ -1,5 +1,7 @@
 # Fall inputs brief (for Claude Code): room at the zone contacts, first caps, and welded effective mass
 
+Status 2026-11-04: T1 done (memo 59). Its draft Revisions entries were not applied; adr-0044 moves cap-setting to the owning records. T2 is held and not needed to close v1.
+
 Read `CLAUDE.md`, `CONVENTIONS.md` and `docs/STATE.md` first, in the order `CLAUDE.md` gives, then the newest memo in `docs/memos/`, then `decisions/0037-fall-design-basis.md` (all of it, including Revisions and Amendments), `decisions/0008-elbow-load-basis.md` D5 and D6, `decisions/0007-envelope-extraction.md`, and rows S1 and S11 of `data/falls/sources.md`. This brief belongs to the Ariadne track. It feeds `rm.v1-fall-load-cases`, which waits on its result. It closes when Joe signs off the memo.
 
 Tag: Delegate.
