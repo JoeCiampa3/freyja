@@ -60,7 +60,8 @@ def test_the_joint_names_follow_the_answers_to_memo18(real):
 
 
 def test_the_load_cases_are_proposed_and_do_not_require_an_independent_source(real):
-    got = {i: r for i, r in real.recs.items() if r["kind"] == "load_case"}
+    # the fall cases (energy-defined, flagged, sourced) are asserted by tests/test_fall_cases.py
+    got = {i: r for i, r in real.recs.items() if r["kind"] == "load_case" and "zone_in" not in r}
     assert {i: r["source"] for i, r in got.items()} == LOAD_CASES
     for i, r in got.items():
         assert r["status"] == "proposed" and r["independent_source_required"] is False and r["notes"].strip(), i
@@ -107,7 +108,7 @@ def test_a_warm_build_takes_under_two_seconds():
 
 def test_the_fixture_reads_the_real_structural_records_and_names_an_invalid_real_store(tmp_path, monkeypatch):
     fake = tmp_path / "repo"
-    for rel in ("sim/models", "params", "thread/records"):
+    for rel in ("sim/models", "params", "thread/records", "decisions"):  # decisions: the fall cases cite them
         shutil.copytree(REPO / rel, fake / rel, ignore=shutil.ignore_patterns("*FAILED*"))
     monkeypatch.setattr(fixture, "REPO", fake)
     fixture.generate(tmp_path / "ok", 0)

@@ -293,5 +293,5 @@ def test_sourcing_does_not_touch_the_work_status(tmp_path):
 
 def test_the_real_cases_are_unflagged_and_not_required():
     b = build.build_root(Path(__file__).resolve().parents[1])
-    cases = [d for d in b.docs.values() if d["kind"] == "load_case"]
+    cases = [d for d in b.docs.values() if d["kind"] == "load_case" and "zone" not in d["source"]]  # the fall cases are flagged: tests/test_fall_cases.py
     assert cases and {d["sourcing"] for d in cases} == {"not_required"} and warnings(b) == []

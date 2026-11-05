@@ -1,0 +1,22 @@
+evidence:
+- clause: D1(b)
+  kind: decision
+  record: adr-0037
+id: lc.fall-buttock-backward
+independent_source_required: true
+kind: load_case
+notes: >-
+  The energy is a design upper edge, not a measurement. "Sourced" means the cited decision exists and is accepted, not that its number is
+  validated. The buttock zone has no cap yet; the cap and stroke are set by the owning record (adr-0044 D3), rm.v1-pelvis-structure. No energy
+  is shared between zones or between limbs without a verified source (adr-0037 D1(c)).
+  540 J is the upper edge of the energy bound of adr-0037 D1(b), 473 to 537 J after its 2026-10-31 Revisions, rounded up to the next 10 J. No
+  credit for leg buckling or bracing (adr-0036).
+purpose: Backward fall from standing, buttock first.
+schema: thread-record/2
+source:
+  direction: backward, buttock first
+  energy_basis: E_max
+  energy_j: 540
+  zone: buttock
+status: proposed
+zone_in: seg.pelvis

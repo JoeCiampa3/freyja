@@ -1,0 +1,25 @@
+evidence:
+- clause: D1(c)
+  kind: decision
+  record: adr-0037
+- clause: D3
+  kind: decision
+  record: adr-0037
+id: lc.fall-knee-forward
+independent_source_required: true
+kind: load_case
+notes: >-
+  The energy is a design upper edge, not a measurement. "Sourced" means the cited decision exists and is accepted, not that its number is
+  validated. The knee zone has no cap yet; the cap and stroke are set by the owning record (adr-0044 D3), rm.v1-knee-concept-adr. No energy is
+  shared between zones or between limbs without a verified source (adr-0037 D1(c)).
+  260 J rests on a centre-of-mass drop of 0.40 m chosen in adr-0037 D3 and tagged [design]; nothing sources it. adr-0037 Consequences gives
+  about 360 J for a 0.55 m drop.
+purpose: Forward collapse onto one knee.
+schema: thread-record/2
+source:
+  direction: forward collapse onto one knee
+  energy_basis: centre of mass drops 0.40 m
+  energy_j: 260
+  zone: knee
+status: proposed
+zone_in: seg.thigh

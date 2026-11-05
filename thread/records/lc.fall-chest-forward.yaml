@@ -1,0 +1,26 @@
+evidence:
+- clause: D1(b)
+  kind: decision
+  record: adr-0037
+- clause: D1
+  kind: decision
+  record: adr-0044
+id: lc.fall-chest-forward
+independent_source_required: true
+kind: load_case
+notes: >-
+  The energy is a design upper edge, not a measurement. "Sourced" means the cited decision exists and is accepted, not that its number is
+  validated. The chest zone has no cap yet; the cap and stroke are set by the owning record (adr-0044 D3), rm.v1-torso-structure. No energy is
+  shared between zones or between limbs without a verified source (adr-0037 D1(c)).
+  540 J is the upper edge of the energy bound of adr-0037 D1(b), 473 to 537 J after its 2026-10-31 Revisions, rounded up to the next 10 J. No
+  credit for leg buckling or bracing (adr-0036).
+  The scenario is a forward fall that the arm does not arrest, beyond adr-0008 D5's friction cone or short of the floor (adr-0044 D1).
+purpose: Forward fall from standing, chest first, with the arm not arresting.
+schema: thread-record/2
+source:
+  direction: forward, chest first, with the arm not arresting
+  energy_basis: E_max
+  energy_j: 540
+  zone: chest
+status: proposed
+zone_in: seg.thorax

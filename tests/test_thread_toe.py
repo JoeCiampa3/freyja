@@ -29,6 +29,7 @@ JNT_TOE = {"schema": "thread-record/2", "id": "jnt.toe", "kind": "joint", "statu
 @pytest.fixture()
 def root(tmp_path):
     shutil.copytree(REPO / "thread" / "records", tmp_path / "thread" / "records")
+    shutil.copytree(REPO / "decisions", tmp_path / "decisions", dirs_exist_ok=True)  # the fall cases cite decisions; an unresolved entry is an error
     (tmp_path / "sim" / "models").mkdir(parents=True)
     shutil.copy(fh.fixture_model_path(), tmp_path / "sim" / "models" / "freyja.xml")
     (tmp_path / "params").mkdir()
@@ -38,7 +39,7 @@ def root(tmp_path):
     doc = yaml.safe_load(p.read_text(encoding="utf-8"))
     del doc["also_bodies"]
     p.write_text(yaml.safe_dump(doc, sort_keys=True), encoding="utf-8")
-    (tmp_path / "decisions").mkdir()
+    (tmp_path / "decisions").mkdir(exist_ok=True)
     return tmp_path
 
 

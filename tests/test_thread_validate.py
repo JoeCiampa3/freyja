@@ -212,9 +212,11 @@ def test_a_citing_case_gets_the_loud_error_beside_evidence_unresolved(tmp_path):
 
 
 def test_the_real_decisions_pass_the_front_matter_rules():
-    b = build.build_root(Path(__file__).resolve().parents[1])
+    root = Path(__file__).resolve().parents[1]
+    b = build.build_root(root)
     assert [i for i in b.issues if i.code == "decision-front-matter"] == []
-    assert len(b.store.decisions) == 11
+    # every decision file loads: the count follows the files, not a typed number
+    assert len(b.store.decisions) == len([p for p in (root / "decisions").glob("*.md") if p.name != "README.md"]) > 0
 
 
 def test_an_unresolved_address_in_the_baseline_is_unknown_and_warns(tmp_path):

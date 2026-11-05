@@ -1,0 +1,26 @@
+evidence:
+- clause: D3
+  kind: decision
+  record: adr-0037
+- clause: D5
+  kind: decision
+  record: adr-0008
+id: lc.fall-hand-arm
+independent_source_required: true
+kind: load_case
+notes: >-
+  The energy is a design upper edge, not a measurement. "Sourced" means the cited decision exists and is accepted, not that its number is
+  validated. The hand-arm zone has no cap yet; the cap and stroke are set by the owning record (adr-0044 D3), rm.v1-shoulder-concept. No energy
+  is shared between zones or between limbs without a verified source (adr-0037 D1(c)).
+  430 J is the upper edge of a pivot model about the toe: forward fall, arm straight at the friction cone's edge (45 degrees, mu = 1.0,
+  [design], no source), band 378 to 422 J, rounded up. The model does not cover foot slip, and a slipping fall can reach E_max. The lateral
+  band, 238 to 331 J, lies below, so this one case covers forward and sideways. The backward arrest is a separate case.
+purpose: Fall arrested on one arm, forward or sideways, with no sharing between arms.
+schema: thread-record/2
+source:
+  direction: arrest on one arm, forward or sideways; no sharing
+  energy_basis: geometric drop, one arm, friction cone mu = 1.0 (adr-0008 D5)
+  energy_j: 430
+  zone: hand-arm
+status: proposed
+zone_in: seg.upper_arm
