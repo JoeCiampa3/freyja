@@ -8,6 +8,7 @@ estimate_days: 1.0
 tags: ["region:whole-body", "phase:spec", "stage3"]
 done_when:
   type: manual
+signed_off: true
 ---
 Delegate. Writes the records below in the energy-defined form of thread-record/2 (adr-0037 D1(a)): `independent_source_required: true`, `zone_in` the housing segment, `evidence` as listed, status proposed. A case carries energy and direction, never a cap, so none of this waits on a cap. When an owning record enters a zone's cap (adr-0044 D2), the zone's case gains that record as evidence. The Code brief is not yet written (`docs/briefs/ariadne/fall-cases-brief.md`). The gates below are authored before the work.
 
