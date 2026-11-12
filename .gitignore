@@ -36,6 +36,9 @@ sim/archive/
 # Last advisory results written by the build gate
 checks/last_run.json
 
+# tools/testkit: per-clone test records (the passes of input-keyed tests, the last full run)
+.fy-cache/
+
 # Run records: raw timeseries stay out of git (CONVENTIONS section 6); summary.json is tracked
 sim/runs/*/raw.npz
 sim/sweeps/*/sweep.json

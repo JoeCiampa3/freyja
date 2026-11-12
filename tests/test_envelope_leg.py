@@ -12,6 +12,7 @@ sys.path.insert(0, str(REPO / "tools"))
 
 from envelope import ruler, trial  # noqa: E402
 from envelope.sheet import StopAndAsk  # noqa: E402
+from input_sets import ENVELOPE  # noqa: E402
 
 OBJ = REPO / "data" / "makehuman" / "freyja-body-v1.obj"
 
@@ -116,6 +117,7 @@ def test_the_mesh_is_left_right_symmetric_enough_to_mirror_the_left_leg_ruler_lo
 
 
 @pytest.mark.slow
+@pytest.mark.inputs(*ENVELOPE)
 def test_three_segments_build_with_the_sheet_lengths_and_the_masses_close(inp_feats):
     inp, f = inp_feats
     reg = trial.make_registration(inp, f, "ruler")

@@ -5,11 +5,14 @@ CONVENTIONS.md, so it works from any directory.
 
     fy build [pre_processor options]     python sim/scripts/pre_processor.py  (e.g. --dry-run, --xlsx FILE)
     fy watch [watch options]             python sim/scripts/watch.py
-    fy test [--quick] [pytest options]   pytest over tests/ and checks/; --quick: only the CAD, thread, roadmap, registry and conventions files
+    fy test [--quick] [--serial] [pytest options]   pytest over tests/ and checks/, in parallel (pytest-xdist) unless files are named or --serial
+                                         is given; --quick: only the CAD, thread, roadmap, registry and conventions files; --rerun-cached also
+                                         runs the tests skipped on unchanged inputs (tools/testkit)
     fy check [--tier gate|advisory]      the model checks on the committed model and snapshot
     fy run <scenario>                    run sim/scenarios/<scenario>.yaml and write its run record
     fy sweep <spec>                      sweep pose parameters and record the static standing torques
-    fy state [--no-run]                  write docs/STATE.md: the exact state of this copy of the repo
+    fy state [--no-run | --rerun]        write docs/STATE.md: the exact state of this copy of the repo; the suite is not run again when the
+                                         tree is unchanged since the last full run
     fy gait <spec>                       walking joint loads from the Camargo dataset (sim/scenarios/gait/)
     fy view <scenario> [--set k=v] [--speed x]   watch a scenario live in the MuJoCo viewer
     fy runs list|show|compare|digest|envelope   read run records; digest and envelope write sim/runs/*.md
@@ -20,6 +23,7 @@ CONVENTIONS.md, so it works from any directory.
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from pathlib import Path
 
@@ -71,13 +75,30 @@ def quick_files(root: Path) -> list:
     return sorted({p.as_posix() for g in QUICK_GLOBS for p in (root / "tests").glob(g)})
 
 
+# When fy chooses the files (the whole suite, or --quick) the run is spread over pytest-xdist's workers (tools/testkit.PARALLEL). Named targets run
+# serially, as does anything given --serial, its own -n or a debugger.
+_OWN_WORKERS = re.compile(r"-n(\d+|auto|logical)?|--numprocesses(=.*)?|--pdb|--trace|-pno:xdist")
+
+
+def xdist_available() -> bool:
+    import testkit
+    return testkit.xdist_available()
+
+
 def run_tests(root: Path, args: list) -> int:
     import pytest
+    _use(root, "tools")
+    import testkit
+    serial = "--serial" in args
+    args = [a for a in args if a != "--serial"]
     quick = bool(args) and args[0] == "--quick"
     if quick:
         args = args[1:]
-    targets = quick_files(root) if quick else (() if args and not args[0].startswith("-") else (str(root / "tests"), str(root / "checks")))
-    return int(pytest.main(["--rootdir", str(root), "-c", str(root / "pytest.ini"), *targets, *args]))
+    named = bool(args) and not args[0].startswith("-")
+    targets = quick_files(root) if quick else (() if named else (str(root / "tests"), str(root / "checks")))
+    own = any(_OWN_WORKERS.fullmatch(a) or (a == "no:xdist" and i and args[i - 1] == "-p") for i, a in enumerate(args))
+    parallel = testkit.PARALLEL if (quick or not named) and not serial and not own and xdist_available() else ()
+    return int(pytest.main(["--rootdir", str(root), "-c", str(root / "pytest.ini"), *parallel, *targets, *args]))
 
 
 def run_scenario(root: Path, args: list):

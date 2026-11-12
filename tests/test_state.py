@@ -208,12 +208,80 @@ def test_briefs_are_listed_recursively_under_docs_briefs(repo):
     assert section.index("architecture/a.md") < section.index("ariadne/b.md")  # sorted by path
 
 
-def test_the_documented_suite_time_matches_claude_md():
-    import re
-    doc = (Path(__file__).resolve().parents[1] / "tools" / "state" / "__init__.py").read_text(encoding="utf-8").split('"""')[1]
-    claude = (Path(__file__).resolve().parents[1] / "CLAUDE.md").read_text(encoding="utf-8")
-    assert "about 18 minutes" in doc and "minute and a half" not in doc and "six minutes" not in doc
-    assert re.search(r"full suite \(about 18 minutes", claude)
+# ---- memo 61: the argument guard, the reuse of the last full run, the input-keyed skips -------------------------------------------
+
+@pytest.mark.parametrize("argv, code", [(["--help"], 0), (["-h"], 0), (["--norun"], 2), (["--no-run", "extra"], 2), (["--no-run", "--rerun"], 2)])
+def test_help_or_an_unknown_argument_never_runs_the_suite_or_writes_the_file(repo, monkeypatch, capsys, argv, code):
+    """Memo 58 finding 7: `fy state --help` and a typo such as `--norun` used to run the whole suite."""
+    monkeypatch.setattr(state, "REPO", repo)
+    monkeypatch.setattr(state, "generate", lambda *a, **k: pytest.fail("generate was called"))
+    with pytest.raises(SystemExit) as e:
+        state.main(argv)
+    assert e.value.code == code and not (repo / "docs" / "STATE.md").exists()
+    out = capsys.readouterr()
+    assert "--no-run" in (out.out if code == 0 else out.err)
+
+
+def _full_record(repo, tests):
+    state.testkit.write_last_full(repo, state.testkit.tree_key(repo), tests)
+
+
+def test_the_suite_is_not_run_again_when_the_tree_is_the_one_the_last_full_run_saw(repo, monkeypatch):
+    monkeypatch.setattr(state, "_run_pytest", lambda *a, **k: pytest.fail("the suite was run"))
+    _full_record(repo, {"passed": 40, "cached": 2, "failed": 0, "skipped": 3})
+    got = state.suite_results(repo)
+    assert got == {"passed": 40, "cached": 2, "failed": 0, "skipped": 3, "reused": state.testkit.tree_key(repo)[:12]}
+    (repo / "docs" / "memos" / "memo2-y.md").write_text("the memo written after the run\n")
+    (repo / "docs" / "STATE.md").write_text("an earlier state file\n")
+    assert state.suite_results(repo)["reused"]  # neither changes the tree key
+
+
+@pytest.mark.parametrize("how", ["the tree changed", "--rerun", "no record"])
+def test_the_suite_runs_when_the_tree_changed_when_asked_to_or_without_a_record(repo, monkeypatch, how):
+    calls = []
+    monkeypatch.setattr(state, "_run_pytest", lambda root, extra=(): calls.append(tuple(extra)) or "1 failed, 7 passed, 2 skipped in 1.00s\n")
+    if how != "no record":
+        _full_record(repo, {"passed": 40, "cached": 2, "failed": 0, "skipped": 3})
+    if how == "the tree changed":
+        (repo / "CLAUDE.md").write_text((repo / "CLAUDE.md").read_text() + "\nedited\n")
+    got = state.suite_results(repo, rerun=(how == "--rerun"))
+    assert calls == [("--rerun-cached",) if how == "--rerun" else ()]
+    assert got == {"passed": 7, "cached": 0, "failed": 1, "skipped": 2}  # no record of this run: the counts come from pytest's last line
+
+
+def test_a_run_that_wrote_its_record_is_reported_from_the_record(repo, monkeypatch):
+    def fake_run(root, extra=()):
+        _full_record(root, {"passed": 10, "cached": 4, "failed": 0, "skipped": 1})
+        return "10 passed, 5 skipped in 1.00s\n"  # pytest's own line counts the four as skipped
+    monkeypatch.setattr(state, "_run_pytest", fake_run)
+    assert state.suite_results(repo) == {"passed": 10, "cached": 4, "failed": 0, "skipped": 1}
+
+
+@pytest.mark.parametrize("xdist", [True, False])
+def test_the_suite_is_run_as_fy_test_runs_it_in_parallel_when_xdist_is_installed(repo, monkeypatch, xdist):
+    from types import SimpleNamespace
+    seen = []
+    monkeypatch.setattr(state.subprocess, "run", lambda argv, **kw: seen.append(list(argv)) or SimpleNamespace(stdout="3 passed in 0.10s\n"))
+    monkeypatch.setattr(state.testkit, "xdist_available", lambda: xdist)
+    assert state._run_pytest(repo, ("--rerun-cached",)) == "3 passed in 0.10s\n"
+    argv = seen[0]
+    assert argv[1:3] == ["-m", "pytest"] and argv[-1] == "--rerun-cached"
+    assert (["-n", "auto", "--dist", "loadfile"] == argv[argv.index("-n"):argv.index("-n") + 4]) if xdist else ("-n" not in argv)
+
+
+def test_tests_skipped_on_unchanged_inputs_count_as_passed_and_the_section_says_how_many(repo):
+    text = state.generate(repo, run=True, runner=lambda root: {"tests": {"passed": 10, "cached": 4, "failed": 0, "skipped": 1}, "checks": []})
+    assert "| tests 14/15 |" in lines(text)[2]
+    assert "passed 14 (4 not run again: inputs unchanged since they last passed), failed 0, skipped 1" in text
+    assert "reported from" not in text
+    plain = state.generate(repo, run=True, runner=lambda root: {"tests": {"passed": 5, "failed": 1, "skipped": 2}, "checks": []})
+    assert "\npassed 5, failed 1, skipped 2\n" in plain  # unchanged wording when nothing was skipped that way
+
+
+def test_a_reused_result_says_so_in_the_tests_section(repo):
+    text = state.generate(repo, run=True, runner=lambda root: {"tests": {"passed": 9, "cached": 0, "failed": 0, "skipped": 0, "reused": "abcdef012345"}, "checks": []})
+    assert "| tests 9/9 |" in lines(text)[2]
+    assert "\npassed 9, failed 0, skipped 0\nreported from the last full run, not run again: the tree is unchanged since (tree key abcdef012345; docs/STATE.md and docs/memos/ are not part of the key)\n" in text
 
 
 def test_every_xfail_is_listed_with_its_test_id_and_reason(repo):

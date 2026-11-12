@@ -10,6 +10,7 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "tools"))
 
 from envelope import decompose, features, field, sheet, trial  # noqa: E402
+from input_sets import ENVELOPE  # noqa: E402
 
 H = 2.0
 Z_SHIFTS = [(0.0, 0.0, d) for d in np.arange(0.25, 2.0, 0.25)]
@@ -35,6 +36,7 @@ def world():
 
 
 @pytest.mark.slow
+@pytest.mark.inputs(*ENVELOPE)
 @pytest.mark.parametrize("shift", Z_SHIFTS + XY_SHIFTS + DIAGONAL + ["snap"], ids=str)
 def test_the_arm_set_is_the_same_at_every_raster_phase(world, shift):
     arms_at, base, o0 = world
@@ -43,6 +45,7 @@ def test_the_arm_set_is_the_same_at_every_raster_phase(world, shift):
 
 
 @pytest.mark.slow
+@pytest.mark.inputs(*ENVELOPE)
 def test_mutation_the_raster_rule_flips_the_arm_set_at_the_diagonal_phase(world):
     arms_at, base, _ = world
     old = lambda V, F, r, apex, neck: decompose.vertex_regions(V, r, {"apex": apex, "neck": neck})

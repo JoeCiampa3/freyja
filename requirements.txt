@@ -9,6 +9,7 @@ cryptography==50.0.1
 cycler==0.12.1
 et_xmlfile==2.0.0
 etils==1.14.0
+execnet==2.1.2
 fonttools==4.63.0
 fsspec==2026.6.0
 glfw==2.10.2
@@ -34,6 +35,7 @@ pycparser==3.0
 PyOpenGL==3.1.10
 pyparsing==3.3.2
 pytest==9.1.1
+pytest-xdist==3.8.0
 python-dateutil==2.9.0.post0
 PyYAML==6.0.3
 referencing==0.37.0

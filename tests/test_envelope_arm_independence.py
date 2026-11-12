@@ -11,6 +11,7 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "tools"))
 
 from envelope import decompose, features, frames, oracle, trial  # noqa: E402
+from input_sets import ENVELOPE  # noqa: E402
 
 EX = REPO / "data" / "envelope" / "examples"
 
@@ -58,6 +59,7 @@ def scaled(V, arm):
 
 
 @pytest.mark.slow
+@pytest.mark.inputs(*ENVELOPE)
 @pytest.mark.parametrize("change", [displaced, scaled], ids=lambda f: f.__name__)
 def test_moving_the_arms_leaves_every_leg_output_bit_identical(body, change):
     inp, arm, base = body
@@ -66,6 +68,7 @@ def test_moving_the_arms_leaves_every_leg_output_bit_identical(body, change):
 
 
 @pytest.mark.slow
+@pytest.mark.inputs(*ENVELOPE)
 def test_mutation_the_bounding_box_origin_fails_the_above(body, monkeypatch):
     inp, arm, base = body
 

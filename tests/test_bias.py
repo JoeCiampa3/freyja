@@ -17,6 +17,7 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "sim" / "scripts"))
 
 import simrun  # noqa: E402
+from input_sets import SIM  # noqa: E402
 
 JOINTS = ("ankle_pdflex_right", "hip_fe_right")
 
@@ -26,6 +27,7 @@ def rms(record):
 
 
 @pytest.mark.slow
+@pytest.mark.inputs(*SIM)
 class HoldBias(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

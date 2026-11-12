@@ -185,6 +185,34 @@ class RealFunctions(unittest.TestCase):
             cli.run_tests(REPO, ["-k", "mirror"])
         self.assertEqual(m.call_args.args[0][-2:], ["-k", "mirror"])
 
+    def _pytest_argv(self, args, xdist=True):
+        import pytest
+        with mock.patch.object(pytest, "main", return_value=0) as m, mock.patch.object(cli, "xdist_available", return_value=xdist):
+            self.assertEqual(cli.run_tests(REPO, list(args)), 0)
+        return m.call_args.args[0]
+
+    def test_the_whole_suite_and_the_quick_subset_run_in_parallel_one_file_per_worker_at_a_time(self):
+        """Memo 61: when fy chooses the files (everything, or --quick) it adds pytest-xdist's workers; a module's tests stay together (loadfile)
+        because module-scoped fixtures build whole bodies."""
+        for args in ([], ["--quick"], ["-k", "mirror"], ["--quick", "-x"]):
+            argv = self._pytest_argv(args)
+            i = argv.index("-n")
+            self.assertEqual(argv[i:i + 4], ["-n", "auto", "--dist", "loadfile"], args)
+
+    def test_named_targets_serial_or_an_explicit_worker_count_are_left_alone(self):
+        for args in (["tests/test_fy.py"], ["tests/test_fy.py", "-x"], ["--serial"], ["--quick", "--serial"], ["-n", "3"], ["--quick", "-n3"],
+                     ["--numprocesses=2"], ["-p", "no:xdist"], ["--pdb"]):
+            argv = self._pytest_argv(args)
+            self.assertNotIn("--serial", argv)
+            self.assertNotIn("auto", argv, args)
+            self.assertNotIn("loadfile", argv, args)
+        self.assertIn(str(REPO / "tests"), self._pytest_argv(["--serial"]))  # --serial alone is still the whole suite
+        self.assertEqual(self._pytest_argv(["-n", "3"])[-2:], ["-n", "3"])
+
+    def test_without_pytest_xdist_installed_the_suite_runs_serially(self):
+        for args in ([], ["--quick"]):
+            self.assertNotIn("-n", self._pytest_argv(args, xdist=False))
+
     def test_run_check_exits_nonzero_only_on_a_blocking_failure(self):
         out = []
         self.assertEqual(cli.run_check(REPO, None, say=out.append), 0)  # the committed model passes its gates
