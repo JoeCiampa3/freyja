@@ -1,6 +1,6 @@
 # Freyja: orientation for a reader with no prior context
 
-Authored. Owner: Joe. Written 2026-10-11, updated 2026-10-18 (Stage 3a), for a Claude session that has never seen this project. Where this file and `CONVENTIONS.md` disagree, `CONVENTIONS.md` wins. This file describes what is stable; for where the repo is right now, read `docs/STATE.md` and the highest-numbered file in `docs/memos/`. Items marked **(confirm)** are my reading of Joe's intent and should be checked with him before anything depends on them.
+Authored. Owner: Joe. Written 2026-10-11, updated 2026-10-18 (Stage 3a) and 2026-11-11 (factual corrections only, memo 61: the map, the history after Stage 3a, the toe and the range-of-motion lessons), for a Claude session that has never seen this project. Where this file and `CONVENTIONS.md` disagree, `CONVENTIONS.md` wins. This file describes what is stable; for where the repo is right now, read `docs/STATE.md` and the highest-numbered file in `docs/memos/`. Items marked **(confirm)** are my reading of Joe's intent and should be checked with him before anything depends on them.
 
 ## 1. What Freyja is
 
@@ -26,7 +26,9 @@ Freyja Anthropometric Reference (Google Sheet, ground truth)
    -> sim/ gait          -> sim/gait/<id>/GAIT.md      (Stage 2)
    -> thread/            (system model: one record per segment, joint, load case and, later, part,
                           interface and work item; generated dossiers; stale work)   (Stage 3a)
-   -> [planned] CAD parameters (Stage 3b bridge), actuator sizing, FEA
+   -> data/envelope/     (the body envelope: what fits inside the skin, per segment; `fy envelope`)
+   -> cad/               (Stage 3b bridge: parameters out to Fusion, mass properties and meshes back; `fy cad`)
+   -> [planned] requirement records, actuator sizing, FEA
 ```
 
 Three goals, in order of maturity:
@@ -69,7 +71,7 @@ Full table: `CONVENTIONS.md` section 2. Where you will spend time:
 | `docs/briefs/` | task specs for Code; Joe overwrites them between rounds |
 | `docs/memos/` | numbered checkpoint reports; the project's narrative |
 | `docs/STATE.md` | generated snapshot of the repo (commit, tests, checks, waivers); `fy state` |
-| `docs/schemas/` | JSON Schemas for run, sweep, gait, roadmap and thread records |
+| `docs/schemas/` | JSON Schemas for run, sweep, gait, roadmap, thread and CAD records |
 | `params/` | generated parameter snapshot |
 | `sim/models/` | `freyja_template.xml` (authored), `freyja.xml` (generated) |
 | `sim/scripts/` | pre-processor, runner, solvers, gait pipeline |
@@ -83,17 +85,26 @@ Full table: `CONVENTIONS.md` section 2. Where you will spend time:
 | `tools/fy/` | the CLI; wrappers only |
 | `notebook/` | dated notes with `origin: me | source | claude` |
 | `decisions/` | decision records (`adr-NNNN`) with a "rejected options" section |
-| `cad/` | Fusion add-in and sidecars (early) |
+| `cad/` | the CAD bridge's files: Fusion add-in, bindings, sidecars, exported meshes |
+| `data/makehuman/`, `data/envelope/` | the body mesh and the body-envelope results (ledgers, registries, reservations); `tools/envelope/` is the library |
 
-`fy` is run as `python tools/fy <command>` (on Windows `tools/fy/fy.cmd` uses the repo `.venv` when present). Commands: `build`, `watch`, `test`, `check`, `run`, `sweep`, `gait`, `view`, `runs list|show|compare|digest|envelope`, `roadmap`, `thread`, `state`.
+`fy` is run as `python tools/fy <command>` (on Windows `tools/fy/fy.cmd` uses the repo `.venv` when present). Commands: `build`, `watch`, `test`, `check`, `run`, `sweep`, `gait`, `view`, `runs list|show|compare|digest|envelope`, `roadmap`, `thread`, `envelope`, `cad`, `state`.
 
 ## 6. How we got here (stable history)
 
 - **Stage 0** (memo 2): the sheet-to-MJCF pipeline made reproducible, tracked and checked; the snapshot and the gate checks; the `fy` CLI.
 - **Stage 1, 1b, 1c** (memo 3): every sim run leaves a stamped machine-readable record; a standing pose that actually balances; a gain-independent static solve; posture sweeps; the digest and the envelope.
-- **Stage 2** (memos 4 to 6, `docs/briefs/stage2-brief.md`, closed): walking loads at 1.4 and 1.6 m/s on Freyja's mass distribution, driven by measured human kinematics from the Camargo et al. 2021 dataset, computed three ways (B Freyja's own dynamics, A measured ground force, H a hybrid) and compared with the dataset's own joint moments. Only A with the filtered force meets the agreement band, so the envelope's gait rows rest on it, flagged provisional. B's failure stands as a finding whose cause is unattributed. The brief and the memos are the record of what worked and what did not; read them rather than trusting any summary here.
-- **Stage 2b** (`docs/briefs/stage2b-brief.md`): two checks on numbers from memo 6 that are not yet believed (hip extension, the ankle torque), a tracked gait extract so the envelope reproduces from a clean clone, and wording clean-up.
+- **Stage 2** (memos 4 to 6, `docs/briefs/ariadne/stage2-brief.md`, closed): walking loads at 1.4 and 1.6 m/s on Freyja's mass distribution, driven by measured human kinematics from the Camargo et al. 2021 dataset, computed three ways (B Freyja's own dynamics, A measured ground force, H a hybrid) and compared with the dataset's own joint moments. Only A with the filtered force meets the agreement band, so the envelope's gait rows rest on it, flagged provisional. B's failure stands as a finding whose cause is unattributed. The brief and the memos are the record of what worked and what did not; read them rather than trusting any summary here.
+- **Stage 2b** (`docs/briefs/ariadne/stage2b-brief.md`): two checks on numbers from memo 6 that are not yet believed (hip extension, the ankle torque), a tracked gait extract so the envelope reproduces from a clean clone, and wording clean-up.
 - **Stage 3a** (memos 18 and 19, `docs/briefs/ariadne/stage3a-brief.md`): the system model in `thread/`. Records for the 10 segments and 9 joints, each bound to its model bodies or hinges and read from the snapshot, plus proposed load cases; a dependency graph that marks stamped work stale when an input it consumed changes; mass budgets per segment; generated dossiers, rebuilt by the pre-commit hook. Proven on a fixture in which moving a hip actuator from the thigh to the pelvis changes exactly the outputs that depend on it.
+
+What follows is an index only, added 2026-11-11; the briefs and memos named are the record.
+
+- **Stage 2c to 2g** (memos 10 to 12 and 21 to 26, `docs/briefs/ariadne/stage2c-brief.md` to `stage2g-brief.md`): the retargeting diagnoses and the close of Stage 2, the 0.5 m/s acceptance speed (2f), and one snapshot change (2g) that added the toe, the foot box, the standing posture, the segment scaling and the new joint ranges.
+- **The roadmap** (memos 13 to 17, `docs/briefs/architecture/roadmap-brief1.md` to `brief4.md`): `roadmap/`, its tooling and viewer; `roadmap/README.md` is its own cold-start document.
+- **The body envelope** (most of memos 27 to 55, `docs/briefs/architecture/volume-extractor-brief1.md` onward, adr-0007, adr-0038, adr-0042): the MakeHuman body registered to the sheet's joint nodes, the per-segment ledgers, the clearance oracle, the component registry and the spine reservations, in `tools/envelope/` and `data/envelope/`.
+- **Stage 3b** (memos 40 to 42, `docs/briefs/ariadne/stage3b-brief.md`): the CAD bridge, proven on `part.arm.upper_member`.
+- **Falls** (memos 56 to 60, adr-0036, adr-0037, adr-0044): load cases carry evidence the thread checks, the room at each zone contact, and the seven fall cases as proposed records.
 
 ## 7. Hard-won lessons
 
@@ -104,12 +115,12 @@ Each of these cost real time. Do not relearn them.
 - **Mirrored joints have flipped axes.** A mirror-symmetric load gives the same scalar torque on both sides; only the world-frame vectors are mirror images.
 - **Dataset names are not model names.** In the Camargo lab frame the ground z axis is the walking direction, so `pelvis_tilt` is roll, `pelvis_list` is sagittal pitch, `pelvis_rotation` is yaw. Model-side code uses anatomical names; dataset names appear only in ingestion and `camargo_mapping.yaml`.
 - **Reference the root to the hip-centre midpoint, not the pelvis origin.** Freyja's pelvis origin is the lumbosacral joint; her hip centres sit about 57 mm ahead of it and 97.5 mm below. The dataset's sit behind its pelvis origin. Mixing the two silently wrecks the sagittal moments.
-- **The foot is a rigid, flat, toeless box.** It cannot represent late-stance push-off, so the late-stance failures of the contact-polygon test are a limit of the foot model (`decisions/0001-toe-joint.md`). That is separate from B's unexplained 66 mm backward CoP offset, which also appears with the heel on the ground.
+- **The foot was a rigid, flat, toeless box until the Stage 2g snapshot.** The model now has a toe hinge whose stiffness and damping come from the sheet's `design` range (`CONVENTIONS.md` section 5). Every result before memo 24 was computed on the toeless foot, which cannot represent late-stance push-off, so the late-stance failures of the contact-polygon test there are a limit of that foot model (`decisions/0001-toe-joint.md`). That is separate from B's unexplained 66 mm backward CoP offset, which also appears with the heel on the ground.
 - **Trunk modes bracket the spine options.** `rigid` is a locked spine; `counter_rotate` is an actuated lumbosacral roll and yaw cancelling the pelvis's by feed-forward; `first_harmonic` is a human-like reference from the trunk IMU (diagnostic only). Joints above the pelvis depend only on kinematics and the mode, not on the method. Balance feedback through the trunk is the controller project's. No mode is the v1 headline until Joe decides.
 - **The dataset's foot is toeless and B's failure is unattributed.** `mtp_angle` is exactly 0 in the dataset, so it carries no toe loads, and a force-plate proxy would be dominated by an assumed joint position. B's 66 mm backward CoP offset is explained only in part (masses about 18 mm, trunk placement none); do not attribute it to Freyja's mass distribution, foot or the controller project.
 - **Freyja's mass data is human-based for now.** Agreement between methods is a soft check on the pipeline; once CAD masses replace the anthropometry, disagreement will be legitimate.
 - **Units:** SI in the snapshot and the records (the sheet gives some lengths in mm). Torques N m, speeds rad/s, powers W.
-- **Missing data are flagged, not invented.** Seven sheet range-of-motion values are still missing, so those joints are unlimited and every build warns. Do not make up a limit.
+- **Missing data are flagged, not invented.** The thoracolumbar and cervicothoracic joints still have no range of motion in the sheet, so their six hinges are unlimited (`sim/runs/ENVELOPE.md` lists them) and never swept. Do not make up a limit.
 
 ## 8. How Joe wants to be talked to
 

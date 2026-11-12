@@ -70,8 +70,8 @@ pip install -r requirements.txt
 Run from the repo root:
 
 ```
-python tools/fy test                # full offline suite, about 15 minutes
-python tools/fy test --quick        # subset, about 4 minutes
+python tools/fy test                # full offline suite, run in parallel; slow tests are skipped while their inputs are unchanged
+python tools/fy test --quick        # subset for use between commits
 python tools/fy check               # model checks on the committed model
 python tools/fy run stand_static    # one simulation; writes a run record
 python tools/fy runs digest         # rewrite sim/runs/DIGEST.md
