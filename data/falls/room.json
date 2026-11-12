@@ -2,7 +2,7 @@
  "arguments": {},
  "baseline_mesh": "data/makehuman/freyja-body-v3.obj",
  "generated_by": "analysis/fall_room.py",
- "inputs": "sha256:bbc78518b5f3",
+ "inputs": "sha256:d4e6ad415fb6",
  "registry_ties": {
   "pelvis": {
    "ledger_inner_volume_t5_l": 5.0957,
