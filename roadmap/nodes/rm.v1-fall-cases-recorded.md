@@ -38,4 +38,6 @@ Gates (authored before the work; Joe signs off the memo):
 
 Open for the characterization step, not decided here: the shoulder zone is housed in the thorax (adr-0037 D3), but its skin contact is on `upper_arm_R` (memo 59, finding 7). `seg.upper_arm`'s derived `fall_cases` will therefore not list `lc.fall-shoulder-lateral`, and the upper-arm characterization has to read it through the thorax-shoulder interface or the schema needs a contact-segment field. Joe approves any schema change.
 
+Settled by rm.v1-upper-arm-char-contract (2026-11-13): an optional `contact_in` field on the case record, defaulting to `zone_in`.
+
 Out of scope: caps and strokes (the owning records of adr-0044 D3), the `part.<segment>.fall-reserve` records of adr-0037 D7 (rm.v1-fall-reserves-recorded, a deferred stub: their id pattern has no zone in it, so hip and buttock collide in the pelvis), the arm's backward case (rm.v1-fall-case-arm-backward), and the ranking (rm.v1-fall-ranking-audit).
