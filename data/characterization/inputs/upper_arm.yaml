@@ -1,0 +1,50 @@
+# Authored (characterization-inputs/1, docs/schemas/characterization-inputs-1.schema.json; CONVENTIONS sections 2 and 8). The upper arm's
+# characterization inputs that live only in decision prose and in no address (docs/briefs/ariadne/upper-arm-characterization-brief.md, T5).
+# Each value is the number its clause states; tests/test_characterization_inputs.py checks it against the clause's text. A change to a decision
+# record that moves a value here edits this file in the same commit. Nothing an address already holds is typed here: the anatomical range and
+# the mechanism's extension end are the snapshot's (elbow_extension, elbow_flexion), and the lengths, masses and inertias are the snapshot's.
+schema: characterization-inputs/1
+segment: seg.upper_arm
+side: right
+
+shell: {value: 5, unit: mm, source: [{record: adr-0007, clause: D4}], note: "the shell thickness t, default 5 mm"}
+
+anchor_bars:
+  shoulder: {value: unstated, unit: mm, source: [{record: adr-0045, clause: D6(b)}], note: "no record states the SJC's bar as an anchor; quoted unstated, never zero"}
+  elbow: {value: 7, unit: mm, direction: anteroposterior, source: [{record: adr-0042, clause: D2}], note: "mostly anteroposterior"}
+  wrist: {value: 5, unit: mm, source: [{record: adr-0042, clause: D2}]}
+
+rom:
+  joint: jnt.elbow
+  mechanism_ends:
+    flexion: {value: 157, unit: deg, source: [{record: adr-0008, clause: D4}], note: "Magermans 2005 Table 4, a sample percentile, not a bound"}
+  loaded_arc: {value: null, unit: deg, source_needed: true, source: [{record: adr-0008, clause: D2}], note: "Morrey's functional arc; its bounds are not yet sourced"}
+
+payloads:
+  design: {value: 1.0, unit: kg, at: "the hand's centre of mass", source: [{record: adr-0008, clause: D2}]}
+  nominal: {value: 0.5, unit: kg, at: "the hand's centre of mass", source: [{record: adr-0008, clause: D2}]}
+
+swing_rows:
+  S1:
+    amplitude: {value: 90, unit: deg, provisional: true, source: [{record: adr-0008, clause: D3}]}
+    duration: {value: 1.0, unit: s, provisional: true, source: [{record: adr-0008, clause: D3}]}
+    payload: {value: 0, unit: kg, provisional: true, source: [{record: adr-0008, clause: D3}], note: "no payload"}
+  S2:
+    amplitude: {value: 90, unit: deg, provisional: true, source: [{record: adr-0008, clause: D3}]}
+    duration: {value: 2.0, unit: s, provisional: true, source: [{record: adr-0008, clause: D3}]}
+    payload: {value: 1.0, unit: kg, provisional: true, source: [{record: adr-0008, clause: D3}, {record: adr-0008, clause: D2}], note: "the design payload (D3), 1.0 kg (D2)"}
+  S3:
+    amplitude: {value: 90, unit: deg, provisional: true, source: [{record: adr-0008, clause: D3}, {record: adr-0008, clause: D7}], note: "D3: design payload at gesture speed; D7's row: 90 degrees in 1.0 s"}
+    duration: {value: 1.0, unit: s, provisional: true, source: [{record: adr-0008, clause: D3}, {record: adr-0008, clause: D7}], note: "D3: design payload at gesture speed; D7's row: 90 degrees in 1.0 s"}
+    payload: {value: 1.0, unit: kg, provisional: true, source: [{record: adr-0008, clause: D3}, {record: adr-0008, clause: D7}], note: "the design payload at gesture speed (D3), 1.0 kg in D7's row; no source supports this combination"}
+
+bsip_spread: {value: 3, unit: "%", source: [{record: adr-0008, clause: D2}], note: "about 3% from the BSIP residual spread, on the self-weight terms only"}
+
+fall_contact_points:
+  lc.fall-hand-arm:
+    contact: {value: wrist, unit: null, source: [{record: adr-0008, clause: D5}], note: "the design reach, shoulder to wrist; the reach itself is the snapshot's lengths"}
+    rating: {value: 30, unit: kN, direction: axial compression along the hand-to-shoulder line, source: [{record: adr-0008, clause: D6(f)}]}
+
+fall_flags:
+  lc.fall-hand-arm: {value: structural, unit: null, provisional: false, source: [{record: adr-0008, clause: D6(f)}, {record: adr-0045, clause: D5(e)}]}
+  lc.fall-shoulder-lateral: {value: clearance, unit: null, provisional: true, source: [{record: adr-0037, clause: D5}, {record: adr-0045, clause: D5(e)}], note: "provisional until rm.v1-shoulder-concept sets the shoulder zone's stroke home (adr-0044 D3)"}
