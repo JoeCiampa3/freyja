@@ -34,7 +34,7 @@
          "rays": {"hw_ant_mm": {"mm": 0.0, "label": "cut_plane"}, "r_ant_mm": {"mm": 20.0, "label": "skin"}}},
         {"station_mm": 115, "y_mm": -105, "offset_from_joint_mm": -5, "values": {"area_mm2": 900.0}}
       ],
-      "wrenches": [{"case": "static-design", "force_n": [0, -10, 0], "moment_nm": [0, 0, 1], "bsip_spread_pct": 3, "tilt_bound_deg": 4.0}]
+      "wrenches": [{"case": "static-design", "governs": "moment_z", "force_n": [0, -10, 0], "moment_nm": [0, 0, 1], "bsip_spread_pct": 3, "tilt_bound_deg": 4.0}]
     }
   },
   "rom": {

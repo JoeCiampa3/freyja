@@ -64,7 +64,7 @@
     },
     "interfaces": {
       "type": "object",
-      "description": "By name (shoulder, elbow): a frame, the bracketing section rows at its station, and the wrench of every case at its origin in that frame (adr-0045 D3).",
+      "description": "By name (shoulder, elbow): a frame, the bracketing section rows at its station, and the governing wrench per case and component at its origin in that frame (adr-0045 D3). The full sweeps live only in `load_cases` (one home, Joe's answer 2 to memo 62).",
       "minProperties": 1,
       "propertyNames": {"pattern": "^[a-z][a-z0-9_]*$"},
       "additionalProperties": {"$ref": "#/$defs/interface"}
@@ -220,6 +220,8 @@
       "description": "Force and moment at the interface origin, in the interface frame.",
       "properties": {
         "case": {"type": "string", "minLength": 1, "description": "A load-case id, or a static or inertial row's id."},
+        "governs": {"enum": ["force_x", "force_y", "force_z", "moment_x", "moment_y", "moment_z", "force_magnitude", "moment_magnitude"],
+                    "description": "Required in an interface's `wrenches`, absent elsewhere: the component, in the interface frame, whose largest absolute value over the case this wrench is. The whole wrench is the one at that governing condition."},
         "force_n": {"$ref": "#/$defs/vec3"},
         "moment_nm": {"$ref": "#/$defs/vec3"},
         "moment_band_nm": {
@@ -250,7 +252,8 @@
         },
         "joint_station_mm": {"type": "number", "description": "The joint's ledger station."},
         "sections": {"type": "array", "minItems": 1, "maxItems": 2, "items": {"$ref": "#/$defs/section_row"}, "description": "The two ledger rows that bracket the joint station, not interpolated."},
-        "wrenches": {"type": "array", "items": {"$ref": "#/$defs/wrench"}}
+        "wrenches": {"type": "array", "items": {"allOf": [{"$ref": "#/$defs/wrench"}, {"required": ["governs"]}]},
+                     "description": "Only the governing wrench per case and component, each naming the component it governs. The sweeps (every angle, every payload, every start) live only in `load_cases`; a generator writes both from one computation."}
       }
     },
     "static_row": {
@@ -330,7 +333,7 @@
             "basis": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/citation"}}
           }
         },
-        "wrenches": {"type": "object", "additionalProperties": {"$ref": "#/$defs/wrench"}, "description": "By interface name."},
+        "wrenches": {"type": "object", "additionalProperties": {"allOf": [{"$ref": "#/$defs/wrench"}, {"not": {"required": ["governs"]}}]}, "description": "By interface name: the case's own wrench there, not a governing selection."},
         "clearance_mm": {"type": ["number", "null"]},
         "open": {"type": "array", "items": {"$ref": "#/$defs/open_item"}}
       }

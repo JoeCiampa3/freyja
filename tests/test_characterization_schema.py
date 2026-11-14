@@ -98,6 +98,10 @@ CHAR_ERRORS = {
     "load cases without the inertial split": lambda d: d["load_cases"].pop("inertial"),
     "a load-case split of another name": lambda d: d["load_cases"].update(actuator_peak=[]),
     "a bolt circle on an interface": lambda d: d["interfaces"]["elbow"].update(bolt_circle_mm=40),
+    # Joe's answer 2 to memo 62: an interface holds only the governing wrench per case and component; the sweeps live in load_cases.
+    "an interface wrench that does not name the component it governs": lambda d: d["interfaces"]["elbow"]["wrenches"][0].pop("governs"),
+    "an interface wrench governing an unknown component": lambda d: d["interfaces"]["elbow"]["wrenches"][0].update(governs="force_sum"),
+    "an interface wrench carrying a sweep": lambda d: d["interfaces"]["elbow"]["wrenches"][0].update(angles_deg=[0, 1]),
 }
 
 
