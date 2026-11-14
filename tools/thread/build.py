@@ -114,6 +114,7 @@ class Build:
         self._row_cells: dict = {}  # the address standing for a cited literature row -> its cells
         self._literature: dict = {}  # file -> its qualifying rows, or None when it cannot be read
         self._file_cache: dict = {}
+        self._file_errors: dict = {}  # a CSV source that does not parse -> why, naming the file and the key
         self._snapshot_doc = None
         self._stamp_docs = {st_path: doc for work, lst in store.stamps.items() for name, doc in lst
                             for st_path in [f"{st.STAMPS_DIR}/{work}/{name}.json"]}
@@ -180,10 +181,41 @@ class Build:
                     doc = json.loads(p.read_text(encoding="utf-8"))
                 elif rel.endswith((".yaml", ".yml")):
                     doc = st.normalise(yaml.load(p.read_text(encoding="utf-8"), Loader=st._YAML_LOADER))
-            except (ValueError, yaml.YAMLError, UnicodeDecodeError):
+                elif rel.endswith(".csv"):
+                    doc = st.csv_doc(p.read_text(encoding="utf-8"), rel)
+            except ValueError as e:
+                doc = None
+                if rel.endswith(".csv"):
+                    self._file_errors[rel] = str(e)
+            except (yaml.YAMLError, UnicodeDecodeError):
                 doc = None
         self._file_cache[rel] = doc
         return doc
+
+    def why_unresolved(self, address: str):
+        """None when the address resolves; otherwise why not, naming the file and the key for a CSV source (CONVENTIONS section 3)."""
+        if self.resolve(address)[0]:
+            return None
+        try:
+            source, pointer = addr.parse(address)
+        except ValueError as e:
+            return str(e)
+        if not source.endswith(".csv"):
+            return f"{address} does not resolve"
+        if source in self._file_errors:
+            return self._file_errors[source]
+        doc = self._file_cache.get(source)
+        if doc is None:
+            return f"{source}: no such tracked CSV file"
+        toks = addr._tokens(pointer)
+        if toks[0] not in doc:
+            return f"{source}: no row with first-column key {toks[0]!r}"
+        if len(toks) > 1 and toks[1] not in doc[toks[0]]:
+            return f"{source}: no column {toks[1]!r} (row {toks[0]!r})"
+        return f"{source}: {address} points below a cell"
+
+    def _reasons(self, addresses) -> str:
+        return ", ".join(self.why_unresolved(a) if a.split("#", 1)[0].endswith(".csv") else a for a in addresses)
 
     def address_hash(self, address: str):
         ok, value = self.resolve(address)
@@ -663,7 +695,7 @@ class Build:
                     self._warn("consumes-changed", f"{id}: the consumes list differs from the baseline stamp {baseline_name}", (id,))
             unresolved = sorted(set(unresolved))
             if unresolved:
-                self._warn("address-unresolved", f"{id}: {', '.join(unresolved)} does not resolve", (id,))
+                self._warn("address-unresolved", f"{id}: {self._reasons(unresolved)} does not resolve", (id,))
             self.work[id] = {"status": status, "stamp": baseline_name, "pinned": pinned, "moved": moved}
             self.work_sources[id] = wsrc
 
@@ -797,7 +829,7 @@ def write_stamp(root, b: Build, work: str, *, stamp: str | None = None, note: st
             continue
         rows.append({"address": a, "hash": addr.hash_value(value), "value": value if len(addr.canonical(value)) <= VALUE_BYTES else None})
     if bad:
-        raise ValueError(f"{work}: these addresses do not resolve: {', '.join(bad)}")
+        raise ValueError(f"{work}: these addresses do not resolve: {b._reasons(bad)}")
     stamp = stamp or datetime.now().strftime("%Y%m%d-%H%M")
     p = Path(root) / st.STAMPS_DIR / work / f"{stamp}.json"
     if p.exists():

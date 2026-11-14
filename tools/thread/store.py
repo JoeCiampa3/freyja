@@ -82,6 +82,30 @@ def normalise(doc):
     return json.loads(json.dumps(doc, default=str))
 
 
+def csv_doc(text: str, rel: str) -> dict:
+    """A tracked CSV as an address source (CONVENTIONS section 3): {first-column cell: {header: cell}}, every cell the string as written
+    (no number parse, so a hash is the text's). Lines starting with `#` and empty lines are skipped; the first other line is the header.
+    ValueError naming the file, and the key where there is one, when the file has no header, the header names a column twice, a row's
+    width differs from the header's, or two rows share a first-column key."""
+    lines = [ln for ln in text.splitlines() if ln.strip() and not ln.startswith("#")]
+    rows = list(csv.reader(lines))
+    if not rows:
+        raise ValueError(f"{rel}: no header row")
+    header = rows[0]
+    dup = sorted({h for h in header if header.count(h) > 1})
+    if dup:
+        raise ValueError(f"{rel}: the header names column {dup[0]!r} twice")
+    doc = {}
+    for r in rows[1:]:
+        key = r[0]
+        if len(r) != len(header):
+            raise ValueError(f"{rel}: row {key!r} has {len(r)} cells against {len(header)} columns")
+        if key in doc:
+            raise ValueError(f"{rel}: duplicate first-column key {key!r}")
+        doc[key] = dict(zip(header, r))
+    return doc
+
+
 @dataclass
 class Model:
     bodies: dict  # body name -> parent body name (None under the world)
