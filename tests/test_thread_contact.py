@@ -197,6 +197,16 @@ def test_gs2_fall_cases_do_not_depend_on_contact_in(real, tmp_path):
     assert segs and all(json.dumps(real.docs[s]["fall_cases"]) == json.dumps(stripped.docs[s]["fall_cases"]) for s in segs)
 
 
+def test_gs3_the_shoulder_lateral_case_strikes_the_upper_arm_and_stays_housed_in_the_thorax(real):
+    """T2, adr-0045 D5(d) and gate G3: lc.fall-shoulder-lateral's contact is seg.upper_arm (memo 59, finding 7)."""
+    assert real.recs["lc.fall-shoulder-lateral"]["contact_in"] == "seg.upper_arm"
+    assert real.docs["seg.upper_arm"]["fall_contacts"] == ["lc.fall-hand-arm", "lc.fall-shoulder-lateral"]
+    assert real.docs["seg.upper_arm"]["fall_cases"] == ["lc.fall-hand-arm"]
+    assert "lc.fall-shoulder-lateral" not in real.docs["seg.thorax"]["fall_contacts"]
+    assert "lc.fall-shoulder-lateral" in real.docs["seg.thorax"]["fall_cases"]
+    assert sorted(i for i, r in real.recs.items() if "contact_in" in r) == ["lc.fall-shoulder-lateral"]
+
+
 def test_every_real_fall_case_reaches_exactly_one_contact_segment(real):
     cases = sorted(i for i, r in real.recs.items() if r["kind"] == "load_case" and "zone_in" in r)
     hits = sorted(c for d in real.docs.values() if d["kind"] == "segment" for c in d["fall_contacts"])

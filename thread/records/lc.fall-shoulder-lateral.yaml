@@ -1,3 +1,4 @@
+contact_in: seg.upper_arm
 evidence:
 - clause: D1(b)
   kind: decision
@@ -11,6 +12,9 @@ notes: >-
   is shared between zones or between limbs without a verified source (adr-0037 D1(c)).
   540 J is the upper edge of the energy bound of adr-0037 D1(b), 473 to 537 J after its 2026-10-31 Revisions, rounded up to the next 10 J. No
   credit for leg buckling or bracing (adr-0036).
+  The skin it strikes is the upper arm's, not the thorax's: at the shoulder joint centre station the thorax ledger's lateral ray ends on a
+  cut plane and the shoulder's skin lies in upper_arm_R, 34.3 mm beyond the joint centre at station 40 (memo 59, finding 7), so its contact
+  is seg.upper_arm while its zone stays housed in the thorax (adr-0045 D5(d)).
 purpose: Lateral fall from standing, shoulder first.
 schema: thread-record/2
 source:
