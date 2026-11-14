@@ -1,0 +1,27 @@
+# Hand-written test fixture (tests/test_characterization_schema.py): the shape of characterization-inputs/1, not the upper arm's inputs.
+schema: characterization-inputs/1
+segment: seg.upper_arm
+side: right
+shell: {value: 5, unit: mm, source: [{record: adr-0007, clause: D4}]}
+anchor_bars:
+  elbow: {value: 7, unit: mm, direction: anteroposterior, source: [{record: adr-0042, clause: D2}]}
+  shoulder: {value: unstated, unit: mm, source: [{record: adr-0045, clause: D6(b)}]}
+rom:
+  joint: jnt.elbow
+  mechanism_ends:
+    flexion: {value: 157, unit: deg, source: [{record: adr-0008, clause: D4}]}
+  loaded_arc: {value: null, unit: deg, source_needed: true, source: [{record: adr-0008, clause: D2}]}
+payloads:
+  design: {value: 1.0, unit: kg, at: the hand's centre of mass, source: [{record: adr-0008, clause: D2}]}
+swing_rows:
+  S1:
+    amplitude: {value: 90, unit: deg, source: [{record: adr-0008, clause: D3}]}
+    duration: {value: 1.0, unit: s, source: [{record: adr-0008, clause: D3}]}
+    payload: {value: 0, unit: kg, source: [{record: adr-0008, clause: D3}]}
+bsip_spread: {value: 3, unit: "%", source: [{record: adr-0008, clause: D2}]}
+fall_contact_points:
+  lc.fall-x:
+    contact: {value: wrist, unit: null, source: [{record: adr-0008, clause: D5}]}
+    rating: {value: 30, unit: kN, direction: axial compression, source: [{record: adr-0008, clause: D6(f)}]}
+fall_flags:
+  lc.fall-x: {value: structural, unit: null, provisional: false, source: [{record: adr-0008, clause: D6(f)}]}

@@ -1,0 +1,62 @@
+{
+  "generated_by": "hand-written test fixture (tests/test_characterization_schema.py); not a characterization",
+  "inputs": "sha256:000000000000",
+  "schema": "segment-characterization/1",
+  "segment": "seg.upper_arm",
+  "side": "right",
+  "frame": {
+    "statement": "Right-side ISB/CAD segment frame, origin at the shoulder joint centre.",
+    "origin": "shoulder",
+    "axes": {"x": "anterior", "y": "proximal", "z": "lateral"},
+    "units": {"length": "mm", "angle": "deg", "force": "N", "moment": "N m", "mass": "kg", "energy": "J"}
+  },
+  "anchors": {
+    "shoulder": {
+      "definition": "the sheet's SJC through the trunk registration",
+      "position": {"mm": [0, 0, 0], "bar": {"value_mm": "unstated", "source": [{"record": "adr-0045", "clause": "D6(b)"}]}}
+    },
+    "elbow": {
+      "definition": "adr-0042 D1 node",
+      "position": {"mm": [0, -100, 0], "bar": {"value_mm": 7, "direction": "anteroposterior", "source": [{"record": "adr-0042", "clause": "D2"}]}}
+    }
+  },
+  "axis_tilt_bound": {"value_deg": 4.0, "from": "atan(7 / 100)", "plane": "sagittal"},
+  "interfaces": {
+    "elbow": {
+      "anchor": "elbow",
+      "frame": {
+        "origin": {"mm": [0, -100, 0], "bar": {"value_mm": 7, "direction": "anteroposterior", "source": [{"record": "adr-0042", "clause": "D2"}]}},
+        "axes": [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+      },
+      "joint_station_mm": 110,
+      "sections": [
+        {"station_mm": 105, "y_mm": -95, "offset_from_joint_mm": 5, "values": {"area_mm2": 1000.0},
+         "rays": {"hw_ant_mm": {"mm": 0.0, "label": "cut_plane"}, "r_ant_mm": {"mm": 20.0, "label": "skin"}}},
+        {"station_mm": 115, "y_mm": -105, "offset_from_joint_mm": -5, "values": {"area_mm2": 900.0}}
+      ],
+      "wrenches": [{"case": "static-design", "force_n": [0, -10, 0], "moment_nm": [0, 0, 1], "bsip_spread_pct": 3, "tilt_bound_deg": 4.0}]
+    }
+  },
+  "rom": {
+    "joint": "jnt.elbow",
+    "sign": "flexion positive, extension negative",
+    "anatomical": {"min_deg": -5, "max_deg": 150, "basis": "snapshot"},
+    "mechanism": {"min_deg": -5, "max_deg": 157, "basis": "adr-0008 D4"},
+    "loaded_arc": {"min_deg": null, "max_deg": null, "basis": "adr-0008 D2", "source_needed": true},
+    "flexion_clearance": {"source": "data/characterization/x.json#", "inner_first_contact_deg": null,
+                          "rows": [{"angle_deg": 0, "inner_separation_mm": 10.0, "skin_interpenetration_mm": 0.0}]}
+  },
+  "volume": {"definition": "the body envelope inside the shell", "shell_mm": 5, "inner_volume_l": 0.5,
+             "stations": [{"station_mm": 105, "y_mm": -95, "values": {"area_mm2": 1000.0}}]},
+  "load_cases": {
+    "static": [],
+    "inertial": [],
+    "fall": [
+      {"case": "lc.fall-x", "reaches_by": ["fall_contacts"], "energy_j": 100, "direction": "lateral",
+       "contact": {"description": "skin at station 40", "position": {"mm": [0, -40, 30], "bar": {"value_mm": "unstated", "source": [{"record": "adr-0045", "clause": "D6(b)"}]}}},
+       "flag": "clearance", "basis": [{"record": "adr-0045", "clause": "D5(e)"}], "provisional": true, "clearance_mm": null,
+       "open": [{"quantity": "clearance magnitude", "reason": "stroke home not chosen", "waits_on": "rm.v1-shoulder-concept"}]}
+    ]
+  },
+  "consumes": ["snapshot#/upper_arm_right_length"]
+}
