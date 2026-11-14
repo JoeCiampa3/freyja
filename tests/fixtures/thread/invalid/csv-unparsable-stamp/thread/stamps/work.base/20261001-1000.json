@@ -1,0 +1,11 @@
+{
+  "schema": "thread-stamp/1",
+  "work": "work.base",
+  "stamp": "20261001-1000",
+  "consumes": [
+    {"address": "data/bad.csv#/1/b", "hash": "000000000000", "value": "3"}
+  ],
+  "note": "",
+  "pinned": false,
+  "by": "test"
+}

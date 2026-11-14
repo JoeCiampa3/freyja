@@ -113,6 +113,30 @@ def test_a_work_item_consuming_a_missing_cell_is_warned_with_the_reason_and_stam
         build.write_stamp(root, b, "work.w", stamp="20260101-0000", by="test")
 
 
+def test_a_record_addressing_an_unparsable_csv_is_a_build_error_naming_the_record_file_and_key(tmp_path):
+    """Joe's answer 5 to memo 62: a CSV that a record or stamp addresses and that does not parse is a build error naming the file and the key."""
+    root = root_with(tmp_path, CSV + "40.0,1.0,2.0\n")
+    write_record(root, id="work.w", kind="work_item", of="seg.pelvis", mode="assisted", consumes=[f"{REL}#/0.0/hw_lat_mm"])
+    b = build.build_root(root)
+    errs = [i for i in b.errors if i.code == "csv-unparsable"]
+    assert len(errs) == 1 and errs[0].ids == ("work.w",)
+    m = errs[0].message
+    assert "work.w" in m and REL in m and "'40.0'" in m and "duplicate" in m and f"{REL}#/0.0/hw_lat_mm" in m
+    assert b.outputs == {}
+
+
+def test_an_unparsable_csv_that_nothing_addresses_is_not_an_error(tmp_path):
+    b = build.build_root(root_with(tmp_path, CSV + "40.0,1.0,2.0\n"))
+    assert b.errors == [] and b.warnings == []
+
+
+def test_a_missing_row_or_column_stays_a_warning_not_an_error(tmp_path):
+    root = root_with(tmp_path)
+    write_record(root, id="work.w", kind="work_item", of="seg.pelvis", mode="assisted", consumes=[f"{REL}#/45.0/hw_lat_mm", f"{REL}#/40.0/hw_med_mm"])
+    b = build.build_root(root)
+    assert b.errors == [] and [i.code for i in b.warnings] == ["address-unresolved"]
+
+
 def test_a_work_item_consuming_a_cell_is_stamped_and_goes_stale_on_that_cell_only(tmp_path):
     root = root_with(tmp_path)
     write_record(root, id="work.w", kind="work_item", of="seg.pelvis", mode="assisted", consumes=[f"{REL}#/40.0/hw_lat_mm"])

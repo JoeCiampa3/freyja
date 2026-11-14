@@ -1,0 +1,8 @@
+schema: thread-record/2
+id: work.csv
+kind: work_item
+status: proposed
+purpose: A test work item consuming a cell of a CSV that does not parse.
+of: seg.pelvis
+mode: assisted
+consumes: ["data/bad.csv#/1/b"]

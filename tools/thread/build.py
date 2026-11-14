@@ -247,6 +247,7 @@ class Build:
         self._grade_evidence()
         self._bind()
         self._check_stamps()
+        self._check_csv_sources()
         self._static_warnings()
         if self.errors:
             return
@@ -470,6 +471,34 @@ class Build:
         for work in sorted(self.store.stamp_dirs):
             if work not in self.recs or self.recs[work]["kind"] != "work_item":
                 self._err("stamp-unknown-work", f"thread/stamps/{work}/ holds stamps, but {work} is not a work item", (work,))
+
+    def _check_csv_sources(self):
+        """A CSV that a record or a stamp addresses and that does not parse is a build error naming the record or stamp, the address, the file and
+        the key (CONVENTIONS section 3; Joe's answer 5 to memo 62). A missing row or column is not: it does not resolve, with its reason."""
+        def strings(x):
+            if isinstance(x, dict):
+                for v in x.values():
+                    yield from strings(v)
+            elif isinstance(x, list):
+                for v in x:
+                    yield from strings(v)
+            elif isinstance(x, str):
+                yield x
+
+        holders = [(id, f"{id}", r) for id, r in sorted(self.recs.items())]
+        holders += [(work, f"{st.STAMPS_DIR}/{work}/{name}.json", [c.get("address") for c in doc.get("consumes", [])])
+                    for work, lst in sorted(self.store.stamps.items()) for name, doc in lst]
+        for owner, where, doc in holders:
+            for a in sorted(set(strings(doc))):
+                try:
+                    source, _ = addr.parse(a)
+                except ValueError:
+                    continue
+                if not source.endswith(".csv"):
+                    continue
+                self._file_doc(source)
+                if source in self._file_errors:
+                    self._err("csv-unparsable", f"{where}: {a} addresses a CSV that does not parse: {self._file_errors[source]}", (owner,))
 
     def _static_warnings(self):
         model = self.store.model

@@ -48,6 +48,8 @@ ERRORS = {
     "decision-id-number": [("decision-front-matter", ("0905-wrong-number",))],
     "decision-status": [("decision-front-matter", ("0907-bad-status",))],
     "decision-duplicate-id": [("decision-front-matter", ("0001-zcopy",))],
+    "csv-unparsable-record": [("csv-unparsable", ("work.csv",))],
+    "csv-unparsable-stamp": [("csv-unparsable", ("work.base",))],
 }
 WARNINGS = {
     "unbound-hinge": [("unbound-hinge", ("lsj_lat",))],
