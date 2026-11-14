@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "thread-record/2",
   "title": "thread-record/2",
-  "description": "One authored record in thread/records/<id>.yaml (CONVENTIONS sections 2, 3 and 8; docs/briefs/ariadne/stage3a-brief.md, docs/briefs/ariadne/thread-sources-brief.md). thread-record/1 plus a load case's `evidence`, its energy-defined `source` form and `zone_in`. One schema, a branch per kind selected by `kind`. The schema checks the shape of one record. Whether a reference resolves, whether it names the right kind, bindings to the model, `sides` against pre_processor.BILATERAL and everything across records is checked by tools/thread, so reference fields accept any record id here. Records carry bindings, relations and intent only: masses, lengths, centres of mass, inertias and ROM are read from params/snapshot.csv and never restated. Every relation is stored once, on the record that owns it; inverse relations are derived.",
+  "description": "One authored record in thread/records/<id>.yaml (CONVENTIONS sections 2, 3 and 8; docs/briefs/ariadne/stage3a-brief.md, docs/briefs/ariadne/thread-sources-brief.md). thread-record/1 plus a load case's `evidence`, its energy-defined `source` form, `zone_in` and the optional `contact_in` (adr-0045 D5, amended in place). One schema, a branch per kind selected by `kind`. The schema checks the shape of one record. Whether a reference resolves, whether it names the right kind, bindings to the model, `sides` against pre_processor.BILATERAL and everything across records is checked by tools/thread, so reference fields accept any record id here. Records carry bindings, relations and intent only: masses, lengths, centres of mass, inertias and ROM are read from params/snapshot.csv and never restated. Every relation is stored once, on the record that owns it; inverse relations are derived.",
   "type": "object",
   "required": [
     "schema",
@@ -459,6 +459,10 @@
             "$ref": "#/$defs/record_id",
             "description": "The segment housing the zone (adr-0037 D3, \"Housed in\"). Required with the energy-defined source form, forbidden on the other two."
           },
+          "contact_in": {
+            "$ref": "#/$defs/record_id",
+            "description": "A segment: the one whose skin the fall strikes (adr-0045 D5(a)). Optional on the energy-defined source form, forbidden on the other two. Absent, the contact is `zone_in`. It means only the contact: housing, reserves, mass claims and budgets stay keyed on `zone_in`. Derives `fall_contacts` on the segment."
+          },
           "evidence": {
             "type": "array",
             "uniqueItems": true,
@@ -495,11 +499,22 @@
           ]
         },
         "else": {
-          "not": {
-            "required": [
-              "zone_in"
-            ]
-          }
+          "allOf": [
+            {
+              "not": {
+                "required": [
+                  "zone_in"
+                ]
+              }
+            },
+            {
+              "not": {
+                "required": [
+                  "contact_in"
+                ]
+              }
+            }
+          ]
         }
       }
     },

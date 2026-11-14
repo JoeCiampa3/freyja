@@ -33,7 +33,7 @@ REFS = {
              ("harness", True, ("harness_run",))),
     "interface": (("between", True, ("part", "segment")), ("carries_cut_of", False, ("joint",))),
     "harness_run": (("path", True, ("segment",)),),
-    "load_case": (("zone_in", False, ("segment",)),),
+    "load_case": (("zone_in", False, ("segment",)), ("contact_in", False, ("segment",))),
     "work_item": (("of", False, edges.KINDS),),
 }
 
@@ -495,6 +495,9 @@ class Build:
                 src[id] |= self._evidence_src[id]
                 if "zone_in" in r:
                     link("fall_cases", r["zone_in"], id, "zone_in")
+                    contact = r.get("contact_in", r["zone_in"])  # adr-0045 D5(b): the contact, else the zone
+                    link("fall_contacts", contact, id, "zone_in")
+                    src[contact].add(f"{id}#/contact_in")  # the relation reads both fields, so setting either restamps its target
             elif k == "work_item":
                 for a in r["consumes"]:
                     t = self._record_of_address(a)
@@ -544,7 +547,7 @@ class Build:
                         src[id].add(f"snapshot#/{key}")
                 doc.update(houses=lst("houses"), reacted_by=lst("reacted_by"), crossed_by=lst("crossed_by"),
                            joints_as_parent=sorted(joints_parent[id]), joints_as_child=sorted(joints_child[id]), interfaces=lst("interfaces"),
-                           fall_cases=lst("fall_cases"), budgets={"mass": budgets["segments"][id]})
+                           fall_cases=lst("fall_cases"), fall_contacts=lst("fall_contacts"), budgets={"mass": budgets["segments"][id]})
             elif k == "joint":
                 doc["bound_hinges"] = sorted(self.jnt_hinges[id])
                 doc["parent_segments"] = jnt_parent_segs[id]

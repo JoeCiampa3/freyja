@@ -40,6 +40,7 @@ Derived:
 - consumed_by: none
 - crossed_by: none
 - fall_cases: none
+- fall_contacts: none
 - houses: none
 - interfaces: none
 - joints_as_child: [jnt.wrist](jnt.wrist.md)

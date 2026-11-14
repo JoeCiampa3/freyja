@@ -54,6 +54,12 @@ EDGE_TYPES = tuple(sorted((
              "The segment housing a fall case's zone (adr-0037 D3, \"Housed in\"). Stored on an energy-defined load case, where it is required. Derives `fall_cases` on the segment."),
     EdgeType("fall_cases", ("segment",), ("load_case",), "derived",
              "Inverse of `zone_in`: the energy-defined load cases whose zone a segment houses."),
+    EdgeType("contact_in", ("load_case",), ("segment",), "authored",
+             "The segment whose skin a fall case strikes (adr-0045 D5(a)). Stored on an energy-defined load case, optional; absent, the contact is `zone_in`. "
+             "Means only the contact: housing, reserves, mass claims and budgets stay keyed on `zone_in`. Derives `fall_contacts` on the segment."),
+    EdgeType("fall_contacts", ("segment",), ("load_case",), "derived",
+             "The energy-defined load cases whose contact is a segment: `contact_in`, else `zone_in` (adr-0045 D5(b)). A segment's characterization reads "
+             "`fall_cases` together with `fall_contacts` (adr-0045 D5(c))."),
     EdgeType("houses", ("segment",), ("part",), "derived",
              "Inverse of `housed_in`: the parts housed in a segment, proposed and superseded ones included. Only active and proposed parts claim mass."),
     EdgeType("reacted_by", ("segment",), ("part",), "derived",
