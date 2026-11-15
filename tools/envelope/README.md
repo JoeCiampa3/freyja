@@ -15,6 +15,7 @@ This list was one cell of the layout table in `CONVENTIONS.md` section 2 until 2
 - The model body frames of every segment and the computed mesh-to-model trunk shift (`frames.py`): the oracle takes poses and registries in the model frames, pelvis origin at the lumbosacral joint (brief 7).
 - The offset of the sim's trunk stack from the mesh centre line (`offsets.py`).
 - Foreign components' poses from the MuJoCo model and joint-angle samples (`foreign.py`).
+- Hinge-chain poses (`joint_poses.py`, upper-arm characterization T7): an owner body's pose in a host body's frame over the hinges between them, read from the model, signed by `checks/joint_polarity.yaml` and checked against its probe, never clamped to the model's limits; it imports `foreign.py`'s convention and frame helpers.
 - The component registry (`registry.py`): `components/1`, the ISB to segment rotation, the STL reader.
 - The occupancy of a segment (`occupancy.py`): margin to the registry's components, the exact mesh distance of the binding pair, the free field.
 - The arm bodies (`arms.py`, `arms_report.py`, brief 8): each arm segment is the mesh rotated rigidly about its proximal joint centre onto the zero-pose axis, anterior preserved, and stretched along it, on the adr-0042 nodes (the proximal segment's section centre line at the joint station), gate 8%; the hand rotated with the forearm, no stretch; the closure with every body built, the final share table.
