@@ -19,6 +19,7 @@ CONVENTIONS.md, so it works from any directory.
     fy roadmap validate|build|show|frontier|refs|open|fixture|notify|serve|install-hooks   the roadmap graph (tools/roadmap)
     fy thread validate|build|show|refs|impact|why|stamp|fixture   the system model: records, work status, impact (tools/thread)
     fy cad validate|push|pull|drift|stamp|status   the CAD bridge to Fusion: bindings, sidecars, drift, the work item's stamp (tools/cad)
+    fy characterize <segment> --dry-run   a segment's characterization (tools/characterization): the geometry summary; writes nothing yet
 """
 from __future__ import annotations
 
@@ -161,6 +162,12 @@ def run_thread(root: Path, args: list):
     return thread_cli.main(args, default_root=root)
 
 
+def run_characterize(root: Path, args: list):
+    _use(root, "tools")
+    from characterization import cli as char_cli
+    return char_cli.main(args, default_root=root)
+
+
 def run_check(root: Path, tier: str | None, say=print) -> int:
     """Run the checks on the committed model and snapshot. Exit code 1 only when a gate check fails."""
     _use(root, "checks")
@@ -194,6 +201,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("cad", help="the CAD bridge to Fusion: validate, push, pull, drift, stamp, status", add_help=False)
     sub.add_parser("envelope", help="body-envelope trial: build the conformed thigh, gates, clearance check", add_help=False)
     sub.add_parser("runs", help="list, show and compare run records; write the digest and envelope", add_help=False)
+    sub.add_parser("characterize", help="a segment's characterization: --dry-run prints the geometry summary", add_help=False)
     chk = sub.add_parser("check", help="run the model checks")
     chk.add_argument("--tier", choices=("gate", "advisory"), help="only results of this tier")
     return ap
@@ -203,7 +211,7 @@ def main(argv=None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     ap = build_parser()
     # build, watch, test, run and runs hand everything after the command to the tool that owns the options
-    if argv[:1] and argv[0] in ("build", "watch", "test", "run", "runs", "view", "sweep", "gait", "state", "roadmap", "thread", "envelope", "cad"):
+    if argv[:1] and argv[0] in ("build", "watch", "test", "run", "runs", "view", "sweep", "gait", "state", "roadmap", "thread", "envelope", "cad", "characterize"):
         command, rest = argv[0], argv[1:]
         tier = None
     else:
@@ -238,4 +246,6 @@ def main(argv=None) -> int:
         return run_envelope(root, rest)
     if command == "cad":
         return run_cad(root, rest)
+    if command == "characterize":
+        return run_characterize(root, rest)
     return run_check(root, tier)

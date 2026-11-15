@@ -82,6 +82,11 @@ class Dispatch(unittest.TestCase):
         code, fn = self.run_from_subdir(["cad", "pull", "part.arm.upper_member", "--root", "x"], "run_cad")
         fn.assert_called_once_with(REPO, ["pull", "part.arm.upper_member", "--root", "x"])
 
+    def test_characterize_passes_its_segment_and_arguments_to_the_library(self):
+        code, fn = self.run_from_subdir(["characterize", "upper_arm", "--dry-run"], "run_characterize")
+        self.assertEqual(code, 0)
+        fn.assert_called_once_with(REPO, ["upper_arm", "--dry-run"])
+
     def test_quick_runs_only_the_quick_subset_and_passes_the_other_options_on(self):
         with mock.patch("pytest.main", return_value=0) as pm:
             self.assertEqual(cli.run_tests(REPO, ["--quick", "-x"]), 0)
