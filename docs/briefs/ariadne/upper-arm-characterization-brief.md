@@ -149,3 +149,50 @@ Authored before the work (roadmap README section 8). Each is reported in its gro
 - Sign off each leaf from its memo (`signed_off: true`); Code never sets it.
 - Roadmap batch owed by adr-0045's Consequences: `rm.v1-upper-arm-requirements` gains `rm.v1-elbow-actuator-selected` as a blocker.
 - Before F: the stamp of `work.upper-arm-characterization` is yours to call for in the prompt.
+
+
+## Amendment 1 (2026-11-14): Group G close-out after memos 63 and 64
+
+This amendment supersedes G-G4's labelling clause, G-G5's ray family and all of G-G8, and adds T7a to T7d. Everything else above stands. Read memos 63 and 64 before starting. Tag: Delegate.
+
+### Why a gate changes after a result
+
+The brief's method forbids changing a criterion to make a result pass. These changes are not that. G-G8 as written was ill-posed: adjacent envelope segments share the elbow plane, so any set-based measure reads contact at 0 degrees by construction, for every possible sculpt (memo 64 finding 1). It measured the cut, not the body. G-G4's labels assumed the CSV keeps which branch ended each ray, and it does not (memo 63 finding 2). The new criteria below are authored before the new measurement runs. The literal G-G8 table of memo 64 stays on record as what the old measure gave.
+
+### Rulings on memo 63 and memo 64 questions
+
+- **Memo 63 Q2, ray labels.** Accept the conservative CSV rule (`geometry.ray_label`): it can label a skin ray `cut_plane` but never the reverse, so it can only understate room. Exact labels wait for a branch column written by `fy envelope build` at the next envelope rebuild. That is a follow-up, not this amendment's work; do not touch the ledger build.
+- **Memo 63 Q4, G-G5.** The gated rays are the `hw_` rays from the axis, where the D1 node lies. The `r_` rays are reported beside them.
+- **Memo 64 Q1, the measure.** Below (M1 to M3).
+- **Memo 64 Q2, skin.** Skin interpenetration is reported, never gated (M2). Whether Freyja's cover compresses, slides or is cut away at the cubital fossa is a design decision for the part, not a characterization result.
+- **Memo 64 Q3, forearm twist.** Checked by T7b.
+- **Memo 64 Q4, browser test.** T7d.
+- **Memo 64 Q5, memos.** Ruling 1 of 2026-11-14 governs repo data files only. A memo may report cache-derived numbers if it labels them diagnostic. No tracked data file other than T7's output carries one.
+- **Memo 64 finding 5, private imports.** Leave them. The hinge-chain module is migrated and the helpers made public when a third joint (knee or shoulder) arrives, as planned.
+
+### Amended gates
+
+- **G-G4 (labelling clause replaced).** No ray is labelled `skin` where the ledger's own `Section.ray` ended it on a region boundary or outside. Skin rays labelled `cut_plane` are allowed, counted and listed. Memo 63's 361 of 372 with 0 overstated passes this clause; the rest of G-G4 is unchanged.
+- **G-G5 (ray family).** "Every ray from the node's axis" means the four `hw_` rays. Memo 63's numbers pass.
+- **G-G8 (replaced).** The validation gates below must pass; the measurement rows are reported, not gated, except where stated.
+  - **V1, synthetic.** The analytic-cylinder, slab-gap, hinged-pair and sign-mutation tests of memo 64's draft pass, each within one voxel (2 mm), without the cache.
+  - **V2, sculpt reassembly (T7b).** Posed by the sculpt's own relative transform of the two fields (from the registration code, not retyped), with no zone excluded, the measure m is within one voxel of zero at t = 0 and at t = 5: the two bodies reassemble the solid they were cut from. More than 2 mm is a stop: the pose chain or the twist convention is wrong.
+  - **V3, zero pose with zones excluded.** At 0 degrees with the 25 mm zones excluded (M1), the inner separation is 50 mm within one voxel: two parallel faces 25 mm either side of the plane.
+  - **V4.** Two builds are byte-identical.
+  - **M1, hardware clearance (reported; first contact at or below 157 degrees is a finding, not a fail).** The inner sets at the 5 mm shell, excluding each body's elbow joint zone: the upper arm's last `ZONE_H_MM` and the forearm's first `ZONE_H_MM`. That is 25 mm, read from the ledger if it records it, otherwise from `tools/envelope/bodies.ZONE_H_MM` with its location in the output's provenance. Report inner separation at memo 64's angles and the first-contact angle. Sensitivity rows at zone heights of 35 and 50 mm give the first-contact angle only, labelled sensitivity, not basis.
+  - **M2, skin (reported).** Skin interpenetration with the same exclusion, at the same angles.
+  - **M3, keep-out (reported).** Over flexion from 0 to the mechanism's end, the part of each body's inner set, outside its zone, that the other body's posed inner set passes through at some angle. Per body: the volume in litres, the deepest penetration, the stations it spans in that body's ledger, and which side (anterior, posterior, medial, lateral) by the `hw_` directions. This is the room the elbow's travel takes from rigid hardware. It is reported, not subtracted from G-G7's volume.
+
+### Tasks
+
+**T7a. Clearance script (one commit; tests first).** Rewrite `analysis/elbow_flexion_clearance.py` and `tests/test_elbow_flexion_clearance.py` from memo 64's description, with the measure, stamp and output path unchanged except for the zone exclusion, the sensitivity rows, the keep-out and the V checks. The output keeps the literal 0-zone table as a labelled `no_exclusion` block, so memo 64's result is reproduced in the record. The output test that needs the cache skips without it and says so.
+
+**T7b. Sculpt reassembly and twist (same commit or the next).** From the arm registration, compute the relative rotation of the forearm field to the upper arm field in the sculpt. Decompose it into flexion about the model's elbow hinge, the out-of-plane residue (the carrying angle) and the axial twist, and report all three against memo 64's 40.78 degrees between the axes. Run V2. If the twist exceeds 2 degrees, report it as a finding for memo 64 finding 3; do not change the posing convention.
+
+**T7c. Wire the result in.** `tools/characterization/geometry.py` reads the committed JSON by address for `rom.flexion_clearance`: M1's rows, its first-contact angle and the zone height. `fy characterize upper_arm --dry-run` prints them. No other file changes.
+
+**T7d. Browser test (own commit, last; may be skipped if the session runs long).** Make the headless-browser tests run serially rather than raising the timeout, if the test harness supports it, so that they never share the CPUs with the `inputs` tests; otherwise raise the timeout to 180 s and say why. Then `fy state` must show 0 failed.
+
+**Stop and ask before:** changing the measure's definition beyond the zone exclusion; a zone height other than `ZONE_H_MM` as the basis; reading the cache from anything except the T7 script and its test; subtracting M3 from any volume; any change under `tools/envelope/`.
+
+**Checkpoint G (close-out).** Memo with the amended gate table (G-G1 to G-G8, V1 to V4), the M1 table with first contact and the sensitivity rows, M2, M3 per body, T7b's decomposition, timings, findings, questions. Recommend sign-off of `rm.v1-upper-arm-geometry-extracted` or say what blocks it. `fy state`, stop. Do not start Group L.
