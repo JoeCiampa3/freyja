@@ -43,7 +43,7 @@
     "anatomical": {"min_deg": -5, "max_deg": 150, "basis": "snapshot"},
     "mechanism": {"min_deg": -5, "max_deg": 157, "basis": "adr-0008 D4"},
     "loaded_arc": {"min_deg": null, "max_deg": null, "basis": "adr-0008 D2", "source_needed": true},
-    "flexion_clearance": {"source": "data/characterization/x.json#", "inner_first_contact_deg": null,
+    "flexion_clearance": {"source": "data/characterization/x.json#", "inner_first_contact_deg": null, "zone_h_mm": 25.0,
                           "rows": [{"angle_deg": 0, "inner_separation_mm": 10.0, "skin_interpenetration_mm": 0.0}]}
   },
   "volume": {"definition": "the body envelope inside the shell", "shell_mm": 5, "inner_volume_l": 0.5,

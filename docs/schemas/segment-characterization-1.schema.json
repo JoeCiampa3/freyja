@@ -92,10 +92,11 @@
         "flexion_clearance": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["source", "inner_first_contact_deg", "rows"],
+          "required": ["source", "inner_first_contact_deg", "zone_h_mm", "rows"],
           "properties": {
             "source": {"type": "string", "minLength": 1, "description": "The generated file it is read from, by address."},
             "inner_first_contact_deg": {"type": ["number", "null"], "description": "The angle at which the inner shells first touch; null if they do not within the travel."},
+            "zone_h_mm": {"type": "number", "exclusiveMinimum": 0, "description": "The height of each body's elbow joint zone excluded from both sets (Amendment 1, M1): the upper arm's last and the forearm's first zone_h_mm."},
             "rows": {
               "type": "array",
               "items": {

@@ -94,6 +94,8 @@ CHAR_ERRORS = {
     "a ray with an unknown label": lambda d: d["interfaces"]["elbow"]["sections"][0]["rays"]["r_ant_mm"].update(label="bone"),
     "no ROM loaded arc": lambda d: d["rom"].pop("loaded_arc"),
     "no flexion clearance": lambda d: d["rom"].pop("flexion_clearance"),
+    "a flexion clearance without its zone height": lambda d: d["rom"]["flexion_clearance"].pop("zone_h_mm"),
+    "a flexion clearance with a zero zone height": lambda d: d["rom"]["flexion_clearance"].update(zone_h_mm=0),
     "no volume": lambda d: d.pop("volume"),
     "load cases without the inertial split": lambda d: d["load_cases"].pop("inertial"),
     "a load-case split of another name": lambda d: d["load_cases"].update(actuator_peak=[]),

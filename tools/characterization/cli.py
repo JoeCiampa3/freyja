@@ -36,6 +36,11 @@ def summary(g: dict) -> list:
     rom = p["rom"]
     out.append(f"  ROM {rom['joint']}: anatomical {rom['anatomical']['min_deg']} to {rom['anatomical']['max_deg']}, mechanism {rom['mechanism']['min_deg']} to "
                f"{rom['mechanism']['max_deg']}, loaded arc {'source needed' if rom['loaded_arc'].get('source_needed') else rom['loaded_arc']}; {rom['sign']}")
+    fc = rom["flexion_clearance"]
+    pick = {r["angle_deg"]: r for r in fc["rows"]}
+    at = ", ".join(f"{a:g} deg {pick[a]['inner_separation_mm']:+.2f}/{pick[a]['skin_interpenetration_mm']:.2f}" for a in (0.0, 90.0, rom["mechanism"]["max_deg"]) if a in pick)
+    first = "none within the travel" if fc["inner_first_contact_deg"] is None else f"{fc['inner_first_contact_deg']:g} deg"
+    out.append(f"  flexion clearance (zones {fc['zone_h_mm']:g} mm excluded): inner shells first contact {first}; inner separation/skin mm at {at}; {len(fc['rows'])} rows")
     v = p["volume"]
     out.append(f"  volume: {v['inner_volume_l']} l inside the {v['shell_mm']:g} mm shell; {len(v['stations'])} station rows")
     out.append(f"  consumes {len(g['consumes'])} addresses")

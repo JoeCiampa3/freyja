@@ -232,6 +232,20 @@ class Segment:
                 "mechanism": {"min_deg": -lo, "max_deg": float(end["value"]), "basis": f"snapshot {neg[0]}; {pol['positive']} end {cite(end)}"},
                 "loaded_arc": loaded}
 
+    def flexion_clearance(self) -> dict:
+        """rom.flexion_clearance (Amendment 1, T7c): M1 of `analysis/elbow_flexion_clearance.py`'s committed output, read by address: the inner separation at the
+        shell with the joint zones excluded, at each of the file's angles, with M2's skin interpenetration at the same angles; the first-contact angle; the zone
+        height. The sensitivity rows, the keep-out and the literal no-exclusion table stay in that file and are not read here."""
+        src = f"data/characterization/{self.name}_flexion_clearance.json"
+        g = self.rd.get
+        rows = g(f"{src}#/hardware_clearance/rows")
+        skin = {r["angle_deg"]: r["skin_interpenetration_mm"] for r in g(f"{src}#/skin/rows")}
+        if [r["angle_deg"] for r in rows] != list(skin):
+            raise CharacterizationError(f"{src}: the M1 and M2 rows are not at the same angles")
+        return {"source": f"{src}#/hardware_clearance", "inner_first_contact_deg": g(f"{src}#/hardware_clearance/first_contact_deg"),
+                "zone_h_mm": g(f"{src}#/hardware_clearance/zone_h_mm"),
+                "rows": [{"angle_deg": r["angle_deg"], "inner_separation_mm": r["inner_separation_mm"], "skin_interpenetration_mm": skin[r["angle_deg"]]} for r in rows]}
+
     def volume(self) -> dict:
         shell = self.input_entry("/shell")
         t = float(shell["value"])
@@ -270,15 +284,17 @@ class Segment:
 
 
 def geometry(reader: Reader, name: str) -> dict:
-    """The geometry parts of the characterization (frame, anchors, axis_tilt_bound, interfaces with no wrenches yet, rom without the flexion
+    """The geometry parts of the characterization (frame, anchors, axis_tilt_bound, interfaces with no wrenches yet, rom with the flexion
     clearance, volume) and a `report` of what the checkpoint memo states (provenance, frame checks, the room at the distal node)."""
     s = Segment(reader, name)
     anchors = s.anchors()
+    rom = s.rom()
+    rom["flexion_clearance"] = s.flexion_clearance()
     origin = s.proximal.split(".", 1)[1]
     part = {"frame": {"statement": f"Right-side ISB/CAD segment frame of {s.id} (CONVENTIONS section 3): origin at the {origin} joint centre, x anterior, "
                                    f"y proximal, z lateral, mm; the model's zero pose (every joint at 0 degrees; the forearm at neutral rotation, adr-0042 D5).",
                       "origin": origin, "axes": {"x": "anterior", "y": "proximal", "z": "lateral"}, "units": dict(UNITS)},
-            "anchors": anchors, "axis_tilt_bound": s.tilt_bound(), "interfaces": s.interfaces(), "rom": s.rom(), "volume": s.volume()}
+            "anchors": anchors, "axis_tilt_bound": s.tilt_bound(), "interfaces": s.interfaces(), "rom": rom, "volume": s.volume()}
     report = {"provenance": s.provenance(), "frame_checks": s.frame_checks(), "distal_room": s.distal_room(),
               "joint_stations_mm": {n: _r(s.joint_station_mm + depth) for n, _, depth in s.chain()[:2]}}
     return {"segment": s.id, "part": part, "report": report}

@@ -178,7 +178,8 @@ def test_the_parts_validate_against_the_schema(run):
     for key in ("frame", "anchors", "axis_tilt_bound", "interfaces", "volume"):
         sub = {**schema["properties"][key], "$defs": defs}
         assert list(jsonschema.Draft202012Validator(sub).iter_errors(json.loads(json.dumps(run["part"][key])))) == [], key
-    rom = {k: v for k, v in schema["properties"]["rom"]["properties"].items() if k != "flexion_clearance"}
+    rom = schema["properties"]["rom"]["properties"]
+    assert set(rom) == set(run["part"]["rom"])
     for k, s in rom.items():
         assert list(jsonschema.Draft202012Validator({**s, "$defs": defs}).iter_errors(run["part"]["rom"][k])) == [], k
 
@@ -198,10 +199,30 @@ def test_a_missing_input_fails_naming_the_address(tmp_path):
         geometry.geometry(Reader(root, build.build_root(root)), "upper_arm")
 
 
+CLEARANCE = "data/characterization/upper_arm_flexion_clearance.json"
+
+
+def test_the_flexion_clearance_is_m1_read_by_address(run):
+    """Amendment 1, T7c: rom.flexion_clearance is M1 of the committed clearance file (rows, first contact, zone height), with M2's skin values at the same angles."""
+    import json
+    d = json.loads((REPO / CLEARANCE).read_text(encoding="utf-8"))
+    fc = run["part"]["rom"]["flexion_clearance"]
+    assert fc["source"] == f"{CLEARANCE}#/hardware_clearance"
+    assert fc["inner_first_contact_deg"] == d["hardware_clearance"]["first_contact_deg"]
+    assert fc["zone_h_mm"] == d["hardware_clearance"]["zone_h_mm"] == 25.0
+    skin = {r["angle_deg"]: r["skin_interpenetration_mm"] for r in d["skin"]["rows"]}
+    assert fc["rows"] == [{"angle_deg": r["angle_deg"], "inner_separation_mm": r["inner_separation_mm"], "skin_interpenetration_mm": skin[r["angle_deg"]]}
+                          for r in d["hardware_clearance"]["rows"]]
+    for p in ("/hardware_clearance/rows", "/hardware_clearance/first_contact_deg", "/hardware_clearance/zone_h_mm", "/skin/rows"):
+        assert f"{CLEARANCE}#{p}" in run["consumes"]
+    assert not any(a.startswith(f"{CLEARANCE}#/no_exclusion") or a.startswith(f"{CLEARANCE}#/sensitivity") for a in run["consumes"])
+
+
 def test_the_dry_run_prints_a_summary_and_writes_nothing(capsys):
     lines = []
     assert cli.main(["upper_arm", "--dry-run"], default_root=REPO, say=lines.append) == 0
     text = "\n".join(lines)
     assert "seg.upper_arm" in text and "unstated" in text and "0.8346" in text and "station 36.0" in text
+    assert "flexion clearance" in text and "first contact 78" in text and "zones 25 mm" in text
     assert len(lines) < 30 and all(len(ln) < 300 for ln in lines)
     assert cli.main(["upper_arm"], default_root=REPO, say=lines.append) == 2
