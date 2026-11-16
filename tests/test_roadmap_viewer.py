@@ -119,6 +119,10 @@ def find_browser():
 
 
 BROWSER = find_browser()
+# s: the headless browser's wall-clock limit. Alone the landmark-picker file passes in 21.5 s; under the full parallel suite with the `inputs` tests running
+# beside it, Edge did not finish within 90 s (memo 64 finding 4). pytest-xdist (--dist loadfile) cannot keep one file off shared CPUs, so the brief's
+# fallback applies (upper-arm brief, Amendment 1, T7d): 180 s.
+BROWSER_TIMEOUT_S = 180
 
 
 def dump_dom(url, workdir):
@@ -130,12 +134,12 @@ def dump_dom(url, workdir):
         ps = f'$p = Start-Process -FilePath "{BROWSER}" -ArgumentList {quoted} -RedirectStandardOutput "{out}" -RedirectStandardError "{workdir / "err.txt"}" -Wait -PassThru -NoNewWindow; exit $p.ExitCode'
         proc = subprocess.Popen(["powershell", "-NoProfile", "-NonInteractive", "-Command", ps], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL)
         try:
-            proc.wait(timeout=90)  # no pipe to drain: the browser's helper processes inherit it and can outlive the launcher
+            proc.wait(timeout=BROWSER_TIMEOUT_S)  # no pipe to drain: the browser's helper processes inherit it and can outlive the launcher
         except subprocess.TimeoutExpired:
             subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)], capture_output=True)
-            pytest.fail("the headless browser did not finish within 90 s")
+            pytest.fail(f"the headless browser did not finish within {BROWSER_TIMEOUT_S} s")
         return out.read_text(encoding="utf-8") if out.exists() else ""
-    return subprocess.run([BROWSER, *base, url], capture_output=True, text=True, timeout=90).stdout
+    return subprocess.run([BROWSER, *base, url], capture_output=True, text=True, timeout=BROWSER_TIMEOUT_S).stdout
 
 
 HARNESS = r"""
