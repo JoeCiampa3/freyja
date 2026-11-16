@@ -1,0 +1,913 @@
+{
+ "arguments": {},
+ "frame": "the upper arm field's frame (upper_arm_R: origin at the SJC, x anterior, y left, z up, mm); stations are the ledger's, distances below its top",
+ "generated_by": "analysis/elbow_flexion_clearance.py",
+ "hardware_clearance": {
+  "first_contact_deg": 78.0,
+  "first_contact_note": "the first 1 degree step from 0 at which the inner shells touch; null if none up to the mechanism's end",
+  "label": "M1, basis",
+  "rows": [
+   {
+    "angle_deg": 0.0,
+    "binding_point_upper_arm_mm": [
+     -47.89,
+     -13.91,
+     -254.23
+    ],
+    "inner_separation_mm": 50.0
+   },
+   {
+    "angle_deg": 30.0,
+    "binding_point_upper_arm_mm": [
+     48.16,
+     -15.91,
+     -242.44
+    ],
+    "inner_separation_mm": 25.11
+   },
+   {
+    "angle_deg": 60.0,
+    "binding_point_upper_arm_mm": [
+     36.24,
+     -11.91,
+     -234.46
+    ],
+    "inner_separation_mm": 8.63
+   },
+   {
+    "angle_deg": 90.0,
+    "binding_point_upper_arm_mm": [
+     13.0,
+     -1.91,
+     -209.13
+    ],
+    "inner_separation_mm": -8.51
+   },
+   {
+    "angle_deg": 120.0,
+    "binding_point_upper_arm_mm": [
+     26.72,
+     -9.91,
+     -223.52
+    ],
+    "inner_separation_mm": -19.68
+   },
+   {
+    "angle_deg": 121.0,
+    "binding_point_upper_arm_mm": [
+     26.16,
+     -9.91,
+     -223.06
+    ],
+    "inner_separation_mm": -20.22
+   },
+   {
+    "angle_deg": 122.0,
+    "binding_point_upper_arm_mm": [
+     25.6,
+     -9.91,
+     -222.6
+    ],
+    "inner_separation_mm": -20.7
+   },
+   {
+    "angle_deg": 123.0,
+    "binding_point_upper_arm_mm": [
+     25.02,
+     -7.91,
+     -222.16
+    ],
+    "inner_separation_mm": -21.22
+   },
+   {
+    "angle_deg": 124.0,
+    "binding_point_upper_arm_mm": [
+     24.44,
+     -7.91,
+     -221.73
+    ],
+    "inner_separation_mm": -21.66
+   },
+   {
+    "angle_deg": 125.0,
+    "binding_point_upper_arm_mm": [
+     23.85,
+     -7.91,
+     -221.31
+    ],
+    "inner_separation_mm": -22.18
+   },
+   {
+    "angle_deg": 126.0,
+    "binding_point_upper_arm_mm": [
+     23.26,
+     -7.91,
+     -220.9
+    ],
+    "inner_separation_mm": -22.79
+   },
+   {
+    "angle_deg": 127.0,
+    "binding_point_upper_arm_mm": [
+     25.46,
+     -7.91,
+     -220.89
+    ],
+    "inner_separation_mm": -23.25
+   },
+   {
+    "angle_deg": 128.0,
+    "binding_point_upper_arm_mm": [
+     24.85,
+     -7.91,
+     -220.45
+    ],
+    "inner_separation_mm": -23.83
+   },
+   {
+    "angle_deg": 129.0,
+    "binding_point_upper_arm_mm": [
+     24.24,
+     -7.91,
+     -220.02
+    ],
+    "inner_separation_mm": -24.31
+   },
+   {
+    "angle_deg": 130.0,
+    "binding_point_upper_arm_mm": [
+     23.62,
+     -7.91,
+     -219.61
+    ],
+    "inner_separation_mm": -24.87
+   },
+   {
+    "angle_deg": 131.0,
+    "binding_point_upper_arm_mm": [
+     23.0,
+     -7.91,
+     -219.2
+    ],
+    "inner_separation_mm": -25.53
+   },
+   {
+    "angle_deg": 132.0,
+    "binding_point_upper_arm_mm": [
+     22.37,
+     -7.91,
+     -218.8
+    ],
+    "inner_separation_mm": -26.04
+   },
+   {
+    "angle_deg": 133.0,
+    "binding_point_upper_arm_mm": [
+     21.73,
+     -7.91,
+     -218.42
+    ],
+    "inner_separation_mm": -26.52
+   },
+   {
+    "angle_deg": 134.0,
+    "binding_point_upper_arm_mm": [
+     21.08,
+     -7.91,
+     -218.04
+    ],
+    "inner_separation_mm": -27.06
+   },
+   {
+    "angle_deg": 135.0,
+    "binding_point_upper_arm_mm": [
+     20.43,
+     -7.91,
+     -217.68
+    ],
+    "inner_separation_mm": -27.5
+   },
+   {
+    "angle_deg": 136.0,
+    "binding_point_upper_arm_mm": [
+     19.77,
+     -7.91,
+     -217.33
+    ],
+    "inner_separation_mm": -28.01
+   },
+   {
+    "angle_deg": 137.0,
+    "binding_point_upper_arm_mm": [
+     19.11,
+     -7.91,
+     -216.99
+    ],
+    "inner_separation_mm": -28.67
+   },
+   {
+    "angle_deg": 138.0,
+    "binding_point_upper_arm_mm": [
+     18.44,
+     -7.91,
+     -216.66
+    ],
+    "inner_separation_mm": -28.94
+   },
+   {
+    "angle_deg": 139.0,
+    "binding_point_upper_arm_mm": [
+     20.58,
+     -5.91,
+     -216.15
+    ],
+    "inner_separation_mm": -29.45
+   },
+   {
+    "angle_deg": 140.0,
+    "binding_point_upper_arm_mm": [
+     19.9,
+     -5.91,
+     -215.8
+    ],
+    "inner_separation_mm": -29.99
+   },
+   {
+    "angle_deg": 141.0,
+    "binding_point_upper_arm_mm": [
+     19.21,
+     -5.91,
+     -215.46
+    ],
+    "inner_separation_mm": -30.63
+   },
+   {
+    "angle_deg": 142.0,
+    "binding_point_upper_arm_mm": [
+     18.51,
+     -5.91,
+     -215.13
+    ],
+    "inner_separation_mm": -31.23
+   },
+   {
+    "angle_deg": 143.0,
+    "binding_point_upper_arm_mm": [
+     17.81,
+     -5.91,
+     -214.81
+    ],
+    "inner_separation_mm": -31.73
+   },
+   {
+    "angle_deg": 144.0,
+    "binding_point_upper_arm_mm": [
+     17.1,
+     -5.91,
+     -214.51
+    ],
+    "inner_separation_mm": -32.27
+   },
+   {
+    "angle_deg": 145.0,
+    "binding_point_upper_arm_mm": [
+     19.17,
+     -3.91,
+     -213.72
+    ],
+    "inner_separation_mm": -32.73
+   },
+   {
+    "angle_deg": 146.0,
+    "binding_point_upper_arm_mm": [
+     18.44,
+     -3.91,
+     -213.39
+    ],
+    "inner_separation_mm": -33.41
+   },
+   {
+    "angle_deg": 147.0,
+    "binding_point_upper_arm_mm": [
+     17.71,
+     -3.91,
+     -213.08
+    ],
+    "inner_separation_mm": -34.18
+   },
+   {
+    "angle_deg": 148.0,
+    "binding_point_upper_arm_mm": [
+     16.97,
+     -3.91,
+     -212.78
+    ],
+    "inner_separation_mm": -34.95
+   },
+   {
+    "angle_deg": 149.0,
+    "binding_point_upper_arm_mm": [
+     17.94,
+     -3.91,
+     -213.52
+    ],
+    "inner_separation_mm": -35.39
+   },
+   {
+    "angle_deg": 150.0,
+    "binding_point_upper_arm_mm": [
+     17.21,
+     -3.91,
+     -213.21
+    ],
+    "inner_separation_mm": -36.17
+   },
+   {
+    "angle_deg": 151.0,
+    "binding_point_upper_arm_mm": [
+     16.47,
+     -3.91,
+     -212.92
+    ],
+    "inner_separation_mm": -36.75
+   },
+   {
+    "angle_deg": 152.0,
+    "binding_point_upper_arm_mm": [
+     18.44,
+     -3.91,
+     -211.81
+    ],
+    "inner_separation_mm": -37.14
+   },
+   {
+    "angle_deg": 153.0,
+    "binding_point_upper_arm_mm": [
+     17.68,
+     -3.91,
+     -211.49
+    ],
+    "inner_separation_mm": -37.9
+   },
+   {
+    "angle_deg": 154.0,
+    "binding_point_upper_arm_mm": [
+     16.91,
+     -3.91,
+     -211.19
+    ],
+    "inner_separation_mm": -38.66
+   },
+   {
+    "angle_deg": 155.0,
+    "binding_point_upper_arm_mm": [
+     16.14,
+     -3.91,
+     -210.9
+    ],
+    "inner_separation_mm": -39.38
+   },
+   {
+    "angle_deg": 156.0,
+    "binding_point_upper_arm_mm": [
+     15.36,
+     -3.91,
+     -210.63
+    ],
+    "inner_separation_mm": -40.09
+   },
+   {
+    "angle_deg": 157.0,
+    "binding_point_upper_arm_mm": [
+     14.58,
+     -3.91,
+     -210.37
+    ],
+    "inner_separation_mm": -40.66
+   }
+  ],
+  "shell_mm": 5.0,
+  "step_deg": 1.0,
+  "zone_h_mm": 25.0
+ },
+ "inputs": "sha256:23355616cd86",
+ "keep_out": {
+  "definition": "per body: the voxels of its inner set outside its zone that the other body's posed inner set holds at some step; deepest = max sd - t there; stations in that body's ledger",
+  "forearm_R": {
+   "deepest_mm": 26.45,
+   "sides_l": {
+    "ant": 0.0474,
+    "lat": 0.0251,
+    "med": 0.0192,
+    "post": 0.0066
+   },
+   "stations_mm": [
+    25.0,
+    133.0
+   ],
+   "volume_l": 0.0984
+  },
+  "label": "M3, reported, not subtracted from any volume",
+  "shell_mm": 5.0,
+  "step_deg": 1.0,
+  "swept_deg": [
+   0.0,
+   157.0
+  ],
+  "upper_arm_R": {
+   "deepest_mm": 26.49,
+   "sides_l": {
+    "ant": 0.0606,
+    "lat": 0.0212,
+    "med": 0.0119,
+    "post": 0.0033
+   },
+   "stations_mm": [
+    163.0,
+    265.0
+   ],
+   "volume_l": 0.097
+  },
+  "zone_h_mm": 25.0
+ },
+ "measure": "m = max over the forearm's voxel centres p of S_upper(T p) + S_fore(p), S = min(sd - t, the signed distance to the region's voxel boundary, the signed distance to the zone plane); inner separation = -m at the shell; skin interpenetration = max(m at t = 0, 0); touch is inner separation <= 0",
+ "no_exclusion": {
+  "label": "memo 64's literal G-G8 table: no zone excluded (what the old measure gave; superseded by M1)",
+  "rows": [
+   {
+    "angle_deg": 0.0,
+    "inner_separation_mm": -0.77,
+    "skin_interpenetration_mm": 0.77
+   },
+   {
+    "angle_deg": 30.0,
+    "inner_separation_mm": -2.09,
+    "skin_interpenetration_mm": 2.17
+   },
+   {
+    "angle_deg": 60.0,
+    "inner_separation_mm": -9.37,
+    "skin_interpenetration_mm": 11.16
+   },
+   {
+    "angle_deg": 90.0,
+    "inner_separation_mm": -22.63,
+    "skin_interpenetration_mm": 26.02
+   },
+   {
+    "angle_deg": 120.0,
+    "inner_separation_mm": -32.37,
+    "skin_interpenetration_mm": 37.91
+   },
+   {
+    "angle_deg": 121.0,
+    "inner_separation_mm": -32.86,
+    "skin_interpenetration_mm": 38.44
+   },
+   {
+    "angle_deg": 122.0,
+    "inner_separation_mm": -33.27,
+    "skin_interpenetration_mm": 39.05
+   },
+   {
+    "angle_deg": 123.0,
+    "inner_separation_mm": -33.72,
+    "skin_interpenetration_mm": 39.52
+   },
+   {
+    "angle_deg": 124.0,
+    "inner_separation_mm": -34.16,
+    "skin_interpenetration_mm": 39.95
+   },
+   {
+    "angle_deg": 125.0,
+    "inner_separation_mm": -34.61,
+    "skin_interpenetration_mm": 40.45
+   },
+   {
+    "angle_deg": 126.0,
+    "inner_separation_mm": -35.09,
+    "skin_interpenetration_mm": 40.93
+   },
+   {
+    "angle_deg": 127.0,
+    "inner_separation_mm": -35.53,
+    "skin_interpenetration_mm": 41.53
+   },
+   {
+    "angle_deg": 128.0,
+    "inner_separation_mm": -35.81,
+    "skin_interpenetration_mm": 41.92
+   },
+   {
+    "angle_deg": 129.0,
+    "inner_separation_mm": -36.09,
+    "skin_interpenetration_mm": 42.27
+   },
+   {
+    "angle_deg": 130.0,
+    "inner_separation_mm": -36.54,
+    "skin_interpenetration_mm": 42.83
+   },
+   {
+    "angle_deg": 131.0,
+    "inner_separation_mm": -37.03,
+    "skin_interpenetration_mm": 43.41
+   },
+   {
+    "angle_deg": 132.0,
+    "inner_separation_mm": -37.4,
+    "skin_interpenetration_mm": 43.75
+   },
+   {
+    "angle_deg": 133.0,
+    "inner_separation_mm": -37.73,
+    "skin_interpenetration_mm": 44.15
+   },
+   {
+    "angle_deg": 134.0,
+    "inner_separation_mm": -38.11,
+    "skin_interpenetration_mm": 44.58
+   },
+   {
+    "angle_deg": 135.0,
+    "inner_separation_mm": -38.55,
+    "skin_interpenetration_mm": 45.15
+   },
+   {
+    "angle_deg": 136.0,
+    "inner_separation_mm": -39.05,
+    "skin_interpenetration_mm": 45.63
+   },
+   {
+    "angle_deg": 137.0,
+    "inner_separation_mm": -39.54,
+    "skin_interpenetration_mm": 46.09
+   },
+   {
+    "angle_deg": 138.0,
+    "inner_separation_mm": -39.89,
+    "skin_interpenetration_mm": 46.43
+   },
+   {
+    "angle_deg": 139.0,
+    "inner_separation_mm": -40.12,
+    "skin_interpenetration_mm": 46.85
+   },
+   {
+    "angle_deg": 140.0,
+    "inner_separation_mm": -40.4,
+    "skin_interpenetration_mm": 47.27
+   },
+   {
+    "angle_deg": 141.0,
+    "inner_separation_mm": -40.74,
+    "skin_interpenetration_mm": 47.75
+   },
+   {
+    "angle_deg": 142.0,
+    "inner_separation_mm": -41.1,
+    "skin_interpenetration_mm": 48.24
+   },
+   {
+    "angle_deg": 143.0,
+    "inner_separation_mm": -41.44,
+    "skin_interpenetration_mm": 48.72
+   },
+   {
+    "angle_deg": 144.0,
+    "inner_separation_mm": -41.8,
+    "skin_interpenetration_mm": 49.17
+   },
+   {
+    "angle_deg": 145.0,
+    "inner_separation_mm": -42.18,
+    "skin_interpenetration_mm": 49.69
+   },
+   {
+    "angle_deg": 146.0,
+    "inner_separation_mm": -42.58,
+    "skin_interpenetration_mm": 50.32
+   },
+   {
+    "angle_deg": 147.0,
+    "inner_separation_mm": -42.92,
+    "skin_interpenetration_mm": 50.85
+   },
+   {
+    "angle_deg": 148.0,
+    "inner_separation_mm": -43.37,
+    "skin_interpenetration_mm": 51.31
+   },
+   {
+    "angle_deg": 149.0,
+    "inner_separation_mm": -43.85,
+    "skin_interpenetration_mm": 51.68
+   },
+   {
+    "angle_deg": 150.0,
+    "inner_separation_mm": -44.28,
+    "skin_interpenetration_mm": 52.1
+   },
+   {
+    "angle_deg": 151.0,
+    "inner_separation_mm": -44.51,
+    "skin_interpenetration_mm": 52.58
+   },
+   {
+    "angle_deg": 152.0,
+    "inner_separation_mm": -44.73,
+    "skin_interpenetration_mm": 53.05
+   },
+   {
+    "angle_deg": 153.0,
+    "inner_separation_mm": -44.98,
+    "skin_interpenetration_mm": 53.53
+   },
+   {
+    "angle_deg": 154.0,
+    "inner_separation_mm": -45.29,
+    "skin_interpenetration_mm": 53.97
+   },
+   {
+    "angle_deg": 155.0,
+    "inner_separation_mm": -45.6,
+    "skin_interpenetration_mm": 54.35
+   },
+   {
+    "angle_deg": 156.0,
+    "inner_separation_mm": -45.82,
+    "skin_interpenetration_mm": 54.54
+   },
+   {
+    "angle_deg": 157.0,
+    "inner_separation_mm": -45.97,
+    "skin_interpenetration_mm": 54.96
+   }
+  ]
+ },
+ "provenance": {
+  "cache": {
+   "forearm_R": {
+    "bytes": 4710821,
+    "path": "data/envelope/cache/forearm_R.npz",
+    "sha256": "cb4c985d61278794bbc3696ec2c773becd617c72114eb2561e43b89f28ae485e"
+   },
+   "upper_arm_R": {
+    "bytes": 6275744,
+    "path": "data/envelope/cache/upper_arm_R.npz",
+    "sha256": "d05153baaee76a7856365e5b312d8efb59c20159ebfd79f6b09efe81f2e3eb63"
+   }
+  },
+  "forearm_origin_vs_model_mm": 0.0,
+  "ledgers": {
+   "forearm_R": {
+    "file": "data/envelope/forearm_R.yaml",
+    "inputs_sha256_12": "770c1272e683",
+    "mesh_file": "data/makehuman/freyja-body-v3.obj"
+   },
+   "upper_arm_R": {
+    "file": "data/envelope/upper_arm_R.yaml",
+    "inputs_sha256_12": "770c1272e683",
+    "mesh_file": "data/makehuman/freyja-body-v3.obj"
+   }
+  },
+  "mechanism_end_deg": {
+   "source": "data/characterization/inputs/upper_arm.yaml#/rom/mechanism_ends/flexion (adr-0008 D4)",
+   "value": 157.0
+  },
+  "pose": "the model's elbow_right (sim/models/freyja.xml) through tools/envelope/joint_poses.relative_transforms, clinical sign from checks/joint_polarity.yaml, not clamped",
+  "probe_checked_angles": 157,
+  "shell_mm": {
+   "source": "data/characterization/inputs/upper_arm.yaml#/shell (adr-0007 D4)",
+   "value": 5.0
+  },
+  "voxel_mm": 2.0,
+  "zone_h_mm": {
+   "source": "data/envelope/upper_arm_R.yaml#/joint_zone_volumes_l/zone_h_mm and data/envelope/forearm_R.yaml (equal); written by tools/envelope/arms.zone_numbers from tools/envelope/bodies.ZONE_H_MM",
+   "value": 25.0
+  }
+ },
+ "schema": "flexion-clearance/1",
+ "sculpt": {
+  "axes_angle_deg": 40.7817,
+  "axial_stretch": {
+   "forearm_R": 0.9999683366877888,
+   "upper_arm_R": 1.0000045129575974
+  },
+  "carrying_deg": -5.0942,
+  "carrying_direction": "lateral",
+  "flexion_deg": 40.5176,
+  "label": "T7b: the forearm field's rotation in the upper arm field's frame as the sculpt has them (arms.ArmFrame from the cache's frames)",
+  "ledger_elbow_bend_deg": 40.78,
+  "twist_deg": 4.6924,
+  "twist_finding": true,
+  "twist_finding_above_deg": 2.0
+ },
+ "sensitivity": {
+  "label": "sensitivity, not basis: first contact at other zone heights",
+  "rows": [
+   {
+    "first_contact_deg": 91.0,
+    "zone_h_mm": 35.0
+   },
+   {
+    "first_contact_deg": 120.0,
+    "zone_h_mm": 50.0
+   }
+  ]
+ },
+ "skin": {
+  "label": "M2, reported, not gated",
+  "rows": [
+   {
+    "angle_deg": 0.0,
+    "skin_interpenetration_mm": 0.0
+   },
+   {
+    "angle_deg": 30.0,
+    "skin_interpenetration_mm": 0.0
+   },
+   {
+    "angle_deg": 60.0,
+    "skin_interpenetration_mm": 0.0
+   },
+   {
+    "angle_deg": 90.0,
+    "skin_interpenetration_mm": 13.06
+   },
+   {
+    "angle_deg": 120.0,
+    "skin_interpenetration_mm": 25.77
+   },
+   {
+    "angle_deg": 121.0,
+    "skin_interpenetration_mm": 26.53
+   },
+   {
+    "angle_deg": 122.0,
+    "skin_interpenetration_mm": 27.13
+   },
+   {
+    "angle_deg": 123.0,
+    "skin_interpenetration_mm": 27.49
+   },
+   {
+    "angle_deg": 124.0,
+    "skin_interpenetration_mm": 28.09
+   },
+   {
+    "angle_deg": 125.0,
+    "skin_interpenetration_mm": 28.96
+   },
+   {
+    "angle_deg": 126.0,
+    "skin_interpenetration_mm": 29.31
+   },
+   {
+    "angle_deg": 127.0,
+    "skin_interpenetration_mm": 29.71
+   },
+   {
+    "angle_deg": 128.0,
+    "skin_interpenetration_mm": 30.38
+   },
+   {
+    "angle_deg": 129.0,
+    "skin_interpenetration_mm": 31.0
+   },
+   {
+    "angle_deg": 130.0,
+    "skin_interpenetration_mm": 31.33
+   },
+   {
+    "angle_deg": 131.0,
+    "skin_interpenetration_mm": 31.97
+   },
+   {
+    "angle_deg": 132.0,
+    "skin_interpenetration_mm": 32.65
+   },
+   {
+    "angle_deg": 133.0,
+    "skin_interpenetration_mm": 33.26
+   },
+   {
+    "angle_deg": 134.0,
+    "skin_interpenetration_mm": 33.91
+   },
+   {
+    "angle_deg": 135.0,
+    "skin_interpenetration_mm": 34.72
+   },
+   {
+    "angle_deg": 136.0,
+    "skin_interpenetration_mm": 35.18
+   },
+   {
+    "angle_deg": 137.0,
+    "skin_interpenetration_mm": 35.58
+   },
+   {
+    "angle_deg": 138.0,
+    "skin_interpenetration_mm": 36.21
+   },
+   {
+    "angle_deg": 139.0,
+    "skin_interpenetration_mm": 36.69
+   },
+   {
+    "angle_deg": 140.0,
+    "skin_interpenetration_mm": 37.4
+   },
+   {
+    "angle_deg": 141.0,
+    "skin_interpenetration_mm": 38.09
+   },
+   {
+    "angle_deg": 142.0,
+    "skin_interpenetration_mm": 38.8
+   },
+   {
+    "angle_deg": 143.0,
+    "skin_interpenetration_mm": 39.3
+   },
+   {
+    "angle_deg": 144.0,
+    "skin_interpenetration_mm": 39.98
+   },
+   {
+    "angle_deg": 145.0,
+    "skin_interpenetration_mm": 40.65
+   },
+   {
+    "angle_deg": 146.0,
+    "skin_interpenetration_mm": 41.04
+   },
+   {
+    "angle_deg": 147.0,
+    "skin_interpenetration_mm": 41.77
+   },
+   {
+    "angle_deg": 148.0,
+    "skin_interpenetration_mm": 42.57
+   },
+   {
+    "angle_deg": 149.0,
+    "skin_interpenetration_mm": 43.27
+   },
+   {
+    "angle_deg": 150.0,
+    "skin_interpenetration_mm": 43.93
+   },
+   {
+    "angle_deg": 151.0,
+    "skin_interpenetration_mm": 44.48
+   },
+   {
+    "angle_deg": 152.0,
+    "skin_interpenetration_mm": 45.09
+   },
+   {
+    "angle_deg": 153.0,
+    "skin_interpenetration_mm": 45.89
+   },
+   {
+    "angle_deg": 154.0,
+    "skin_interpenetration_mm": 46.67
+   },
+   {
+    "angle_deg": 155.0,
+    "skin_interpenetration_mm": 47.3
+   },
+   {
+    "angle_deg": 156.0,
+    "skin_interpenetration_mm": 47.98
+   },
+   {
+    "angle_deg": 157.0,
+    "skin_interpenetration_mm": 48.48
+   }
+  ],
+  "zone_h_mm": 25.0
+ },
+ "validation": {
+  "v1_synthetic": "tests/test_elbow_flexion_clearance.py (cylinders side by side and overlapping, an axial gap across the slab planes, a cut solid reassembled, zone exclusion at zero, a hinged pair at 90 degrees, symmetry, the sign mutation through the sweep); no cache",
+  "v2_reassembly": {
+   "m_mm": {
+    "t0": 0.95,
+    "t5": 0.91
+   },
+   "pass": true,
+   "pose": "the sculpt's own transform (sculpt_transform), no zone excluded",
+   "tolerance_mm": 2.0
+  },
+  "v3_zero_pose": {
+   "expected_mm": 50.0,
+   "inner_separation_mm": 50.0,
+   "pass": true,
+   "tolerance_mm": 2.0
+  },
+  "v4": "two builds byte-identical: tests/test_elbow_flexion_clearance.py rebuilds and compares with this file"
+ }
+}
