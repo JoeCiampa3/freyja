@@ -9,5 +9,6 @@ estimate_days: 1.5
 tags: ["region:arm", "phase:spec", "stage3"]
 done_when:
   type: manual
+signed_off: true
 ---
 Delegate. Elbow ROM from the contract record; available volume from the envelope oracle on the v3 sculpt; the shoulder and elbow interface frames on the adr-0042 D1 nodes with the D4 roll, each with the envelope section at its station. Every position quotes adr-0042 D2's bar (7 mm at the elbow, mostly anteroposterior; 5 mm at the wrist). The room around the elbow was one-sided under the old skin-vertex anchor (memo 43), so the brief should check it again on the D1 node. Gates are in the brief.
