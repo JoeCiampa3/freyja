@@ -330,3 +330,45 @@ def test_v5_the_20000_and_80000_seeded_optima_agree(result):
 def test_v6_a_fresh_build_equals_the_committed_file_byte_for_byte():
     """V6: the committed file was written by a separate run; an in-process build must equal it byte for byte."""
     assert sas.render(sas.build(ROOT)) == (ROOT / sas.OUT).read_text(encoding="utf-8")
+
+
+# ---- T4: sensitivity ----------------------------------------------------------------------------------------------------------------
+
+def test_the_sensitivity_cases_are_the_brief_s_six():
+    cases = {name: (names, widen) for name, names, widen in sas.SENSITIVITY}
+    assert cases == {
+        "R+S1": (sas.BASIS + ("S1",), 0.0), "R+S2": (sas.BASIS + ("S2",), 0.0), "R+S3": (sas.BASIS + ("S3",), 0.0),
+        "R+S1+S2+S3": (sas.BASIS + ("S1", "S2", "S3"), 0.0), "R-B1": (("A1", "A2", "A3"), 0.0), "R, B1 plane +/-10": (sas.BASIS, 10.0)}
+
+
+def test_at_axis_gives_the_nearest_direction_of_an_entry_to_a_fixed_line(required):
+    _, _, es = required
+    u = sas.unit((0.3, -0.4, 0.8))
+    r = sas.at_axis(u, es["S1"])
+    best = max(es["S1"].d, key=lambda d: abs(d @ u))
+    assert r["sigma_min"] == pytest.approx(sas.sigma_min(u, best), abs=1e-12)  # two evaluation orders of sqrt(1 - c): float noise only
+    assert np.allclose(sas.d_of(30.0, r["at"]["theta_deg"]), best)
+
+
+def test_the_committed_sensitivity_is_consistent_with_the_basis(result, required):
+    """Adding a requirement can only lower the floor, removing one only raise it; each case's optimum is certified and its angle from the
+    basis optimum is what its u1 says."""
+    sens = result["sensitivity"]["cases"]
+    assert set(sens) == {name for name, _, _ in sas.SENSITIVITY}
+    base = result["optimum"]["floor"]["sigma_min"]
+    u0 = np.array(result["optimum"]["u1"])
+    for name, c in sens.items():
+        assert c["certificate"]["local_maximum"], name
+        assert c["angle_from_basis_optimum_deg"] == pytest.approx(sas.line_angle_deg(c["u1"], u0), abs=1e-7), name
+        if name == "R-B1":
+            assert c["floor"]["sigma_min"] >= base - 1e-12
+        else:
+            assert c["floor"]["sigma_min"] <= base + 1e-12, name
+
+
+def test_s1_to_s3_at_the_basis_optimum_reproduce_from_a_fresh_required_set(result, required):
+    _, _, es = required
+    u0 = np.array(result["optimum"]["u1"])
+    for n in ("S1", "S2", "S3"):
+        got = sas.at_axis(u0, es[n])
+        assert got["sigma_min"] == pytest.approx(result["sensitivity"]["s_at_basis_optimum"][n]["sigma_min"], abs=1e-9), n

@@ -416,7 +416,9 @@ def ends(u, side: str = "right") -> list:
 
 
 def line_angle_deg(a, b) -> float:
-    return math.degrees(math.acos(min(1.0, abs(float(np.asarray(a) @ np.asarray(b))))))
+    """The angle between the lines along a and b, in degrees; atan2(|a x b|, |a . b|), well conditioned near 0 where acos is not."""
+    a, b = np.asarray(a, float), np.asarray(b, float)
+    return math.degrees(math.atan2(float(np.linalg.norm(np.cross(a, b))), abs(float(a @ b))))
 
 
 def near_points(u, es: dict, names, band_deg: float) -> list:
@@ -519,6 +521,51 @@ def describe(u, g, es: dict, names, D: np.ndarray, side: str = "right") -> dict:
             "binding_entries": binding_summary(pts), "binding_points": pts}
 
 
+# ---- T4: sensitivity ----------------------------------------------------------------------------------------------------------------
+
+B1_WIDEN_DEG = 10.0           # brief T4: B1's plane bounds widened by 10 deg at each end
+SENSITIVITY = (               # brief T4: (case, entries searched, B1 widening)
+    ("R+S1", BASIS + ("S1",), 0.0),
+    ("R+S2", BASIS + ("S2",), 0.0),
+    ("R+S3", BASIS + ("S3",), 0.0),
+    ("R+S1+S2+S3", BASIS + ("S1", "S2", "S3"), 0.0),
+    ("R-B1", ("A1", "A2", "A3"), 0.0),
+    ("R, B1 plane +/-10", BASIS, B1_WIDEN_DEG),
+)
+
+
+def at_axis(u, e: Entry) -> dict:
+    """An entry evaluated at a fixed u1, without re-optimising: its nearest direction to the line, as floor numbers, and where."""
+    c = np.abs(e.d @ u)
+    i = int(np.argmax(c))
+    return {**floor_numbers(c[i]), "at": e.label(i)}
+
+
+def sensitivity(rom: dict, inputs: dict, u_basis, basins=()) -> dict:
+    """Each SENSITIVITY case searched as the basis is (SEEDS[-1] seeds); then S1 to S3 at the basis optimum, and at each basis basin, without
+    re-optimising."""
+    cases = {}
+    for name, names, widen in SENSITIVITY:
+        es = entries(rom, inputs, "right", b1_widen_deg=widen)
+        D = unique_dirs(stack(es, names))
+        r = search(D, SEEDS[-1])
+        u, g = r["basins"][0]
+        pts = near_points(u, es, names, BINDING_BAND_DEG)
+        floor_deg = math.degrees(math.acos(min(1.0, g)))
+        lifted = tuple(n for n in names if n not in ("S2", "S3"))  # S2 and S3 are single points: no path from the neutral arm to lift q1 along
+        sp = spans(u, es, lifted)
+        cases[name] = {"entries": list(names), "b1_widen_deg": widen, "u1": u, "ends": ends(u), "floor": floor_numbers(g),
+                       "angle_from_basis_optimum_deg": line_angle_deg(u, u_basis), "certificate": certificate(u, D),
+                       "active": [p for p in pts if p["angle_deg"] - floor_deg < 1e-7], "binding_entries": binding_summary(pts),
+                       "q1_span_deg": sp["q1_span_deg"], "q2_span_deg": sp["q2_span_deg"], "spans_over": list(lifted),
+                       "basins": [{"u1": b, "ends": ends(b), "floor": floor_numbers(gb), "angle_from_basis_optimum_deg": line_angle_deg(b, u_basis)}
+                                  for b, gb in r["basins"][:N_BASINS]]}
+    es = entries(rom, inputs, "right")
+    at_basis = {n: at_axis(np.asarray(u_basis, float), es[n]) for n in ("S1", "S2", "S3")}
+    at_basins = [{"u1": b, **{n: at_axis(np.asarray(b, float), es[n]) for n in ("S1", "S2", "S3")}} for b in basins]
+    return {"cases": cases, "s_at_basis_optimum": at_basis, "s_at_basis_basins": at_basins}
+
+
 # ---- build --------------------------------------------------------------------------------------------------------------------------
 
 def input_files() -> list:
@@ -593,6 +640,7 @@ def build(root: Path = ROOT) -> dict:
                          "entries": {n: {"count": int(len(es[n].d)), **{k: [float(v.min()), float(v.max())] for k, v in es[n].params.items()}} for n in es}},
         "baseline": baseline(es, D), "optimum": opt, "basins": basins, "hypothesis": hypothesis,
         "v3_round_trip": v3, "v4_mirror": v4, "v5_convergence": v5,
+        "sensitivity": sensitivity(rom, inputs, u, [b for b, _ in runs[SEEDS[-1]]["basins"][:N_BASINS]]),
     }
 
 
