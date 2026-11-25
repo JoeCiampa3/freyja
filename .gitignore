@@ -48,5 +48,8 @@ data/camargo2021/processed
 sim/gait/*/gait.json
 data/makehuman/cache
 
+# Shoulder axis search: the floor map (analysis/shoulder_axis_search.py --map) is a picture for the memo, not a build artifact
+data/shoulder/map/
+
 # CAD bridge: the STEP export is the FEA hand-off format; its header carries a timestamp, so only its normalised hash is tracked (the sidecar)
 cad/exports/*.step

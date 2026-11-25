@@ -14,3 +14,7 @@ ENVELOPE = ("tools/envelope", "tools/fy", "tools/cad", "cad", "data/envelope", "
 
 # A simulation run: the runner and solvers, scenarios, controllers and the model under sim/, the snapshot, and the checks a run record quotes.
 SIM = ("sim", "params", "checks")
+
+# The shoulder axis search: the script and its inputs and output, the snapshot it reads through the thread's address resolution, and what a
+# thread build reads (the library, the records and stamps, the decision records, the model).
+SHOULDER = ("analysis/shoulder_axis_search.py", "data/shoulder", "params", "tools/thread", "thread/records", "thread/stamps", "decisions", "sim/models")
