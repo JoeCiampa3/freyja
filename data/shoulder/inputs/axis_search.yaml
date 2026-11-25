@@ -1,0 +1,37 @@
+# Authored. The shoulder axis search's required-set inputs that no address holds (docs/briefs/ariadne/shoulder-axis-search-brief.md, "The
+# required set"; CONVENTIONS section 2). Read by analysis/shoulder_axis_search.py. Each entry is {value, unit, source}, as in the characterization
+# inputs (CONVENTIONS section 8); a value from memory carries source_needed: true. Nothing an address holds is typed here: the three ROM arcs
+# (A1 to A3) and S1's upper elevation are read from the snapshot (shoulder_flexion, shoulder_extension, shoulder_abduction).
+#
+# Directions use ISB humerothoracic Y-X-Y (Wu et al. 2005) for the RIGHT arm: elevation theta from straight down, plane of elevation phi = 0 in
+# the frontal plane (abduction), +90 forward flexion, negative behind the frontal plane. The left arm is the y-mirror.
+schema: shoulder-axis-search-inputs/1
+side: right
+
+required:
+  B1:
+    name: "ADL envelope"
+    plane_min: {value: -65, unit: deg, source: ["Gates et al. 2016, Am J Occup Ther 70(1), doi 10.5014/ajot.2016.015487 (PMC4690598), Abstract: humeral plane angle -65/0/105; Table 1, hand to back pocket, mean -65"]}
+    plane_max: {value: 105, unit: deg, source: ["Gates et al. 2016, Abstract: humeral plane angle -65/0/105; Table 1, perineal care, contralateral limb, mean 105"]}
+    elevation_min: {value: 0, unit: deg, source: ["Gates et al. 2016, Abstract: humeral elevation 0 to 108"]}
+    elevation_max: {value: 108, unit: deg, source: ["Gates et al. 2016, Abstract: humeral elevation 0 to 108; Table 1, box off shelf at head height, mean 108"]}
+    convention:
+      status: confirmed
+      text: "Gates et al. 2016, Data Analysis: humerus relative to trunk by a Y'-X-Y'' Euler sequence on the basis of ISB recommendations (Wu et al. 2005), plane of elevation, elevation, axial rotation. Figure 1 caption (B): elevation in the frontal plane (pure abduction) is plane angle 0; pure flexion is 90; pure extension about -90. (A): arm at the side is elevation 0. This is the convention above."
+    cautions:
+      - "The per-DOF extremes taken as a box are a superset of what the tasks used together, so B1 can only overstate the requirement."
+      - "The plane-angle convention was assumed to be ISB Y-X-Y by the brief and is confirmed from the paper's Figure 1 caption. The extremes are task means across participants (Table 1, Mean column), not individual extremes. The 105 is the contralateral limb, which the text names as the left arm, although it says only right-arm data are presented; the paper describes no mirroring."
+
+sensitivity:
+  S1:
+    name: "overhead in the scapular plane"
+    plane: {value: 30, unit: deg, source_needed: true, source: ["from memory: the scapular plane at about 30 degrees anterior to the frontal plane is the common figure (brief, S1)"]}
+    elevation_max: {address: "snapshot#/shoulder_flexion", note: "theta from 0 to the snapshot's shoulder flexion, at the arcs' 0.5 degree step"}
+  S2:
+    name: "cross-body"
+    plane: {value: 130, unit: deg, source_needed: true, source: ["from memory: horizontal adduction about 40 degrees past forward (rm.v1-shoulder-adduction-defined, option C), until decision 0043 exists"]}
+    elevation: {value: 90, unit: deg, source_needed: true, source: ["from memory: at 90 degrees of elevation (rm.v1-shoulder-adduction-defined, option C)"]}
+  S3:
+    name: "hand behind head"
+    plane: {value: 20, unit: deg, source_needed: true, source: ["from memory (brief, S3)"]}
+    elevation: {value: 120, unit: deg, source_needed: true, source: ["from memory (brief, S3)"]}
