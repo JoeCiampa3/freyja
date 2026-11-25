@@ -13,7 +13,7 @@ The prompt names which brief to execute; if it does not, ask. If the prompt give
 
 Run everything as `python tools/fy <command>` from anywhere in the repo.
 
-- Test: `python tools/fy test` (offline; the whole suite, in parallel through pytest-xdist: about 8 minutes, 488 s at memo 61 on 6 logical CPUs). Naming a file, or `--serial`, runs serially. Tests marked `inputs` (the slow envelope and bias tests) are skipped while their inputs are unchanged since they last passed, and the skip says so; `--rerun-cached` runs them (about 48 minutes: 2870 s at memo 61, measured with another job running). Model checks: `python tools/fy check`.
+- Test: `python tools/fy test` (offline; the whole suite, in parallel through pytest-xdist: about 7 minutes, 421 s at memo 66 on 14 logical CPUs; 488 s at memo 61 on 6). Naming a file, or `--serial`, runs serially. Tests marked `inputs` (the slow envelope and bias tests) are skipped while their inputs are unchanged since they last passed, and the skip says so; `--rerun-cached` runs them (about 40 minutes: 2421 s at memo 66 for a full run that executed every `inputs` test on 14 logical CPUs; 2870 s at memo 61, measured with another job running). Model checks: `python tools/fy check`.
 - `python tools/fy test --quick` (CAD, thread, roadmap, envelope registry and conventions tests, about 3 minutes: 174 s at memo 61).
 - CAD bridge: `python tools/fy cad validate [<part>] | push <part> | pull <part> | drift <part> | stamp <part> [--note T] | status` (needs Fusion running with its MCP server and the bound document active; `--root DIR` on each). `push` saves a document that had no unsaved changes and never one that had. Never `stamp` unless the prompt says so.
 - Build and sheet: `python tools/fy build [--dry-run | --xlsx FILE]`.
