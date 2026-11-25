@@ -4,7 +4,7 @@ Read in this order at the start of a session: `CONVENTIONS.md` (the contract for
 
 Tracks. **Ariadne** is the digital thread: the pipeline from the sheet to the model, sims, load envelopes and later CAD and FEA (Stages 2, 3 and on), with the system model in `thread/` as its data layer. **Architecture** is repo tooling, such as the roadmap.
 
-Current Ariadne brief: `docs/briefs/ariadne/upper-arm-characterization-brief.md`.
+Current Ariadne brief: `docs/briefs/ariadne/shoulder-axis-search-brief.md` (`docs/briefs/ariadne/upper-arm-characterization-brief.md` is paused and resumes at Group L once adr-0025 is accepted).
 Current architecture brief: `docs/briefs/architecture/volume-extractor-brief14.md`.
 
 The prompt names which brief to execute; if it does not, ask. If the prompt gives a hash prefix, check `sha256sum` of the brief against it before starting; on a mismatch look for CRLF line endings, report the actual hash, and stop if it still differs. Never edit a brief; Joe overwrites them. Code updates the two `Current ... brief` lines above when the prompt or a brief names the current brief, and the timing figures in this file when a memo measures new ones; it changes nothing else here unless Joe asks.
