@@ -19,6 +19,7 @@ sys.path.insert(0, str(REPO / "sim" / "scripts"))
 sys.path.insert(0, str(REPO / "checks"))
 
 from fy import cli  # noqa: E402
+import testkit  # noqa: E402
 
 
 class InDir:
@@ -200,16 +201,17 @@ class RealFunctions(unittest.TestCase):
         """Memo 61: when fy chooses the files (everything, or --quick) it adds pytest-xdist's workers; a module's tests stay together (loadfile)
         because module-scoped fixtures build whole bodies."""
         for args in ([], ["--quick"], ["-k", "mirror"], ["--quick", "-x"]):
-            argv = self._pytest_argv(args)
+            with mock.patch.object(testkit.os, "cpu_count", return_value=32):
+                argv = self._pytest_argv(args)
             i = argv.index("-n")
-            self.assertEqual(argv[i:i + 4], ["-n", "auto", "--dist", "loadfile"], args)
+            self.assertEqual(argv[i:i + 4], ["-n", "12", "--dist", "loadfile"], args)  # memo 68 finding 4: capped at 12
 
     def test_named_targets_serial_or_an_explicit_worker_count_are_left_alone(self):
         for args in (["tests/test_fy.py"], ["tests/test_fy.py", "-x"], ["--serial"], ["--quick", "--serial"], ["-n", "3"], ["--quick", "-n3"],
                      ["--numprocesses=2"], ["-p", "no:xdist"], ["--pdb"]):
             argv = self._pytest_argv(args)
             self.assertNotIn("--serial", argv)
-            self.assertNotIn("auto", argv, args)
+            self.assertNotIn("--dist", argv, args)
             self.assertNotIn("loadfile", argv, args)
         self.assertIn(str(REPO / "tests"), self._pytest_argv(["--serial"]))  # --serial alone is still the whole suite
         self.assertEqual(self._pytest_argv(["-n", "3"])[-2:], ["-n", "3"])

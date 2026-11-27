@@ -249,3 +249,15 @@ def test_the_record_and_the_store_are_deterministic_text(repo):
         raw = (repo / ".fy-cache" / name).read_bytes()
         assert b"\r" not in raw and raw.endswith(b"\n")
         assert json.dumps(json.loads(raw), indent=1, sort_keys=True).encode() + b"\n" == raw
+
+
+# ---- the worker cap (shoulder-room brief, Amendment 1, T0a; memo 68 finding 4) ----
+
+@pytest.mark.parametrize("cpus, expected", [(32, 12), (4, 4), (12, 12), (1, 1), (None, 1)])
+def test_xdist_workers_are_the_logical_cpus_capped_at_twelve(monkeypatch, cpus, expected):
+    """Memo 68: on 32 logical CPUs `-n auto` started 32 workers, which ran out of memory; 12 ran the suite in 205 s. os.cpu_count() may
+    return None, which counts as one CPU."""
+    monkeypatch.setattr(testkit.os, "cpu_count", lambda: cpus)
+    assert testkit.MAX_WORKERS == 12
+    assert testkit.workers() == expected
+    assert testkit.parallel_args() == ("-n", str(expected), "--dist", "loadfile")

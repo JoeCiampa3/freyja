@@ -76,7 +76,7 @@ def quick_files(root: Path) -> list:
     return sorted({p.as_posix() for g in QUICK_GLOBS for p in (root / "tests").glob(g)})
 
 
-# When fy chooses the files (the whole suite, or --quick) the run is spread over pytest-xdist's workers (tools/testkit.PARALLEL). Named targets run
+# When fy chooses the files (the whole suite, or --quick) the run is spread over pytest-xdist's workers (tools/testkit.parallel_args: the logical CPUs, at most 12). Named targets run
 # serially, as does anything given --serial, its own -n or a debugger.
 _OWN_WORKERS = re.compile(r"-n(\d+|auto|logical)?|--numprocesses(=.*)?|--pdb|--trace|-pno:xdist")
 
@@ -98,7 +98,7 @@ def run_tests(root: Path, args: list) -> int:
     named = bool(args) and not args[0].startswith("-")
     targets = quick_files(root) if quick else (() if named else (str(root / "tests"), str(root / "checks")))
     own = any(_OWN_WORKERS.fullmatch(a) or (a == "no:xdist" and i and args[i - 1] == "-p") for i, a in enumerate(args))
-    parallel = testkit.PARALLEL if (quick or not named) and not serial and not own and xdist_available() else ()
+    parallel = testkit.parallel_args() if (quick or not named) and not serial and not own and xdist_available() else ()
     return int(pytest.main(["--rootdir", str(root), "-c", str(root / "pytest.ini"), *parallel, *targets, *args]))
 
 

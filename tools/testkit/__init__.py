@@ -45,8 +45,19 @@ ALWAYS = ("requirements.txt", "pytest.ini", "tests/conftest.py", "checks/conftes
 
 
 # How `fy test` and `fy state` spread the suite over pytest-xdist's workers: one file on one worker at a time, because module-scoped fixtures
-# build whole bodies and must not be rebuilt on every worker.
-PARALLEL = ("-n", "auto", "--dist", "loadfile")
+# build whole bodies and must not be rebuilt on every worker. The worker count is the logical CPUs capped at MAX_WORKERS, not `-n auto`:
+# on 32 logical CPUs `-n auto` started 32 workers, which ran out of memory (MemoryError, WinError 8), and 12 ran the whole suite in 205 s
+# (memo 68 finding 4; shoulder-room brief, Amendment 1, T0a).
+MAX_WORKERS = 12
+
+
+def workers() -> int:
+    """min(logical CPUs, MAX_WORKERS); os.cpu_count() returning None counts as one CPU."""
+    return max(1, min(int(os.cpu_count() or 1), MAX_WORKERS))
+
+
+def parallel_args() -> tuple:
+    return ("-n", str(workers()), "--dist", "loadfile")
 
 
 def xdist_available() -> bool:

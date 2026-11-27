@@ -263,10 +263,11 @@ def test_the_suite_is_run_as_fy_test_runs_it_in_parallel_when_xdist_is_installed
     seen = []
     monkeypatch.setattr(state.subprocess, "run", lambda argv, **kw: seen.append(list(argv)) or SimpleNamespace(stdout="3 passed in 0.10s\n"))
     monkeypatch.setattr(state.testkit, "xdist_available", lambda: xdist)
+    monkeypatch.setattr(state.testkit.os, "cpu_count", lambda: 32)
     assert state._run_pytest(repo, ("--rerun-cached",)) == "3 passed in 0.10s\n"
     argv = seen[0]
     assert argv[1:3] == ["-m", "pytest"] and argv[-1] == "--rerun-cached"
-    assert (["-n", "auto", "--dist", "loadfile"] == argv[argv.index("-n"):argv.index("-n") + 4]) if xdist else ("-n" not in argv)
+    assert (["-n", "12", "--dist", "loadfile"] == argv[argv.index("-n"):argv.index("-n") + 4]) if xdist else ("-n" not in argv)
 
 
 def test_tests_skipped_on_unchanged_inputs_count_as_passed_and_the_section_says_how_many(repo):

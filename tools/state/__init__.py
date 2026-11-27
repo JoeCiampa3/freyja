@@ -83,7 +83,7 @@ def tree_state(root) -> tuple:
 
 def _run_pytest(root, extra=()) -> str:
     """The whole suite the way `fy test` runs it; returns pytest's standard output."""
-    parallel = testkit.PARALLEL if testkit.xdist_available() else ()
+    parallel = testkit.parallel_args() if testkit.xdist_available() else ()
     return subprocess.run([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", *parallel, *extra], cwd=root, capture_output=True, text=True, encoding="utf-8").stdout
 
 
