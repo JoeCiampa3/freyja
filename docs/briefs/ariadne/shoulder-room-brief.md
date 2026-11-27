@@ -123,3 +123,27 @@ Report: r(s) at every 10 mm for the four combinations; the maximum r and its s; 
 - Pull first: this brief was written into a clone that predates memo 66. Then point the "Current Ariadne brief" line in `CLAUDE.md` at this file, commit both, and prompt Code with the path, the `sha256sum` prefix and "Group A".
 - At Checkpoint A, name the u1 for Group B (an address into `data/shoulder/axis_search.json`).
 - If you know a source for the sternoclavicular joint's offset from the suprasternal notch, or for folded-arms humerothoracic angles, give it before the run.
+
+## Amendment 1 (2026-11-26): Group B rulings after memo 68
+
+This amendment supersedes the SJC sentence of "Frames and conventions", the first clause of G-B1, and the union rule of M1's N bound. It sets M4's sternal-node frame chain and adds T0a. Everything else above stands. Read memo 68 before starting. Tag: Delegate.
+
+### Why a premise changes
+
+The brief took the model's `upper_arm_right` position as the joint centre of the body envelope. Memo 68 finding 1 measured that this point sits 37.79 mm behind the envelope's shoulder joint, 8.5 mm from the back skin, with the arm field displaced 38 mm behind the thorax's. That was a wrong premise, not a result to tune toward. The room is a property of the skin, so it is centred where the skin's shoulder is. The disagreement itself is logged below and is not fixed here.
+
+### Rulings
+
+- **R1. Centre (memo 68 Q1).** The SJC for every Group B measure is the envelope's: `data/envelope/upper_arm_R.yaml#/mesh_nodes_mm/sjc` mapped through `bodies.trunk_map(...).apply`, less the thorax `origin_xyz`, then into the thorax model frame through `frames.segment_offset_mm`. It is computed by the script, never typed. Memo 68 measured it at (51.60, -192.33, -77.57) mm. The upper-arm field sits at its own origin there. u1 is unchanged: it is a direction, and the axis search does not depend on the centre's position.
+- **R2. G-B1, first clause, replaced.** The SJC used equals R1's computed point to 0.01 mm. Its y and z equal `upper_arm_right`'s to 0.01 mm, and the x difference from `upper_arm_right` is reported (memo 68: 37.79 mm). u1 is normalised by the script and its residual reported; memo 68's 7.7e-14 is within the 1e-12 clause. The lateral clause (226.63 mm at station 40) stands.
+- **R3. N bound, union rule (memo 68 Q2).** N holds a point by region, `occupancy.skin_field`'s rule, not by z-slab. `oracle.clearance_union` would credit the thorax field's extended-solid flesh beyond the shoulder cut (memo 68 finding 2). Use the existing function; do not change it. As a diagnostic only, report r_N at its maximum under the slab rule beside the region rule.
+- **R4. M4 sternal node.** Dumas SUP is measured from the mesh's thorax centre line at the CJC, as `trunk_bodies.json`'s shoulder plane already is (its `x_note`), and goes through the same chain as R1. The scaling and the c rows are unchanged.
+- **R5. The disagreement is logged, not fixed.** The memo gives one paragraph on what the 37.79 mm offset touches downstream. That covers the sim's arm inertia placement, the thorax-to-shoulder interface location in CAD (whose upper-arm frame origin is the sheet's SJC), and memo 59's shoulder fall rows. Give the source of the model's SJC x (sheet cell). Dumas 2015 supplies none (`dumas2015_table1_female.json`, `SJC_note`). Do not edit the model, the sheet, `analysis/fall_room.py` or `data/falls/room.json`.
+
+### Task added
+
+**T0a. Worker cap (own commit, before T3; tests first).** In `tools/testkit`, cap xdist's workers at min(logical CPUs, 12) (memo 68 finding 4). A test pins the cap with a mocked CPU count of 32 and of 4. Until this lands, set `PYTEST_XDIST_AUTO_NUM_WORKERS=12` for every run. Rule 1's full-suite condition applies to this commit.
+
+### Open, not this session's work
+
+Memo 67 finding 4 (`fy state` on a Current-brief line without backticks). Memo 66 finding 5 (the serial-fallback warning). Memo 68 finding 3 (memo 59's two "mesh SJC x" rows), which is due before adr-0025 sets the shoulder fall arc. The model-versus-envelope SJC reconciliation (R5), which is due before the thorax is designed in CAD.
