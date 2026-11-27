@@ -147,3 +147,29 @@ The brief took the model's `upper_arm_right` position as the joint centre of the
 ### Open, not this session's work
 
 Memo 67 finding 4 (`fy state` on a Current-brief line without backticks). Memo 66 finding 5 (the serial-fallback warning). Memo 68 finding 3 (memo 59's two "mesh SJC x" rows), which is due before adr-0025 sets the shoulder fall arc. The model-versus-envelope SJC reconciliation (R5), which is due before the thorax is designed in CAD.
+
+## Amendment 2 (2026-11-26): Group B close-out after memo 69
+
+This amendment supersedes the definitions of N and S in M1, the S formula, and M3. It adds a comparison run on the other axis basin. Everything else above and in Amendment 1 stands. Read memo 69 before starting. Build on branch `wip/shoulder-room-b-draft` (41ce06c): bring its script and tests onto `main` under these rulings, tests first for anything they change. Tag: Delegate.
+
+### Why the gates change after a result
+
+G-B4 failed on a labelling artefact, not on the body. The thorax gave the shoulder-girdle wedge to the arm in the A-pose, and the arm's region, rotated 37° to hanging, no longer covers it. Both fields agree that the 15.5 cm³ sheet is deep flesh (memo 69 finding 1). The S formula subtracted t twice, which was the brief's error (finding 4). M3 asked a question whose answer was already visible: the axis passes 7.8 mm from the axillary skin at s = -70 (finding 3). The criteria below are fixed before the closing run.
+
+### Rulings
+
+- **R6. N (memo 69 Q1).** N := (thorax ∪ upper_arm_R, held by region) ∪ B. B is arm flesh in every pose, so S ⊂ N holds by construction. Report the unheld sheet's volume (memo 69: 15.5 cm³ within 40 mm, 8.6 cm³ inside B) as a known region artefact. Relabelling the regions in the hanging pose is a `tools/envelope` follow-up, not this brief's work.
+- **R7. S (memo 69 Q2).** S is the set thorax (by region) ∪ B, with R_B already less t. The brief's literal margin formula is not used.
+- **R8. Cut bindings inside B (memo 69 Q3).** Under R6, a region-cut binding that lies inside B does not bind: the ball holds the point. Report the binding surface outside B as usual.
+- **R9. M3 replaced (memo 69 Q4).** Report the thorax-alone r(s) along the negative axis from the SJC to where the axis leaves the thorax skin (extend past s = -150 mm to that exit), reservations off and on, with the largest coaxial diameter in each run of s and what binds. State plainly whether any continuous coaxial path of radius 5 mm or more exists from the joint ball to a run where r ≥ 25 mm, which is the test for a coaxial drive shaft from a chest motor. The s0 = -R_B cylinders are dropped. Keep the free-sphere hint as written.
+- **R10. Comparison on the other basin.** Rerun M1, M2 and R9 with u1 = `data/shoulder/axis_search.json#/basins/0/u1` (memo 66 basin 1, lower end down-back-medial), with the same centre, bounds and reservations. Label it comparison, not basis. It answers one question for adr-0025: whether basin 1's lower end finds coaxial room in the upper back that basin 2's lower end, through the axilla, does not.
+
+### Gates amended
+
+- **G-B4.** r_S(s) ≤ r_N(s) and r(on) ≤ r(off) at every s, for both basins. Under R6 the first is true by construction; the test still runs and fails on any violation.
+- **G-B6 (new).** Under R7, S's maximum equals R_B to within the 0.5 mm bisection wherever B is the binding set (memo 69: 28.94 against 29.33 at s = -4, within 0.5 mm once disc sampling is accounted for; report the residual).
+- G-B2 and G-B5 run as written.
+
+### Checkpoint B (close-out)
+
+Memo per `CLAUDE.md` rule 6 with the gate table (G-B1 to G-B6), M1, M2, R9, M4, the basin comparison, the free-sphere hint, findings and questions. Lead with three plain answers for adr-0025, each with its numbers. First, whether a serial roll actuator can ride on the axis-1 stage. Second, whether a motor coaxial with axis 1 can sit in the chest or the back, for either basin. Third, the size of the joint-local transmission envelope, as R_w for w = 20 and 40. `fy state`, stop. Delete the draft branch once its content is on `main`, and say so.
